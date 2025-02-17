@@ -1,6 +1,6 @@
 use std::{net::TcpStream, io::Write};
 
-use super::serialize;
+use lib::serialize;
 
 fn send_packet(stream: &mut TcpStream, packet_id: u8, mut data: Vec<u8>) {
   let mut response: Vec<u8> = serialize::varint(packet_id as i32);
@@ -17,7 +17,7 @@ pub mod status {
   pub fn status_response(stream: &mut TcpStream) {
     send_packet(stream, 0x00, 
       serialize::string(
-        "{\"version\": {\"name\": \"1.19.2\",\"protocol\": 760},\"players\": {\"max\": 9,\"online\": 6,\"sample\": []},\"description\": {\"text\": \"Hello oxide!\"},\"enforcesSecureChat\": true}"
+        "{\"version\": {\"name\": \"Oxide 1.21.4\",\"protocol\": 769},\"players\": {\"max\": 9,\"online\": 6,\"sample\": []},\"description\": {\"text\": \"Hello oxide!\"},\"enforcesSecureChat\": true}"
       )
     );
   }
@@ -40,7 +40,7 @@ pub mod login {
 
 pub mod play {
   use super::*;
-  use crate::nbt::NbtTag;
+  use lib::nbt::NbtTag;
 
   pub fn login(stream: &mut TcpStream) {
     let mut output: Vec<u8> = Vec::new();

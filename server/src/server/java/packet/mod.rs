@@ -1,6 +1,4 @@
 pub mod handlers;
-pub mod deserialize;
-pub mod serialize;
 pub mod senders;
 
 
@@ -13,8 +11,8 @@ fn print_binary(packet: &Vec<u8>) {
 
 #[cfg(test)]
 mod test {
-  use super::deserialize;
-	use super::serialize;
+  use lib::deserialize;
+	use lib::serialize;
 
   #[test]
   fn varint_parse_serialize_single_byte() {

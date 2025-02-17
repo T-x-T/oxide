@@ -2,7 +2,7 @@ use std::net::{TcpStream, SocketAddr};
 use std::io::Write;
 use std::collections::HashMap;
 
-use super::deserialize;
+use lib::deserialize;
 use super::senders;
 use super::super::ConnectionState;
 
