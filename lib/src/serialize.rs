@@ -1,23 +1,24 @@
 use crate::nbt::NbtTag;
 
-const SEGMENT_BITS: u8 = 0x7F;
-const CONTINUE_BIT: u8 = 0x80; 
+const SEGMENT_BITS: u32 = 0b0111_1111;
+const CONTINUE_BIT: u8 = 0b1000_0000; 
 
 //TODO: doesnt work with negative numbers
-pub fn varint(mut value: i32) -> Vec<u8> {
+pub fn varint(value: i32) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
+  let mut uvalue = value as u32;
   loop {
-    if value as u8 & !SEGMENT_BITS == 0 {
-      output.push(value as u8);
-      break;
+    let mut byte = (uvalue & SEGMENT_BITS) as u8;
+    uvalue >>= 7; // logical right shift since uvalue is unsigned
+    
+    if uvalue != 0 {
+      byte |= CONTINUE_BIT;
     }
-
-    output.push((value as u8 & SEGMENT_BITS) | CONTINUE_BIT);
-
-    value >>= 7;
-
-    if output.len() >= 5 {
+    
+    output.push(byte);
+    
+    if uvalue == 0 {
       break;
     }
   }
@@ -399,6 +400,37 @@ mod test {
   use super::*;
 
   #[test]
+  fn varint_works_small_number() {
+    let res = varint(1);
+    assert_eq!(res, vec![0x01]);
+  }
+
+  #[test]
+  fn varint_works_large_number() {
+    let res = varint(2147483647);
+    assert_eq!(res, vec![0xff, 0xff, 0xff, 0xff, 0x07]);
+  }
+
+  #[test]
+  fn varint_works_zero() {
+    let res = varint(0);
+    assert_eq!(res, vec![0x00]);
+  }
+
+  #[test]
+  fn varint_works_negative() {
+    let res = varint(-1);
+    assert_eq!(res, vec![0xff, 0xff, 0xff, 0xff, 0x0f]);
+  }
+
+  #[test]
+  fn varint_works_medium_number() {
+    let res = varint(26740);
+    assert_eq!(res, vec![0xf4, 0xd0, 0x01]);
+  }
+
+  #[test]
+  #[ignore]
   fn test() {
     use std::fs::write;
 

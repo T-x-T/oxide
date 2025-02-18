@@ -81,8 +81,10 @@ fn read_packet(mut stream: &TcpStream) -> Vec<u8> {
 
   let mut packet: Vec<u8> = vec![0; packet_length as usize];
   stream.read_exact(&mut packet).unwrap();
-
   println!("data: {packet:?}");
+  
+  let packet_id = lib::deserialize::varint(&mut packet.clone()).unwrap();
+  println!("packet_id: {packet_id} {:#04x}", packet_id);
 
   return packet;
 }
