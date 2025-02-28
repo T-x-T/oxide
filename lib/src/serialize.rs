@@ -3,14 +3,13 @@ use crate::nbt::NbtTag;
 const SEGMENT_BITS: u32 = 0b0111_1111;
 const CONTINUE_BIT: u8 = 0b1000_0000; 
 
-//TODO: doesnt work with negative numbers
 pub fn varint(value: i32) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   let mut uvalue = value as u32;
   loop {
     let mut byte = (uvalue & SEGMENT_BITS) as u8;
-    uvalue >>= 7; // logical right shift since uvalue is unsigned
+    uvalue >>= 7;
     
     if uvalue != 0 {
       byte |= CONTINUE_BIT;

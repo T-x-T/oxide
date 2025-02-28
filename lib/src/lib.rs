@@ -5,7 +5,7 @@ pub mod deserialize;
 pub mod nbt;
 
 #[derive(Debug, Clone)]
-enum CustomError {
+pub enum CustomError {
   ParseVarIntTooBig,
   ParseInvalidValue,
 }
