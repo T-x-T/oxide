@@ -1,0 +1,39 @@
+use super::*;
+
+#[derive(Debug, Clone, Default)]
+pub struct ServerboundKnownPackets {
+	pub known_packs: Vec<crate::Datapack>,
+}
+
+impl TryFrom<ServerboundKnownPackets> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ServerboundKnownPackets) -> Result<Self, Box<dyn Error>> {
+		let data: Vec<u8> = value.known_packs.clone().into_iter()
+			.map(|x| vec![crate::serialize::string(x.namespace.as_str()), crate::serialize::string(x.id.as_str()), crate::serialize::string(x.version.as_str())])
+			.flatten()
+			.flatten()
+			.collect();
+		
+		return Ok(crate::serialize::prefixed_array(data, value.known_packs.len() as i32));
+	}
+}
+
+impl TryFrom<Vec<u8>> for ServerboundKnownPackets {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let len = crate::deserialize::varint(&mut value)?;
+
+		let mut output = Self::default();
+		for _ in 0..len {
+			output.known_packs.push(crate::Datapack {
+				namespace: crate::deserialize::string(&mut value)?,
+				id: crate::deserialize::string(&mut value)?,
+				version: crate::deserialize::string(&mut value)?,
+			});
+		}
+
+		return Ok(output);
+	}
+}

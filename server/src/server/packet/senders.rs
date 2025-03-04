@@ -1,15 +1,7 @@
-use std::{net::TcpStream, io::Write};
+use std::net::TcpStream;
 
 use lib::serialize;
-
-fn send_packet(stream: &mut TcpStream, packet_id: u8, mut data: Vec<u8>) {
-  let mut response: Vec<u8> = serialize::varint(packet_id as i32);
-  response.append(&mut data);
-  let mut length_prefixed_response: Vec<u8> = serialize::varint(response.len() as i32);
-  length_prefixed_response.append(&mut response);
-
-  stream.write(length_prefixed_response.as_slice()).unwrap();
-}
+use lib::utils::send_packet;
 
 pub mod status {
   use super::*;
@@ -27,14 +19,12 @@ pub mod login {
   use super::*;
 
   pub fn login_success(stream: &mut TcpStream) {
-    let uuid: u128 = 290780920670370370148908686767547353505;
-    let name = "The__TxT";
+    let packet = lib::packets::clientbound::login::LoginSuccess {
+      uuid: 290780920670370370148908686767547353505,
+      username: "The__TxT".to_string(),
+    };
 
-    let mut output: Vec<u8> = uuid.to_be_bytes().to_vec();
-    output.append(&mut serialize::string(name));
-    output.append(&mut serialize::varint(0));
-
-    send_packet(stream, 0x02, output);
+    send_packet(stream, 0x02, packet.try_into().unwrap());
   }
 }
 

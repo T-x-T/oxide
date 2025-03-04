@@ -64,6 +64,13 @@ pub fn bool(input: &bool) -> Vec<u8> {
   }
 }
 
+pub fn prefixed_array(mut data: Vec<u8>, len: i32) -> Vec<u8> {
+  let mut output: Vec<u8> = varint(len);
+  output.append(&mut data);
+
+  return output;
+}
+
 pub fn nbt(input: NbtTag) -> Vec<u8> {
   let mut nbt = nbt_tag_compound(None, vec![input], false);
   nbt.pop(); //Otherwise we have one 0x00 byte too much at the end

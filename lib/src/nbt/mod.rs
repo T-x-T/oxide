@@ -15,3 +15,9 @@ pub enum NbtTag<'a> {
 	IntArray(Option<&'a str>, &'a [i32]),
 	LongArray(Option<&'a str>, &'a [i64]),
 }
+
+impl<'a> Default for NbtTag<'a> {
+	fn default() -> Self {
+		return NbtTag::TagCompound(None, Vec::new());
+	}
+}

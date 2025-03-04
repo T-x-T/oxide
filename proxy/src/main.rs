@@ -1,5 +1,4 @@
 use std::net::{TcpListener, TcpStream};
-use std::io::{Write, Read};
 use std::sync::{Arc, Mutex};
 
 fn main() {
@@ -15,7 +14,7 @@ fn main() {
     let mut client_read_stream = client_send_stream.try_clone().unwrap();
     let mut server_send_stream = server_read_stream.try_clone().unwrap();
 
-    let connection = Arc::new(Mutex::new(Connection { state: ConnectionStates::Handshaking, protocol_version: 0 }));
+    let connection = Arc::new(Mutex::new(Connection { state: lib::ConnectionStates::Handshaking, protocol_version: 0 }));
     let connection_clone = connection.clone();
 
     //Handle packets coming in on the server side
@@ -36,44 +35,53 @@ fn main() {
           _ => {}
         }
 
-        println!("server received a packet:");
-        let server_packet = read_packet(&mut server_read_stream);
+        let server_packet = lib::utils::read_packet(&mut server_read_stream);
         
-        let packet_id = lib::deserialize::varint(&mut server_packet.clone()).unwrap();
-        println!("packet_id: {packet_id} {:#04x}", packet_id);
-        println!("data: {server_packet:?}");
+        let packet_id = server_packet.id;
+        println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("data: {server_packet:?}");
         
         let current_state = connection.lock().unwrap().state.clone();
 
         match current_state {
-          ConnectionStates::Handshaking => {
-            println!("we are in the handshaking state");
+          lib::ConnectionStates::Handshaking => {
             if packet_id == 0x00 {
-              let parsed_packet = packets::serverbound::handshaking::Handshake::try_from(server_packet.clone()).unwrap();
-              println!("parsed packet: {parsed_packet:?}");
+              let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed Handshake packet: {parsed_packet:?}");
               let new_connection_data = Connection {state: parsed_packet.next_state.into(), protocol_version: parsed_packet.protocol_version};
               *connection.lock().unwrap() = new_connection_data.clone();
               println!("Set state to {:?} and version to {}", new_connection_data.state, new_connection_data.protocol_version);
             }
           },
-          ConnectionStates::Status => {
-            println!("we are in the status state");
+          lib::ConnectionStates::Status => {
           },
-          ConnectionStates::Login => {
-            println!("we are in the login state");
+          lib::ConnectionStates::Login => {
+            if packet_id == 0x00 {
+              let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed LoginStart packet: {parsed_packet:?}");
+            }
+            if packet_id == 0x03 {
+              let parsed_packet = lib::packets::serverbound::login::LoginAcknowledged::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed LoginAcknowledged packet: {parsed_packet:?}");
+              connection.lock().unwrap().state = lib::ConnectionStates::Configuration;
+              println!("changed state to configuration");
+            }
           },
-          ConnectionStates::Configuration => {
-            println!("we are in the configuration state");
+          lib::ConnectionStates::Configuration => {
+            if packet_id == 0x07 {
+              let parsed_packet = lib::packets::serverbound::configuration::ServerboundKnownPackets::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed ServerBoundKnownPackets packet: {parsed_packet:?}");
+            }
           },
-          ConnectionStates::Play => {
-            println!("we are in the play state");
+          lib::ConnectionStates::Play => {
+            
           },
-          ConnectionStates::Transfer => {
-            println!("we are in the transfer state");
+          lib::ConnectionStates::Transfer => {
+            
           },
         }
 
-        send_packet(&mut client_send_stream, server_packet);
+        lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data);
       }
     });
     println!("server listeneder spawned");
@@ -96,120 +104,54 @@ fn main() {
           _ => {}
         }
   
-        println!("client received a packet:");
-        let client_packet = read_packet(&mut client_read_stream);
+        let client_packet = lib::utils::read_packet(&mut client_read_stream);
         
-        let packet_id = lib::deserialize::varint(&mut client_packet.clone()).unwrap();
-        println!("packet_id: {packet_id} {:#04x}", packet_id);
-        println!("data: {client_packet:?}");
+        let packet_id = client_packet.id;
+        println!("received clientbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("data: {client_packet:?}");
 
-        send_packet(&mut server_send_stream, client_packet);
+        let current_state = connection.lock().unwrap().state.clone();
+
+        match current_state {
+          lib::ConnectionStates::Handshaking => {
+            
+          },
+          lib::ConnectionStates::Status => {
+            
+          },
+          lib::ConnectionStates::Login => {
+            if packet_id == 0x02 {
+              let parsed_packet = lib::packets::clientbound::login::LoginSuccess::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed LoginSuccess packet: {parsed_packet:?}");
+            }
+          },
+          lib::ConnectionStates::Configuration => {
+            if packet_id == 0x0e {
+              let parsed_packet = lib::packets::clientbound::configuration::ClientboundKnownPacks::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed ClientBoundKnownPackets packet: {parsed_packet:?}");
+            }
+            if packet_id == 0x07 {
+              let parsed_packet = lib::packets::clientbound::configuration::RegistryData::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed RegistryData packet: {parsed_packet:?}");
+            }
+          },
+          lib::ConnectionStates::Play => {
+            
+          },
+          lib::ConnectionStates::Transfer => {
+            
+          },
+        }
+
+        lib::utils::send_packet(&mut server_send_stream, packet_id as u8, client_packet.data);
       }
     });
     println!("client listener spawned")
   }
 }
 
-fn read_packet(mut stream: &TcpStream) -> Vec<u8> {
-  let mut packet_length_bits: Vec<u8> = Vec::new();
-  loop {
-    let buf: &mut [u8] = &mut [0];
-    stream.read(buf).unwrap();
-    packet_length_bits.push(buf[0]);
-
-    if buf[0] & 0x80 == 0 {
-      break;
-    }
-  }
-
-  let packet_length = lib::deserialize::varint(&mut packet_length_bits).unwrap();
-  let mut packet: Vec<u8> = vec![0; packet_length as usize];
-  stream.read_exact(&mut packet).unwrap();
-
-  return packet;
-}
-
-fn send_packet(mut stream: &TcpStream, mut packet: Vec<u8>) {
-  let mut length_prefixed_packet: Vec<u8> = lib::serialize::varint(packet.len() as i32);
-  length_prefixed_packet.append(&mut packet);
-
-  stream.write(length_prefixed_packet.as_slice()).unwrap();
-  stream.flush().unwrap();
-}
-
 #[derive(Debug, Clone)]
 struct Connection {
-  state: ConnectionStates,
+  state: lib::ConnectionStates,
   protocol_version: i32,
-}
-
-#[derive(Debug, Clone)]
-pub enum ConnectionStates {
-  Handshaking,
-  Transfer,
-  Status,
-  Login,
-  Configuration,
-  Play,
-}
-
-pub mod packets {
-  use std::error::Error;
-  pub mod serverbound {
-    use super::*;
-    pub mod handshaking {
-      use super::*;
-      #[derive(Debug, Clone)]
-      pub struct Handshake {
-        pub protocol_version: i32,
-        pub server_address: String,
-        pub sever_port: u16,
-        pub next_state: HandshakeNextStates,
-      }
-
-      #[derive(Debug, Clone)]
-      pub enum HandshakeNextStates {
-        Status = 1,
-        Login = 2,
-        Transfer = 3,
-      }
-
-      impl TryFrom<i32> for HandshakeNextStates {
-        type Error = Box<dyn Error>;
-        
-        fn try_from(value: i32) -> Result<Self, Self::Error> {
-          match value {
-            1 => Ok(HandshakeNextStates::Status),
-            2 => Ok(HandshakeNextStates::Login),
-            3 => Ok(HandshakeNextStates::Transfer),
-            _ => return Err(Box::new(lib::CustomError::ParseInvalidValue)),
-          }
-        }
-      }
-
-      impl From<HandshakeNextStates> for crate::ConnectionStates {
-        fn from(value: HandshakeNextStates) -> Self {
-          match value {
-            HandshakeNextStates::Status => return Self::Status,
-            HandshakeNextStates::Login => return Self::Login,
-            HandshakeNextStates::Transfer => return Self::Transfer,
-          }
-        }
-      }
-
-      impl TryFrom<Vec<u8>> for Handshake {
-        type Error = Box<dyn Error>;
-
-        fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-          value.remove(0);
-          return Ok(Handshake {
-            protocol_version: lib::deserialize::varint(&mut value)?,
-            server_address: lib::deserialize::string(&mut value)?,
-            sever_port: lib::deserialize::unsigned_short(&mut value)?,
-            next_state: lib::deserialize::varint(&mut value)?.try_into()?,
-          })
-        }
-      }
-    }
-  }
 }

@@ -26,25 +26,25 @@ pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
 
 pub fn long(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
   let output: i64 = i64::from_be_bytes(data[..8].try_into().unwrap());
-  data.drain(0..7);
+  data.drain(0..=7);
   return Ok(output);
 }
 
 pub fn double(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
   let output: f64 = f64::from_be_bytes(data[..8].try_into().unwrap());
-  data.drain(0..7);
+  data.drain(0..=7);
   return Ok(output);
 }
 
 pub fn float(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
   let output: f32 = f32::from_be_bytes(data[..4].try_into().unwrap());
-  data.drain(0..3);
+  data.drain(0..=3);
   return Ok(output);
 }
 
 pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
   let output: u128 = u128::from_be_bytes(data[..16].try_into().unwrap());
-  data.drain(0..15);
+  data.drain(0..=15);
   return Ok(output);
 }
 
@@ -60,6 +60,10 @@ const SEGMENT_BITS: u8 = 0b0111_1111;
 const CONTINUE_BIT: u8 = 0b1000_0000; 
 
 pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
+  if data.is_empty() {
+    return Err(Box::new(crate::CustomError::ParseInvalidValue));
+  }
+
   let mut value: i32 = 0;
   let mut position = 0;
   let mut current_byte: u8;

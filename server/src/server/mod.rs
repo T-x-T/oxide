@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::net::{TcpListener, TcpStream, SocketAddr};
-use std::io::{BufReader, BufRead};
 
 pub mod packet;
 
@@ -14,7 +13,7 @@ pub fn initialize_server() {
   
   let mut connection_states: HashMap<SocketAddr, ConnectionState> = HashMap::new();
 
-  while let Some(stream) = listener.incoming().next() {
+  for stream in listener.incoming() {
     let stream = stream.unwrap();
 
     println!("New Connection from {}", stream.peer_addr().unwrap());
@@ -30,8 +29,7 @@ pub fn initialize_server() {
 
 fn handle_connection(stream: &TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
   let mut stream = stream.try_clone().unwrap();
-  let mut buf_reader = BufReader::new(&mut stream);
-  let packet: Vec<u8> = buf_reader.fill_buf().unwrap().to_vec();
+  let packet = lib::utils::read_packet(&mut stream);
 
   return packet::handlers::handle_packet(packet, &mut stream, connection_states);
 }

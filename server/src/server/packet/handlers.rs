@@ -6,7 +6,7 @@ use lib::deserialize;
 use super::senders;
 use super::super::ConnectionState;
 
-pub fn handle_packet(mut packet: Vec<u8>, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
+pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
   println!("received new packet from {}", stream.peer_addr().unwrap());
 	
 	if !connection_states.contains_key(&stream.peer_addr().unwrap()) {
@@ -15,43 +15,37 @@ pub fn handle_packet(mut packet: Vec<u8>, stream: &mut TcpStream, connection_sta
 	
 	println!("client {} is in state {:?}", stream.peer_addr().unwrap(), connection_states.get(&stream.peer_addr().unwrap()).unwrap());
 	
-	super::print_binary(&packet);
-  
-  let length = deserialize::varint(&mut packet).unwrap(); //TODO: actually check if length is correct
-  println!("length {}", length);
-
-  let packet_id = deserialize::varint(&mut packet).unwrap();
-  println!("packet id {:2x?}", packet_id);
+	//super::print_binary(&packet);
   
 	return match connection_states.get(&stream.peer_addr().unwrap()).unwrap() {
-    ConnectionState::Handshaking => match packet_id {
-			0x00 => handshaking::handshake(&mut packet, stream, connection_states),
+    ConnectionState::Handshaking => match packet.id {
+			0x00 => handshaking::handshake(&mut packet.data, stream, connection_states),
 			x => {
 				println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
-    ConnectionState::Status => match packet_id {
-			0x00 => status::status_request(&mut packet, stream, connection_states),
-			0x01 => status::ping_request(&mut packet, stream, connection_states),
+    ConnectionState::Status => match packet.id {
+			0x00 => status::status_request(&mut packet.data, stream, connection_states),
+			0x01 => status::ping_request(&mut packet.data, stream, connection_states),
 			x => {
 				println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
-    ConnectionState::Login => match packet_id {
-			0x00 => login::login_start(&mut packet, stream, connection_states),
+    ConnectionState::Login => match packet.id {
+			0x00 => login::login_start(&mut packet.data, stream, connection_states),
 			x => {
 				println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
-    ConnectionState::Play => match packet_id {
-      0x08 => play::client_information(&mut packet, stream, connection_states),
-      0x0d => play::plugin_message(&mut packet, stream, connection_states),
-      0x14 => play::set_player_position(&mut packet, stream, connection_states),
-      0x15 => play::set_player_position_and_rotation(&mut packet, stream, connection_states),
-      0x00 => play::confirm_teleportation(&mut packet, stream, connection_states),
+    ConnectionState::Play => match packet.id {
+      0x08 => play::client_information(&mut packet.data, stream, connection_states),
+      0x0d => play::plugin_message(&mut packet.data, stream, connection_states),
+      0x14 => play::set_player_position(&mut packet.data, stream, connection_states),
+      0x15 => play::set_player_position_and_rotation(&mut packet.data, stream, connection_states),
+      0x00 => play::confirm_teleportation(&mut packet.data, stream, connection_states),
 			x => {
 				println!("got unrecognized packet with id {:2x?}", x);
 				return false; 
