@@ -50,3 +50,18 @@ impl TryFrom<Vec<u8>> for Handshake {
 		})
 	}
 }
+
+impl TryFrom<Handshake> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Handshake) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+		
+		output.append(&mut crate::serialize::varint(value.protocol_version));
+		output.append(&mut crate::serialize::string(&value.server_address));
+		output.append(&mut crate::serialize::unsigned_short(value.sever_port));
+		output.append(&mut crate::serialize::varint(value.next_state as i32));
+
+		return Ok(output);
+	}
+}

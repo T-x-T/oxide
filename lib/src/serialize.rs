@@ -37,6 +37,10 @@ pub fn short(input: i16) -> Vec<u8> {
   return input.to_be_bytes().to_vec();
 }
 
+pub fn unsigned_short(input: u16) -> Vec<u8> {
+  return input.to_be_bytes().to_vec();
+}
+
 pub fn int(input: i32) -> Vec<u8> {
   return input.to_be_bytes().to_vec();
 }

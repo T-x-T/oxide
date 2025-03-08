@@ -36,6 +36,7 @@ fn main() {
         }
 
         let server_packet = lib::utils::read_packet(&mut server_read_stream);
+        let mut parsed_server_packet: Option<Vec<u8>> = None;
         
         let packet_id = server_packet.id;
         println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
@@ -48,9 +49,10 @@ fn main() {
             if packet_id == 0x00 {
               let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(server_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
-              let new_connection_data = Connection {state: parsed_packet.next_state.into(), protocol_version: parsed_packet.protocol_version};
+              let new_connection_data = Connection {state: parsed_packet.next_state.clone().into(), protocol_version: parsed_packet.protocol_version};
               *connection.lock().unwrap() = new_connection_data.clone();
               println!("Set state to {:?} and version to {}", new_connection_data.state, new_connection_data.protocol_version);
+              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
             }
           },
           lib::ConnectionStates::Status => {
@@ -87,7 +89,11 @@ fn main() {
           },
         }
 
-        lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data);
+        if parsed_server_packet.is_some() {
+          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, parsed_server_packet.unwrap());
+        } else {
+          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data);
+        }
       }
     });
     println!("server listeneder spawned");
