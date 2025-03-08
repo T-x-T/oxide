@@ -47,7 +47,7 @@ fn main() {
           lib::ConnectionStates::Handshaking => {
             if packet_id == 0x00 {
               let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(server_packet.data.clone()).unwrap();
-              println!("parsed Handshake packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
               let new_connection_data = Connection {state: parsed_packet.next_state.into(), protocol_version: parsed_packet.protocol_version};
               *connection.lock().unwrap() = new_connection_data.clone();
               println!("Set state to {:?} and version to {}", new_connection_data.state, new_connection_data.protocol_version);
@@ -62,7 +62,7 @@ fn main() {
             }
             if packet_id == 0x03 {
               let parsed_packet = lib::packets::serverbound::login::LoginAcknowledged::try_from(server_packet.data.clone()).unwrap();
-              println!("parsed LoginAcknowledged packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
               connection.lock().unwrap().state = lib::ConnectionStates::Configuration;
               println!("changed state to configuration");
             }
@@ -70,7 +70,13 @@ fn main() {
           lib::ConnectionStates::Configuration => {
             if packet_id == 0x07 {
               let parsed_packet = lib::packets::serverbound::configuration::ServerboundKnownPackets::try_from(server_packet.data.clone()).unwrap();
-              println!("parsed ServerBoundKnownPackets packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
+            }
+            if packet_id == 0x03 {
+              let parsed_packet = lib::packets::serverbound::configuration::AcknowledgeFinishConfiguration::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              connection.lock().unwrap().state = lib::ConnectionStates::Play;
+              println!("changed status to play");
             }
           },
           lib::ConnectionStates::Play => {
@@ -122,21 +128,32 @@ fn main() {
           lib::ConnectionStates::Login => {
             if packet_id == 0x02 {
               let parsed_packet = lib::packets::clientbound::login::LoginSuccess::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed LoginSuccess packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
             }
           },
           lib::ConnectionStates::Configuration => {
             if packet_id == 0x0e {
               let parsed_packet = lib::packets::clientbound::configuration::ClientboundKnownPacks::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed ClientBoundKnownPackets packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
             }
             if packet_id == 0x07 {
               let parsed_packet = lib::packets::clientbound::configuration::RegistryData::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed RegistryData packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
+            }
+            if packet_id == 0x03 {
+              let parsed_packet = lib::packets::clientbound::configuration::FinishConfiguration::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
             }
           },
           lib::ConnectionStates::Play => {
-            
+            if packet_id == 0x2c {
+              let parsed_packet = lib::packets::clientbound::play::Login::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+            }
+            if packet_id == 0x28 {
+              let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+            }
           },
           lib::ConnectionStates::Transfer => {
             

@@ -77,7 +77,7 @@ pub fn nbt(input: NbtTag) -> Vec<u8> {
   return nbt;
 }
 
-fn nbt_byte(description: Option<&str>, payload: u8, include_id: bool) -> Vec<u8> {
+fn nbt_byte(description: Option<String>, payload: u8, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -93,7 +93,7 @@ fn nbt_byte(description: Option<&str>, payload: u8, include_id: bool) -> Vec<u8>
   return output;
 }
 
-fn nbt_short(description: Option<&str>, payload: i16, include_id: bool) -> Vec<u8> {
+fn nbt_short(description: Option<String>, payload: i16, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -109,7 +109,7 @@ fn nbt_short(description: Option<&str>, payload: i16, include_id: bool) -> Vec<u
   return output;
 }
 
-fn nbt_int(description: Option<&str>, payload: i32, include_id: bool) -> Vec<u8> {
+fn nbt_int(description: Option<String>, payload: i32, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -125,7 +125,7 @@ fn nbt_int(description: Option<&str>, payload: i32, include_id: bool) -> Vec<u8>
   return output;
 }
 
-fn nbt_long(description: Option<&str>, payload: i64, include_id: bool) -> Vec<u8> {
+fn nbt_long(description: Option<String>, payload: i64, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -141,7 +141,7 @@ fn nbt_long(description: Option<&str>, payload: i64, include_id: bool) -> Vec<u8
   return output;
 }
 
-fn nbt_float(description: Option<&str>, payload: f32, include_id: bool) -> Vec<u8> {
+fn nbt_float(description: Option<String>, payload: f32, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -157,7 +157,7 @@ fn nbt_float(description: Option<&str>, payload: f32, include_id: bool) -> Vec<u
   return output;
 }
 
-fn nbt_double(description: Option<&str>, payload: f64, include_id: bool) -> Vec<u8> {
+fn nbt_double(description: Option<String>, payload: f64, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -173,7 +173,7 @@ fn nbt_double(description: Option<&str>, payload: f64, include_id: bool) -> Vec<
   return output;
 }
 
-fn nbt_byte_array(description: Option<&str>, payload: &[u8], include_id: bool) -> Vec<u8> {
+fn nbt_byte_array(description: Option<String>, payload: Vec<u8>, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -191,7 +191,7 @@ fn nbt_byte_array(description: Option<&str>, payload: &[u8], include_id: bool) -
   return output;
 }
 
-fn nbt_string(description: Option<&str>, payload: &str, include_id: bool) -> Vec<u8> {
+fn nbt_string(description: Option<String>, payload: String, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -208,7 +208,7 @@ fn nbt_string(description: Option<&str>, payload: &str, include_id: bool) -> Vec
   return output;
 }
 
-fn nbt_list(description: Option<&str>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
+fn nbt_list(description: Option<String>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -327,7 +327,7 @@ fn nbt_list(description: Option<&str>, payload: Vec<NbtTag>, include_id: bool) -
   return output;
 }
 
-fn nbt_tag_compound(description: Option<&str>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
+fn nbt_tag_compound(description: Option<String>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -363,7 +363,7 @@ fn nbt_tag_compound(description: Option<&str>, payload: Vec<NbtTag>, include_id:
   return output;
 }
 
-fn nbt_int_array(description: Option<&str>, payload: &[i32], include_id: bool) -> Vec<u8> {
+fn nbt_int_array(description: Option<String>, payload: Vec<i32>, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -377,12 +377,12 @@ fn nbt_int_array(description: Option<&str>, payload: &[i32], include_id: bool) -
   let length: i32 = payload.len() as i32;
   output.append(&mut length.to_be_bytes().into());
 
-  payload.into_iter().for_each(|x| output.append(&mut nbt_int(None, *x, false)));
+  payload.into_iter().for_each(|x| output.append(&mut nbt_int(None, x, false)));
 
   return output;
 }
 
-fn nbt_long_array(description: Option<&str>, payload: &[i64], include_id: bool) -> Vec<u8> {
+fn nbt_long_array(description: Option<String>, payload: Vec<i64>, include_id: bool) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
   if include_id {
@@ -396,7 +396,7 @@ fn nbt_long_array(description: Option<&str>, payload: &[i64], include_id: bool) 
   let length: i32 = payload.len() as i32;
   output.append(&mut length.to_be_bytes().into());
 
-  payload.into_iter().for_each(|x| output.append(&mut nbt_long(None, *x, false)));
+  payload.into_iter().for_each(|x| output.append(&mut nbt_long(None, x, false)));
 
   return output;
 }
@@ -440,42 +440,42 @@ mod test {
   fn test() {
     use std::fs::write;
 
-    let test_nbt = NbtTag::TagCompound(Some("Level"), vec![
-        NbtTag::Long(Some("longTest"), 9223372036854775807),
-        NbtTag::Short(Some("shortTest"), 32767),
-        NbtTag::String(Some("stringTest"), "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!"),
-        NbtTag::Float(Some("floatTest"), 0.4982314705848694),
-        NbtTag::Int(Some("intTest"), 2147483647),
-        NbtTag::TagCompound(Some("nested compound test"), vec![
-          NbtTag::TagCompound(Some("ham"), vec![
-            NbtTag::String(Some("name"), "Hampus"),
-            NbtTag::Float(Some("value"), 0.75)
+    let test_nbt = NbtTag::TagCompound(Some("Level".to_string()), vec![
+        NbtTag::Long(Some("longTest".to_string()), 9223372036854775807),
+        NbtTag::Short(Some("shortTest".to_string()), 32767),
+        NbtTag::String(Some("stringTest".to_string()), "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!".to_string()),
+        NbtTag::Float(Some("floatTest".to_string()), 0.4982314705848694),
+        NbtTag::Int(Some("intTest".to_string()), 2147483647),
+        NbtTag::TagCompound(Some("nested compound test".to_string()), vec![
+          NbtTag::TagCompound(Some("ham".to_string()), vec![
+            NbtTag::String(Some("name".to_string()), "Hampus".to_string()),
+            NbtTag::Float(Some("value".to_string()), 0.75)
           ]),
-          NbtTag::TagCompound(Some("egg"), vec![
-            NbtTag::String(Some("name"), "Eggbert"),
-            NbtTag::Float(Some("value"), 0.5)
+          NbtTag::TagCompound(Some("egg".to_string()), vec![
+            NbtTag::String(Some("name".to_string()), "Eggbert".to_string()),
+            NbtTag::Float(Some("value".to_string()), 0.5)
           ])
         ]),
-        NbtTag::List(Some("listTest (long)"), vec![
+        NbtTag::List(Some("listTest (long)".to_string()), vec![
           NbtTag::Long(None, 11),
           NbtTag::Long(None, 12),
           NbtTag::Long(None, 13),
           NbtTag::Long(None, 14),
           NbtTag::Long(None, 15)
         ]),
-        NbtTag::List(Some("listTest (compound)"), vec![
+        NbtTag::List(Some("listTest (compound)".to_string()), vec![
           NbtTag::TagCompound(None, vec![
-            NbtTag::String(Some("name"), "Compound tag #0"),
-            NbtTag::Long(Some("created-on"), 1264099775885)
+            NbtTag::String(Some("name".to_string()), "Compound tag #0".to_string()),
+            NbtTag::Long(Some("created-on".to_string()), 1264099775885)
           ]),
           NbtTag::TagCompound(None, vec![
-            NbtTag::String(Some("name"), "Compound tag #1"),
-            NbtTag::Long(Some("created-on"), 1264099775885)
+            NbtTag::String(Some("name".to_string()), "Compound tag #1".to_string()),
+            NbtTag::Long(Some("created-on".to_string()), 1264099775885)
           ])
         ]),
-        NbtTag::Byte(Some("byteTest"), 127),
-        NbtTag::ByteArray(Some("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))"), &[0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48]),
-        NbtTag::Double(Some("doubleTest"), 0.4931287132182315),
+        NbtTag::Byte(Some("byteTest".to_string()), 127),
+        NbtTag::ByteArray(Some("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))".to_string()), vec![0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48]),
+        NbtTag::Double(Some("doubleTest".to_string()), 0.4931287132182315),
       ]);
 
     write("/tmp/my_bigtest.nbt", nbt(test_nbt.clone())).unwrap();

@@ -1,5 +1,8 @@
 use super::*;
 
+//
+// MARK: ClientBoundKnownPacks
+//
 #[derive(Debug, Clone, Default)]
 pub struct ClientboundKnownPacks {
 	pub known_packs: Vec<crate::Datapack>,
@@ -28,7 +31,6 @@ impl TryFrom<Vec<u8>> for ClientboundKnownPacks {
 		
 		let mut output = Self::default();
 		for _ in 0..len {
-			println!("aaaaaaa");
 			output.known_packs.push(crate::Datapack {
 				namespace: crate::deserialize::string(&mut value)?,
 				id: crate::deserialize::string(&mut value)?,
@@ -40,20 +42,24 @@ impl TryFrom<Vec<u8>> for ClientboundKnownPacks {
 	}
 }
 
+//
+// MARK: RegistryData
+//
+
 #[derive(Debug, Clone, Default)]
-pub struct RegistryData<'a> {
+pub struct RegistryData {
 	pub registry_id: String,
-	pub entries: Vec<RegistryDataEntry<'a>>,
+	pub entries: Vec<RegistryDataEntry>,
 }
 
 #[derive(Debug, Clone, Default)]
-pub struct RegistryDataEntry<'a> {
+pub struct RegistryDataEntry {
 	pub entry_id: String,
 	pub has_data: bool,
-	pub data: crate::nbt::NbtTag<'a>,
+	pub data: Option<crate::nbt::NbtTag>,
 }
 
-impl<'a> TryFrom<RegistryData<'a>> for Vec<u8> {
+impl TryFrom<RegistryData> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
 	fn try_from(value: RegistryData) -> Result<Self, Box<dyn Error>> {
@@ -63,33 +69,67 @@ impl<'a> TryFrom<RegistryData<'a>> for Vec<u8> {
 		value.entries.iter().for_each(|x| {
 			data.append(&mut crate::serialize::string(&x.entry_id));
 			data.append(&mut crate::serialize::bool(&x.has_data));
-			data.append(&mut crate::serialize::nbt(x.clone().data));
+			if x.has_data {
+				data.append(&mut crate::serialize::nbt(x.clone().data.unwrap()));
+			}
 		});
 		
 		return Ok(data);
 	}
 }
 
-//TODO: missing deserialization for nbt
-impl<'a> TryFrom<Vec<u8>> for RegistryData<'a> {
+impl TryFrom<Vec<u8>> for RegistryData {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let registry_id = crate::deserialize::string(&mut value)?;
 		let len = crate::deserialize::varint(&mut value)?;
-
 		let mut output = RegistryData {
 			registry_id,
 			entries: Default::default(),
 		};
-		// for _ in 0..=len {
-		// 	output.entries.push(RegistryDataEntry {
-		// 		entry_id: crate::deserialize::string(&mut value)?,
-		// 		has_data: crate::deserialize::boolean(&mut value)?,
-		// 		data: crate::deserialize::nbt(&mut value)?,
-		// 	});
-		// }
+		for _ in 0..len {
+			let entry_id = crate::deserialize::string(&mut value)?;
+			let has_data = crate::deserialize::boolean(&mut value)?;
+			let data: Option<crate::nbt::NbtTag> = if has_data {
+				Some(crate::deserialize::nbt(&mut value)?)
+			} else {
+				None
+			};
+
+			output.entries.push(RegistryDataEntry {
+				entry_id,
+				has_data,
+				data,
+			});
+		}
 
 		return Ok(output);
+	}
+}
+
+//
+// MARK: FinishConfiguration
+//
+
+#[derive(Debug, Clone, Default)]
+pub struct FinishConfiguration {
+
+}
+
+
+impl TryFrom<FinishConfiguration> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(_value: FinishConfiguration) -> Result<Self, Box<dyn Error>> {
+		return Ok(Vec::new());
+	}
+}
+
+impl TryFrom<Vec<u8>> for FinishConfiguration {
+	type Error = Box<dyn Error>;
+
+	fn try_from(_value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {  });
 	}
 }

@@ -49,193 +49,193 @@ pub mod play {
     output.append(&mut serialize::string("minecraft:the_nether"));
     output.append(&mut serialize::string("minecraft:the_end"));
 
-    let mut registry_codec = serialize::nbt(NbtTag::TagCompound(Some(""), vec![
-      NbtTag::TagCompound(Some("minecraft:chat_type"), vec![
-        NbtTag::String(Some("type"), "minecraft:chat_type"),
-        NbtTag::List(Some("value"), vec![
+    let mut registry_codec = serialize::nbt(NbtTag::TagCompound(Some("".to_string()), vec![
+      NbtTag::TagCompound(Some("minecraft:chat_type".to_string()), vec![
+        NbtTag::String(Some("type".to_string()), "minecraft:chat_type".to_string()),
+        NbtTag::List(Some("value".to_string()), vec![
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::TagCompound(Some("chat"), vec![
-                NbtTag::List(Some("parameters"), vec![
-                  NbtTag::String(None, "sender"),
-                  NbtTag::String(None, "content"),
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::TagCompound(Some("chat".to_string()), vec![
+                NbtTag::List(Some("parameters".to_string()), vec![
+                  NbtTag::String(None, "sender".to_string()),
+                  NbtTag::String(None, "content".to_string()),
                 ]),
-                NbtTag::String(Some("translation_key"), "chat.type.text")
+                NbtTag::String(Some("translation_key".to_string()), "chat.type.text".to_string())
               ]),
-              NbtTag::TagCompound(Some("narration"), vec![
-                NbtTag::List(Some("parameters"), vec![
-                  NbtTag::String(None, "sender"),
-                  NbtTag::String(None, "content")
+              NbtTag::TagCompound(Some("narration".to_string()), vec![
+                NbtTag::List(Some("parameters".to_string()), vec![
+                  NbtTag::String(None, "sender".to_string()),
+                  NbtTag::String(None, "content".to_string())
                 ]),
-                NbtTag::String(Some("translation_key"), "chat.type.text.narrate")
+                NbtTag::String(Some("translation_key".to_string()), "chat.type.text.narrate".to_string())
               ])
             ]),
-            NbtTag::Int(Some("id"), 0),
-            NbtTag::String(Some("name"), "minecraft:chat")
+            NbtTag::Int(Some("id".to_string()), 0),
+            NbtTag::String(Some("name".to_string()), "minecraft:chat".to_string())
           ])
         ])
       ]),
-      NbtTag::TagCompound(Some("minecraft:dimension_type"), vec![
-        NbtTag::String(Some("type"), "minecraft:dimension_type"),
-        NbtTag::List(Some("value"), vec![
+      NbtTag::TagCompound(Some("minecraft:dimension_type".to_string()), vec![
+        NbtTag::String(Some("type".to_string()), "minecraft:dimension_type".to_string()),
+        NbtTag::List(Some("value".to_string()), vec![
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("ambient_light"), 0.0),
-              NbtTag::Byte(Some("bed_works"), 1),
-              NbtTag::Double(Some("coordinate_scale"), 1.0),
-              NbtTag::String(Some("effects"), "minecraft:overworld"),
-              NbtTag::Byte(Some("has_ceiling"), 0),
-              NbtTag::Byte(Some("has_raids"), 1),
-              NbtTag::Byte(Some("has_skylight"), 1),
-              NbtTag::Int(Some("height"), 384),
-              NbtTag::String(Some("infiniburn"), "#minecraft:infiniburn_overworld"),
-              NbtTag::Int(Some("logical_height"), 384),
-              NbtTag::Int(Some("min_y"), -64),
-              NbtTag::Int(Some("monster_spawn_block_light_limit"), 0),
-              NbtTag::TagCompound(Some("monster_spawn_light_level"), vec![
-                NbtTag::String(Some("type"), "minecraft:uniform"),
-                NbtTag::TagCompound(Some("value"), vec![
-                  NbtTag::Int(Some("max_inclusive"), 7),
-                  NbtTag::Int(Some("min_inclusive"), 0)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("ambient_light".to_string()), 0.0),
+              NbtTag::Byte(Some("bed_works".to_string()), 1),
+              NbtTag::Double(Some("coordinate_scale".to_string()), 1.0),
+              NbtTag::String(Some("effects".to_string()), "minecraft:overworld".to_string()),
+              NbtTag::Byte(Some("has_ceiling".to_string()), 0),
+              NbtTag::Byte(Some("has_raids".to_string()), 1),
+              NbtTag::Byte(Some("has_skylight".to_string()), 1),
+              NbtTag::Int(Some("height".to_string()), 384),
+              NbtTag::String(Some("infiniburn".to_string()), "#minecraft:infiniburn_overworld".to_string()),
+              NbtTag::Int(Some("logical_height".to_string()), 384),
+              NbtTag::Int(Some("min_y".to_string()), -64),
+              NbtTag::Int(Some("monster_spawn_block_light_limit".to_string()), 0),
+              NbtTag::TagCompound(Some("monster_spawn_light_level".to_string()), vec![
+                NbtTag::String(Some("type".to_string()), "minecraft:uniform".to_string()),
+                NbtTag::TagCompound(Some("value".to_string()), vec![
+                  NbtTag::Int(Some("max_inclusive".to_string()), 7),
+                  NbtTag::Int(Some("min_inclusive".to_string()), 0)
                 ])
               ]),
-              NbtTag::Byte(Some("natural"), 1),
-              NbtTag::Byte(Some("piglin_safe"), 0),
-              NbtTag::Byte(Some("respawn_anchor_works"), 0),
-              NbtTag::Byte(Some("ultrawarm"), 0)
+              NbtTag::Byte(Some("natural".to_string()), 1),
+              NbtTag::Byte(Some("piglin_safe".to_string()), 0),
+              NbtTag::Byte(Some("respawn_anchor_works".to_string()), 0),
+              NbtTag::Byte(Some("ultrawarm".to_string()), 0)
             ]),
-            NbtTag::Int(Some("id"), 0),
-            NbtTag::String(Some("name"), "minecraft:overworld"),
+            NbtTag::Int(Some("id".to_string()), 0),
+            NbtTag::String(Some("name".to_string()), "minecraft:overworld".to_string()),
           ]),
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("ambient_light"), 0.1),
-              NbtTag::Byte(Some("bed_works"), 0),
-              NbtTag::Double(Some("coordinate_scale"), 8.0),
-              NbtTag::String(Some("effects"), "minecraft:the_nether"),
-              NbtTag::Long(Some("fixed_time"), 18000),
-              NbtTag::Byte(Some("has_ceiling"), 1),
-              NbtTag::Byte(Some("has_raids"), 0),
-              NbtTag::Byte(Some("has_skylight"), 0),
-              NbtTag::Int(Some("height"), 256),
-              NbtTag::String(Some("infiniburn"), "#minecraft:infiniburn_nether"),
-              NbtTag::Int(Some("logical_height"), 128),
-              NbtTag::Int(Some("min_y"), 0),
-              NbtTag::Int(Some("monster_spawn_block_light_limit"), 15),
-              NbtTag::Int(Some("monster_spawn_light_level"), 11),
-              NbtTag::Byte(Some("natural"), 0),
-              NbtTag::Byte(Some("piglin_safe"), 1),
-              NbtTag::Byte(Some("respawn_anchor_works"), 1),
-              NbtTag::Byte(Some("ultrawarm"), 1)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("ambient_light".to_string()), 0.1),
+              NbtTag::Byte(Some("bed_works".to_string()), 0),
+              NbtTag::Double(Some("coordinate_scale".to_string()), 8.0),
+              NbtTag::String(Some("effects".to_string()), "minecraft:the_nether".to_string()),
+              NbtTag::Long(Some("fixed_time".to_string()), 18000),
+              NbtTag::Byte(Some("has_ceiling".to_string()), 1),
+              NbtTag::Byte(Some("has_raids".to_string()), 0),
+              NbtTag::Byte(Some("has_skylight".to_string()), 0),
+              NbtTag::Int(Some("height".to_string()), 256),
+              NbtTag::String(Some("infiniburn".to_string()), "#minecraft:infiniburn_nether".to_string()),
+              NbtTag::Int(Some("logical_height".to_string()), 128),
+              NbtTag::Int(Some("min_y".to_string()), 0),
+              NbtTag::Int(Some("monster_spawn_block_light_limit".to_string()), 15),
+              NbtTag::Int(Some("monster_spawn_light_level".to_string()), 11),
+              NbtTag::Byte(Some("natural".to_string()), 0),
+              NbtTag::Byte(Some("piglin_safe".to_string()), 1),
+              NbtTag::Byte(Some("respawn_anchor_works".to_string()), 1),
+              NbtTag::Byte(Some("ultrawarm".to_string()), 1)
             ]),
-            NbtTag::Int(Some("id"), 1),
-            NbtTag::String(Some("name"), "minecraft:the_nether"),
+            NbtTag::Int(Some("id".to_string()), 1),
+            NbtTag::String(Some("name".to_string()), "minecraft:the_nether".to_string()),
           ]),
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("ambient_light"), 0.0),
-              NbtTag::Byte(Some("bed_works"), 0),
-              NbtTag::Double(Some("coordinate_scale"), 1.0),
-              NbtTag::String(Some("effects"), "minecraft:the_end"),
-              NbtTag::Long(Some("fixed_time"), 6000),
-              NbtTag::Byte(Some("has_ceiling"), 0),
-              NbtTag::Byte(Some("has_raids"), 1),
-              NbtTag::Byte(Some("has_skylight"), 0),
-              NbtTag::Int(Some("height"), 256),
-              NbtTag::String(Some("infiniburn"), "#minecraft:infiniburn_end"),
-              NbtTag::Int(Some("logical_height"), 256),
-              NbtTag::Int(Some("min_y"), 0),
-              NbtTag::Int(Some("monster_spawn_block_light_limit"), 0),
-              NbtTag::TagCompound(Some("monster_spawn_light_level"), vec![
-                NbtTag::String(Some("type"), "minecraft:uniform"),
-                NbtTag::TagCompound(Some("value"), vec![
-                  NbtTag::Int(Some("max_inclusive"), 7),
-                  NbtTag::Int(Some("min_inclusive"), 0)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("ambient_light".to_string()), 0.0),
+              NbtTag::Byte(Some("bed_works".to_string()), 0),
+              NbtTag::Double(Some("coordinate_scale".to_string()), 1.0),
+              NbtTag::String(Some("effects".to_string()), "minecraft:the_end".to_string()),
+              NbtTag::Long(Some("fixed_time".to_string()), 6000),
+              NbtTag::Byte(Some("has_ceiling".to_string()), 0),
+              NbtTag::Byte(Some("has_raids".to_string()), 1),
+              NbtTag::Byte(Some("has_skylight".to_string()), 0),
+              NbtTag::Int(Some("height".to_string()), 256),
+              NbtTag::String(Some("infiniburn".to_string()), "#minecraft:infiniburn_end".to_string()),
+              NbtTag::Int(Some("logical_height".to_string()), 256),
+              NbtTag::Int(Some("min_y".to_string()), 0),
+              NbtTag::Int(Some("monster_spawn_block_light_limit".to_string()), 0),
+              NbtTag::TagCompound(Some("monster_spawn_light_level".to_string()), vec![
+                NbtTag::String(Some("type".to_string()), "minecraft:uniform".to_string()),
+                NbtTag::TagCompound(Some("value".to_string()), vec![
+                  NbtTag::Int(Some("max_inclusive".to_string()), 7),
+                  NbtTag::Int(Some("min_inclusive".to_string()), 0)
                 ])
               ]),
-              NbtTag::Byte(Some("natural"), 0),
-              NbtTag::Byte(Some("piglin_safe"), 0),
-              NbtTag::Byte(Some("respawn_anchor_works"), 0),
-              NbtTag::Byte(Some("ultrawarm"), 0)
+              NbtTag::Byte(Some("natural".to_string()), 0),
+              NbtTag::Byte(Some("piglin_safe".to_string()), 0),
+              NbtTag::Byte(Some("respawn_anchor_works".to_string()), 0),
+              NbtTag::Byte(Some("ultrawarm".to_string()), 0)
             ]),
-            NbtTag::Int(Some("id"), 2),
-            NbtTag::String(Some("name"), "minecraft:the_end"),
+            NbtTag::Int(Some("id".to_string()), 2),
+            NbtTag::String(Some("name".to_string()), "minecraft:the_end".to_string()),
           ]),
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("ambient_light"), 0.0),
-              NbtTag::Byte(Some("bed_works"), 1),
-              NbtTag::Double(Some("coordinate_scale"), 1.0),
-              NbtTag::String(Some("effects"), "minecraft:overworld"),
-              NbtTag::Byte(Some("has_ceiling"), 1),
-              NbtTag::Byte(Some("has_raids"), 1),
-              NbtTag::Byte(Some("has_skylight"), 1),
-              NbtTag::Int(Some("height"), 384),
-              NbtTag::String(Some("infiniburn"), "#minecraft:infiniburn_overworld"),
-              NbtTag::Int(Some("logical_height"), 384),
-              NbtTag::Int(Some("min_y"), -64),
-              NbtTag::Int(Some("monster_spawn_block_light_limit"), 0),
-              NbtTag::TagCompound(Some("monster_spawn_light_level"), vec![
-                NbtTag::String(Some("type"), "minecraft:uniform"),
-                NbtTag::TagCompound(Some("value"), vec![
-                  NbtTag::Int(Some("max_inclusive"), 7),
-                  NbtTag::Int(Some("min_inclusive"), 0)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("ambient_light".to_string()), 0.0),
+              NbtTag::Byte(Some("bed_works".to_string()), 1),
+              NbtTag::Double(Some("coordinate_scale".to_string()), 1.0),
+              NbtTag::String(Some("effects".to_string()), "minecraft:overworld".to_string()),
+              NbtTag::Byte(Some("has_ceiling".to_string()), 1),
+              NbtTag::Byte(Some("has_raids".to_string()), 1),
+              NbtTag::Byte(Some("has_skylight".to_string()), 1),
+              NbtTag::Int(Some("height".to_string()), 384),
+              NbtTag::String(Some("infiniburn".to_string()), "#minecraft:infiniburn_overworld".to_string()),
+              NbtTag::Int(Some("logical_height".to_string()), 384),
+              NbtTag::Int(Some("min_y".to_string()), -64),
+              NbtTag::Int(Some("monster_spawn_block_light_limit".to_string()), 0),
+              NbtTag::TagCompound(Some("monster_spawn_light_level".to_string()), vec![
+                NbtTag::String(Some("type".to_string()), "minecraft:uniform".to_string()),
+                NbtTag::TagCompound(Some("value".to_string()), vec![
+                  NbtTag::Int(Some("max_inclusive".to_string()), 7),
+                  NbtTag::Int(Some("min_inclusive".to_string()), 0)
                 ])
               ]),
-              NbtTag::Byte(Some("natural"), 1),
-              NbtTag::Byte(Some("piglin_safe"), 0),
-              NbtTag::Byte(Some("respawn_anchor_works"), 0),
-              NbtTag::Byte(Some("ultrawarm"), 0)
+              NbtTag::Byte(Some("natural".to_string()), 1),
+              NbtTag::Byte(Some("piglin_safe".to_string()), 0),
+              NbtTag::Byte(Some("respawn_anchor_works".to_string()), 0),
+              NbtTag::Byte(Some("ultrawarm".to_string()), 0)
             ]),
-            NbtTag::Int(Some("id"), 3),
-            NbtTag::String(Some("name"), "minecraft:overworld_caves"),
+            NbtTag::Int(Some("id".to_string()), 3),
+            NbtTag::String(Some("name".to_string()), "minecraft:overworld_caves".to_string()),
           ]),
         ])
       ]),
-      NbtTag::TagCompound(Some("minecraft:worldgen/biome"), vec![
-        NbtTag::String(Some("type"), "minecraft:worldgen/biome"),
-        NbtTag::List(Some("value"), vec![
+      NbtTag::TagCompound(Some("minecraft:worldgen/biome".to_string()), vec![
+        NbtTag::String(Some("type".to_string()), "minecraft:worldgen/biome".to_string()),
+        NbtTag::List(Some("value".to_string()), vec![
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("downfall"), 0.5),
-              NbtTag::TagCompound(Some("effects"), vec![
-                NbtTag::Int(Some("fog_color"), 12638463),
-                NbtTag::TagCompound(Some("mood_sound"), vec![
-                  NbtTag::Int(Some("block_search_extent"), 8),
-                  NbtTag::Double(Some("offset"), 2.0),
-                  NbtTag::String(Some("sound"), "minecraft:ambient.cave"),
-                  NbtTag::Int(Some("tick_delay"), 6000)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("downfall".to_string()), 0.5),
+              NbtTag::TagCompound(Some("effects".to_string()), vec![
+                NbtTag::Int(Some("fog_color".to_string()), 12638463),
+                NbtTag::TagCompound(Some("mood_sound".to_string()), vec![
+                  NbtTag::Int(Some("block_search_extent".to_string()), 8),
+                  NbtTag::Double(Some("offset".to_string()), 2.0),
+                  NbtTag::String(Some("sound".to_string()), "minecraft:ambient.cave".to_string()),
+                  NbtTag::Int(Some("tick_delay".to_string()), 6000)
                 ]),
-                NbtTag::Int(Some("sky_color"), 8103167),
-                NbtTag::Int(Some("water_color"), 4159204),
-                NbtTag::Int(Some("water_fog_color"), 329011)
+                NbtTag::Int(Some("sky_color".to_string()), 8103167),
+                NbtTag::Int(Some("water_color".to_string()), 4159204),
+                NbtTag::Int(Some("water_fog_color".to_string()), 329011)
               ]),
-              NbtTag::String(Some("precipitation"), "none"),
-              NbtTag::Float(Some("temperature"), 0.5)
+              NbtTag::String(Some("precipitation".to_string()), "none".to_string()),
+              NbtTag::Float(Some("temperature".to_string()), 0.5)
             ]),
-            NbtTag::Int(Some("id"), 0),
-            NbtTag::String(Some("name"), "minecraft:the_void")
+            NbtTag::Int(Some("id".to_string()), 0),
+            NbtTag::String(Some("name".to_string()), "minecraft:the_void".to_string())
           ]),
           NbtTag::TagCompound(None, vec![
-            NbtTag::TagCompound(Some("element"), vec![
-              NbtTag::Float(Some("downfall"), 0.5),
-              NbtTag::TagCompound(Some("effects"), vec![
-                NbtTag::Int(Some("fog_color"), 12638463),
-                NbtTag::TagCompound(Some("mood_sound"), vec![
-                  NbtTag::Int(Some("block_search_extent"), 8),
-                  NbtTag::Double(Some("offset"), 2.0),
-                  NbtTag::String(Some("sound"), "minecraft:ambient.cave"),
-                  NbtTag::Int(Some("tick_delay"), 6000)
+            NbtTag::TagCompound(Some("element".to_string()), vec![
+              NbtTag::Float(Some("downfall".to_string()), 0.5),
+              NbtTag::TagCompound(Some("effects".to_string()), vec![
+                NbtTag::Int(Some("fog_color".to_string()), 12638463),
+                NbtTag::TagCompound(Some("mood_sound".to_string()), vec![
+                  NbtTag::Int(Some("block_search_extent".to_string()), 8),
+                  NbtTag::Double(Some("offset".to_string()), 2.0),
+                  NbtTag::String(Some("sound".to_string()), "minecraft:ambient.cave".to_string()),
+                  NbtTag::Int(Some("tick_delay".to_string()), 6000)
                 ]),
-                NbtTag::Int(Some("sky_color"), 8103167),
-                NbtTag::Int(Some("water_color"), 4159204),
-                NbtTag::Int(Some("water_fog_color"), 329011)
+                NbtTag::Int(Some("sky_color".to_string()), 8103167),
+                NbtTag::Int(Some("water_color".to_string()), 4159204),
+                NbtTag::Int(Some("water_fog_color".to_string()), 329011)
               ]),
-              NbtTag::String(Some("precipitation"), "none"),
-              NbtTag::Float(Some("temperature"), 0.5)
+              NbtTag::String(Some("precipitation".to_string()), "none".to_string()),
+              NbtTag::Float(Some("temperature".to_string()), 0.5)
             ]),
-            NbtTag::Int(Some("id"), 1),
-            NbtTag::String(Some("name"), "minecraft:plains")
+            NbtTag::Int(Some("id".to_string()), 1),
+            NbtTag::String(Some("name".to_string()), "minecraft:plains".to_string())
           ])
         ])
       ])
@@ -348,8 +348,8 @@ pub mod play {
     output.append(&mut serialize::int(chunk_y));
     //output.append(&mut std::fs::read("./src/server/java/packet/packet_21_data.bin").unwrap());
 
-    output.append(&mut serialize::nbt(NbtTag::TagCompound(Some(""), vec![
-      NbtTag::LongArray(Some("MOTION_BLOCKING"), vec![0, 256].as_slice())
+    output.append(&mut serialize::nbt(NbtTag::TagCompound(Some("".to_string()), vec![
+      NbtTag::LongArray(Some("MOTION_BLOCKING".to_string()), vec![0, 256])
     ])));
     output.append(&mut serialize::varint(0));
     output.push(0x00);

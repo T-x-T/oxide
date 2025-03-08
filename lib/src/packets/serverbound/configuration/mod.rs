@@ -1,5 +1,9 @@
 use super::*;
 
+//
+// MARK: ServerboundKnownPackets
+//
+
 #[derive(Debug, Clone, Default)]
 pub struct ServerboundKnownPackets {
 	pub known_packs: Vec<crate::Datapack>,
@@ -35,5 +39,31 @@ impl TryFrom<Vec<u8>> for ServerboundKnownPackets {
 		}
 
 		return Ok(output);
+	}
+}
+
+//
+// MARK: AcknowledgeFinishConfiguration
+//
+
+#[derive(Debug, Clone, Default)]
+pub struct AcknowledgeFinishConfiguration {
+
+}
+
+
+impl TryFrom<AcknowledgeFinishConfiguration> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(_value: AcknowledgeFinishConfiguration) -> Result<Self, Box<dyn Error>> {
+		return Ok(Vec::new());
+	}
+}
+
+impl TryFrom<Vec<u8>> for AcknowledgeFinishConfiguration {
+	type Error = Box<dyn Error>;
+
+	fn try_from(_value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {  });
 	}
 }
