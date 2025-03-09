@@ -439,73 +439,61 @@ fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool)
     match id {
       0x00 => break,
       0x01 => {
-        println!("decode byte");
         tags.push(NbtTag::Byte(Some(nbt_string_value(&mut data)?), data.pop().unwrap()));
       },
       0x02 => {
-        println!("decode short");
         data.reverse();
         tags.push(NbtTag::Short(Some(nbt_string_value(&mut data)?), short(&mut data)?));
         data.reverse();
       },
       0x03 => {
-        println!("decode int");
         data.reverse();
         tags.push(NbtTag::Int(Some(nbt_string_value(&mut data)?), int(&mut data)?));
         data.reverse();
       },
       0x04 => {
-        println!("decode long");
         data.reverse();
         tags.push(NbtTag::Long(Some(nbt_string_value(&mut data)?), long(&mut data)?));
         data.reverse();
       },
       0x05 => {
-        println!("decode float");
         data.reverse();
         tags.push(NbtTag::Float(Some(nbt_string_value(&mut data)?), float(&mut data)?));
         data.reverse();
       },
       0x06 => {
-        println!("decode double");
         data.reverse();
         tags.push(NbtTag::Double(Some(nbt_string_value(&mut data)?), double(&mut data)?));
         data.reverse();
       },
       0x07 => {
-        println!("decode byte array");
         data.reverse();
         tags.push(NbtTag::ByteArray(Some(nbt_string_value(&mut data)?), nbt_byte_array_value(&mut data)?));
         data.reverse();
       },
       0x08 => {
-        println!("decode string");
         data.reverse();
         tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
         data.reverse();
       },
       0x09 => {
-        println!("decode list");
         todo!("this isnt implemented yet lol");
         data.reverse();
         tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
         data.reverse();
       },
       0x0a => {
-        println!("decode tag compound");
         todo!("this isnt implemented yet lol");
         data.reverse();
         tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
         data.reverse();
       },
       0x0b => {
-        println!("decode int array");
         data.reverse();
         tags.push(NbtTag::IntArray(Some(nbt_string_value(&mut data)?), nbt_int_array_value(&mut data)?));
         data.reverse();
       },
       0x0c => {
-        println!("decode long array");
         data.reverse();
         tags.push(NbtTag::LongArray(Some(nbt_string_value(&mut data)?), nbt_long_array_value(&mut data)?));
         data.reverse();

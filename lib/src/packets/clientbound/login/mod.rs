@@ -15,6 +15,7 @@ impl TryFrom<LoginSuccess> for Vec<u8> {
 
 		result.append(&mut crate::serialize::uuid(&value.uuid));
 		result.append(&mut crate::serialize::string(&value.username));
+		result.push(0x00); //dont send properties array
 
 		return Ok(result);
 	}

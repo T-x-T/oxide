@@ -28,7 +28,7 @@ impl TryFrom<i32> for HandshakeNextStates {
 	}
 }
 
-impl From<HandshakeNextStates> for crate::ConnectionStates {
+impl From<HandshakeNextStates> for crate::ConnectionState {
 	fn from(value: HandshakeNextStates) -> Self {
 		match value {
 			HandshakeNextStates::Status => return Self::Status,
@@ -56,7 +56,6 @@ impl TryFrom<Handshake> for Vec<u8> {
 
 	fn try_from(value: Handshake) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
-		
 		output.append(&mut crate::serialize::varint(value.protocol_version));
 		output.append(&mut crate::serialize::string(&value.server_address));
 		output.append(&mut crate::serialize::unsigned_short(value.sever_port));

@@ -26,7 +26,7 @@ impl Error for CustomError {
 }
 
 #[derive(Debug, Clone)]
-pub enum ConnectionStates {
+pub enum ConnectionState {
   Handshaking,
   Transfer,
   Status,

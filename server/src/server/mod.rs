@@ -1,12 +1,8 @@
 use std::collections::HashMap;
 use std::net::{TcpListener, TcpStream, SocketAddr};
+use lib::ConnectionState;
 
 pub mod packet;
-
-#[derive(Debug)]
-pub enum ConnectionState {
-  Handshaking, Status, Login, Play
-}
 
 pub fn initialize_server() {
   let listener = TcpListener::bind("127.0.0.1:25565").unwrap();

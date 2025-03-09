@@ -49,6 +49,7 @@ impl TryFrom<Vec<u8>> for ClientboundKnownPacks {
 #[derive(Debug, Clone, Default)]
 pub struct RegistryData {
 	pub registry_id: String,
+	pub entry_count: i32,
 	pub entries: Vec<RegistryDataEntry>,
 }
 
@@ -66,6 +67,7 @@ impl TryFrom<RegistryData> for Vec<u8> {
 		let mut data: Vec<u8> = Vec::new();
 
 		data.append(&mut crate::serialize::string(&value.registry_id));
+		data.append(&mut crate::serialize::varint(value.entry_count));
 		value.entries.iter().for_each(|x| {
 			data.append(&mut crate::serialize::string(&x.entry_id));
 			data.append(&mut crate::serialize::bool(&x.has_data));
@@ -87,6 +89,7 @@ impl TryFrom<Vec<u8>> for RegistryData {
 		let mut output = RegistryData {
 			registry_id,
 			entries: Default::default(),
+			entry_count: len,
 		};
 		for _ in 0..len {
 			let entry_id = crate::deserialize::string(&mut value)?;

@@ -149,11 +149,38 @@ impl TryFrom<Vec<u8>> for Login {
 #[derive(Debug, Clone)]
 pub struct ChunkDataAndUpdateLight {
 	pub chunk_x: i32,
-	pub chunk_y: i32,
+	pub chunk_z: i32,
 	pub heightmaps: NbtTag,
 	pub size: i32,
-	pub data: Vec<ChunkSection>,
-	pub additional_data: Vec<u8>,
+	pub data: Vec<u8>,
+	pub block_entities_len: i32,
+	pub block_entities: Vec<BlockEntity>,
+	pub sky_light_mask_len: i32, 
+	pub sky_light_mask: Vec<i64>,
+	pub block_light_mask_len: i32, 
+	pub block_light_mask: Vec<i64>,
+	pub empty_sky_light_mask_len: i32, 
+	pub empty_sky_light_mask: Vec<i64>,
+	pub empty_block_light_mask_len: i32, 
+	pub empty_block_light_mask: Vec<i64>,
+	pub sky_light_arrays_len: i32,
+	pub sky_light_arrays: Vec<LightArray>,
+	pub block_light_arrays_len: i32,
+	pub block_light_arrays: Vec<LightArray>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LightArray {
+	pub len: i32,
+	pub array: Vec<u8>,
+}
+
+#[derive(Debug, Clone)]
+pub struct BlockEntity {
+	pub packed_xz: u8,
+	pub y: i16,
+	pub block_entity_type: i32,
+	pub data: NbtTag,
 }
 
 #[derive(Debug, Clone)]
@@ -302,16 +329,44 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 
 	fn try_from(value: ChunkDataAndUpdateLight) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
-
+		
 		output.append(&mut crate::serialize::int(value.chunk_x));
-		output.append(&mut crate::serialize::int(value.chunk_y));
+		output.append(&mut crate::serialize::int(value.chunk_z));
 		output.append(&mut crate::serialize::nbt(value.heightmaps));
-		output.append(&mut crate::serialize::varint(value.size));
-
-		for section in value.data {
-			output.append(&mut crate::serialize::short(section.block_count));
-			output.append(&mut section.block_states.try_into()?);
-			output.append(&mut section.biomes.try_into()?);
+		output.append(&mut crate::serialize::varint(value.data.len() as i32));
+		output.append(&mut value.data.clone());
+		output.append(&mut crate::serialize::varint(value.block_entities.len() as i32));
+		for x in value.block_entities {
+			output.push(x.packed_xz);
+			output.append(&mut crate::serialize::short(x.y));
+			output.append(&mut crate::serialize::varint(x.block_entity_type));
+			output.append(&mut crate::serialize::nbt(x.data));
+		}
+		output.append(&mut crate::serialize::varint(value.sky_light_mask.len() as i32));
+		for x in value.sky_light_mask {
+			output.append(&mut crate::serialize::long(x));
+		}
+		output.append(&mut crate::serialize::varint(value.block_light_mask.len() as i32));
+		for x in value.block_light_mask {
+			output.append(&mut crate::serialize::long(x));
+		}
+		output.append(&mut crate::serialize::varint(value.empty_sky_light_mask.len() as i32));
+		for x in value.empty_sky_light_mask {
+			output.append(&mut crate::serialize::long(x));
+		}
+		output.append(&mut crate::serialize::varint(value.empty_block_light_mask.len() as i32));
+		for x in value.empty_block_light_mask {
+			output.append(&mut crate::serialize::long(x));
+		}
+		output.append(&mut crate::serialize::varint(value.sky_light_arrays.len() as i32));
+		for x in value.sky_light_arrays {
+			output.append(&mut crate::serialize::varint(x.array.len() as i32));
+			output.append(&mut x.array.clone());
+		}
+		output.append(&mut crate::serialize::varint(value.block_light_arrays.len() as i32));
+		for x in value.block_light_arrays {
+			output.append(&mut crate::serialize::varint(x.array.len() as i32));
+			output.append(&mut x.array.clone());
 		}
 
 		return Ok(output);
@@ -323,21 +378,128 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let chunk_x = crate::deserialize::int(&mut value)?;
-		let chunk_y = crate::deserialize::int(&mut value)?;
+		let chunk_z = crate::deserialize::int(&mut value)?;
 		let heightmaps = crate::deserialize::nbt(&mut value)?;
 		let size = crate::deserialize::varint(&mut value)?;
-		
-		let sections = 24;
-		let mut data: Vec<ChunkSection> = Vec::new();
-
-		for _ in 0..sections {
-			data.push(ChunkSection {
-				block_count: crate::deserialize::short(&mut value)?,
-				block_states: PalettedContainer::try_from(&mut value)?,
-				biomes: PalettedContainer::try_from(&mut value)?,
+		let mut data: Vec<u8> = Vec::new();
+		for _ in 0..size {
+			data.push(value.remove(0));
+		}
+		let block_entities_len = crate::deserialize::varint(&mut value)?;
+		let mut block_entities: Vec<BlockEntity> = Vec::new();
+		for _ in 0..block_entities_len {
+			let packed_xz = value.remove(0);
+			let y = crate::deserialize::short(&mut value)?;
+			let block_entity_type = crate::deserialize::varint(&mut value)?;
+			let data = crate::deserialize::nbt(&mut value)?;
+			block_entities.push(BlockEntity {
+				packed_xz,
+				y,
+				block_entity_type,
+				data,
+			});
+		}
+		let sky_light_mask_len = crate::deserialize::varint(&mut value)?;
+		let mut sky_light_mask: Vec<i64> = Vec::new();
+		for _ in 0..sky_light_mask_len {
+			sky_light_mask.push(crate::deserialize::long(&mut value)?);
+		}
+		let block_light_mask_len = crate::deserialize::varint(&mut value)?;
+		let mut block_light_mask: Vec<i64> = Vec::new();
+		for _ in 0..block_light_mask_len {
+			block_light_mask.push(crate::deserialize::long(&mut value)?);
+		}
+		let empty_sky_light_mask_len = crate::deserialize::varint(&mut value)?;
+		let mut empty_sky_light_mask: Vec<i64> = Vec::new();
+		for _ in 0..empty_sky_light_mask_len {
+			empty_sky_light_mask.push(crate::deserialize::long(&mut value)?);
+		}
+		let empty_block_light_mask_len = crate::deserialize::varint(&mut value)?;
+		let mut empty_block_light_mask: Vec<i64> = Vec::new();
+		for _ in 0..empty_block_light_mask_len {
+			empty_block_light_mask.push(crate::deserialize::long(&mut value)?);
+		}
+		let sky_light_arrays_len = crate::deserialize::varint(&mut value)?;
+		let mut sky_light_arrays: Vec<LightArray> = Vec::new();
+		for _ in 0..sky_light_arrays_len {
+			let len = crate::deserialize::varint(&mut value)?;
+			let mut array: Vec<u8> = Vec::new();
+			for _ in 0..len {
+				array.push(value.remove(0));
+			}
+			sky_light_arrays.push(LightArray {
+				len,
+				array,
+			});
+		}
+		let block_light_arrays_len = crate::deserialize::varint(&mut value)?;
+		let mut block_light_arrays: Vec<LightArray> = Vec::new();
+		for _ in 0..block_light_arrays_len {
+			let len = crate::deserialize::varint(&mut value)?;
+			let mut array: Vec<u8> = Vec::new();
+			for _ in 0..len {
+				array.push(value.remove(0));
+			}
+			block_light_arrays.push(LightArray {
+				len,
+				array,
 			});
 		}
 
-		return Ok(Self { chunk_x, chunk_y, heightmaps, size, data, additional_data: Vec::new() });
+		return Ok(Self { 
+			chunk_x,
+			chunk_z,
+			heightmaps,
+			size,
+			data,
+			block_entities_len,
+			block_entities,
+			sky_light_mask_len,
+			sky_light_mask,
+			block_light_mask_len,
+			block_light_mask,
+			empty_sky_light_mask_len,
+			empty_sky_light_mask,
+			empty_block_light_mask_len,
+			empty_block_light_mask,
+			sky_light_arrays_len,
+			sky_light_arrays,
+			block_light_arrays_len,
+			block_light_arrays,  
+		});
+	}
+}
+
+//
+// MARK: 0x23 Game event
+//
+
+#[derive(Debug, Clone)]
+pub struct GameEvent {
+	pub event: u8,
+	pub value: f32,
+}
+
+impl TryFrom<GameEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: GameEvent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.push(value.event);
+		output.append(&mut crate::serialize::float(value.value));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for GameEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self { 
+			event: value.remove(0),
+			value: crate::deserialize::float(&mut value)?,
+		});
 	}
 }
