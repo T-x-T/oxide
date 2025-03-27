@@ -11,10 +11,12 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
       break;
     }
   }
+  let mut raw_packet = packet_length_bits.clone();
 
   let packet_length = crate::deserialize::varint(&mut packet_length_bits).unwrap();
   let mut packet: Vec<u8> = vec![0; packet_length as usize];
   stream.read_exact(&mut packet).unwrap();
+  raw_packet.append(&mut packet.clone());
 
   let packet_id = crate::deserialize::varint(&mut packet).unwrap();
 
@@ -22,6 +24,7 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
     id: packet_id as u8,
     length: packet_length as u32,
     data: packet,
+    raw_data: raw_packet,
   };
 }
 

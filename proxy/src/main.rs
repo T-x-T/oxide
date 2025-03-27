@@ -39,8 +39,8 @@ fn main() {
         let mut parsed_server_packet: Option<Vec<u8>> = None;
         
         let packet_id = server_packet.id;
-        println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
-        //println!("data: {server_packet:?}");
+        //println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("data: {:?}", server_packet.raw_data);
         
         let current_state = connection.lock().unwrap().state.clone();
 
@@ -124,8 +124,8 @@ fn main() {
         let mut parsed_client_packet: Option<Vec<u8>> = None;
         
         let packet_id = client_packet.id;
-        println!("received clientbound packet: {packet_id} {:#04x}", packet_id);
-        //println!("data: {client_packet:?}");
+        //println!("received clientbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("data: {:?}", client_packet.raw_data);
 
         let current_state = connection.lock().unwrap().state.clone();
 
@@ -134,7 +134,11 @@ fn main() {
             
           },
           lib::ConnectionState::Status => {
-            
+            if packet_id == 0x00 {
+              let parsed_packet = lib::packets::clientbound::status::StatusResponse::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            }
           },
           lib::ConnectionState::Login => {
             if packet_id == 0x02 {
@@ -172,9 +176,32 @@ fn main() {
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
             if packet_id == 0x28 {
-              let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
-              //println!("parsed packet: {parsed_packet:?}");
-              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+              //println!("before parsing:\n\n{:?}\n\n", client_packet.data);
+              let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone());
+              if parsed_packet.is_ok() {
+                //println!("parsed packet: {parsed_packet:?}");
+
+                let serialized: Result<Vec<u8>, _> = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_into(parsed_packet.as_ref().unwrap().clone());
+                if serialized.is_ok() {
+                  let parsed_second_time: Result<lib::packets::clientbound::play::ChunkDataAndUpdateLight, _> = serialized.unwrap().try_into();
+                  if parsed_second_time.is_err() {
+                    println!("got error trying to parse second time:{}", parsed_second_time.as_ref().clone().err().unwrap());
+                    println!("before parsing:\n\n{:?}\n\n", client_packet.data);
+                    println!("parsed:\n\n{:?}\n\n", parsed_packet);
+                    println!("after parsing:\n\n{:?}\n\n", parsed_second_time.unwrap());
+                  }
+                } else {
+                  println!("got error trying to serialize again:{}", serialized.err().unwrap());
+                }
+
+
+                //println!("parsed:\n\n{:?}\n\n", parsed_packet);
+                parsed_client_packet = Some(parsed_packet.unwrap().try_into().unwrap());
+                //println!("after parsing:\n\n{:?}\n\n", parsed_client_packet.clone().unwrap());
+              } else {
+                println!("got error trying to parse ChunkDataAndUpdateLight packet: {}", parsed_packet.err().unwrap());
+                println!("before parsing:\n\n{:?}\n\n", client_packet.data);
+              }
             }
           },
           lib::ConnectionState::Transfer => {

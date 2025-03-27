@@ -10,7 +10,7 @@ pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
   return match value {
     0x00 => Ok(false),
     0x01 => Ok(true),
-    _ => Err(Box::new(CustomError::ParseInvalidValue))
+    _ => Err(Box::new(CustomError::DeserializeInvalidBoolean(value))),
   }
 }
 
@@ -74,7 +74,7 @@ const CONTINUE_BIT: u8 = 0b1000_0000;
 
 pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
   if data.is_empty() {
-    return Err(Box::new(crate::CustomError::ParseInvalidValue));
+    return Err(Box::new(crate::CustomError::InputEmpty));
   }
 
   let mut value: i32 = 0;
@@ -99,133 +99,8 @@ pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
 }
 
 pub fn nbt(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
+  //println!("deserialize nbt:\n\n{data:?}\n\n\n\n");
   return nbt_tag_compound(data, false, true);
-}
-
-fn nbt_byte(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  let output = NbtTag::Byte(description, data.pop().unwrap());
-  data.reverse();
-
-  return Ok(output);
-}
-
-fn nbt_short(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::Short(description, short(data)?);
-
-  return Ok(output);
-}
-
-fn nbt_int(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::Int(description, int(data)?);
-
-  return Ok(output);
-}
-
-fn nbt_long(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::Long(description, long(data)?);
-
-  return Ok(output);
-}
-
-fn nbt_float(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::Float(description, float(data)?);
-
-  return Ok(output);
-}
-
-fn nbt_double(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::Double(description, double(data)?);
-
-  return Ok(output);
-}
-
-fn nbt_byte_array(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  let output = NbtTag::ByteArray(description, nbt_byte_array_value(&mut data)?);
-
-  return Ok(output);
 }
 
 fn nbt_byte_array_value(mut data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
@@ -239,33 +114,12 @@ fn nbt_byte_array_value(mut data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error
   return Ok(bytes);
 }
 
-fn nbt_string(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-  
-  data.reverse();
-  let output = NbtTag::String(description, nbt_string_value(&mut data)?);
-
-  return Ok(output);
-}
-
 pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
-  data.reverse();
-
   let mut bytes: [u8; 2] = [0, 0];
-  bytes[0] = data.pop().unwrap();
-  bytes[1] = data.pop().unwrap();
+  bytes[0] = data.remove(0);
+  bytes[1] = data.remove(0);
   let len = i16::from_be_bytes(bytes);
   
-  data.reverse();
   let raw_string: &[u8] = &data.clone()[..len as usize];
   data.drain(..len as usize);
   let string = String::from_utf8(raw_string.to_vec())?;
@@ -409,8 +263,8 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
 
       NbtTag::List(description, list)
     },
-    _ => {
-      return Err(Box::new(CustomError::ParseInvalidValue));
+    x => {
+      return Err(Box::new(CustomError::InvalidNbtTag(x)));
     }
   };
   
@@ -420,9 +274,8 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
 }
 
 fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
   if has_id {
-    data.pop();
+    data.remove(0);
   }
 
   let description: Option<String> = if has_description {
@@ -434,98 +287,55 @@ fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool)
   let mut tags: Vec<NbtTag> = Vec::new();
 
   loop {
-    let id = data.pop().unwrap();
+    let id = data.remove(0);
 
     match id {
       0x00 => break,
       0x01 => {
-        tags.push(NbtTag::Byte(Some(nbt_string_value(&mut data)?), data.pop().unwrap()));
+        tags.push(NbtTag::Byte(Some(nbt_string_value(&mut data)?), data.remove(0)));
       },
       0x02 => {
-        data.reverse();
         tags.push(NbtTag::Short(Some(nbt_string_value(&mut data)?), short(&mut data)?));
-        data.reverse();
       },
       0x03 => {
-        data.reverse();
         tags.push(NbtTag::Int(Some(nbt_string_value(&mut data)?), int(&mut data)?));
-        data.reverse();
       },
       0x04 => {
-        data.reverse();
         tags.push(NbtTag::Long(Some(nbt_string_value(&mut data)?), long(&mut data)?));
-        data.reverse();
       },
       0x05 => {
-        data.reverse();
         tags.push(NbtTag::Float(Some(nbt_string_value(&mut data)?), float(&mut data)?));
-        data.reverse();
       },
       0x06 => {
-        data.reverse();
         tags.push(NbtTag::Double(Some(nbt_string_value(&mut data)?), double(&mut data)?));
-        data.reverse();
       },
       0x07 => {
-        data.reverse();
         tags.push(NbtTag::ByteArray(Some(nbt_string_value(&mut data)?), nbt_byte_array_value(&mut data)?));
-        data.reverse();
       },
       0x08 => {
-        data.reverse();
         tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
-        data.reverse();
       },
       0x09 => {
-        todo!("this isnt implemented yet lol");
-        data.reverse();
-        tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
-        data.reverse();
+        tags.push(nbt_list(&mut data, true, false)?);
       },
       0x0a => {
-        todo!("this isnt implemented yet lol");
-        data.reverse();
-        tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
-        data.reverse();
+        tags.push(nbt_tag_compound(&mut data, true, false)?);
       },
       0x0b => {
-        data.reverse();
         tags.push(NbtTag::IntArray(Some(nbt_string_value(&mut data)?), nbt_int_array_value(&mut data)?));
-        data.reverse();
       },
       0x0c => {
-        data.reverse();
         tags.push(NbtTag::LongArray(Some(nbt_string_value(&mut data)?), nbt_long_array_value(&mut data)?));
-        data.reverse();
       },
-      _ => {
-        println!("decode invalid id: {id}");
-        return Err(Box::new(CustomError::ParseInvalidValue));
+      x => {
+        return Err(Box::new(CustomError::InvalidNbtTag(x)));
       }
     };
   }
-
+  
   let output = NbtTag::TagCompound(description, tags);
 
-  data.reverse();
-
   return Ok(output);
-}
-
-fn nbt_int_array(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  return Ok(NbtTag::IntArray(description, nbt_int_array_value(&mut data)?));
 }
 
 fn nbt_int_array_value(data: &mut Vec<u8>) -> Result<Vec<i32>, Box<dyn Error>> {
@@ -537,22 +347,6 @@ fn nbt_int_array_value(data: &mut Vec<u8>) -> Result<Vec<i32>, Box<dyn Error>> {
   }
 
   return Ok(arr);
-}
-
-fn nbt_long_array(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
-  if has_id {
-    data.pop();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
-  } else {
-    None
-  };
-
-  data.reverse();
-  return Ok(NbtTag::LongArray(description, nbt_long_array_value(&mut data)?));
 }
 
 fn nbt_long_array_value(data: &mut Vec<u8>) -> Result<Vec<i64>, Box<dyn Error>> {
@@ -570,36 +364,6 @@ fn nbt_long_array_value(data: &mut Vec<u8>) -> Result<Vec<i64>, Box<dyn Error>> 
 #[cfg(test)]
 mod test {
   use super::*;
-
-  #[test]
-  fn nbt_short() {
-    let number: i16 = 28591;
-    let mut serialized = crate::serialize::nbt(NbtTag::Short(None, number));
-    let deserialized = super::nbt_short(&mut serialized, false, true).unwrap();
-    let deserialized_number = match deserialized {
-      NbtTag::Short(_, x) => {
-        x
-      },
-      _ => panic!("a"),
-    };
-
-    assert_eq!(deserialized_number, number);
-  }
-
-  #[test]
-  fn nbt_short_negative() {
-    let number: i16 = -28591;
-    let mut serialized = crate::serialize::nbt(NbtTag::Short(None, number));
-    let deserialized = super::nbt_short(&mut serialized, false, true).unwrap();
-    let deserialized_number = match deserialized {
-      NbtTag::Short(_, x) => {
-        x
-      },
-      _ => panic!("a"),
-    };
-
-    assert_eq!(deserialized_number, number);
-  }
 
   #[test]
   fn varint_works_small_number() {
@@ -634,5 +398,34 @@ mod test {
     let res = varint(&mut vec![0xf4, 0xd0, 0x01]);
     assert!(res.is_ok());
     assert_eq!(res.unwrap(), 26740);
+  }
+
+  #[test]
+  fn varint_works_256() {
+    let res = varint(&mut vec![128, 2]);
+    assert!(res.is_ok());
+    assert_eq!(res.unwrap(), 256);
+  }
+
+  #[test]
+  fn nbt_mobspawner() {
+    let nbt_parsed = NbtTag::TagCompound(None, vec![
+      NbtTag::Short(Some("MaxNearbyEntities".to_string()), 6),
+      NbtTag::Short(Some("RequiredPlayerRange".to_string()), 16),
+      NbtTag::Short(Some("SpawnCount".to_string()), 4),
+      NbtTag::TagCompound(Some("SpawnData".to_string()), vec![
+        NbtTag::TagCompound(Some("entity".to_string()), vec![
+          NbtTag::String(Some("id".to_string()), "minecraft:spider".to_string()),
+        ]),
+      ]),
+      NbtTag::Short(Some("MaxSpawnDelay".to_string()), 800),
+      NbtTag::Short(Some("SpawnRange".to_string()), 4),
+      NbtTag::Short(Some("Delay".to_string()), 20),
+      NbtTag::Short(Some("MinSpawnDelay".to_string()), 200),
+    ]);
+
+    let mut nbt_bytes: Vec<u8> = vec![10,2,0,17,77,97,120,78,101,97,114,98,121,69,110,116,105,116,105,101,115,0,6,2,0,19,82,101,113,117,105,114,101,100,80,108,97,121,101,114,82,97,110,103,101,0,16,2,0,10,83,112,97,119,110,67,111,117,110,116,0,4,10,0,9,83,112,97,119,110,68,97,116,97,10,0,6,101,110,116,105,116,121,8,0,2,105,100,0,16,109,105,110,101,99,114,97,102,116,58,115,112,105,100,101,114,0,0,2,0,13,77,97,120,83,112,97,119,110,68,101,108,97,121,3,32,2,0,10,83,112,97,119,110,82,97,110,103,101,0,4,2,0,5,68,101,108,97,121,0,20,2,0,13,77,105,110,83,112,97,119,110,68,101,108,97,121,0,200,0];
+  
+    assert_eq!(nbt(&mut nbt_bytes).unwrap(), nbt_parsed);
   }
 }

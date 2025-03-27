@@ -23,7 +23,7 @@ impl TryFrom<i32> for HandshakeNextStates {
 			1 => Ok(HandshakeNextStates::Status),
 			2 => Ok(HandshakeNextStates::Login),
 			3 => Ok(HandshakeNextStates::Transfer),
-			_ => return Err(Box::new(crate::CustomError::ParseInvalidValue)),
+			_ => return Err(Box::new(crate::CustomError::InvalidNextHandshakeState(value as u8))),
 		}
 	}
 }
