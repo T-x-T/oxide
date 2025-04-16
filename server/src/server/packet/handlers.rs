@@ -2,52 +2,57 @@ use std::net::{TcpStream, SocketAddr};
 use std::io::Write;
 use std::collections::HashMap;
 use lib::ConnectionState;
+use crate::server::{Game, Player, Connection};
 
-pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
-  println!("received new packet from {}", stream.peer_addr().unwrap());
+pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> bool {
+  //println!("received new packet from {}", stream.peer_addr().unwrap());
 	
-	if !connection_states.contains_key(&stream.peer_addr().unwrap()) {
-		connection_states.insert(stream.peer_addr().unwrap(), ConnectionState::Handshaking);
+	if !connections.contains_key(&stream.peer_addr().unwrap()) {
+		connections.insert(stream.peer_addr().unwrap(), Connection { state: ConnectionState::Handshaking, peer_address: stream.peer_addr().unwrap(), player_name: None, player_uuid: None });
 	}
 	
-	println!("client {} is in state {:?}", stream.peer_addr().unwrap(), connection_states.get(&stream.peer_addr().unwrap()).unwrap());
+	if !connection_streams.contains_key(&stream.peer_addr().unwrap()) {
+		connection_streams.insert(stream.peer_addr().unwrap(), stream.try_clone().unwrap());
+	}
+	
+	//println!("client {} is in state {:?}", stream.peer_addr().unwrap(), connection_states.get(&stream.peer_addr().unwrap()).unwrap());
   
-	return match connection_states.get(&stream.peer_addr().unwrap()).unwrap() {
+	return match connections.get(&stream.peer_addr().unwrap()).unwrap().state {
     ConnectionState::Handshaking => match packet.id {
-			0x00 => handshaking::handshake(&mut packet.data, stream, connection_states),
+			0x00 => handshaking::handshake(&mut packet.data, stream, connections),
 			x => {
-				println!("got unrecognized packet with id {:2x?}", x);
+				//println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
     ConnectionState::Status => match packet.id {
-			0x00 => status::status_request(&mut packet.data, stream, connection_states),
-			0x01 => status::ping_request(&mut packet.data, stream, connection_states),
+			0x00 => status::status_request(stream),
+			0x01 => status::ping_request(&mut packet.data, stream),
 			x => {
-				println!("got unrecognized packet with id {:2x?}", x);
+				//println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
     ConnectionState::Login => match packet.id {
-			0x00 => login::login_start(&mut packet.data, stream),
-			0x03 => login::login_acknowledged(&mut packet.data, stream, connection_states),
+			0x00 => login::login_start(&mut packet.data, stream, connections),
+			0x03 => login::login_acknowledged(stream, connections),
 			x => {
-				println!("got unrecognized packet with id {:2x?}", x);
+				//println!("got unrecognized packet with id {:2x?}", x);
 				return true; 
 			},
 		},
     ConnectionState::Configuration => match packet.id {
-      0x07 => configuration::serverbound_known_packets(&mut packet.data, stream),
-      0x03 => configuration::acknowledge_finish_configuration(&mut packet.data, stream, connection_states),
+      0x07 => configuration::serverbound_known_packets(stream),
+      0x03 => configuration::acknowledge_finish_configuration(stream, connections, game, connection_streams),
       x => {
-				println!("got unrecognized packet with id {:2x?}", x);
+				//println!("got unrecognized packet with id {:2x?}", x);
 				return false; 
 			},
     },
     ConnectionState::Play => match packet.id {
-
+      0x1c => play::set_player_position(&mut packet.data, game),
 			x => {
-				println!("got unrecognized packet with id {:2x?}", x);
+				//println!("got unrecognized packet with id {:2x?}", x);
 				return false; 
 			},
 		},
@@ -58,10 +63,10 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 pub mod handshaking {
   use super::*;
 
-  pub fn handshake(data: &mut Vec<u8>, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
+  pub fn handshake(data: &mut Vec<u8>, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
     let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.clone()).unwrap();
 
-    connection_states.insert(stream.peer_addr().unwrap(), parsed_packet.next_state.into());
+    connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = parsed_packet.next_state.into());
   
     return false;
   }
@@ -70,14 +75,14 @@ pub mod handshaking {
 pub mod status {
   use super::*;
 
-  pub fn status_request(_data: &mut Vec<u8>, stream: &mut TcpStream, _connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
+  pub fn status_request(stream: &mut TcpStream) -> bool {
     lib::utils::send_packet(stream, 0x00, lib::packets::clientbound::status::StatusResponse {
       status: "{\"version\": {\"name\": \"Oxide 1.21.4\",\"protocol\": 769},\"players\": {\"max\": 9,\"online\": 6,\"sample\": []},\"description\": {\"text\": \"Hello oxide!\"},\"enforcesSecureChat\": true}".to_string(),
     }.try_into().unwrap());
     return false;
   }
   
-  pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream, _connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
+  pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> bool {
     let mut output: Vec<u8> = Vec::new();
     output.push(9);
     output.push(1);
@@ -90,17 +95,24 @@ pub mod status {
 pub mod login {
   use super::*;
 
-  pub fn login_start(data: &mut Vec<u8>, stream: &mut TcpStream) -> bool {
+  pub fn login_start(data: &mut Vec<u8>, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
+    let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.clone()).unwrap();
+    
+    connections.entry(stream.peer_addr().unwrap()).and_modify(|x| {
+      x.player_name = Some(parsed_packet.name.clone());
+      x.player_uuid = Some(parsed_packet.uuid);
+    });
+
     lib::utils::send_packet(stream, 0x02, lib::packets::clientbound::login::LoginSuccess {
-      uuid: 290780920670370370148908686767547353505,
-      username: "The__TxT".to_string()
+      uuid: parsed_packet.uuid,
+      username: parsed_packet.name,
     }.try_into().unwrap());
 
     return false;
   }
 
-  pub fn login_acknowledged(data: &mut Vec<u8>, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
-    connection_states.insert(stream.peer_addr().unwrap(), ConnectionState::Configuration);
+  pub fn login_acknowledged(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
+    connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Configuration);
 
     lib::utils::send_packet(stream, 0x0e, lib::packets::clientbound::configuration::ClientboundKnownPacks {
       known_packs: vec![lib::Datapack { namespace: "minecraft".to_string(), id: "core".to_string(), version: "1.21.4".to_string() }],
@@ -114,7 +126,7 @@ pub mod login {
 pub mod configuration {
   use super::*;
 
-  pub fn serverbound_known_packets(data: &mut Vec<u8>, stream: &mut TcpStream) -> bool {
+  pub fn serverbound_known_packets(stream: &mut TcpStream) -> bool {
     lib::utils::send_packet(stream, 0x07, lib::packets::clientbound::configuration::RegistryData {
       registry_id: "minecraft:worldgen/biome".to_string(),
       entry_count: 65,
@@ -749,8 +761,10 @@ pub mod configuration {
     return false;
   }
 
-  pub fn acknowledge_finish_configuration(data: &mut Vec<u8>, stream: &mut TcpStream, connection_states: &mut HashMap<SocketAddr, ConnectionState>) -> bool {
-    connection_states.insert(stream.peer_addr().unwrap(), ConnectionState::Play);
+  pub fn acknowledge_finish_configuration(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+    connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
+
+    let current_player = Player { x: 0.0, y_feet: -48.0, z: 0.0, display_name: connections.get(&stream.peer_addr().unwrap()).unwrap().player_name.clone().unwrap_or_default(), uuid: connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.clone().unwrap_or_default(), peer_socket_address: stream.peer_addr().unwrap() };
 
     lib::utils::send_packet(stream, 0x2c, lib::packets::clientbound::play::Login {
       entity_id: 123456,
@@ -815,6 +829,66 @@ pub mod configuration {
       }
     }
 
+    game.players.push(current_player.clone());
+
+    game.players.iter()
+      .for_each(|x| {
+        match connection_streams.get(&x.peer_socket_address) {
+          Some(player_stream) => {
+            lib::utils::send_packet(player_stream, 0x40, lib::packets::clientbound::play::PlayerInfoUpdate {
+                actions: 255,
+                players: game.players.iter().map(|y| {
+                  (y.uuid, vec![
+                    lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
+                    lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+                    lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+                    lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+                    lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+                    lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+                    lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+                    lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+                  ])
+                }).collect(),
+            }.try_into().unwrap());
+
+            
+            //Dont send the spawn entity packet to the current player
+            if x.peer_socket_address != stream.peer_addr().unwrap() {
+              lib::utils::send_packet(player_stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
+                entity_id: 6416,
+                entity_uuid: current_player.uuid,
+                entity_type: 147, //Player
+                x: 0.0,
+                y: -48.0,
+                z: 0.0,
+                pitch: 0,
+                yaw: 0,
+                head_yaw: 0,
+                data: 0,
+                velocity_x: 0,
+                velocity_y: 0,
+                velocity_z: 0,
+              }.try_into().unwrap());
+            }
+            
+            lib::utils::send_packet(player_stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
+              entity_id: 6416,
+              metadata: vec![
+                lib::packets::clientbound::play::EntityMetadata {
+                  index: 9,
+                  value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
+                },
+                lib::packets::clientbound::play::EntityMetadata {
+                  index: 17,
+                  value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
+                },
+              ],
+            }.try_into().unwrap());
+          },
+          None => (),
+        }
+      });
+
     return false;
   }
 }
@@ -822,5 +896,18 @@ pub mod configuration {
 pub mod play {
   use super::*;
 
+  pub fn set_player_position(data: &mut Vec<u8>, game: &mut Game) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.clone()).unwrap();
 
+    let mut player = game.players.iter().find(|x| x.uuid == 290780920670370370148908686767547353505).unwrap().clone();
+    game.players = game.players.iter().filter(|x| x.uuid != 290780920670370370148908686767547353505).cloned().collect();
+
+    player.x = parsed_packet.x;
+    player.y_feet = parsed_packet.feet_y;
+    player.z = parsed_packet.z;
+
+    game.players.push(player);
+
+    return false;
+  }
 }
