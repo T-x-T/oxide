@@ -20,16 +20,39 @@ pub fn initialize_server() {
 
 
     println!("New Connection from {}", stream.peer_addr().unwrap());
-    let connection_states_clone = connections.clone();
+    let connections_clone = connections.clone();
     let connection_streams_clone = connection_streams.clone();
     let game_clone = game.clone();
     std::thread::spawn(move || {
       loop {
         let mut stream = stream.try_clone().unwrap();
+
+        let mut peek_buf = [0; 1];
+
+        match stream.peek(&mut peek_buf) {
+          Ok(0) => {
+            println!("client disconnected.");
+            connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
+            //TODO: send packets to tell other players this one is gone
+            break;
+          }
+          Err(e) => {
+            eprintln!("error reading from client: {}", e);
+            connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
+            //TODO: send packets to tell other players this one is gone
+            break;
+          }
+          _ => {}
+        }
+
         let packet = lib::utils::read_packet(&mut stream);
       
-        if packet::handlers::handle_packet(packet, &mut stream, &mut connection_states_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap()) {
-          connection_states_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+        if packet::handlers::handle_packet(packet, &mut stream, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap()) {
+          connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
           break;
         }
       }

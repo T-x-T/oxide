@@ -223,18 +223,15 @@ fn main() {
               }
             } */
             if packet_id == 0x40 {
-              println!("lookatme:\n{:?}", client_packet.data);
               let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
               //no idea why this crashes the client
-              println!("after:\n{:?}", client_packet.data);
-              //parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
             if packet_id == 0x5d {
-              println!("raw SetEntityMetaData packet:\n{:?}\n", client_packet.data);
               let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
-              //parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
           },
           lib::ConnectionState::Transfer => {
