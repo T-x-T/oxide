@@ -160,6 +160,37 @@ impl TryFrom<Vec<u8>> for GameEvent {
 }
 
 //
+// MARK: 0x27 clientbound keep alive
+//
+
+#[derive(Debug, Clone)]
+pub struct ClientboundKeepAlive {
+	pub keep_alive_id: i64,
+}
+
+impl TryFrom<ClientboundKeepAlive> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ClientboundKeepAlive) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::long(value.keep_alive_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			keep_alive_id: crate::deserialize::long(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x28 Chunk Data and Update Light
 //
 

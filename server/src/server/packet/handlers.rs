@@ -936,6 +936,23 @@ pub mod configuration {
         ],
       }.try_into().unwrap());
     }
+
+    //TODO: get rid of this once we have a real game loop
+    let stream_clone = stream.try_clone().unwrap();
+    std::thread::spawn(move || {
+      loop {
+        let useless_buf_no_one_crates_about = &mut [0; 1];
+        if stream_clone.peek(useless_buf_no_one_crates_about).is_err() {
+          return;
+        }
+        lib::utils::send_packet(&stream_clone, 0x27, lib::packets::clientbound::play::ClientboundKeepAlive {
+          keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
+        }.try_into().unwrap());
+
+        std::thread::sleep(std::time::Duration::from_secs(5));
+      }
+    });
+
     return false;
   }
 }
