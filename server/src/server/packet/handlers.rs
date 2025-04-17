@@ -80,7 +80,7 @@ pub mod status {
 
   pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> bool {
     lib::utils::send_packet(stream, 0x00, lib::packets::clientbound::status::StatusResponse {
-      status: format!("{{\"version\": {{\"name\": \"Oxide 1.21.4\",\"protocol\": 769}},\"players\": {{\"max\": 123456,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": true}}", game.players.len()).to_string(),
+      status: format!("{{\"version\": {{\"name\": \"Oxide 1.21.4\",\"protocol\": 769}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": true}}", game.players.len()).to_string(),
     }.try_into().unwrap());
     return false;
   }
@@ -867,7 +867,7 @@ pub mod configuration {
       if player.uuid == current_player.uuid {
         continue;
       }
-      
+
       lib::utils::send_packet(stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
@@ -901,42 +901,41 @@ pub mod configuration {
 
     //Spawn player entity for other players that are already connected
     for player in &game.players {
+      if player.peer_socket_address == stream.peer_addr().unwrap() {
+        continue;
+      }
       let player_stream = connection_streams.get(&player.peer_socket_address).unwrap();
     
-      //Dont send the spawn entity packet to the current player
-      if player.peer_socket_address != stream.peer_addr().unwrap() {
-        lib::utils::send_packet(player_stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
-          entity_id: current_player.entity_id,
-          entity_uuid: current_player.uuid,
-          entity_type: 147, //Player
-          x: current_player.x,
-          y: current_player.y_feet,
-          z: current_player.z,
-          pitch: 0,
-          yaw: 0,
-          head_yaw: 0,
-          data: 0,
-          velocity_x: 0,
-          velocity_y: 0,
-          velocity_z: 0,
-        }.try_into().unwrap());
+      lib::utils::send_packet(player_stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
+        entity_id: current_player.entity_id,
+        entity_uuid: current_player.uuid,
+        entity_type: 147, //Player
+        x: current_player.x,
+        y: current_player.y_feet,
+        z: current_player.z,
+        pitch: 0,
+        yaw: 0,
+        head_yaw: 0,
+        data: 0,
+        velocity_x: 0,
+        velocity_y: 0,
+        velocity_z: 0,
+      }.try_into().unwrap());
 
-        lib::utils::send_packet(player_stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
-          entity_id: current_player.entity_id,
-          metadata: vec![
-            lib::packets::clientbound::play::EntityMetadata {
-              index: 9,
-              value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-            },
-            lib::packets::clientbound::play::EntityMetadata {
-              index: 17,
-              value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-            },
-          ],
-        }.try_into().unwrap());
-      }
+      lib::utils::send_packet(player_stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
+        entity_id: current_player.entity_id,
+        metadata: vec![
+          lib::packets::clientbound::play::EntityMetadata {
+            index: 9,
+            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
+          },
+          lib::packets::clientbound::play::EntityMetadata {
+            index: 17,
+            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
+          },
+        ],
+      }.try_into().unwrap());
     }
-
     return false;
   }
 }

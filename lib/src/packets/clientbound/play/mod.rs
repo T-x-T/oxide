@@ -1,143 +1,160 @@
 use super::*;
 
 //
-// MARK: 0x2c FinishConfiguration
+// MARK: 0x01 Spawn entity
 //
 
 #[derive(Debug, Clone)]
-pub struct Login {
+pub struct SpawnEntity {
 	pub entity_id: i32,
-	pub is_hardcore: bool,
-	pub dimension_names: Vec<String>,
-	pub max_players: i32,
-	pub view_distance: i32,
-	pub simulation_distance: i32,
-	pub reduced_debug_info: bool,
-	pub enable_respawn_screen: bool,
-	pub do_limited_crafting: bool,
-	pub dimension_type: i32,
-	pub dimension_name: String,
-	pub hashed_seed: i64,
-	pub game_mode: u8,
-	pub previous_game_mode: i8,
-	pub is_debug: bool,
-	pub is_flat: bool,
-	pub has_death_location: bool,
-	pub death_dimension_name: Option<String>,
-	pub death_location: Option<u64>,
-	pub portal_cooldown: i32,
-	pub sea_level: i32,
-	pub enforces_secure_chat: bool,
+	pub entity_uuid: u128,
+	pub entity_type: i32, //real name in the protocol is just type; enum?
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub pitch: u8,
+	pub yaw: u8,
+	pub head_yaw: u8,
+	pub data: i32,
+	pub velocity_x: i16,
+	pub velocity_y: i16,
+	pub velocity_z: i16,
 }
 
-
-impl TryFrom<Login> for Vec<u8> {
+impl TryFrom<SpawnEntity> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
-	fn try_from(value: Login) -> Result<Self, Box<dyn Error>> {
+	fn try_from(value: SpawnEntity) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
 
-		output.append(&mut crate::serialize::int(value.entity_id));
-		output.append(&mut crate::serialize::bool(&value.is_hardcore));
-		output.append(&mut crate::serialize::varint(value.dimension_names.len() as i32));
-		for dimension_name in &value.dimension_names {
-			output.append(&mut crate::serialize::string(dimension_name));
-		}
-		output.append(&mut crate::serialize::varint(value.max_players));
-		output.append(&mut crate::serialize::varint(value.view_distance));
-		output.append(&mut crate::serialize::varint(value.simulation_distance));
-		output.append(&mut crate::serialize::bool(&value.reduced_debug_info));
-		output.append(&mut crate::serialize::bool(&value.enable_respawn_screen));
-		output.append(&mut crate::serialize::bool(&value.do_limited_crafting));
-		output.append(&mut crate::serialize::varint(value.dimension_type));
-		output.append(&mut crate::serialize::string(&value.dimension_name));
-		output.append(&mut crate::serialize::long(value.hashed_seed));
-		output.push(value.game_mode);
-		output.push(value.previous_game_mode as u8);
-		output.append(&mut crate::serialize::bool(&value.is_debug));
-		output.append(&mut crate::serialize::bool(&value.is_flat));
-		output.append(&mut crate::serialize::bool(&value.has_death_location));
-		if value.has_death_location {
-			output.append(&mut crate::serialize::string(&value.death_dimension_name.unwrap()));
-			output.append(&mut crate::serialize::long(value.death_location.unwrap() as i64)); //probably fucked
-		}
-		output.append(&mut crate::serialize::varint(value.portal_cooldown));
-		output.append(&mut crate::serialize::varint(value.sea_level));
-		output.append(&mut crate::serialize::bool(&value.enforces_secure_chat));
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::uuid(&value.entity_uuid));
+		output.append(&mut crate::serialize::varint(value.entity_type));
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		output.push(value.pitch);
+		output.push(value.yaw);
+		output.push(value.head_yaw);
+		output.append(&mut crate::serialize::varint(value.data));
+		output.append(&mut crate::serialize::short(value.velocity_x));
+		output.append(&mut crate::serialize::short(value.velocity_y));
+		output.append(&mut crate::serialize::short(value.velocity_z));
 
 		return Ok(output);
 	}
 }
 
-impl TryFrom<Vec<u8>> for Login {
+impl TryFrom<Vec<u8>> for SpawnEntity {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		let entity_id = crate::deserialize::int(&mut value)?;
-		println!("entity_id: {entity_id}");
-		let is_hardcore = crate::deserialize::boolean(&mut value)?;
-
-		let dimension_names_len = crate::deserialize::varint(&mut value)?;
-		let mut dimension_names: Vec<String> = Vec::new();
-		for _ in 0..dimension_names_len {
-			dimension_names.push(crate::deserialize::string(&mut value)?);
-		}
-		
-		let max_players = crate::deserialize::varint(&mut value)?;
-		let view_distance = crate::deserialize::varint(&mut value)?;
-		let simulation_distance = crate::deserialize::varint(&mut value)?;
-		let reduced_debug_info = crate::deserialize::boolean(&mut value)?;
-		let enable_respawn_screen = crate::deserialize::boolean(&mut value)?;
-		let do_limited_crafting = crate::deserialize::boolean(&mut value)?;
-		let dimension_type = crate::deserialize::varint(&mut value)?;
-		let dimension_name = crate::deserialize::string(&mut value)?;
-		let hashed_seed = crate::deserialize::long(&mut value)?;
-		let game_mode = value.remove(0);
-		let previous_game_mode = value.remove(0) as i8;
-		let is_debug = crate::deserialize::boolean(&mut value)?;
-		let is_flat = crate::deserialize::boolean(&mut value)?;
-		let has_death_location = crate::deserialize::boolean(&mut value)?;
-		
-		let death_dimension_name: Option<String> = if has_death_location {
-			Some(crate::deserialize::string(&mut value)?)
-		} else {
-			None
-		};
-
-		let death_location: Option<u64> = if has_death_location {
-			Some(crate::deserialize::long(&mut value)? as u64) //Probably fucked
-		} else {
-			None
-		};
-		
-		let portal_cooldown = crate::deserialize::varint(&mut value)?;
-		let sea_level = crate::deserialize::varint(&mut value)?;
-		let enforces_secure_chat = crate::deserialize::boolean(&mut value)?;
-		
-
 		return Ok(Self { 
-			entity_id,
-			is_hardcore,
-			dimension_names,
-			max_players,
-			view_distance,
-			simulation_distance,
-			reduced_debug_info,
-			enable_respawn_screen,
-			do_limited_crafting,
-			dimension_type,
-			dimension_name,
-			hashed_seed,
-			game_mode,
-			previous_game_mode,
-			is_debug,
-			is_flat,
-			has_death_location,
-			death_dimension_name,
-			death_location,
-			portal_cooldown,
-			sea_level,
-			enforces_secure_chat,
+			entity_id: crate::deserialize::varint(&mut value)?,
+			entity_uuid: crate::deserialize::uuid(&mut value)?,
+			entity_type: crate::deserialize::varint(&mut value)?,
+		  x: crate::deserialize::double(&mut value)?,
+		  y: crate::deserialize::double(&mut value)?,
+		  z: crate::deserialize::double(&mut value)?,
+			pitch: value.remove(0),
+			yaw: value.remove(0),
+			head_yaw: value.remove(0),
+			data: crate::deserialize::varint(&mut value)?,
+			velocity_x: crate::deserialize::short(&mut value)?,
+			velocity_y: crate::deserialize::short(&mut value)?,
+			velocity_z: crate::deserialize::short(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x20 teleport entity
+//
+
+#[derive(Debug, Clone)]
+pub struct TeleportEntity {
+	pub entity_id: i32,
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub velocity_x: f64,
+	pub velocity_y: f64,
+	pub velocity_z: f64,
+	pub yaw: f32,
+	pub pitch: f32,
+	pub on_ground: bool,
+}
+
+impl TryFrom<TeleportEntity> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: TeleportEntity) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		output.append(&mut crate::serialize::double(value.velocity_x));
+		output.append(&mut crate::serialize::double(value.velocity_y));
+		output.append(&mut crate::serialize::double(value.velocity_z));
+		output.append(&mut crate::serialize::float(value.yaw));
+		output.append(&mut crate::serialize::float(value.pitch));
+		output.append(&mut crate::serialize::bool(&value.on_ground));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for TeleportEntity {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self { 
+			entity_id: crate::deserialize::varint(&mut value)?,
+			x: crate::deserialize::double(&mut value)?,
+			y: crate::deserialize::double(&mut value)?,
+			z: crate::deserialize::double(&mut value)?,
+			velocity_x: crate::deserialize::double(&mut value)?,
+			velocity_y: crate::deserialize::double(&mut value)?,
+			velocity_z: crate::deserialize::double(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
+			on_ground: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x23 Game event
+//
+
+#[derive(Debug, Clone)]
+pub struct GameEvent {
+	pub event: u8,
+	pub value: f32,
+}
+
+impl TryFrom<GameEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: GameEvent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.push(value.event);
+		output.append(&mut crate::serialize::float(value.value));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for GameEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self { 
+			event: value.remove(0),
+			value: crate::deserialize::float(&mut value)?,
 		});
 	}
 }
@@ -494,160 +511,143 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 }
 
 //
-// MARK: 0x23 Game event
+// MARK: 0x2c FinishConfiguration
 //
 
 #[derive(Debug, Clone)]
-pub struct GameEvent {
-	pub event: u8,
-	pub value: f32,
-}
-
-impl TryFrom<GameEvent> for Vec<u8> {
-	type Error = Box<dyn Error>;
-
-	fn try_from(value: GameEvent) -> Result<Self, Box<dyn Error>> {
-		let mut output: Vec<u8> = Vec::new();
-
-		output.push(value.event);
-		output.append(&mut crate::serialize::float(value.value));
-
-		return Ok(output);
-	}
-}
-
-impl TryFrom<Vec<u8>> for GameEvent {
-	type Error = Box<dyn Error>;
-
-	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
-			event: value.remove(0),
-			value: crate::deserialize::float(&mut value)?,
-		});
-	}
-}
-
-//
-// MARK: 0x01 Spawn entity
-//
-
-#[derive(Debug, Clone)]
-pub struct SpawnEntity {
+pub struct Login {
 	pub entity_id: i32,
-	pub entity_uuid: u128,
-	pub entity_type: i32, //real name in the protocol is just type; enum?
-	pub x: f64,
-	pub y: f64,
-	pub z: f64,
-	pub pitch: u8,
-	pub yaw: u8,
-	pub head_yaw: u8,
-	pub data: i32,
-	pub velocity_x: i16,
-	pub velocity_y: i16,
-	pub velocity_z: i16,
+	pub is_hardcore: bool,
+	pub dimension_names: Vec<String>,
+	pub max_players: i32,
+	pub view_distance: i32,
+	pub simulation_distance: i32,
+	pub reduced_debug_info: bool,
+	pub enable_respawn_screen: bool,
+	pub do_limited_crafting: bool,
+	pub dimension_type: i32,
+	pub dimension_name: String,
+	pub hashed_seed: i64,
+	pub game_mode: u8,
+	pub previous_game_mode: i8,
+	pub is_debug: bool,
+	pub is_flat: bool,
+	pub has_death_location: bool,
+	pub death_dimension_name: Option<String>,
+	pub death_location: Option<u64>,
+	pub portal_cooldown: i32,
+	pub sea_level: i32,
+	pub enforces_secure_chat: bool,
 }
 
-impl TryFrom<SpawnEntity> for Vec<u8> {
+
+impl TryFrom<Login> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
-	fn try_from(value: SpawnEntity) -> Result<Self, Box<dyn Error>> {
+	fn try_from(value: Login) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
 
-		output.append(&mut crate::serialize::varint(value.entity_id));
-		output.append(&mut crate::serialize::uuid(&value.entity_uuid));
-		output.append(&mut crate::serialize::varint(value.entity_type));
-		output.append(&mut crate::serialize::double(value.x));
-		output.append(&mut crate::serialize::double(value.y));
-		output.append(&mut crate::serialize::double(value.z));
-		output.push(value.pitch);
-		output.push(value.yaw);
-		output.push(value.head_yaw);
-		output.append(&mut crate::serialize::varint(value.data));
-		output.append(&mut crate::serialize::short(value.velocity_x));
-		output.append(&mut crate::serialize::short(value.velocity_y));
-		output.append(&mut crate::serialize::short(value.velocity_z));
+		output.append(&mut crate::serialize::int(value.entity_id));
+		output.append(&mut crate::serialize::bool(&value.is_hardcore));
+		output.append(&mut crate::serialize::varint(value.dimension_names.len() as i32));
+		for dimension_name in &value.dimension_names {
+			output.append(&mut crate::serialize::string(dimension_name));
+		}
+		output.append(&mut crate::serialize::varint(value.max_players));
+		output.append(&mut crate::serialize::varint(value.view_distance));
+		output.append(&mut crate::serialize::varint(value.simulation_distance));
+		output.append(&mut crate::serialize::bool(&value.reduced_debug_info));
+		output.append(&mut crate::serialize::bool(&value.enable_respawn_screen));
+		output.append(&mut crate::serialize::bool(&value.do_limited_crafting));
+		output.append(&mut crate::serialize::varint(value.dimension_type));
+		output.append(&mut crate::serialize::string(&value.dimension_name));
+		output.append(&mut crate::serialize::long(value.hashed_seed));
+		output.push(value.game_mode);
+		output.push(value.previous_game_mode as u8);
+		output.append(&mut crate::serialize::bool(&value.is_debug));
+		output.append(&mut crate::serialize::bool(&value.is_flat));
+		output.append(&mut crate::serialize::bool(&value.has_death_location));
+		if value.has_death_location {
+			output.append(&mut crate::serialize::string(&value.death_dimension_name.unwrap()));
+			output.append(&mut crate::serialize::long(value.death_location.unwrap() as i64)); //probably fucked
+		}
+		output.append(&mut crate::serialize::varint(value.portal_cooldown));
+		output.append(&mut crate::serialize::varint(value.sea_level));
+		output.append(&mut crate::serialize::bool(&value.enforces_secure_chat));
 
 		return Ok(output);
 	}
 }
 
-impl TryFrom<Vec<u8>> for SpawnEntity {
+impl TryFrom<Vec<u8>> for Login {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let entity_id = crate::deserialize::int(&mut value)?;
+		println!("entity_id: {entity_id}");
+		let is_hardcore = crate::deserialize::boolean(&mut value)?;
+
+		let dimension_names_len = crate::deserialize::varint(&mut value)?;
+		let mut dimension_names: Vec<String> = Vec::new();
+		for _ in 0..dimension_names_len {
+			dimension_names.push(crate::deserialize::string(&mut value)?);
+		}
+		
+		let max_players = crate::deserialize::varint(&mut value)?;
+		let view_distance = crate::deserialize::varint(&mut value)?;
+		let simulation_distance = crate::deserialize::varint(&mut value)?;
+		let reduced_debug_info = crate::deserialize::boolean(&mut value)?;
+		let enable_respawn_screen = crate::deserialize::boolean(&mut value)?;
+		let do_limited_crafting = crate::deserialize::boolean(&mut value)?;
+		let dimension_type = crate::deserialize::varint(&mut value)?;
+		let dimension_name = crate::deserialize::string(&mut value)?;
+		let hashed_seed = crate::deserialize::long(&mut value)?;
+		let game_mode = value.remove(0);
+		let previous_game_mode = value.remove(0) as i8;
+		let is_debug = crate::deserialize::boolean(&mut value)?;
+		let is_flat = crate::deserialize::boolean(&mut value)?;
+		let has_death_location = crate::deserialize::boolean(&mut value)?;
+		
+		let death_dimension_name: Option<String> = if has_death_location {
+			Some(crate::deserialize::string(&mut value)?)
+		} else {
+			None
+		};
+
+		let death_location: Option<u64> = if has_death_location {
+			Some(crate::deserialize::long(&mut value)? as u64) //Probably fucked
+		} else {
+			None
+		};
+		
+		let portal_cooldown = crate::deserialize::varint(&mut value)?;
+		let sea_level = crate::deserialize::varint(&mut value)?;
+		let enforces_secure_chat = crate::deserialize::boolean(&mut value)?;
+		
+
 		return Ok(Self { 
-			entity_id: crate::deserialize::varint(&mut value)?,
-			entity_uuid: crate::deserialize::uuid(&mut value)?,
-			entity_type: crate::deserialize::varint(&mut value)?,
-		  x: crate::deserialize::double(&mut value)?,
-		  y: crate::deserialize::double(&mut value)?,
-		  z: crate::deserialize::double(&mut value)?,
-			pitch: value.remove(0),
-			yaw: value.remove(0),
-			head_yaw: value.remove(0),
-			data: crate::deserialize::varint(&mut value)?,
-			velocity_x: crate::deserialize::short(&mut value)?,
-			velocity_y: crate::deserialize::short(&mut value)?,
-			velocity_z: crate::deserialize::short(&mut value)?,
-		});
-	}
-}
-
-//
-// MARK: 0x20 teleport entity
-//
-
-#[derive(Debug, Clone)]
-pub struct TeleportEntity {
-	pub entity_id: i32,
-	pub x: f64,
-	pub y: f64,
-	pub z: f64,
-	pub velocity_x: f64,
-	pub velocity_y: f64,
-	pub velocity_z: f64,
-	pub yaw: f32,
-	pub pitch: f32,
-	pub on_ground: bool,
-}
-
-impl TryFrom<TeleportEntity> for Vec<u8> {
-	type Error = Box<dyn Error>;
-
-	fn try_from(value: TeleportEntity) -> Result<Self, Box<dyn Error>> {
-		let mut output: Vec<u8> = Vec::new();
-
-		output.append(&mut crate::serialize::varint(value.entity_id));
-		output.append(&mut crate::serialize::double(value.x));
-		output.append(&mut crate::serialize::double(value.y));
-		output.append(&mut crate::serialize::double(value.z));
-		output.append(&mut crate::serialize::double(value.velocity_x));
-		output.append(&mut crate::serialize::double(value.velocity_y));
-		output.append(&mut crate::serialize::double(value.velocity_z));
-		output.append(&mut crate::serialize::float(value.yaw));
-		output.append(&mut crate::serialize::float(value.pitch));
-		output.append(&mut crate::serialize::bool(&value.on_ground));
-
-		return Ok(output);
-	}
-}
-
-impl TryFrom<Vec<u8>> for TeleportEntity {
-	type Error = Box<dyn Error>;
-
-	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
-			entity_id: crate::deserialize::varint(&mut value)?,
-			x: crate::deserialize::double(&mut value)?,
-			y: crate::deserialize::double(&mut value)?,
-			z: crate::deserialize::double(&mut value)?,
-			velocity_x: crate::deserialize::double(&mut value)?,
-			velocity_y: crate::deserialize::double(&mut value)?,
-			velocity_z: crate::deserialize::double(&mut value)?,
-			yaw: crate::deserialize::float(&mut value)?,
-			pitch: crate::deserialize::float(&mut value)?,
-			on_ground: crate::deserialize::boolean(&mut value)?,
+			entity_id,
+			is_hardcore,
+			dimension_names,
+			max_players,
+			view_distance,
+			simulation_distance,
+			reduced_debug_info,
+			enable_respawn_screen,
+			do_limited_crafting,
+			dimension_type,
+			dimension_name,
+			hashed_seed,
+			game_mode,
+			previous_game_mode,
+			is_debug,
+			is_flat,
+			has_death_location,
+			death_dimension_name,
+			death_location,
+			portal_cooldown,
+			sea_level,
+			enforces_secure_chat,
 		});
 	}
 }
