@@ -26,7 +26,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 			},
 		},
     ConnectionState::Status => match packet.id {
-			0x00 => status::status_request(stream),
+			0x00 => status::status_request(stream, game),
 			0x01 => status::ping_request(&mut packet.data, stream),
 			x => {
 				//println!("got unrecognized packet with id {:2x?}", x);
@@ -50,7 +50,10 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 			},
     },
     ConnectionState::Play => match packet.id {
-      0x1c => play::set_player_position(&mut packet.data, game),
+      0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
+      0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
+      0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
+      0x1e => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
 			x => {
 				//println!("got unrecognized packet with id {:2x?}", x);
 				return false; 
@@ -75,9 +78,9 @@ pub mod handshaking {
 pub mod status {
   use super::*;
 
-  pub fn status_request(stream: &mut TcpStream) -> bool {
+  pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> bool {
     lib::utils::send_packet(stream, 0x00, lib::packets::clientbound::status::StatusResponse {
-      status: "{\"version\": {\"name\": \"Oxide 1.21.4\",\"protocol\": 769},\"players\": {\"max\": 9,\"online\": 6,\"sample\": []},\"description\": {\"text\": \"Hello oxide!\"},\"enforcesSecureChat\": true}".to_string(),
+      status: format!("{{\"version\": {{\"name\": \"Oxide 1.21.4\",\"protocol\": 769}},\"players\": {{\"max\": 123456,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": true}}", game.players.len()).to_string(),
     }.try_into().unwrap());
     return false;
   }
@@ -764,10 +767,23 @@ pub mod configuration {
   pub fn acknowledge_finish_configuration(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
-    let current_player = Player { x: 0.0, y_feet: -48.0, z: 0.0, display_name: connections.get(&stream.peer_addr().unwrap()).unwrap().player_name.clone().unwrap_or_default(), uuid: connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.clone().unwrap_or_default(), peer_socket_address: stream.peer_addr().unwrap() };
+    let current_player = Player { 
+      x: 0.0,
+      y_feet: -48.0,
+      z: 0.0,
+      yaw: 0.0,
+      pitch: 0.0,
+      display_name: connections.get(&stream.peer_addr().unwrap()).unwrap().player_name.clone().unwrap_or_default(),
+      uuid: connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.clone().unwrap_or_default(),
+      peer_socket_address: stream.peer_addr().unwrap(),
+      entity_id: game.last_created_entity_id + 1,
+      waiting_for_confirm_teleportation: true,
+      current_teleport_id: Some((std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32), //TODO: use random number instead
+    };
+    game.last_created_entity_id += 1;
 
     lib::utils::send_packet(stream, 0x2c, lib::packets::clientbound::play::Login {
-      entity_id: 123456,
+      entity_id: current_player.entity_id,
       is_hardcore: false,
       dimension_names: vec!["minecraft:overworld".to_string()],
       max_players: 9,
@@ -789,6 +805,19 @@ pub mod configuration {
       portal_cooldown: 123,
       sea_level: 64,
       enforces_secure_chat: false,
+    }.try_into().unwrap());
+
+    lib::utils::send_packet(stream, 0x42, lib::packets::clientbound::play::SynchronizePlayerPosition {
+      teleport_id: current_player.current_teleport_id.unwrap(),
+      x: current_player.x,
+      y: current_player.y_feet,
+      z: current_player.z,
+      velocity_x: 0.0,
+      velocity_y: 0.0,
+      velocity_z: 0.0,
+      yaw: current_player.yaw,
+      pitch: current_player.pitch,
+      flags: 0,
     }.try_into().unwrap());
 
     lib::utils::send_packet(stream, 0x23, lib::packets::clientbound::play::GameEvent {
@@ -831,63 +860,82 @@ pub mod configuration {
 
     game.players.push(current_player.clone());
 
-    game.players.iter()
-      .for_each(|x| {
-        match connection_streams.get(&x.peer_socket_address) {
-          Some(player_stream) => {
-            lib::utils::send_packet(player_stream, 0x40, lib::packets::clientbound::play::PlayerInfoUpdate {
-                actions: 255,
-                players: game.players.iter().map(|y| {
-                  (y.uuid, vec![
-                    lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
-                    lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-                    lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
-                    lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
-                    lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
-                    lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
-                    lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
-                    lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
-                  ])
-                }).collect(),
-            }.try_into().unwrap());
+    update_players(connection_streams, connections, game.players.clone(), None);
 
-            
-            //Dont send the spawn entity packet to the current player
-            if x.peer_socket_address != stream.peer_addr().unwrap() {
-              lib::utils::send_packet(player_stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
-                entity_id: 6416,
-                entity_uuid: current_player.uuid,
-                entity_type: 147, //Player
-                x: 0.0,
-                y: -48.0,
-                z: 0.0,
-                pitch: 0,
-                yaw: 0,
-                head_yaw: 0,
-                data: 0,
-                velocity_x: 0,
-                velocity_y: 0,
-                velocity_z: 0,
-              }.try_into().unwrap());
-            }
-            
-            lib::utils::send_packet(player_stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
-              entity_id: 6416,
-              metadata: vec![
-                lib::packets::clientbound::play::EntityMetadata {
-                  index: 9,
-                  value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-                },
-                lib::packets::clientbound::play::EntityMetadata {
-                  index: 17,
-                  value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-                },
-              ],
-            }.try_into().unwrap());
+    //Spawn other already connected player entities for newly joined player
+    for player in &game.players {
+      if player.uuid == current_player.uuid {
+        continue;
+      }
+      
+      lib::utils::send_packet(stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
+        entity_id: player.entity_id,
+        entity_uuid: player.uuid,
+        entity_type: 147, //Player
+        x: player.x,
+        y: player.y_feet,
+        z: player.z,
+        pitch: 0,
+        yaw: 0,
+        head_yaw: 0,
+        data: 0,
+        velocity_x: 0,
+        velocity_y: 0,
+        velocity_z: 0,
+      }.try_into().unwrap());
+
+      lib::utils::send_packet(stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
+        entity_id: player.entity_id,
+        metadata: vec![
+          lib::packets::clientbound::play::EntityMetadata {
+            index: 9,
+            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
           },
-          None => (),
-        }
-      });
+          lib::packets::clientbound::play::EntityMetadata {
+            index: 17,
+            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
+          },
+        ],
+      }.try_into().unwrap());
+    }
+
+    //Spawn player entity for other players that are already connected
+    for player in &game.players {
+      let player_stream = connection_streams.get(&player.peer_socket_address).unwrap();
+    
+      //Dont send the spawn entity packet to the current player
+      if player.peer_socket_address != stream.peer_addr().unwrap() {
+        lib::utils::send_packet(player_stream, 0x01, lib::packets::clientbound::play::SpawnEntity {
+          entity_id: current_player.entity_id,
+          entity_uuid: current_player.uuid,
+          entity_type: 147, //Player
+          x: current_player.x,
+          y: current_player.y_feet,
+          z: current_player.z,
+          pitch: 0,
+          yaw: 0,
+          head_yaw: 0,
+          data: 0,
+          velocity_x: 0,
+          velocity_y: 0,
+          velocity_z: 0,
+        }.try_into().unwrap());
+
+        lib::utils::send_packet(player_stream, 0x5d, lib::packets::clientbound::play::SetEntityMetadata {
+          entity_id: current_player.entity_id,
+          metadata: vec![
+            lib::packets::clientbound::play::EntityMetadata {
+              index: 9,
+              value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
+            },
+            lib::packets::clientbound::play::EntityMetadata {
+              index: 17,
+              value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
+            },
+          ],
+        }.try_into().unwrap());
+      }
+    }
 
     return false;
   }
@@ -896,18 +944,186 @@ pub mod configuration {
 pub mod play {
   use super::*;
 
-  pub fn set_player_position(data: &mut Vec<u8>, game: &mut Game) -> bool {
+  pub fn set_player_position(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.clone()).unwrap();
+    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
-    let mut player = game.players.iter().find(|x| x.uuid == 290780920670370370148908686767547353505).unwrap().clone();
-    game.players = game.players.iter().filter(|x| x.uuid != 290780920670370370148908686767547353505).cloned().collect();
+    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
+    if player.waiting_for_confirm_teleportation {
+      return false;
+    }
+    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+
+    let old_x = player.x;
+    let old_y_feet = player.y_feet;
+    let old_z = player.z;
 
     player.x = parsed_packet.x;
     player.y_feet = parsed_packet.feet_y;
     player.z = parsed_packet.z;
 
-    game.players.push(player);
+    game.players.push(player.clone());
+
+    let default_connection = Connection::default();
+    for other_stream in connection_streams {
+      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+        /* lib::utils::send_packet(other_stream.1, 0x2f, lib::packets::clientbound::play::UpdateEntityPosition {
+          entity_id: player.entity_id,
+          delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.y_feet * 4096.0) - (old_y_feet * 4096.0)) as i16,
+          delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: player.y_feet == -48.0, //TODO: add proper check
+        }.try_into().unwrap()); */
+
+        lib::utils::send_packet(other_stream.1, 0x20, lib::packets::clientbound::play::TeleportEntity {
+          entity_id: player.entity_id,
+          x: player.x,
+          y: player.y_feet,
+          z: player.z,
+          velocity_x: 0.0,
+          velocity_y: 0.0,
+          velocity_z: 0.0,
+          yaw: player.yaw,
+          pitch: player.pitch,
+          on_ground: player.y_feet == -48.0,
+        }.try_into().unwrap());
+      }
+    }
 
     return false;
   }
+
+  pub fn set_player_position_and_rotation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.clone()).unwrap();
+    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
+
+    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
+    if player.waiting_for_confirm_teleportation {
+      return false;
+    }
+    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+
+    player.x = parsed_packet.x;
+    player.y_feet = parsed_packet.feet_y;
+    player.z = parsed_packet.z;
+    player.yaw = parsed_packet.yaw % 360.0;
+    player.pitch = parsed_packet.pitch % 360.0;
+
+    game.players.push(player.clone());
+
+    let default_connection = Connection::default();
+    for other_stream in connection_streams {
+      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+        lib::utils::send_packet(other_stream.1, 0x20, lib::packets::clientbound::play::TeleportEntity {
+          entity_id: player.entity_id,
+          x: player.x,
+          y: player.y_feet,
+          z: player.z,
+          velocity_x: 0.0,
+          velocity_y: 0.0,
+          velocity_z: 0.0,
+          yaw: player.yaw,
+          pitch: player.pitch,
+          on_ground: player.y_feet == -48.0,
+        }.try_into().unwrap());
+      }
+    }
+
+    return false;
+  }
+
+  pub fn set_player_rotation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.clone()).unwrap();
+    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
+
+    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
+    if player.waiting_for_confirm_teleportation {
+      return false;
+    }
+    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+
+    //player.yaw = if parsed_packet.yaw % 360.0 > 180.0 {(parsed_packet.yaw % 360.0) - 360.0} else {parsed_packet.yaw % 360.0};
+    player.yaw = parsed_packet.yaw % 360.0;
+    player.pitch = parsed_packet.pitch % 360.0;
+
+    game.players.push(player.clone());
+
+    let default_connection = Connection::default();
+    for other_stream in connection_streams {
+      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+        lib::utils::send_packet(other_stream.1, 0x20, lib::packets::clientbound::play::TeleportEntity {
+          entity_id: player.entity_id,
+          x: player.x,
+          y: player.y_feet,
+          z: player.z,
+          velocity_x: 0.0,
+          velocity_y: 0.0,
+          velocity_z: 0.0,
+          yaw: player.yaw,
+          pitch: player.pitch,
+          on_ground: player.y_feet == -48.0,
+        }.try_into().unwrap());
+      }
+    }
+
+    return false;
+  }
+
+  pub fn confirm_teleportation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
+    let player = game.players.iter().find(|x| x.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default());
+    if player.is_none() {
+      println!("got confirm_teleportation packet from invalid player");
+      return false;
+    }
+    let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.clone()).unwrap();
+    if player.unwrap().current_teleport_id.unwrap_or_default() == parsed_packet.teleport_id {
+      game.players = game.players.clone().into_iter().map(|mut x| {
+        if player.is_some() && player.unwrap().peer_socket_address == stream.peer_addr().unwrap() {
+          x.waiting_for_confirm_teleportation = false;
+          x.current_teleport_id = None;
+          return x;
+        } else {
+          return x;
+        }
+      }).collect();
+    }
+
+    return false;
+  }
+}
+
+
+
+pub fn update_players(connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>, all_players: Vec<Player>, removed_player: Option<&Player>) {
+  connection_streams.iter()
+    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+    .for_each(|x| {
+      let mut uuids_to_remove: Vec<u128> = all_players.iter().map(|x| x.uuid).collect();
+      if removed_player.is_some() {
+        uuids_to_remove.push(removed_player.clone().unwrap().uuid);
+      }
+      lib::utils::send_packet(x.1, 0x3f, lib::packets::clientbound::play::PlayerInfoRemove {
+        uuids: uuids_to_remove,
+      }.try_into().unwrap());
+
+      lib::utils::send_packet(x.1, 0x40, lib::packets::clientbound::play::PlayerInfoUpdate {
+        actions: 255,
+        players: all_players.iter().map(|y| (y.uuid, vec![
+          lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
+          lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+          lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+          lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+          lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+          lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+          lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+          lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+        ])).collect(),
+      }.try_into().unwrap());
+
+      if removed_player.is_some() {
+        lib::utils::send_packet(x.1, 0x47, lib::packets::clientbound::play::RemoveEntities {
+          entity_ids: vec![removed_player.clone().unwrap().entity_id]
+        }.try_into().unwrap());
+      }
+    });
 }

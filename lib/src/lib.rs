@@ -31,8 +31,9 @@ impl Error for CustomError {
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub enum ConnectionState {
+  #[default]
   Handshaking,
   Transfer,
   Status,

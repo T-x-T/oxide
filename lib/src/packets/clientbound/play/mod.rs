@@ -595,6 +595,64 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 }
 
 //
+// MARK: 0x20 teleport entity
+//
+
+#[derive(Debug, Clone)]
+pub struct TeleportEntity {
+	pub entity_id: i32,
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub velocity_x: f64,
+	pub velocity_y: f64,
+	pub velocity_z: f64,
+	pub yaw: f32,
+	pub pitch: f32,
+	pub on_ground: bool,
+}
+
+impl TryFrom<TeleportEntity> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: TeleportEntity) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		output.append(&mut crate::serialize::double(value.velocity_x));
+		output.append(&mut crate::serialize::double(value.velocity_y));
+		output.append(&mut crate::serialize::double(value.velocity_z));
+		output.append(&mut crate::serialize::float(value.yaw));
+		output.append(&mut crate::serialize::float(value.pitch));
+		output.append(&mut crate::serialize::bool(&value.on_ground));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for TeleportEntity {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self { 
+			entity_id: crate::deserialize::varint(&mut value)?,
+			x: crate::deserialize::double(&mut value)?,
+			y: crate::deserialize::double(&mut value)?,
+			z: crate::deserialize::double(&mut value)?,
+			velocity_x: crate::deserialize::double(&mut value)?,
+			velocity_y: crate::deserialize::double(&mut value)?,
+			velocity_z: crate::deserialize::double(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
+			on_ground: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x2F Update entity position
 //
 
@@ -682,6 +740,45 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 			yaw: value.remove(0),
 			pitch: value.remove(0),
 			on_ground: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x3f player info remove
+//
+
+#[derive(Debug, Clone)]
+pub struct PlayerInfoRemove {
+	pub uuids: Vec<u128>,
+}
+
+impl TryFrom<PlayerInfoRemove> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PlayerInfoRemove) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.uuids.len() as i32));
+		for uuid in value.uuids {
+			output.append(&mut crate::serialize::uuid(&uuid));
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PlayerInfoRemove {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let mut uuids: Vec<u128> = Vec::new();
+		for _ in  0..crate::deserialize::varint(&mut value)? {
+			uuids.push(crate::deserialize::uuid(&mut value)?);
+		};
+
+		return Ok(Self { 
+			uuids,
 		});
 	}
 }
@@ -848,6 +945,103 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 		return Ok(Self {
 			actions,
 			players,
+		});
+	}
+}
+
+//
+// MARK: 0x42 synchronize player position
+//
+
+#[derive(Debug, Clone)]
+pub struct SynchronizePlayerPosition {
+	pub teleport_id: i32,
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub velocity_x: f64,
+	pub velocity_y: f64,
+	pub velocity_z: f64,
+	pub yaw: f32,
+	pub pitch: f32,
+	pub flags: i32,
+}
+
+impl TryFrom<SynchronizePlayerPosition> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SynchronizePlayerPosition) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.teleport_id));
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		output.append(&mut crate::serialize::double(value.velocity_x));
+		output.append(&mut crate::serialize::double(value.velocity_y));
+		output.append(&mut crate::serialize::double(value.velocity_z));
+		output.append(&mut crate::serialize::float(value.yaw));
+		output.append(&mut crate::serialize::float(value.pitch));
+		output.append(&mut crate::serialize::int(value.flags));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SynchronizePlayerPosition {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self { 
+			teleport_id: crate::deserialize::varint(&mut value)?,
+			x: crate::deserialize::double(&mut value)?,
+			y: crate::deserialize::double(&mut value)?,
+			z: crate::deserialize::double(&mut value)?,
+			velocity_x: crate::deserialize::double(&mut value)?,
+			velocity_y: crate::deserialize::double(&mut value)?,
+			velocity_z: crate::deserialize::double(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
+			flags: crate::deserialize::int(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x47 remove entities
+//
+
+#[derive(Debug, Clone)]
+pub struct RemoveEntities {
+	pub entity_ids: Vec<i32>,
+}
+
+impl TryFrom<RemoveEntities> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: RemoveEntities) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_ids.len() as i32));
+		for entity_id in value.entity_ids {
+			output.append(&mut crate::serialize::varint(entity_id));
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for RemoveEntities {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let mut entity_ids: Vec<i32> = Vec::new();
+		for _ in 0..crate::deserialize::varint(&mut value)? {
+			entity_ids.push(crate::deserialize::varint(&mut value)?);
+		};
+
+		return Ok(Self { 
+			entity_ids,
 		});
 	}
 }

@@ -11,6 +11,7 @@ pub fn initialize_server() {
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(Game {
     players: Vec::new(),
+    last_created_entity_id: 0,
   }));
 
   let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
@@ -34,7 +35,9 @@ pub fn initialize_server() {
             println!("client disconnected.");
             connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
             connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            let all_players = game_clone.lock().unwrap().players.clone();
             game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
+            packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
             //TODO: send packets to tell other players this one is gone
             break;
           }
@@ -42,7 +45,9 @@ pub fn initialize_server() {
             eprintln!("error reading from client: {}", e);
             connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
             connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+            let all_players = game_clone.lock().unwrap().players.clone();
             game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
+            packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
             //TODO: send packets to tell other players this one is gone
             break;
           }
@@ -63,6 +68,7 @@ pub fn initialize_server() {
 #[derive(Debug, Clone)]
 pub struct Game {
   pub players: Vec<Player>,
+  pub last_created_entity_id: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -70,9 +76,14 @@ pub struct Player {
   pub x: f64,
   pub y_feet: f64,
   pub z: f64,
+  pub yaw: f32,
+  pub pitch: f32,
   pub display_name: String,
   pub uuid: u128,
   pub peer_socket_address: SocketAddr,
+  pub entity_id: i32,
+  pub waiting_for_confirm_teleportation: bool,
+  pub current_teleport_id: Option<i32>,
 }
 
 #[derive(Debug, Clone)]
@@ -81,4 +92,15 @@ pub struct Connection {
   pub peer_address: SocketAddr,
   pub player_name: Option<String>,
   pub player_uuid: Option<u128>,
+}
+
+impl Default for Connection {
+  fn default() -> Self {
+    Self {
+      state: Default::default(),
+      peer_address: SocketAddr::V4(std::net::SocketAddrV4::new(std::net::Ipv4Addr::from_bits(0), 0)),
+      player_name: Default::default(),
+      player_uuid: Default::default(),
+    }
+  }
 }
