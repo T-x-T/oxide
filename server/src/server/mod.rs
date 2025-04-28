@@ -6,8 +6,8 @@ use lib::ConnectionState;
 pub mod packet;
 
 pub fn initialize_server() {
-  let listener = TcpListener::bind("127.0.0.1:25565").unwrap();
-  
+  let listener = TcpListener::bind("0.0.0.0:25565").unwrap();
+
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(Game {
     players: Vec::new(),
@@ -38,7 +38,6 @@ pub fn initialize_server() {
             let all_players = game_clone.lock().unwrap().players.clone();
             game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
             packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
-            //TODO: send packets to tell other players this one is gone
             break;
           }
           Err(e) => {
@@ -48,7 +47,6 @@ pub fn initialize_server() {
             let all_players = game_clone.lock().unwrap().players.clone();
             game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
             packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
-            //TODO: send packets to tell other players this one is gone
             break;
           }
           _ => {}
