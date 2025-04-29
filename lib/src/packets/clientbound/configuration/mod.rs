@@ -1,13 +1,18 @@
 use super::*;
 
 //
-// MARK: ClientBoundKnownPacks
+// MARK: 0x0e ClientBoundKnownPacks
 //
 #[derive(Debug, Clone, Default)]
 pub struct ClientboundKnownPacks {
 	pub known_packs: Vec<crate::Datapack>,
 }
 
+impl Packet for ClientboundKnownPacks {
+  fn get_id() -> u8 { 0x0e }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
 
 impl TryFrom<ClientboundKnownPacks> for Vec<u8> {
 	type Error = Box<dyn Error>;
@@ -18,7 +23,7 @@ impl TryFrom<ClientboundKnownPacks> for Vec<u8> {
 			.flatten()
 			.flatten()
 			.collect();
-		
+
 		return Ok(crate::serialize::prefixed_array(data, value.known_packs.len() as i32));
 	}
 }
@@ -28,7 +33,7 @@ impl TryFrom<Vec<u8>> for ClientboundKnownPacks {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let len = crate::deserialize::varint(&mut value)?;
-		
+
 		let mut output = Self::default();
 		for _ in 0..len {
 			output.known_packs.push(crate::Datapack {
@@ -43,14 +48,19 @@ impl TryFrom<Vec<u8>> for ClientboundKnownPacks {
 }
 
 //
-// MARK: RegistryData
+// MARK: 0x07 RegistryData
 //
 
 #[derive(Debug, Clone, Default)]
 pub struct RegistryData {
 	pub registry_id: String,
-	pub entry_count: i32,
 	pub entries: Vec<RegistryDataEntry>,
+}
+
+impl Packet for RegistryData {
+  fn get_id() -> u8 { 0x07 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -67,7 +77,7 @@ impl TryFrom<RegistryData> for Vec<u8> {
 		let mut data: Vec<u8> = Vec::new();
 
 		data.append(&mut crate::serialize::string(&value.registry_id));
-		data.append(&mut crate::serialize::varint(value.entry_count));
+		data.append(&mut crate::serialize::varint(value.entries.len() as i32));
 		value.entries.iter().for_each(|x| {
 			data.append(&mut crate::serialize::string(&x.entry_id));
 			data.append(&mut crate::serialize::bool(&x.has_data));
@@ -75,7 +85,7 @@ impl TryFrom<RegistryData> for Vec<u8> {
 				data.append(&mut crate::serialize::nbt(x.clone().data.unwrap()));
 			}
 		});
-		
+
 		return Ok(data);
 	}
 }
@@ -89,7 +99,6 @@ impl TryFrom<Vec<u8>> for RegistryData {
 		let mut output = RegistryData {
 			registry_id,
 			entries: Default::default(),
-			entry_count: len,
 		};
 		for _ in 0..len {
 			let entry_id = crate::deserialize::string(&mut value)?;
@@ -112,7 +121,7 @@ impl TryFrom<Vec<u8>> for RegistryData {
 }
 
 //
-// MARK: FinishConfiguration
+// MARK: 0x03 FinishConfiguration
 //
 
 #[derive(Debug, Clone, Default)]
@@ -120,6 +129,11 @@ pub struct FinishConfiguration {
 
 }
 
+impl Packet for FinishConfiguration {
+  fn get_id() -> u8 { 0x03 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
 
 impl TryFrom<FinishConfiguration> for Vec<u8> {
 	type Error = Box<dyn Error>;
@@ -134,5 +148,78 @@ impl TryFrom<Vec<u8>> for FinishConfiguration {
 
 	fn try_from(_value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {  });
+	}
+}
+
+//
+// MARK: 0x0d UpdateTags
+//
+
+#[derive(Debug, Clone, Default)]
+pub struct UpdateTags {
+  pub data: Vec<(String, Vec<Tag>)>
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Tag {
+  pub name: String,
+  pub entries: Vec<i32>,
+}
+
+impl Packet for UpdateTags {
+  fn get_id() -> u8 { 0x0d }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
+
+impl TryFrom<UpdateTags> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UpdateTags) -> Result<Self, Box<dyn Error>> {
+	  let mut data: Vec<u8> = Vec::new();
+
+		data.append(&mut crate::serialize::varint(value.data.len() as i32));
+		for entry in value.data {
+		  data.append(&mut crate::serialize::string(&entry.0));
+				data.append(&mut crate::serialize::varint(entry.1.len() as i32));
+				for tag in entry.1 {
+    		  data.append(&mut crate::serialize::string(&tag.name));
+     			data.append(&mut crate::serialize::varint(tag.entries.len() as i32));
+     			for tag_entry in tag.entries {
+     			  data.append(&mut crate::serialize::varint(tag_entry));
+  			  }
+				}
+		}
+
+		return Ok(data);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UpdateTags {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let data_len = crate::deserialize::varint(&mut value)?;
+
+		let mut data: Vec<(String, Vec<Tag>)> = Vec::new();
+		for _ in 0..data_len {
+		  let registry = crate::deserialize::string(&mut value)?;
+			let mut tags: Vec<Tag> = Vec::new();
+			let tag_len = crate::deserialize::varint(&mut value)?;
+			for _ in 0..tag_len {
+			  let tag_name = crate::deserialize::string(&mut value)?;
+				let mut entries: Vec<i32> = Vec::new();
+				let entries_len = crate::deserialize::varint(&mut value)?;
+				for _ in 0..entries_len {
+		      entries.push(crate::deserialize::varint(&mut value)?);
+				}
+				tags.push(Tag{name: tag_name, entries});
+			}
+			data.push((registry, tags));
+		}
+
+	  return Ok(Self {
+      data,
+		});
 	}
 }

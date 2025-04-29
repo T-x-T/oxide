@@ -6,6 +6,12 @@ pub struct StatusResponse {
 	pub status: String,
 }
 
+impl Packet for StatusResponse {
+  fn get_id() -> u8 { 0x00 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Status }
+}
+
 impl TryFrom<StatusResponse> for Vec<u8> {
 	type Error = Box<dyn Error>;
 

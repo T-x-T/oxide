@@ -1,4 +1,4 @@
-use super::*;
+use super::{configuration::FinishConfiguration, *};
 
 //
 // MARK: 0x01 Spawn entity
@@ -19,6 +19,12 @@ pub struct SpawnEntity {
 	pub velocity_x: i16,
 	pub velocity_y: i16,
 	pub velocity_z: i16,
+}
+
+impl Packet for SpawnEntity {
+  fn get_id() -> u8 { 0x01 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<SpawnEntity> for Vec<u8> {
@@ -49,7 +55,7 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			entity_uuid: crate::deserialize::uuid(&mut value)?,
 			entity_type: crate::deserialize::varint(&mut value)?,
@@ -68,7 +74,7 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 }
 
 //
-// MARK: 0x20 teleport entity
+// MARK: 0x1f teleport entity
 //
 
 #[derive(Debug, Clone)]
@@ -83,6 +89,12 @@ pub struct TeleportEntity {
 	pub yaw: f32,
 	pub pitch: f32,
 	pub on_ground: bool,
+}
+
+impl Packet for TeleportEntity {
+  fn get_id() -> u8 { 0x1f }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<TeleportEntity> for Vec<u8> {
@@ -110,7 +122,7 @@ impl TryFrom<Vec<u8>> for TeleportEntity {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			x: crate::deserialize::double(&mut value)?,
 			y: crate::deserialize::double(&mut value)?,
@@ -126,13 +138,19 @@ impl TryFrom<Vec<u8>> for TeleportEntity {
 }
 
 //
-// MARK: 0x23 Game event
+// MARK: 0x22 Game event
 //
 
 #[derive(Debug, Clone)]
 pub struct GameEvent {
 	pub event: u8,
 	pub value: f32,
+}
+
+impl Packet for GameEvent {
+  fn get_id() -> u8 { 0x22 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<GameEvent> for Vec<u8> {
@@ -152,7 +170,7 @@ impl TryFrom<Vec<u8>> for GameEvent {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			event: value.remove(0),
 			value: crate::deserialize::float(&mut value)?,
 		});
@@ -160,12 +178,18 @@ impl TryFrom<Vec<u8>> for GameEvent {
 }
 
 //
-// MARK: 0x27 clientbound keep alive
+// MARK: 0x26 clientbound keep alive
 //
 
 #[derive(Debug, Clone)]
 pub struct ClientboundKeepAlive {
 	pub keep_alive_id: i64,
+}
+
+impl Packet for ClientboundKeepAlive {
+  fn get_id() -> u8 { 0x26 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<ClientboundKeepAlive> for Vec<u8> {
@@ -191,7 +215,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 }
 
 //
-// MARK: 0x28 Chunk Data and Update Light
+// MARK: 0x27 Chunk Data and Update Light
 //
 
 #[derive(Debug, Clone)]
@@ -207,6 +231,12 @@ pub struct ChunkDataAndUpdateLight {
 	pub empty_block_light_mask: Vec<i64>,
 	pub sky_light_arrays: Vec<LightArray>,
 	pub block_light_arrays: Vec<LightArray>,
+}
+
+impl Packet for ChunkDataAndUpdateLight {
+  fn get_id() -> u8 { 0x27 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 #[derive(Debug, Clone)]
@@ -262,7 +292,7 @@ impl TryFrom<PalettedContainer> for Vec<u8> {
 
 	fn try_from(value: PalettedContainer) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
-		
+
 		match value {
 			PalettedContainer::SingleValued(single_valued) => {
 				output.push(single_valued.bits_per_entry);
@@ -281,7 +311,7 @@ impl TryFrom<PalettedContainer> for Vec<u8> {
 				output.append(&mut crate::serialize::varint(indirect.data_array.len() as i32));
 				for data in indirect.data_array {
 					output.append(&mut crate::serialize::long(data));
-				}			
+				}
 			},
 			PalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
@@ -379,7 +409,7 @@ impl TryFrom<ChunkSection> for Vec<u8> {
 
 impl TryFrom<&mut Vec<u8>> for ChunkSection {
 	type Error = Box<dyn Error>;
-	
+
 	fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
 		return Ok(Self {
 			block_count: crate::deserialize::short(&mut value)?,
@@ -394,7 +424,7 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 
 	fn try_from(value: ChunkDataAndUpdateLight) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
-		
+
 		output.append(&mut crate::serialize::int(value.chunk_x));
 		output.append(&mut crate::serialize::int(value.chunk_z));
 		output.append(&mut crate::serialize::nbt(value.heightmaps));
@@ -459,7 +489,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 		for _ in 0..chunk_sections {
 			data.push((&mut value).try_into()?);
 		}
-		
+
 		let block_entities_len = crate::deserialize::varint(&mut value)?;
 		let mut block_entities: Vec<BlockEntity> = Vec::new();
 		for _ in 0..block_entities_len {
@@ -525,7 +555,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			});
 		}
 
-		return Ok(Self { 
+		return Ok(Self {
 			chunk_x,
 			chunk_z,
 			heightmaps,
@@ -536,13 +566,13 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			empty_sky_light_mask,
 			empty_block_light_mask,
 			sky_light_arrays,
-			block_light_arrays,  
+			block_light_arrays,
 		});
 	}
 }
 
 //
-// MARK: 0x2c FinishConfiguration
+// MARK: 0x2b Login
 //
 
 #[derive(Debug, Clone)]
@@ -571,6 +601,11 @@ pub struct Login {
 	pub enforces_secure_chat: bool,
 }
 
+impl Packet for Login {
+  fn get_id() -> u8 { 0x2b }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
 
 impl TryFrom<Login> for Vec<u8> {
 	type Error = Box<dyn Error>;
@@ -623,7 +658,7 @@ impl TryFrom<Vec<u8>> for Login {
 		for _ in 0..dimension_names_len {
 			dimension_names.push(crate::deserialize::string(&mut value)?);
 		}
-		
+
 		let max_players = crate::deserialize::varint(&mut value)?;
 		let view_distance = crate::deserialize::varint(&mut value)?;
 		let simulation_distance = crate::deserialize::varint(&mut value)?;
@@ -638,7 +673,7 @@ impl TryFrom<Vec<u8>> for Login {
 		let is_debug = crate::deserialize::boolean(&mut value)?;
 		let is_flat = crate::deserialize::boolean(&mut value)?;
 		let has_death_location = crate::deserialize::boolean(&mut value)?;
-		
+
 		let death_dimension_name: Option<String> = if has_death_location {
 			Some(crate::deserialize::string(&mut value)?)
 		} else {
@@ -650,13 +685,13 @@ impl TryFrom<Vec<u8>> for Login {
 		} else {
 			None
 		};
-		
+
 		let portal_cooldown = crate::deserialize::varint(&mut value)?;
 		let sea_level = crate::deserialize::varint(&mut value)?;
 		let enforces_secure_chat = crate::deserialize::boolean(&mut value)?;
-		
 
-		return Ok(Self { 
+
+		return Ok(Self {
 			entity_id,
 			is_hardcore,
 			dimension_names,
@@ -684,7 +719,7 @@ impl TryFrom<Vec<u8>> for Login {
 }
 
 //
-// MARK: 0x2F Update entity position
+// MARK: 0x2e Update entity position
 //
 
 #[derive(Debug, Clone)]
@@ -694,6 +729,12 @@ pub struct UpdateEntityPosition {
 	pub delta_y: i16,
 	pub delta_z: i16,
 	pub on_ground: bool,
+}
+
+impl Packet for UpdateEntityPosition {
+  fn get_id() -> u8 { 0x2e }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<UpdateEntityPosition> for Vec<u8> {
@@ -716,7 +757,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPosition {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			delta_x: crate::deserialize::short(&mut value)?,
 			delta_y: crate::deserialize::short(&mut value)?,
@@ -727,7 +768,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPosition {
 }
 
 //
-// MARK: 0x30 Update entity position and rotation
+// MARK: 0x2f Update entity position and rotation
 //
 
 #[derive(Debug, Clone)]
@@ -739,6 +780,12 @@ pub struct UpdateEntityPositionAndRotation {
 	pub yaw: u8,
 	pub pitch: u8,
 	pub on_ground: bool,
+}
+
+impl Packet for UpdateEntityPositionAndRotation {
+  fn get_id() -> u8 { 0x2f }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<UpdateEntityPositionAndRotation> for Vec<u8> {
@@ -763,7 +810,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			delta_x: crate::deserialize::short(&mut value)?,
 			delta_y: crate::deserialize::short(&mut value)?,
@@ -776,12 +823,18 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 }
 
 //
-// MARK: 0x3f player info remove
+// MARK: 0x3e player info remove
 //
 
 #[derive(Debug, Clone)]
 pub struct PlayerInfoRemove {
 	pub uuids: Vec<u128>,
+}
+
+impl Packet for PlayerInfoRemove {
+  fn get_id() -> u8 { 0x3e }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<PlayerInfoRemove> for Vec<u8> {
@@ -808,20 +861,26 @@ impl TryFrom<Vec<u8>> for PlayerInfoRemove {
 			uuids.push(crate::deserialize::uuid(&mut value)?);
 		};
 
-		return Ok(Self { 
+		return Ok(Self {
 			uuids,
 		});
 	}
 }
 
 //
-// MARK: 0x40 PlayerInfoUpdate
+// MARK: 0x3f PlayerInfoUpdate
 //
 
 #[derive(Debug, Clone)]
 pub struct PlayerInfoUpdate {
 	pub actions: u8,
 	pub players: Vec<(u128, Vec<PlayerAction>)>,
+}
+
+impl Packet for PlayerInfoUpdate {
+  fn get_id() -> u8 { 0x3f }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 //TODO: proper types
@@ -934,7 +993,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 					for _ in 0..public_key_signature_length {
 						public_key_signature.push(value.remove(0));
 					}
-	
+
 					player_actions.push(PlayerAction::InitializeChat(Some((chat_session_id, public_key_expiry_time, encoded_public_key, public_key_signature))));
 				} else {
 					player_actions.push(PlayerAction::InitializeChat(None));
@@ -981,7 +1040,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 }
 
 //
-// MARK: 0x42 synchronize player position
+// MARK: 0x41 synchronize player position
 //
 
 #[derive(Debug, Clone)]
@@ -996,6 +1055,12 @@ pub struct SynchronizePlayerPosition {
 	pub yaw: f32,
 	pub pitch: f32,
 	pub flags: i32,
+}
+
+impl Packet for SynchronizePlayerPosition {
+  fn get_id() -> u8 { 0x41 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<SynchronizePlayerPosition> for Vec<u8> {
@@ -1023,7 +1088,7 @@ impl TryFrom<Vec<u8>> for SynchronizePlayerPosition {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { 
+		return Ok(Self {
 			teleport_id: crate::deserialize::varint(&mut value)?,
 			x: crate::deserialize::double(&mut value)?,
 			y: crate::deserialize::double(&mut value)?,
@@ -1039,12 +1104,18 @@ impl TryFrom<Vec<u8>> for SynchronizePlayerPosition {
 }
 
 //
-// MARK: 0x47 remove entities
+// MARK: 0x46 remove entities
 //
 
 #[derive(Debug, Clone)]
 pub struct RemoveEntities {
 	pub entity_ids: Vec<i32>,
+}
+
+impl Packet for RemoveEntities {
+  fn get_id() -> u8 { 0x46 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<RemoveEntities> for Vec<u8> {
@@ -1071,20 +1142,26 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 			entity_ids.push(crate::deserialize::varint(&mut value)?);
 		};
 
-		return Ok(Self { 
+		return Ok(Self {
 			entity_ids,
 		});
 	}
 }
 
 //
-// MARK: 0x5d Set Entity Metadata
+// MARK: 0x5c Set Entity Metadata
 //
 
 #[derive(Debug, Clone)]
 pub struct SetEntityMetadata {
 	pub entity_id: i32,
 	pub metadata: Vec<EntityMetadata>,
+}
+
+impl Packet for SetEntityMetadata {
+  fn get_id() -> u8 { 0x5c }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 #[derive(Debug, Clone)]
@@ -1330,7 +1407,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 			metadata.push(EntityMetadata { index, value: metadata_value });
 		}
 
-		return Ok(Self { 
+		return Ok(Self {
 			entity_id,
 			metadata,
 		});

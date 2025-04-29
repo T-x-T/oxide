@@ -6,6 +6,12 @@ pub struct LoginStart {
 	pub uuid: u128,
 }
 
+impl Packet for LoginStart {
+  fn get_id() -> u8 { 0x00 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Login }
+}
+
 impl TryFrom<LoginStart> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
@@ -33,6 +39,12 @@ impl TryFrom<Vec<u8>> for LoginStart {
 #[derive(Debug, Clone)]
 pub struct LoginAcknowledged {
 
+}
+
+impl Packet for LoginAcknowledged {
+  fn get_id() -> u8 { 0x03 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Login }
 }
 
 impl TryFrom<LoginAcknowledged> for Vec<u8> {

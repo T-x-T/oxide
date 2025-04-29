@@ -9,6 +9,12 @@ pub struct ConfirmTeleportation {
 	pub teleport_id: i32,
 }
 
+impl Packet for ConfirmTeleportation {
+  fn get_id() -> u8 { 0x00 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
 impl TryFrom<ConfirmTeleportation> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
@@ -41,6 +47,12 @@ pub struct SetPlayerPosition {
 	pub feet_y: f64,
 	pub z: f64,
 	pub flags: u8,
+}
+
+impl Packet for SetPlayerPosition {
+  fn get_id() -> u8 { 0x1c }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<SetPlayerPosition> for Vec<u8> {
@@ -85,6 +97,12 @@ pub struct SetPlayerPositionAndRotation {
 	pub flags: u8,
 }
 
+impl Packet for SetPlayerPositionAndRotation {
+  fn get_id() -> u8 { 0x1d }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
 impl TryFrom<SetPlayerPositionAndRotation> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
@@ -126,6 +144,12 @@ pub struct SetPlayerRotation {
 	pub yaw: f32,
 	pub pitch: f32,
 	pub flags: u8,
+}
+
+impl Packet for SetPlayerRotation {
+  fn get_id() -> u8 { 0x1e }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
 impl TryFrom<SetPlayerRotation> for Vec<u8> {

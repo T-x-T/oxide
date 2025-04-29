@@ -8,6 +8,12 @@ pub struct Handshake {
 	pub next_state: HandshakeNextStates,
 }
 
+impl Packet for Handshake {
+  fn get_id() -> u8 { 0x00 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Handshaking }
+}
+
 #[derive(Debug, Clone)]
 pub enum HandshakeNextStates {
 	Status = 1,
@@ -17,7 +23,7 @@ pub enum HandshakeNextStates {
 
 impl TryFrom<i32> for HandshakeNextStates {
 	type Error = Box<dyn Error>;
-	
+
 	fn try_from(value: i32) -> Result<Self, Self::Error> {
 		match value {
 			1 => Ok(HandshakeNextStates::Status),

@@ -1,12 +1,18 @@
 use super::*;
 
 //
-// MARK: ServerboundKnownPackets
+// MARK: 0x07 ServerboundKnownPackets
 //
 
 #[derive(Debug, Clone, Default)]
 pub struct ServerboundKnownPackets {
 	pub known_packs: Vec<crate::Datapack>,
+}
+
+impl Packet for ServerboundKnownPackets {
+  fn get_id() -> u8 { 0x07 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
 
 impl TryFrom<ServerboundKnownPackets> for Vec<u8> {
@@ -18,7 +24,7 @@ impl TryFrom<ServerboundKnownPackets> for Vec<u8> {
 			.flatten()
 			.flatten()
 			.collect();
-		
+
 		return Ok(crate::serialize::prefixed_array(data, value.known_packs.len() as i32));
 	}
 }
@@ -43,7 +49,7 @@ impl TryFrom<Vec<u8>> for ServerboundKnownPackets {
 }
 
 //
-// MARK: AcknowledgeFinishConfiguration
+// MARK: 0x03 AcknowledgeFinishConfiguration
 //
 
 #[derive(Debug, Clone, Default)]
@@ -51,6 +57,11 @@ pub struct AcknowledgeFinishConfiguration {
 
 }
 
+impl Packet for AcknowledgeFinishConfiguration {
+  fn get_id() -> u8 { 0x03 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
 
 impl TryFrom<AcknowledgeFinishConfiguration> for Vec<u8> {
 	type Error = Box<dyn Error>;

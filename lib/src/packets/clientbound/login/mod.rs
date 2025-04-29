@@ -7,6 +7,12 @@ pub struct LoginSuccess {
 	//TODO: missing properties array: https://minecraft.wiki/w/Java_Edition_protocol#Login_Success
 }
 
+impl Packet for LoginSuccess {
+  fn get_id() -> u8 { 0x02 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Login }
+}
+
 impl TryFrom<LoginSuccess> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
