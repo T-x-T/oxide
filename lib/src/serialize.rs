@@ -1,7 +1,7 @@
 use crate::nbt::NbtTag;
 
 const SEGMENT_BITS: u32 = 0b0111_1111;
-const CONTINUE_BIT: u8 = 0b1000_0000; 
+const CONTINUE_BIT: u8 = 0b1000_0000;
 
 pub fn varint(value: i32) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
@@ -10,13 +10,13 @@ pub fn varint(value: i32) -> Vec<u8> {
   loop {
     let mut byte = (uvalue & SEGMENT_BITS) as u8;
     uvalue >>= 7;
-    
+
     if uvalue != 0 {
       byte |= CONTINUE_BIT;
     }
-    
+
     output.push(byte);
-    
+
     if uvalue == 0 {
       break;
     }
@@ -49,11 +49,23 @@ pub fn long(input: i64) -> Vec<u8> {
   return input.to_be_bytes().to_vec();
 }
 
+pub fn unsigned_long(input: u64) -> Vec<u8> {
+  return input.to_be_bytes().to_vec();
+}
+
 pub fn string(input: &str) -> Vec<u8> {
   let mut output: Vec<u8> = varint(input.len() as i32);
 
   output.append(&mut input.as_bytes().to_vec());
 
+  return output;
+}
+
+pub fn bitset(input: &Vec<u64>) -> Vec<u8> {
+  let mut output: Vec<u8> = varint(input.len() as i32);
+  for x in input {
+    output.append(&mut unsigned_long(*x));
+  }
   return output;
 }
 

@@ -43,6 +43,12 @@ pub fn long(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
   return Ok(output);
 }
 
+pub fn unsigned_long(data: &mut Vec<u8>) -> Result<u64, Box<dyn Error>> {
+  let output: u64 = u64::from_be_bytes(data[..8].try_into().unwrap());
+  data.drain(0..8);
+  return Ok(output);
+}
+
 pub fn double(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
   let output: f64 = f64::from_be_bytes(data[..8].try_into().unwrap());
   data.drain(0..8);
@@ -62,11 +68,20 @@ pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
 }
 
 pub fn string(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
-  let length = varint(data).unwrap();
+  let length = varint(data)?;
   let raw_string: &[u8] = &data.clone()[..length as usize];
   data.drain(..length as usize);
 
   return Ok(String::from_utf8(raw_string.to_vec())?);
+}
+
+pub fn bitset(data: &mut Vec<u8>) -> Result<Vec<u64>, Box<dyn Error>> {
+  let length = varint(data)?;
+  let mut output: Vec<u64> = Vec::new();
+  for _ in 0..length {
+    output.push(unsigned_long(data)?);
+  }
+  return Ok(output);
 }
 
 const SEGMENT_BITS: u8 = 0b0111_1111;

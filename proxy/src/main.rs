@@ -201,12 +201,11 @@ fn main() {
               println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
-            // still broken
-            // if packet_id == lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id() {
-            //   let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
-            //   println!("parsed packet: {parsed_packet:?}");
-            //   parsed_client_packet = Some(parsed_packet.try_into().unwrap());
-            // }
+            if packet_id == lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id() {
+              let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+              // println!("parsed packet: {parsed_packet:?}");
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            }
             if packet_id == lib::packets::clientbound::play::PlayerInfoUpdate::get_id() {
               let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");

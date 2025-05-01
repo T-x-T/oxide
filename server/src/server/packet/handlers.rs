@@ -673,15 +673,13 @@ use super::*;
           heightmaps: vec![],
           data: vec![lib::packets::clientbound::play::ChunkSection {
             block_count: 1,
-            block_states: lib::packets::clientbound::play::PalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+            block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
               bits_per_entry: 0,
               value: 1,
-              data_array: vec![]
             }),
-            biomes: lib::packets::clientbound::play::PalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+            biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
               bits_per_entry: 0,
               value: 40,
-              data_array: vec![]
             }),
           }; 24],
           block_entities: vec![],
