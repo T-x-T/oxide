@@ -161,7 +161,7 @@ fn main() {
             }
             if packet_id == lib::packets::clientbound::configuration::RegistryData::get_id() {
               let parsed_packet = lib::packets::clientbound::configuration::RegistryData::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed packet: {parsed_packet:?}");
+              //println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
             if packet_id == lib::packets::clientbound::configuration::FinishConfiguration::get_id() {
@@ -171,7 +171,7 @@ fn main() {
             }
             if packet_id == lib::packets::clientbound::configuration::UpdateTags::get_id() {
               let parsed_packet = lib::packets::clientbound::configuration::UpdateTags::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed packet: {parsed_packet:?}");
+              //println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
           },
@@ -203,7 +203,7 @@ fn main() {
             }
             if packet_id == lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id() {
               let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
-              // println!("parsed packet: {parsed_packet:?}");
+              println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
             if packet_id == lib::packets::clientbound::play::PlayerInfoUpdate::get_id() {

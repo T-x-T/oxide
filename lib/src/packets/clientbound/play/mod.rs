@@ -288,13 +288,13 @@ pub struct SingleValued {
 pub struct Indirect {
 	pub bits_per_entry: u8,
 	pub palette: Vec<i32>,
-	pub data_array: Vec<i64>,
+	pub data_array: Vec<i32>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Direct {
 	pub bits_per_entry: u8,
-	pub data_array: Vec<i64>,
+	pub data_array: Vec<i32>,
 }
 
 impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
@@ -383,14 +383,34 @@ impl TryFrom<BlockStatesPalettedContainer> for Vec<u8> {
 				for palette in indirect.palette {
 					output.append(&mut crate::serialize::varint(palette));
 				}
-				for data in indirect.data_array {
-					output.append(&mut crate::serialize::long(data));
+				let mut data_array = indirect.data_array.clone();
+				data_array.reverse();
+				while !data_array.is_empty() {
+				  let entries_per_long = 64 / indirect.bits_per_entry;
+					let mut entry: u64 = 0;
+					for i in 0..entries_per_long {
+					  if !data_array.is_empty() {
+							let value = data_array.pop().unwrap();
+							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
+						}
+					}
+					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			},
 			BlockStatesPalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
-				for data in direct.data_array {
-					output.append(&mut crate::serialize::long(data));
+				let mut data_array = direct.data_array.clone();
+				data_array.reverse();
+				while !data_array.is_empty() {
+				  let entries_per_long = 64 / direct.bits_per_entry;
+					let mut entry: u64 = 0;
+					for i in 0..entries_per_long {
+					  if !data_array.is_empty() {
+							let value = data_array.pop().unwrap();
+							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
+						}
+					}
+					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			},
 		};
@@ -416,14 +436,32 @@ impl TryFrom<BiomesPalettedContainer> for Vec<u8> {
 				for palette in indirect.palette {
 					output.append(&mut crate::serialize::varint(palette));
 				}
-				for data in indirect.data_array {
-					output.append(&mut crate::serialize::long(data));
+				let mut data_array = indirect.data_array.clone();
+				while !data_array.is_empty() {
+				  let entries_per_long = 64 / indirect.bits_per_entry;
+					let mut entry: u64 = 0;
+					for i in 0..entries_per_long {
+					  if !data_array.is_empty() {
+							let value = data_array.remove(0);
+							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
+						}
+					}
+					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			},
 			BiomesPalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
-				for data in direct.data_array {
-					output.append(&mut crate::serialize::long(data));
+				let mut data_array = direct.data_array.clone();
+				while !data_array.is_empty() {
+				  let entries_per_long = 64 / direct.bits_per_entry;
+					let mut entry: u64 = 0;
+					for i in 0..entries_per_long {
+					  if !data_array.is_empty() {
+							let value = data_array.remove(0);
+							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
+						}
+					}
+					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			},
 		};
@@ -502,7 +540,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			}
 			block_light_arrays.push(light_array);
 		}
-		println!("uuuh hello there are some bytes maybe left over: {value:?}");
+		//println!("uuuh hello there are some bytes maybe left over: {value:?}");
 
 		return Ok(Self {
 			chunk_x,
@@ -552,11 +590,16 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
    			for _ in 0..palette_length {
    				palette.push(crate::deserialize::varint(&mut value)?);
    			}
-
-   			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
-   			let mut data_array: Vec<i64> = Vec::new();
-   			for _ in 0..data_array_length {
-   				data_array.push(crate::deserialize::long(&mut value)?);
+        let entries_per_long = 64 / bits_per_entry as i32;
+   			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
+   			let mut data_array: Vec<i32> = Vec::new();
+   			for _ in 0..long_array_length {
+          let value = crate::deserialize::unsigned_long(&mut value)?;
+          for i in 0..entries_per_long {
+            let entry = value.clone() >> i * bits_per_entry as i32;
+            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            data_array.push(entry as i32);
+          }
    			}
    			Ok(BlockStatesPalettedContainer::Indirect(Indirect{
    				bits_per_entry,
@@ -565,11 +608,17 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
    			}))
    		}
    		_ => {
-   			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
-   			let mut data_array: Vec<i64> = Vec::new();
-   			for _ in 0..data_array_length {
-   				data_array.push(crate::deserialize::long(&mut value)?);
-   			}
+        let entries_per_long = 64 / bits_per_entry as i32;
+  			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
+  			let mut data_array: Vec<i32> = Vec::new();
+  			for _ in 0..long_array_length {
+          let value = crate::deserialize::unsigned_long(&mut value)?;
+          for i in 0..entries_per_long {
+            let entry = value.clone() >> i * bits_per_entry as i32;
+            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            data_array.push(entry as i32);
+          }
+  			}
    			Ok(BlockStatesPalettedContainer::Direct(Direct {
    				bits_per_entry,
    				data_array,
@@ -600,10 +649,16 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
    				palette.push(crate::deserialize::varint(&mut value)?);
    			}
 
-   			let data_array_length = (f64::from(4*4*4) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
-   			let mut data_array: Vec<i64> = Vec::new();
+   			let entries_per_long = 64 / bits_per_entry as i32;
+   			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
+   			let mut data_array: Vec<i32> = Vec::new();
    			for _ in 0..data_array_length {
-   				data_array.push(crate::deserialize::long(&mut value)?);
+          let value = crate::deserialize::unsigned_long(&mut value)?;
+          for i in 0..entries_per_long {
+            let entry = value.clone() >> i * bits_per_entry as i32;
+            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            data_array.push(entry as i32);
+          }
    			}
    			Ok(BiomesPalettedContainer::Indirect(Indirect{
    				bits_per_entry,
@@ -612,10 +667,16 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
    			}))
    		}
    		_ => {
-   			let data_array_length = (f64::from(4*4*4) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
-   			let mut data_array: Vec<i64> = Vec::new();
+   			let entries_per_long = 64 / bits_per_entry as i32;
+   			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
+   			let mut data_array: Vec<i32> = Vec::new();
    			for _ in 0..data_array_length {
-   				data_array.push(crate::deserialize::long(&mut value)?);
+          let value = crate::deserialize::unsigned_long(&mut value)?;
+          for i in 0..entries_per_long {
+            let entry = value.clone() >> i * bits_per_entry as i32;
+            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            data_array.push(entry as i32);
+          }
    			}
    			Ok(BiomesPalettedContainer::Direct(Direct {
    				bits_per_entry,

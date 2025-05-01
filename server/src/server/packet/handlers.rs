@@ -672,10 +672,10 @@ use super::*;
           chunk_z: z,
           heightmaps: vec![],
           data: vec![lib::packets::clientbound::play::ChunkSection {
-            block_count: 1,
-            block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-              bits_per_entry: 0,
-              value: 1,
+            block_count: 4096,
+            block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+              bits_per_entry: 15,
+              data_array: (0..4096).map(|x| x + if x < 0 {x*-1} else {x}+ if z < 0 {z*-1} else {z}).collect(),
             }),
             biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
               bits_per_entry: 0,
