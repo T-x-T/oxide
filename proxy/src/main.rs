@@ -201,45 +201,24 @@ fn main() {
               println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
-            /* if packet_id == lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id() {
-              //println!("before parsing:\n\n{:?}\n\n", client_packet.data);
-              let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone());
-              if parsed_packet.is_ok() {
-                //println!("parsed packet: {parsed_packet:?}");
-
-                let serialized: Result<Vec<u8>, _> = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_into(parsed_packet.as_ref().unwrap().clone());
-                if serialized.is_ok() {
-                  let parsed_second_time: Result<lib::packets::clientbound::play::ChunkDataAndUpdateLight, _> = serialized.unwrap().try_into();
-                  if parsed_second_time.is_err() {
-                    println!("got error trying to parse second time:{}", parsed_second_time.as_ref().clone().err().unwrap());
-                    println!("before parsing:\n\n{:?}\n\n", client_packet.data);
-                    println!("parsed:\n\n{:?}\n\n", parsed_packet);
-                    println!("after parsing:\n\n{:?}\n\n", parsed_second_time.unwrap());
-                  }
-                } else {
-                  println!("got error trying to serialize again:{}", serialized.err().unwrap());
-                }
-
-
-                //println!("parsed:\n\n{:?}\n\n", parsed_packet);
-                parsed_client_packet = Some(parsed_packet.unwrap().try_into().unwrap());
-                //println!("after parsing:\n\n{:?}\n\n", parsed_client_packet.clone().unwrap());
-              } else {
-                println!("got error trying to parse ChunkDataAndUpdateLight packet: {}", parsed_packet.err().unwrap());
-                println!("before parsing:\n\n{:?}\n\n", client_packet.data);
-              }
-            } */
+            // still broken
+            // if packet_id == lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id() {
+            //   let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+            //   println!("parsed packet: {parsed_packet:?}");
+            //   parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            // }
             if packet_id == lib::packets::clientbound::play::PlayerInfoUpdate::get_id() {
               let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
               //no idea why this crashes the client
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
-            if packet_id == lib::packets::clientbound::play::SetEntityMetadata::get_id() {
-              let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
-              println!("parsed packet: {parsed_packet:?}");
-              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
-            }
+            // Disabled because implementation is still incomplete
+            // if packet_id == lib::packets::clientbound::play::SetEntityMetadata::get_id() {
+            //   let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
+            //   println!("parsed packet: {parsed_packet:?}");
+            //   parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            // }
           },
           lib::ConnectionState::Transfer => {
 

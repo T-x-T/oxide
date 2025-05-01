@@ -609,7 +609,7 @@ use super::*;
 
     let current_player = Player {
       x: 0.0,
-      y_feet: -48.0,
+      y_feet: 320.0,
       z: 0.0,
       yaw: 0.0,
       pitch: 0.0,
@@ -670,20 +670,17 @@ use super::*;
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id(), lib::packets::clientbound::play::ChunkDataAndUpdateLight {
           chunk_x: x,
           chunk_z: z,
-          heightmaps: lib::nbt::NbtTag::TagCompound(None, vec![
-            lib::nbt::NbtTag::LongArray(Some("MOTION_BLOCKING".to_string()), vec![]),
-            lib::nbt::NbtTag::LongArray(Some("MOTION_BLOCKING".to_string()), vec![]),
-          ]),
+          heightmaps: vec![],
           data: vec![lib::packets::clientbound::play::ChunkSection {
             block_count: 1,
             block_states: lib::packets::clientbound::play::PalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-              bits_per_entry: 1,
+              bits_per_entry: 0,
               value: 1,
-              data_array: vec![1]
+              data_array: vec![]
             }),
             biomes: lib::packets::clientbound::play::PalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
               bits_per_entry: 0,
-              value: 0,
+              value: 40,
               data_array: vec![]
             }),
           }; 24],
@@ -711,7 +708,7 @@ use super::*;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::get_id(), lib::packets::clientbound::play::SpawnEntity {
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
-        entity_type: 147, //Player
+        entity_type: 148, //Player
         x: player.x,
         y: player.y_feet,
         z: player.z,
@@ -749,7 +746,7 @@ use super::*;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SpawnEntity::get_id(), lib::packets::clientbound::play::SpawnEntity {
         entity_id: current_player.entity_id,
         entity_uuid: current_player.uuid,
-        entity_type: 147, //Player
+        entity_type: 148, //Player
         x: current_player.x,
         y: current_player.y_feet,
         z: current_player.z,

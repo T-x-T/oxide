@@ -1,4 +1,4 @@
-use super::{configuration::FinishConfiguration, *};
+use super::*;
 
 //
 // MARK: 0x01 Spawn entity
@@ -222,7 +222,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 pub struct ChunkDataAndUpdateLight {
 	pub chunk_x: i32,
 	pub chunk_z: i32,
-	pub heightmaps: NbtTag,
+	pub heightmaps: Vec<HeightMap>,
 	pub data: Vec<ChunkSection>,
 	pub block_entities: Vec<BlockEntity>,
 	pub sky_light_mask: Vec<i64>,
@@ -241,8 +241,13 @@ impl Packet for ChunkDataAndUpdateLight {
 
 #[derive(Debug, Clone)]
 pub struct LightArray {
-	pub len: i32,
 	pub array: Vec<u8>,
+}
+
+#[derive(Clone, Debug)]
+pub struct HeightMap {
+  pub data_type: i32,
+  pub data: Vec<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -297,7 +302,6 @@ impl TryFrom<PalettedContainer> for Vec<u8> {
 			PalettedContainer::SingleValued(single_valued) => {
 				output.push(single_valued.bits_per_entry);
 				output.append(&mut crate::serialize::varint(single_valued.value));
-				output.append(&mut crate::serialize::varint(single_valued.data_array.len() as i32));
 				for data in single_valued.data_array {
 					output.append(&mut crate::serialize::long(data));
 				}
@@ -308,14 +312,12 @@ impl TryFrom<PalettedContainer> for Vec<u8> {
 				for palette in indirect.palette {
 					output.append(&mut crate::serialize::varint(palette));
 				}
-				output.append(&mut crate::serialize::varint(indirect.data_array.len() as i32));
 				for data in indirect.data_array {
 					output.append(&mut crate::serialize::long(data));
 				}
 			},
 			PalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
-				output.append(&mut crate::serialize::varint(direct.data_array.len() as i32));
 				for data in direct.data_array {
 					output.append(&mut crate::serialize::long(data));
 				}
@@ -331,65 +333,6 @@ impl TryFrom<Vec<u8>> for PalettedContainer {
 
 	fn try_from(value: Vec<u8>) -> Result<Self, Self::Error> {
 		return value.try_into();
-	}
-}
-
-impl TryFrom<&mut Vec<u8>> for PalettedContainer {
-	type Error = Box<dyn Error>;
-
-	fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		let bits_per_entry = value.remove(0);
-
-		match bits_per_entry {
-			0 => {
-				let value_entry = crate::deserialize::varint(&mut value)?;
-				let data_array_length = crate::deserialize::varint(&mut value)?;
-				let mut data_array: Vec<i64> = Vec::new();
-				for _ in 0..data_array_length {
-					data_array.push(crate::deserialize::long(&mut value)?);
-				}
-				let single_valued = SingleValued {
-					bits_per_entry,
-					value: value_entry,
-					data_array,
-				};
-
-				return Ok(PalettedContainer::SingleValued(single_valued));
-			},
-			1..=14 => {
-				let palette_length = crate::deserialize::varint(&mut value)?;
-				let mut palette: Vec<i32> = Vec::new();
-				for _ in 0..palette_length {
-					palette.push(crate::deserialize::varint(&mut value)?);
-				}
-
-				let data_array_length = crate::deserialize::varint(&mut value)?;
-				let mut data_array: Vec<i64> = Vec::new();
-				for _ in 0..data_array_length {
-					data_array.push(crate::deserialize::long(&mut value)?);
-				}
-				let indirect = Indirect {
-					bits_per_entry,
-					data_array,
-					palette,
-				};
-
-				return Ok(PalettedContainer::Indirect(indirect));
-			}
-			_ => {
-				let data_array_length = crate::deserialize::varint(&mut value)?;
-				let mut data_array: Vec<i64> = Vec::new();
-				for _ in 0..data_array_length {
-					data_array.push(crate::deserialize::long(&mut value)?);
-				}
-				let direct = Direct {
-					bits_per_entry,
-					data_array,
-				};
-
-				return Ok(PalettedContainer::Direct(direct));
-			}
-		}
 	}
 }
 
@@ -411,10 +354,123 @@ impl TryFrom<&mut Vec<u8>> for ChunkSection {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
-		return Ok(Self {
-			block_count: crate::deserialize::short(&mut value)?,
-			block_states: value.try_into()?,
-			biomes: value.try_into()?,
+	  let block_count = crate::deserialize::short(&mut value)?;
+
+  	let bits_per_entry = value.remove(0);
+  	println!("hello 2.1");
+    println!("hello blocks");
+    println!("bits_per_entry is {bits_per_entry}");
+  	let block_states: PalettedContainer = match bits_per_entry {
+  		0 => {
+  		  println!("hello 2.2");
+        let value_entry = crate::deserialize::varint(&mut value)?;
+        println!("value_entry {value_entry}");
+  		  println!("hello 2.3");
+  			PalettedContainer::SingleValued(SingleValued {
+  				bits_per_entry,
+  				value: value_entry,
+  				data_array: vec![],
+  			})
+      },
+  		1..=14 => {
+  		  println!("hello 2.4");
+  			let palette_length = crate::deserialize::varint(&mut value)?;
+  			let mut palette: Vec<i32> = Vec::new();
+  			for _ in 0..palette_length {
+  				palette.push(crate::deserialize::varint(&mut value)?);
+  			}
+  		  println!("hello 2.5");
+
+  			//let data_array_length = crate::deserialize::varint(&mut value)?;
+  			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
+  			let mut data_array: Vec<i64> = Vec::new();
+  		  println!("hello 2.6 the data_array_length is {data_array_length}");
+  			for _ in 0..data_array_length {
+  				data_array.push(crate::deserialize::long(&mut value)?);
+  			}
+  		  println!("hello 2.7");
+  			PalettedContainer::Indirect(Indirect{
+  				bits_per_entry,
+  				data_array,
+  				palette,
+  			})
+  		}
+  		_ => {
+  		  println!("hello 2.8");
+  			//let data_array_length = crate::deserialize::varint(&mut value)?;
+  			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
+  			let mut data_array: Vec<i64> = Vec::new();
+  		  println!("hello 2.9 the data_array_length is {data_array_length}");
+  			for _ in 0..data_array_length {
+  				data_array.push(crate::deserialize::long(&mut value)?);
+  			}
+  		  println!("hello 2.10");
+  			PalettedContainer::Direct(Direct {
+  				bits_per_entry,
+  				data_array,
+  			})
+  		}
+  	};
+    println!("hello biomes");
+    let bits_per_entry = value.remove(0);
+    println!("bits_per_entry is {bits_per_entry}");
+  	let biomes: PalettedContainer = match bits_per_entry {
+  		0 => {
+  		  println!("hello 2.2");
+  			let value_entry = crate::deserialize::varint(&mut value)?;
+        println!("value_entry {value_entry}");
+  		  println!("hello 2.3");
+  			PalettedContainer::SingleValued(SingleValued {
+  				bits_per_entry,
+  				value: value_entry,
+  				data_array: vec![],
+  			})
+      },
+  		1..=5 => {
+  		  println!("hello 2.4");
+  			let palette_length = crate::deserialize::varint(&mut value)?;
+  			let mut palette: Vec<i32> = Vec::new();
+  			for _ in 0..palette_length {
+  				palette.push(crate::deserialize::varint(&mut value)?);
+  			}
+        println!("biomes palette: {palette:?}");
+  		  println!("hello 2.5");
+
+  			//let data_array_length = crate::deserialize::varint(&mut value)?;
+  			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
+  			let mut data_array: Vec<i64> = Vec::new();
+  		  println!("hello 2.6 the data_array_length is {data_array_length}");
+  			for _ in 0..data_array_length {
+  				data_array.push(crate::deserialize::long(&mut value)?);
+  			}
+  		  println!("hello 2.7");
+  			PalettedContainer::Indirect(Indirect{
+  				bits_per_entry,
+  				data_array,
+  				palette,
+  			})
+  		}
+  		_ => {
+  		  println!("hello 2.8");
+  			//let data_array_length = crate::deserialize::varint(&mut value)?;
+  			let data_array_length = (f64::from(16*16*16) / f64::from(64 / bits_per_entry as i32)).ceil() as i32;
+  			let mut data_array: Vec<i64> = Vec::new();
+  		  println!("hello 2.9 the data_array_length is {data_array_length}");
+  			for _ in 0..data_array_length {
+  				data_array.push(crate::deserialize::long(&mut value)?);
+  			}
+  		  println!("hello 2.10");
+  			PalettedContainer::Direct(Direct {
+  				bits_per_entry,
+  				data_array,
+  			})
+  		}
+  	};
+
+	  return Ok(Self {
+			block_count,
+			block_states,
+			biomes,
 		});
 	}
 }
@@ -427,7 +483,16 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 
 		output.append(&mut crate::serialize::int(value.chunk_x));
 		output.append(&mut crate::serialize::int(value.chunk_z));
-		output.append(&mut crate::serialize::nbt(value.heightmaps));
+
+		output.append(&mut crate::serialize::varint(value.heightmaps.len() as i32));
+		for heightmap in value.heightmaps {
+      output.append(&mut crate::serialize::varint(heightmap.data_type));
+      output.append(&mut crate::serialize::varint(heightmap.data.len() as i32));
+      for heightmap_data in heightmap.data {
+        output.append(&mut crate::serialize::long(heightmap_data));
+      }
+		}
+
 		let mut chunk_section_data: Vec<u8> = Vec::new();
 		for chunk_section in value.data {
 			chunk_section_data.append(&mut chunk_section.try_into()?);
@@ -480,27 +545,52 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		let chunk_x = crate::deserialize::int(&mut value)?;
+	  println!("hello_1");
+	  let chunk_x = crate::deserialize::int(&mut value)?;
+	  println!("hello_1.1");
 		let chunk_z = crate::deserialize::int(&mut value)?;
-		let heightmaps = crate::deserialize::nbt(&mut value)?;
+	  println!("hello_1.2");
+		let mut heightmaps: Vec<HeightMap> = Vec::new();
+		let heightmaps_len = crate::deserialize::varint(&mut value)?;
+		for _ in 0..heightmaps_len {
+		  let data_type = crate::deserialize::varint(&mut value)?;
+			let data_len = crate::deserialize::varint(&mut value)?;
+			let mut data: Vec<i64> = Vec::new();
+			for _ in 0..data_len {
+			  data.push(crate::deserialize::long(&mut value)?);
+			}
+			heightmaps.push(HeightMap { data_type, data });
+		}
+	  println!("hello_1.3");
+		println!("data thats left after parsing heightmaps: {value:?}");
 		let _size = crate::deserialize::varint(&mut value)?;
+	  println!("hello_1.4");
 		let mut data: Vec<ChunkSection> = Vec::new();
+	  println!("hello_2");
 		let chunk_sections = 24;
-		for _ in 0..chunk_sections {
+		for i in 0..chunk_sections {
+      println!("starting deserializing chunk section {i}");
 			data.push((&mut value).try_into()?);
 		}
 
+	  println!("hello_3");
 		let block_entities_len = crate::deserialize::varint(&mut value)?;
 		let mut block_entities: Vec<BlockEntity> = Vec::new();
+	  println!("hello_4");
 		for _ in 0..block_entities_len {
+	    println!("hello_4.1");
 			let packed_xz = value.remove(0);
+	    println!("hello_4.2");
 			let y = crate::deserialize::short(&mut value)?;
+	    println!("hello_4.3");
 			let block_entity_type = crate::deserialize::varint(&mut value)?;
+	    println!("hello_4.4");
 			let data = if *value.first().unwrap() == 0 {
 				None
 			} else {
 				Some(crate::deserialize::nbt(&mut value)?)
 			};
+	    println!("hello_4.5");
 			block_entities.push(BlockEntity {
 				packed_xz,
 				y,
@@ -508,26 +598,31 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 				data,
 			});
 		}
+	  println!("hello_5");
 		let sky_light_mask_len = crate::deserialize::varint(&mut value)?;
 		let mut sky_light_mask: Vec<i64> = Vec::new();
 		for _ in 0..sky_light_mask_len {
 			sky_light_mask.push(crate::deserialize::long(&mut value)?);
 		}
+	  println!("hello_6");
 		let block_light_mask_len = crate::deserialize::varint(&mut value)?;
 		let mut block_light_mask: Vec<i64> = Vec::new();
 		for _ in 0..block_light_mask_len {
 			block_light_mask.push(crate::deserialize::long(&mut value)?);
 		}
+	  println!("hello_7");
 		let empty_sky_light_mask_len = crate::deserialize::varint(&mut value)?;
 		let mut empty_sky_light_mask: Vec<i64> = Vec::new();
 		for _ in 0..empty_sky_light_mask_len {
 			empty_sky_light_mask.push(crate::deserialize::long(&mut value)?);
 		}
+	  println!("hello_8");
 		let empty_block_light_mask_len = crate::deserialize::varint(&mut value)?;
 		let mut empty_block_light_mask: Vec<i64> = Vec::new();
 		for _ in 0..empty_block_light_mask_len {
 			empty_block_light_mask.push(crate::deserialize::long(&mut value)?);
 		}
+	  println!("hello_9");
 		let sky_light_arrays_len = crate::deserialize::varint(&mut value)?;
 		let mut sky_light_arrays: Vec<LightArray> = Vec::new();
 		for _ in 0..sky_light_arrays_len {
@@ -537,10 +632,10 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 				array.push(value.remove(0));
 			}
 			sky_light_arrays.push(LightArray {
-				len,
 				array,
 			});
 		}
+	  println!("hello_10");
 		let block_light_arrays_len = crate::deserialize::varint(&mut value)?;
 		let mut block_light_arrays: Vec<LightArray> = Vec::new();
 		for _ in 0..block_light_arrays_len {
@@ -550,11 +645,11 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 				array.push(value.remove(0));
 			}
 			block_light_arrays.push(LightArray {
-				len,
 				array,
 			});
 		}
 
+	  println!("hello_11");
 		return Ok(Self {
 			chunk_x,
 			chunk_z,

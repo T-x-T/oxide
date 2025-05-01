@@ -70,7 +70,7 @@ pub fn string(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
 }
 
 const SEGMENT_BITS: u8 = 0b0111_1111;
-const CONTINUE_BIT: u8 = 0b1000_0000; 
+const CONTINUE_BIT: u8 = 0b1000_0000;
 
 pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
   if data.is_empty() {
@@ -119,7 +119,7 @@ pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
   bytes[0] = data.remove(0);
   bytes[1] = data.remove(0);
   let len = i16::from_be_bytes(bytes);
-  
+
   let raw_string: &[u8] = &data.clone()[..len as usize];
   data.drain(..len as usize);
   let string = String::from_utf8(raw_string.to_vec())?;
@@ -138,7 +138,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
   } else {
     None
   };
-  
+
   let id = data.pop().unwrap();
   let len = int(&mut data)?;
 
@@ -229,7 +229,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
         list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
       }
       data.reverse();
-      
+
       NbtTag::List(description, list)
     },
     0x0a => {
@@ -267,7 +267,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       return Err(Box::new(CustomError::InvalidNbtTag(x)));
     }
   };
-  
+
   data.reverse();
 
   return Ok(output);
@@ -332,7 +332,7 @@ fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool)
       }
     };
   }
-  
+
   let output = NbtTag::TagCompound(description, tags);
 
   return Ok(output);
@@ -425,7 +425,7 @@ mod test {
     ]);
 
     let mut nbt_bytes: Vec<u8> = vec![10,2,0,17,77,97,120,78,101,97,114,98,121,69,110,116,105,116,105,101,115,0,6,2,0,19,82,101,113,117,105,114,101,100,80,108,97,121,101,114,82,97,110,103,101,0,16,2,0,10,83,112,97,119,110,67,111,117,110,116,0,4,10,0,9,83,112,97,119,110,68,97,116,97,10,0,6,101,110,116,105,116,121,8,0,2,105,100,0,16,109,105,110,101,99,114,97,102,116,58,115,112,105,100,101,114,0,0,2,0,13,77,97,120,83,112,97,119,110,68,101,108,97,121,3,32,2,0,10,83,112,97,119,110,82,97,110,103,101,0,4,2,0,5,68,101,108,97,121,0,20,2,0,13,77,105,110,83,112,97,119,110,68,101,108,97,121,0,200,0];
-  
+
     assert_eq!(nbt(&mut nbt_bytes).unwrap(), nbt_parsed);
   }
 }
