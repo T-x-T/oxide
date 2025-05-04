@@ -74,6 +74,84 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 }
 
 //
+// MARK: 0x04 acknowledge block change
+//
+
+#[derive(Debug, Clone)]
+pub struct AcknowledgeBlockChange {
+	pub sequence_id: i32,
+}
+
+impl Packet for AcknowledgeBlockChange {
+  fn get_id() -> u8 { 0x04 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<AcknowledgeBlockChange> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: AcknowledgeBlockChange) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.sequence_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			sequence_id: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x08 block update
+//
+
+#[derive(Debug, Clone)]
+pub struct BlockUpdate {
+	pub location: u64,
+	pub block_id: i32,
+}
+
+impl Packet for BlockUpdate {
+  fn get_id() -> u8 { 0x08 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<BlockUpdate> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: BlockUpdate) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::unsigned_long(value.location));
+		output.append(&mut crate::serialize::varint(value.block_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for BlockUpdate {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::unsigned_long(&mut value)?,
+			block_id: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+
+//
 // MARK: 0x1f teleport entity
 //
 

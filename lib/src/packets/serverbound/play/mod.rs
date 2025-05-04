@@ -177,3 +177,49 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 		})
 	}
 }
+
+//
+// MARK: 0x27 player action
+//
+
+#[derive(Debug, Clone)]
+pub struct PlayerAction {
+  pub status: i32,
+  pub location: u64,
+  pub face: u8,
+  pub sequence: i32,
+}
+
+impl Packet for PlayerAction {
+  fn get_id() -> u8 { 0x27 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<PlayerAction> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PlayerAction) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.status));
+		result.append(&mut crate::serialize::unsigned_long(value.location));
+		result.push(value.face);
+		result.append(&mut crate::serialize::varint(value.sequence));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PlayerAction {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			status: crate::deserialize::varint(&mut value)?,
+			location: crate::deserialize::unsigned_long(&mut value)?,
+			face: value.remove(0),
+			sequence: crate::deserialize::varint(&mut value)?,
+		})
+	}
+}

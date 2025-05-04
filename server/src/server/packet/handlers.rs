@@ -52,6 +52,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
+      0x27 => play::player_action(&mut packet.data, stream, connection_streams),
       0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       0x1e => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
@@ -810,7 +811,7 @@ use super::*;
 }
 
 pub mod play {
-  use lib::packets::Packet;
+  use lib::{packets::Packet, utils::send_packet};
 
 use super::*;
 
@@ -958,6 +959,21 @@ use super::*;
       }).collect();
     }
 
+    return false;
+  }
+
+  pub fn player_action(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.clone()).unwrap();
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into().unwrap());
+
+    for stream in connection_streams {
+      send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
+        location: parsed_packet.location,
+        block_id: 0,
+      }.try_into().unwrap());
+    }
     return false;
   }
 }

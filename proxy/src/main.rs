@@ -41,7 +41,7 @@ fn main() {
         let mut parsed_server_packet: Option<Vec<u8>> = None;
 
         let packet_id = server_packet.id;
-        println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("received serverbound packet: {packet_id} {:#04x}", packet_id);
         //println!("data: {:?}", server_packet.raw_data);
 
         let current_state = connection.lock().unwrap().state.clone();
@@ -93,6 +93,21 @@ fn main() {
               println!("parsed packet: {parsed_packet:?}");
               parsed_server_packet = Some(parsed_packet.try_into().unwrap());
             }
+            if packet_id == lib::packets::serverbound::play::SetPlayerPositionAndRotation::get_id() {
+              let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+            }
+            if packet_id == lib::packets::serverbound::play::SetPlayerRotation::get_id() {
+              let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+            }
+            if packet_id == lib::packets::serverbound::play::PlayerAction::get_id() {
+              let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+            }
           },
           lib::ConnectionState::Transfer => {
 
@@ -130,7 +145,7 @@ fn main() {
         let mut parsed_client_packet: Option<Vec<u8>> = None;
 
         let packet_id = client_packet.id;
-        println!("received clientbound packet: {packet_id} {:#04x}", packet_id);
+        //println!("received clientbound packet: {packet_id} {:#04x}", packet_id);
         //println!("data: {:?}", client_packet.raw_data);
 
         let current_state = connection.lock().unwrap().state.clone();
@@ -209,7 +224,16 @@ fn main() {
             if packet_id == lib::packets::clientbound::play::PlayerInfoUpdate::get_id() {
               let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
-              //no idea why this crashes the client
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            }
+            if packet_id == lib::packets::clientbound::play::AcknowledgeBlockChange::get_id() {
+              let parsed_packet = lib::packets::clientbound::play::AcknowledgeBlockChange::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            }
+            if packet_id == lib::packets::clientbound::play::BlockUpdate::get_id() {
+              let parsed_packet = lib::packets::clientbound::play::BlockUpdate::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
               parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             }
             // Disabled because implementation is still incomplete
