@@ -609,7 +609,7 @@ use super::*;
 
     let current_player = Player {
       x: 0.0,
-      y_feet: 320.0,
+      y_feet: -48.0,
       z: 0.0,
       yaw: 0.0,
       pitch: 0.0,
@@ -665,23 +665,40 @@ use super::*;
       value: 0.0,
     }.try_into().unwrap());
 
-    for x in -20..21 {
-      for z in -20..21 {
+    let x_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11, 12, -12, 13, -13, 14, -14, 15, -15, 16, -16, 17, -17, 18, -18, 19, -19, 20, -20];
+    let z_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11, 12, -12, 13, -13, 14, -14, 15, -15, 16, -16, 17, -17, 18, -18, 19, -19, 20, -20];
+    for x in &x_vec {
+      for z in &z_vec {
+        let filled_chunk_sections = vec![lib::packets::clientbound::play::ChunkSection {
+          block_count: 4096,
+          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+            bits_per_entry: 15,
+            //data_array: (0..4096).map(|i| i + if i < 0 {i*-1} else {i}+ if *z < 0 {z*-1} else {*z}).collect(),
+            data_array: vec![1; 4096],
+          }),
+          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+            bits_per_entry: 0,
+            value: 40,
+          }),
+        }; 1];
+        let empty_chunk_sections = vec![lib::packets::clientbound::play::ChunkSection {
+          block_count: 0,
+          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+            bits_per_entry: 0,
+            value: 0,
+          }),
+          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+            bits_per_entry: 0,
+            value: 40,
+          }),
+        }; 23];
+        let mut all_chunk_sections = filled_chunk_sections.clone();
+        all_chunk_sections.append(&mut empty_chunk_sections.clone());
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id(), lib::packets::clientbound::play::ChunkDataAndUpdateLight {
-          chunk_x: x,
-          chunk_z: z,
+          chunk_x: *x,
+          chunk_z: *z,
           heightmaps: vec![],
-          data: vec![lib::packets::clientbound::play::ChunkSection {
-            block_count: 4096,
-            block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
-              bits_per_entry: 15,
-              data_array: (0..4096).map(|x| x + if x < 0 {x*-1} else {x}+ if z < 0 {z*-1} else {z}).collect(),
-            }),
-            biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-              bits_per_entry: 0,
-              value: 40,
-            }),
-          }; 24],
+          data: all_chunk_sections,
           block_entities: vec![],
           sky_light_mask: vec![],
           block_light_mask: vec![],

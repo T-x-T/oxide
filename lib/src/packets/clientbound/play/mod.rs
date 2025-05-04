@@ -377,36 +377,34 @@ impl TryFrom<BlockStatesPalettedContainer> for Vec<u8> {
 				output.push(single_valued.bits_per_entry);
 				output.append(&mut crate::serialize::varint(single_valued.value));
 			},
-			BlockStatesPalettedContainer::Indirect(indirect) => {
+			BlockStatesPalettedContainer::Indirect(mut indirect) => {
 				output.push(indirect.bits_per_entry);
 				output.append(&mut crate::serialize::varint(indirect.palette.len() as i32));
 				for palette in indirect.palette {
 					output.append(&mut crate::serialize::varint(palette));
 				}
-				let mut data_array = indirect.data_array.clone();
-				data_array.reverse();
-				while !data_array.is_empty() {
+				indirect.data_array.reverse();
+				while !indirect.data_array.is_empty() {
 				  let entries_per_long = 64 / indirect.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !data_array.is_empty() {
-							let value = data_array.pop().unwrap();
+					  if !indirect.data_array.is_empty() {
+							let value = indirect.data_array.pop().unwrap();
 							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			},
-			BlockStatesPalettedContainer::Direct(direct) => {
+			BlockStatesPalettedContainer::Direct(mut direct) => {
 				output.push(direct.bits_per_entry);
-				let mut data_array = direct.data_array.clone();
-				data_array.reverse();
-				while !data_array.is_empty() {
+				direct.data_array.reverse();
+				while !direct.data_array.is_empty() {
 				  let entries_per_long = 64 / direct.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !data_array.is_empty() {
-							let value = data_array.pop().unwrap();
+					  if !direct.data_array.is_empty() {
+							let value = direct.data_array.pop().unwrap();
 							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
 						}
 					}
