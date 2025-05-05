@@ -22,3 +22,10 @@ pub fn get_protocol_version() -> i32 {
 pub fn get_version_string() -> String {
     return "1.21.5".to_string();
 }
+
+#[derive(Debug, Clone, Copy)]
+pub struct Position {
+  pub x: i32,
+  pub y: i16,
+  pub z: i32,
+}

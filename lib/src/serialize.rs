@@ -69,6 +69,10 @@ pub fn bitset(input: &Vec<u64>) -> Vec<u8> {
   return output;
 }
 
+pub fn position(input: &crate::packets::Position) -> Vec<u8> {
+  return unsigned_long(((input.x as u64 & 0x3FFFFFF) << 38) | ((input.z as u64 & 0x3FFFFFF) << 12) | (input.y as u64 & 0xFFF));
+}
+
 pub fn uuid(input: &u128) -> Vec<u8> {
   return input.to_be_bytes().to_vec();
 }

@@ -53,6 +53,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
       0x27 => play::player_action(&mut packet.data, stream, connection_streams),
+      0x3e => play::use_item_on(&mut packet.data, stream, connection_streams),
       0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       0x1e => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
@@ -974,6 +975,32 @@ use super::*;
         block_id: 0,
       }.try_into().unwrap());
     }
+    return false;
+  }
+
+  pub fn use_item_on(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.clone()).unwrap();
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into().unwrap());
+
+    let mut new_block_location = parsed_packet.location.clone();
+    match parsed_packet.face {
+      0 => new_block_location.y -= 1,
+      1 => new_block_location.y += 1,
+      2 => new_block_location.z -= 1,
+      3 => new_block_location.z += 1,
+      4 => new_block_location.x -= 1,
+      _ => new_block_location.x += 1,
+    }
+
+    for stream in connection_streams {
+      send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
+        location: new_block_location,
+        block_id: 1,
+      }.try_into().unwrap());
+    }
+
     return false;
   }
 }

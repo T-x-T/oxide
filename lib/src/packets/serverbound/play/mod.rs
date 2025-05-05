@@ -185,7 +185,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
   pub status: i32,
-  pub location: u64,
+  pub location: Position,
   pub face: u8,
   pub sequence: i32,
 }
@@ -203,7 +203,7 @@ impl TryFrom<PlayerAction> for Vec<u8> {
 		let mut result: Vec<u8> = Vec::new();
 
 		result.append(&mut crate::serialize::varint(value.status));
-		result.append(&mut crate::serialize::unsigned_long(value.location));
+		result.append(&mut crate::serialize::position(&value.location));
 		result.push(value.face);
 		result.append(&mut crate::serialize::varint(value.sequence));
 
@@ -217,8 +217,69 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			status: crate::deserialize::varint(&mut value)?,
-			location: crate::deserialize::unsigned_long(&mut value)?,
+			location: crate::deserialize::position(&mut value)?,
 			face: value.remove(0),
+			sequence: crate::deserialize::varint(&mut value)?,
+		})
+	}
+}
+
+//
+// MARK: 0x3e use item on
+//
+
+#[derive(Debug, Clone)]
+pub struct UseItemOn {
+  pub hand: i32,
+  pub location: Position,
+  pub face: u8,
+  pub cursor_position_x: f32,
+  pub cursor_position_y: f32,
+  pub cursor_position_z: f32,
+  pub inside_block: bool,
+  pub world_border_hit: bool,
+  pub sequence: i32,
+}
+
+impl Packet for UseItemOn {
+  fn get_id() -> u8 { 0x3e }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<UseItemOn> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UseItemOn) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.hand));
+		result.append(&mut crate::serialize::position(&value.location));
+		result.push(value.face);
+		result.append(&mut crate::serialize::float(value.cursor_position_x));
+		result.append(&mut crate::serialize::float(value.cursor_position_y));
+		result.append(&mut crate::serialize::float(value.cursor_position_z));
+		result.append(&mut crate::serialize::bool(&value.inside_block));
+		result.append(&mut crate::serialize::bool(&value.world_border_hit));
+		result.append(&mut crate::serialize::varint(value.sequence));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UseItemOn {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			hand: crate::deserialize::varint(&mut value)?,
+			location: crate::deserialize::position(&mut value)?,
+			face: value.remove(0),
+			cursor_position_x: crate::deserialize::float(&mut value)?,
+			cursor_position_y: crate::deserialize::float(&mut value)?,
+			cursor_position_z: crate::deserialize::float(&mut value)?,
+			inside_block: crate::deserialize::boolean(&mut value)?,
+			world_border_hit: crate::deserialize::boolean(&mut value)?,
 			sequence: crate::deserialize::varint(&mut value)?,
 		})
 	}
