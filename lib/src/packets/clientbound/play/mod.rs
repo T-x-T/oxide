@@ -190,7 +190,7 @@ impl TryFrom<TeleportEntity> for Vec<u8> {
 		output.append(&mut crate::serialize::double(value.velocity_z));
 		output.append(&mut crate::serialize::float(value.yaw));
 		output.append(&mut crate::serialize::float(value.pitch));
-		output.append(&mut crate::serialize::bool(&value.on_ground));
+		output.append(&mut crate::serialize::boolean(value.on_ground));
 
 		return Ok(output);
 	}
@@ -806,7 +806,7 @@ impl TryFrom<Login> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 
 		output.append(&mut crate::serialize::int(value.entity_id));
-		output.append(&mut crate::serialize::bool(&value.is_hardcore));
+		output.append(&mut crate::serialize::boolean(value.is_hardcore));
 		output.append(&mut crate::serialize::varint(value.dimension_names.len() as i32));
 		for dimension_name in &value.dimension_names {
 			output.append(&mut crate::serialize::string(dimension_name));
@@ -814,24 +814,24 @@ impl TryFrom<Login> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.max_players));
 		output.append(&mut crate::serialize::varint(value.view_distance));
 		output.append(&mut crate::serialize::varint(value.simulation_distance));
-		output.append(&mut crate::serialize::bool(&value.reduced_debug_info));
-		output.append(&mut crate::serialize::bool(&value.enable_respawn_screen));
-		output.append(&mut crate::serialize::bool(&value.do_limited_crafting));
+		output.append(&mut crate::serialize::boolean(value.reduced_debug_info));
+		output.append(&mut crate::serialize::boolean(value.enable_respawn_screen));
+		output.append(&mut crate::serialize::boolean(value.do_limited_crafting));
 		output.append(&mut crate::serialize::varint(value.dimension_type));
 		output.append(&mut crate::serialize::string(&value.dimension_name));
 		output.append(&mut crate::serialize::long(value.hashed_seed));
 		output.push(value.game_mode);
 		output.push(value.previous_game_mode as u8);
-		output.append(&mut crate::serialize::bool(&value.is_debug));
-		output.append(&mut crate::serialize::bool(&value.is_flat));
-		output.append(&mut crate::serialize::bool(&value.has_death_location));
+		output.append(&mut crate::serialize::boolean(value.is_debug));
+		output.append(&mut crate::serialize::boolean(value.is_flat));
+		output.append(&mut crate::serialize::boolean(value.has_death_location));
 		if value.has_death_location {
 			output.append(&mut crate::serialize::string(&value.death_dimension_name.unwrap()));
 			output.append(&mut crate::serialize::long(value.death_location.unwrap() as i64)); //probably fucked
 		}
 		output.append(&mut crate::serialize::varint(value.portal_cooldown));
 		output.append(&mut crate::serialize::varint(value.sea_level));
-		output.append(&mut crate::serialize::bool(&value.enforces_secure_chat));
+		output.append(&mut crate::serialize::boolean(value.enforces_secure_chat));
 
 		return Ok(output);
 	}
@@ -939,7 +939,7 @@ impl TryFrom<UpdateEntityPosition> for Vec<u8> {
 		output.append(&mut crate::serialize::short(value.delta_x));
 		output.append(&mut crate::serialize::short(value.delta_y));
 		output.append(&mut crate::serialize::short(value.delta_z));
-		output.append(&mut crate::serialize::bool(&value.on_ground));
+		output.append(&mut crate::serialize::boolean(value.on_ground));
 
 		return Ok(output);
 	}
@@ -992,7 +992,7 @@ impl TryFrom<UpdateEntityPositionAndRotation> for Vec<u8> {
 		output.append(&mut crate::serialize::short(value.delta_z));
 		output.push(value.yaw);
 		output.push(value.pitch);
-		output.append(&mut crate::serialize::bool(&value.on_ground));
+		output.append(&mut crate::serialize::boolean(value.on_ground));
 
 		return Ok(output);
 	}
@@ -1107,7 +1107,7 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 							for property in properties {
 								output.append(&mut crate::serialize::string(&property.0));
 								output.append(&mut crate::serialize::string(&property.1));
-								output.append(&mut crate::serialize::bool(&property.2.is_some()));
+								output.append(&mut crate::serialize::boolean(property.2.is_some()));
 								if property.2.is_some() {
 									output.append(&mut crate::serialize::string(&property.2.unwrap()));
 								}
@@ -1125,16 +1125,16 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 							}
 						},
 						PlayerAction::UpdateGameMode(game_mode) => output.append(&mut crate::serialize::varint(game_mode)),
-						PlayerAction::UpdateListed(listed) => output.append(&mut crate::serialize::bool(&listed)),
+						PlayerAction::UpdateListed(listed) => output.append(&mut crate::serialize::boolean(listed)),
 						PlayerAction::UpdateLatency(ping) => output.append(&mut crate::serialize::varint(ping)),
 						PlayerAction::UpdateDisplayName(display_name) => {
-							output.append(&mut crate::serialize::bool(&display_name.is_some()));
+							output.append(&mut crate::serialize::boolean(display_name.is_some()));
 							if display_name.is_some() {
 								output.append(&mut crate::serialize::nbt(display_name.unwrap()));
 							}
 						},
 						PlayerAction::UpdateListPriority(priority) => output.append(&mut crate::serialize::varint(priority)),
-						PlayerAction::UpdateHat(visible) => output.append(&mut crate::serialize::bool(&visible)),
+						PlayerAction::UpdateHat(visible) => output.append(&mut crate::serialize::boolean(visible)),
 				}
 			}
 		}
@@ -1371,7 +1371,7 @@ pub enum EntityMetadataValue {
 	String(String),
 	TextComponent(NbtTag),
 	OptionalTextComponent(Option<NbtTag>), //absence of value indicated by a 0x00, if present append 0x01 byte
-	Slot(i32), //always do 0 for now, until properly implemented elsewhere
+	Slot(Slot),
 	Boolean(bool),
 	Rotations(f32, f32, f32),
 	Position(i64),
@@ -1463,7 +1463,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 					}
 				},
 				EntityMetadataValue::Slot(_) => output.append(&mut vec![0; 6]),
-				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::bool(&a)),
+				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
 				EntityMetadataValue::Rotations(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
 					output.append(&mut crate::serialize::float(b));
@@ -1480,7 +1480,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				},
 				EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),
 				EntityMetadataValue::OptionalUuid(a, b) => {
-					output.append(&mut crate::serialize::bool(&a));
+					output.append(&mut crate::serialize::boolean(a));
 					if a {
 						output.append(&mut crate::serialize::uuid(&b));
 					}
@@ -1497,13 +1497,13 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				EntityMetadataValue::WolfVariant(_) => todo!(),
 				EntityMetadataValue::FrogVariant(_) => todo!(),
 				EntityMetadataValue::OptionalGlobalPosition(a, b, c, d, e) => {
-					output.append(&mut crate::serialize::bool(&a));
-					output.append(&mut crate::serialize::bool(&b));
+					output.append(&mut crate::serialize::boolean(a));
+					output.append(&mut crate::serialize::boolean(b));
 					if b {
 						output.append(&mut crate::serialize::string(&c));
 					}
 
-					output.append(&mut crate::serialize::bool(&d));
+					output.append(&mut crate::serialize::boolean(d));
 					if d {
 						output.append(&mut crate::serialize::long(e));
 					}

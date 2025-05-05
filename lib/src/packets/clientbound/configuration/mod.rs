@@ -80,7 +80,7 @@ impl TryFrom<RegistryData> for Vec<u8> {
 		data.append(&mut crate::serialize::varint(value.entries.len() as i32));
 		value.entries.iter().for_each(|x| {
 			data.append(&mut crate::serialize::string(&x.entry_id));
-			data.append(&mut crate::serialize::bool(&x.has_data));
+			data.append(&mut crate::serialize::boolean(x.has_data));
 			if x.has_data {
 				data.append(&mut crate::serialize::nbt(x.clone().data.unwrap()));
 			}

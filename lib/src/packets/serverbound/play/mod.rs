@@ -259,8 +259,8 @@ impl TryFrom<UseItemOn> for Vec<u8> {
 		result.append(&mut crate::serialize::float(value.cursor_position_x));
 		result.append(&mut crate::serialize::float(value.cursor_position_y));
 		result.append(&mut crate::serialize::float(value.cursor_position_z));
-		result.append(&mut crate::serialize::bool(&value.inside_block));
-		result.append(&mut crate::serialize::bool(&value.world_border_hit));
+		result.append(&mut crate::serialize::boolean(value.inside_block));
+		result.append(&mut crate::serialize::boolean(value.world_border_hit));
 		result.append(&mut crate::serialize::varint(value.sequence));
 
 		return Ok(result);

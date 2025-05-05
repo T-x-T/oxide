@@ -25,6 +25,14 @@ pub fn varint(value: i32) -> Vec<u8> {
   return output;
 }
 
+pub fn boolean(input: bool) -> Vec<u8> {
+  if input {
+    return vec![0x01];
+  } else {
+    return vec![0x00];
+  }
+}
+
 pub fn float(input: f32) -> Vec<u8> {
   return input.to_be_bytes().to_vec();
 }
@@ -73,15 +81,129 @@ pub fn position(input: &crate::packets::Position) -> Vec<u8> {
   return unsigned_long(((input.x as u64 & 0x3FFFFFF) << 38) | ((input.z as u64 & 0x3FFFFFF) << 12) | (input.y as u64 & 0xFFF));
 }
 
-pub fn uuid(input: &u128) -> Vec<u8> {
-  return input.to_be_bytes().to_vec();
+pub fn slot(input: &crate::packets::Slot) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+
+  output.append(&mut varint(input.item_count));
+
+  if input.item_count == 0 {
+    return output;
+  }
+
+  output.append(&mut varint(input.item_id.unwrap_or(0)));
+  output.append(&mut varint(input.components_to_add.len() as i32));
+  output.append(&mut varint(input.components_to_remove.len() as i32));
+  for component_to_add in &input.components_to_add {
+    output.append(&mut varint(component_to_add.into()));
+    output.append(&mut match component_to_add.clone() {
+      crate::packets::SlotComponent::CustomData(a) => nbt(a),
+      crate::packets::SlotComponent::MaxStackSize(a) => varint(a),
+      crate::packets::SlotComponent::MaxDamage(a) => varint(a),
+      crate::packets::SlotComponent::Damage(a) => varint(a),
+      crate::packets::SlotComponent::Unbreakable => vec![],
+      crate::packets::SlotComponent::CustomName(a) => nbt(a),
+      crate::packets::SlotComponent::ItemName(a) => nbt(a),
+      crate::packets::SlotComponent::ItemModel(a) => string(&a),
+      crate::packets::SlotComponent::Lore(a) => a.into_iter().map(|x| nbt(x)).flatten().collect(),
+      crate::packets::SlotComponent::Rarity(a) => vec![a],
+      crate::packets::SlotComponent::Enchantments(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::CanPlaceOn => todo!(),
+      crate::packets::SlotComponent::CanBreak => todo!(),
+      crate::packets::SlotComponent::AttributeModifiers => todo!(),
+      crate::packets::SlotComponent::CustomModelData(a, b, c, d) => vec![a.into_iter().map(|x| float(x)).flatten().collect::<Vec<u8>>(), b.into_iter().map(|x| boolean(x)).flatten().collect(), c.into_iter().map(|x| string(&x)).flatten().collect(), d.into_iter().map(|x| int(x)).flatten().collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::TooltipDisplay(a, b) => vec![boolean(a), b.into_iter().map(|x| varint(x)).flatten().collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::RepairCost(a) => varint(a),
+      crate::packets::SlotComponent::CreativeSlotLock => vec![],
+      crate::packets::SlotComponent::EnchantmentGlintOverride(a) => boolean(a),
+      crate::packets::SlotComponent::IntangibleProjectile(a) => nbt(a),
+      crate::packets::SlotComponent::Food(a, b, c) => vec![varint(a), float(b), boolean(c)].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::Consumable => todo!(),
+      crate::packets::SlotComponent::UseRemainder(a) => slot(&a),
+      crate::packets::SlotComponent::UseCooldown(a, b) => vec![float(a), if b.is_some() {vec![vec![1], string(&b.unwrap())].into_iter().flatten().collect()} else {vec![0]}].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::DamageResistant(a) => string(&a),
+      crate::packets::SlotComponent::Tool => todo!(),
+      crate::packets::SlotComponent::Weapon(a, b) => vec![varint(a), float(b)].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::Enchantable(a) => varint(a),
+      crate::packets::SlotComponent::Equippable => todo!(),
+      crate::packets::SlotComponent::Repairable => todo!(),
+      crate::packets::SlotComponent::Glider => vec![],
+      crate::packets::SlotComponent::TooltipStyle(a) => string(&a),
+      crate::packets::SlotComponent::DeathProtection => todo!(),
+      crate::packets::SlotComponent::BlockAttacks => todo!(),
+      crate::packets::SlotComponent::StoredEnchantments(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::DyedColor(a) => int(a),
+      crate::packets::SlotComponent::MapColor(a) => int(a),
+      crate::packets::SlotComponent::MapId(a) => varint(a),
+      crate::packets::SlotComponent::MapDecorations(a) => nbt(a),
+      crate::packets::SlotComponent::MapPostProcessing(a) => vec![a],
+      crate::packets::SlotComponent::ChargedProjectiles(a) => a.into_iter().map(|x| slot(&x)).flatten().collect(),
+      crate::packets::SlotComponent::BundleContents(a) => a.into_iter().map(|x| slot(&x)).flatten().collect(),
+      crate::packets::SlotComponent::PotionContents => todo!(),
+      crate::packets::SlotComponent::PotionDurationScale(a) => float(a),
+      crate::packets::SlotComponent::SuspiciousStewEffects(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::WritableBookContent(a) => a.into_iter().map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect(),
+      crate::packets::SlotComponent::WrittenBookContent(a) => a.into_iter().map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect(),
+      crate::packets::SlotComponent::Trim => todo!(),
+      crate::packets::SlotComponent::DebugStickState(a) => nbt(a),
+      crate::packets::SlotComponent::EntityData(a) => nbt(a),
+      crate::packets::SlotComponent::BucketEntityData(a) => nbt(a),
+      crate::packets::SlotComponent::BlockEntityData(a) => nbt(a),
+      crate::packets::SlotComponent::Instrument => todo!(),
+      crate::packets::SlotComponent::ProvidesTrimMaterial => todo!(),
+      crate::packets::SlotComponent::OminousBottleAmplifier(a) => vec![a],
+      crate::packets::SlotComponent::JukeboxPlayable => todo!(),
+      crate::packets::SlotComponent::ProvidesBannerPatterns(a) => string(&a),
+      crate::packets::SlotComponent::Recipes(a) => nbt(a),
+      crate::packets::SlotComponent::LodestoneTracker(a, b, c, d) => vec![boolean(a), string(&b), position(&c), boolean(d)].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::FireworkExplosion => todo!(),
+      crate::packets::SlotComponent::Fireworks => todo!(),
+      crate::packets::SlotComponent::Profile(a, b, c) => vec![if a.is_some(){vec![vec![0x01], string(&a.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, if b.is_some() {vec![vec![0x01], uuid(&b.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, c.into_iter().map(|(x, y, z)| vec![string(&x), string(&y), if z.is_some() {vec![vec![0x01], string(&z.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::NoteblockSound(a) => string(&a),
+      crate::packets::SlotComponent::BannerPatterns => todo!(),
+      crate::packets::SlotComponent::BaseColor(a) => vec![a],
+      crate::packets::SlotComponent::PotDecorations(a) => a.into_iter().map(|x| varint(x)).flatten().collect(),
+      crate::packets::SlotComponent::Container(a) => a.into_iter().map(|x| varint(x)).flatten().collect(),
+      crate::packets::SlotComponent::BlockState(a) => a.into_iter().map(|(x, y)| vec![string(&x), string(&y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::Bees(a) => a.into_iter().map(|(x, y, z)| vec![nbt(x), varint(y), varint(z)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::Lock(a) => nbt(a),
+      crate::packets::SlotComponent::ContainerLoot(a) => nbt(a),
+      crate::packets::SlotComponent::BreakSound => todo!(),
+      crate::packets::SlotComponent::VillagerVariant => todo!(),
+      crate::packets::SlotComponent::WolfVariant => todo!(),
+      crate::packets::SlotComponent::WolfSoundVariant => todo!(),
+      crate::packets::SlotComponent::WolfCollar(a) => vec![a],
+      crate::packets::SlotComponent::FoxVariant(a) => vec![a],
+      crate::packets::SlotComponent::SalmonSize(a) => vec![a],
+      crate::packets::SlotComponent::ParrotVariant(a) => varint(a),
+      crate::packets::SlotComponent::TropicalFishPattern(a) => vec![a],
+      crate::packets::SlotComponent::TropicalFishBaseColor(a) => vec![a],
+      crate::packets::SlotComponent::TropicalFishPatternColor(a) => vec![a],
+      crate::packets::SlotComponent::MooshroomVariant(a) => vec![a],
+      crate::packets::SlotComponent::RabbitVariant(a) => vec![a],
+      crate::packets::SlotComponent::PigVariant(a) => vec![a],
+      crate::packets::SlotComponent::CowVariant(a) => vec![a],
+      crate::packets::SlotComponent::ChickenVariant => todo!(),
+      crate::packets::SlotComponent::FrogVariant(a) => varint(a),
+      crate::packets::SlotComponent::HorseVariant(a) => vec![a],
+      crate::packets::SlotComponent::PaintingVariant => todo!(),
+      crate::packets::SlotComponent::LlamaVariant(a) => vec![a],
+      crate::packets::SlotComponent::AxolotlVariant(a) => vec![a],
+      crate::packets::SlotComponent::CatVariant(a) => varint(a),
+      crate::packets::SlotComponent::CatCollar(a) => vec![a],
+      crate::packets::SlotComponent::SheepColor(a) => vec![a],
+      crate::packets::SlotComponent::ShulkerColor(a) => vec![a],
+    });
+  }
+
+  for component_to_remove in &input.components_to_remove {
+    output.append(&mut varint(*component_to_remove));
+  }
+
+  return output;
 }
 
-pub fn bool(input: &bool) -> Vec<u8> {
-  return match input {
-    true => vec![1],
-    false => vec![0],
-  }
+pub fn uuid(input: &u128) -> Vec<u8> {
+  return input.to_be_bytes().to_vec();
 }
 
 pub fn prefixed_array(mut data: Vec<u8>, len: i32) -> Vec<u8> {
