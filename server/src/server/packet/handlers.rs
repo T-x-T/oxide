@@ -53,6 +53,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
       0x27 => play::player_action(&mut packet.data, stream, connection_streams),
+      0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
       0x3e => play::use_item_on(&mut packet.data, stream, connection_streams),
       0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
@@ -134,7 +135,7 @@ use super::*;
 }
 
 pub mod configuration {
-  use lib::packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet};
+  use lib::packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet, Position};
 
 use super::*;
 
@@ -609,20 +610,8 @@ use super::*;
   pub fn acknowledge_finish_configuration(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
-    let current_player = Player {
-      x: 0.0,
-      y_feet: -48.0,
-      z: 0.0,
-      yaw: 0.0,
-      pitch: 0.0,
-      display_name: connections.get(&stream.peer_addr().unwrap()).unwrap().player_name.clone().unwrap_or_default(),
-      uuid: connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.clone().unwrap_or_default(),
-      peer_socket_address: stream.peer_addr().unwrap(),
-      entity_id: game.last_created_entity_id + 1,
-      waiting_for_confirm_teleportation: true,
-      current_teleport_id: Some((std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32), //TODO: use random number instead
-    };
-    game.last_created_entity_id += 1;
+    let connection_player = connections.get(&stream.peer_addr().unwrap()).unwrap();
+    let current_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game);
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Login::get_id(), lib::packets::clientbound::play::Login {
       entity_id: current_player.entity_id,
@@ -650,7 +639,7 @@ use super::*;
     }.try_into().unwrap());
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::get_id(), lib::packets::clientbound::play::SynchronizePlayerPosition {
-      teleport_id: current_player.current_teleport_id.unwrap(),
+      teleport_id: current_player.current_teleport_id,
       x: current_player.x,
       y: current_player.y_feet,
       z: current_player.z,
@@ -948,11 +937,10 @@ use super::*;
       return false;
     }
     let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.clone()).unwrap();
-    if player.unwrap().current_teleport_id.unwrap_or_default() == parsed_packet.teleport_id {
+    if player.unwrap().current_teleport_id == parsed_packet.teleport_id {
       game.players = game.players.clone().into_iter().map(|mut x| {
         if player.is_some() && player.unwrap().peer_socket_address == stream.peer_addr().unwrap() {
           x.waiting_for_confirm_teleportation = false;
-          x.current_teleport_id = None;
           return x;
         } else {
           return x;
@@ -960,6 +948,23 @@ use super::*;
       }).collect();
     }
 
+    return false;
+  }
+
+  pub fn set_creative_mode_slot(data: &mut Vec<u8>, stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.clone()).unwrap();
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap());
+    if player.is_none() {
+      println!("got set_creative_mode_slot packet from invalid player");
+      return false;
+    }
+
+    player.unwrap().inventory[parsed_packet.slot as usize] = parsed_packet.item;
     return false;
   }
 

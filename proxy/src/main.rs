@@ -108,6 +108,11 @@ fn main() {
               println!("parsed packet: {parsed_packet:?}");
               parsed_server_packet = Some(parsed_packet.try_into().unwrap());
             }
+            if packet_id == lib::packets::serverbound::play::SetCreativeModeSlot::get_id() {
+              let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(server_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+            }
             if packet_id == lib::packets::serverbound::play::UseItemOn::get_id() {
               let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(server_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");

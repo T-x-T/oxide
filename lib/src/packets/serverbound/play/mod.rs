@@ -225,6 +225,46 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
+// MARK: 0x36 set creative mode slot
+//
+
+#[derive(Debug, Clone)]
+pub struct SetCreativeModeSlot {
+  pub slot: i16,
+  pub item: Slot,
+}
+
+impl Packet for SetCreativeModeSlot {
+  fn get_id() -> u8 { 0x36 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetCreativeModeSlot) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::short(value.slot));
+		result.append(&mut crate::serialize::slot(&value.item));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			slot: crate::deserialize::short(&mut value)?,
+			item: crate::deserialize::slot(&mut value)?,
+		})
+	}
+}
+
+//
 // MARK: 0x3e use item on
 //
 
