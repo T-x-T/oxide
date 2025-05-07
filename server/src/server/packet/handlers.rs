@@ -55,7 +55,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       0x27 => play::player_action(&mut packet.data, stream, connection_streams),
       0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
       0x33 => play::set_held_item(&mut packet.data, stream, game, connections),
-      0x3e => play::use_item_on(&mut packet.data, stream, connection_streams),
+      0x3e => play::use_item_on(&mut packet.data, stream, connection_streams, game, connections),
       0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       0x1e => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
@@ -984,6 +984,8 @@ use super::*;
 
     player.unwrap().selected_slot = parsed_packet.slot as u8;
 
+    println!("a player now holds {:?}", game.players.get_mut(player_index.unwrap()).unwrap().get_held_item(true));
+
     return false;
   }
 
@@ -1002,7 +1004,7 @@ use super::*;
     return false;
   }
 
-  pub fn use_item_on(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+  pub fn use_item_on(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
     let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.clone()).unwrap();
     send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
       sequence_id: parsed_packet.sequence,
@@ -1018,10 +1020,29 @@ use super::*;
       _ => new_block_location.x += 1,
     }
 
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap());
+    if player.is_none() {
+      println!("got set_creative_mode_slot packet from invalid player");
+      return false;
+    }
+    let block_id_to_place = match player.unwrap().get_held_item(true).item_id.unwrap_or(0) {
+      1 => 1,
+      2 => 2,
+      134 => 137,
+      36 => 15,
+      743 => 4686,
+      _ => 0,
+    };
+
     for stream in connection_streams {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
         location: new_block_location,
-        block_id: 1,
+        block_id: block_id_to_place,
       }.try_into().unwrap());
     }
 
