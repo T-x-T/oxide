@@ -802,7 +802,7 @@ use super::*;
 }
 
 pub mod play {
-  use lib::{packets::Packet, utils::send_packet};
+  use lib::{data::blocks::Property, packets::Packet, utils::send_packet};
 
 use super::*;
 
@@ -984,7 +984,7 @@ use super::*;
 
     player.unwrap().selected_slot = parsed_packet.slot as u8;
 
-    println!("a player now holds {:?}", game.players.get_mut(player_index.unwrap()).unwrap().get_held_item(true));
+    //println!("a player now holds {:?}", game.players.get_mut(player_index.unwrap()).unwrap().get_held_item(true));
 
     return false;
   }
@@ -1027,17 +1027,31 @@ use super::*;
       });
     let player = game.players.get_mut(player_index.unwrap());
     if player.is_none() {
-      println!("got set_creative_mode_slot packet from invalid player");
+      println!("got use_item_on packet from invalid player");
       return false;
     }
-    let block_id_to_place = match player.unwrap().get_held_item(true).item_id.unwrap_or(0) {
-      1 => 1,
-      2 => 2,
-      134 => 137,
-      36 => 15,
-      743 => 4686,
-      _ => 0,
-    };
+
+    let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
+    let used_item_name = lib::data::items::get_item_name_by_id(used_item_id);
+    let block = lib::data::blocks::get_block_from_name(used_item_name);
+    let mut block_state_id = block.states.iter().find(|x| x.default).unwrap().id;
+
+
+
+    if block.properties.contains(&Property::X) {
+      if parsed_packet.face == 4 || parsed_packet.face == 5 {
+        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::X)).unwrap().id;
+      }
+    }
+    if block.properties.contains(&Property::Z) {
+      if parsed_packet.face == 2 || parsed_packet.face == 3 {
+        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::Z)).unwrap().id;
+      }
+    }
+
+    
+
+    let block_id_to_place = block_state_id;
 
     for stream in connection_streams {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {

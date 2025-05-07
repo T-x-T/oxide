@@ -5,6 +5,7 @@ pub mod deserialize;
 pub mod nbt;
 pub mod utils;
 pub mod packets;
+pub mod data;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
