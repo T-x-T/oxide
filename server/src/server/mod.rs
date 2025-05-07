@@ -84,6 +84,7 @@ pub struct Player {
   pub waiting_for_confirm_teleportation: bool,
   pub current_teleport_id: i32,
   pub inventory: Vec<Slot>,
+  pub selected_slot: u8,
 }
 
 impl Player {
@@ -101,11 +102,20 @@ impl Player {
       waiting_for_confirm_teleportation: false,
       current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
       inventory: vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46],
+      selected_slot: 0,
     };
 
     game.last_created_entity_id += 1;
 
     return player;
+  }
+
+  pub fn get_held_item(&self, main_hand: bool) -> &Slot {
+    if main_hand {
+      return self.inventory.get(36 + self.selected_slot as usize).unwrap();
+    } else {
+      return self.inventory.get(45).unwrap();
+    }
   }
 }
 

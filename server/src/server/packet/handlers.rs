@@ -54,6 +54,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
       0x27 => play::player_action(&mut packet.data, stream, connection_streams),
       0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
+      0x33 => play::set_held_item(&mut packet.data, stream, game, connections),
       0x3e => play::use_item_on(&mut packet.data, stream, connection_streams),
       0x1c => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       0x1d => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
@@ -965,6 +966,24 @@ use super::*;
     }
 
     player.unwrap().inventory[parsed_packet.slot as usize] = parsed_packet.item;
+    return false;
+  }
+
+  pub fn set_held_item(data: &mut Vec<u8>, stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
+    let parsed_packet = lib::packets::serverbound::play::SetHandItem::try_from(data.clone()).unwrap();
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap());
+    if player.is_none() {
+      println!("got set_creative_mode_slot packet from invalid player");
+      return false;
+    }
+
+    player.unwrap().selected_slot = parsed_packet.slot as u8;
+
     return false;
   }
 

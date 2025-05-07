@@ -225,6 +225,43 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
+// MARK: 0x33 set hand item
+//
+
+#[derive(Debug, Clone)]
+pub struct SetHandItem {
+  pub slot: i16,
+}
+
+impl Packet for SetHandItem {
+  fn get_id() -> u8 { 0x33 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetHandItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetHandItem) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::short(value.slot));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetHandItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			slot: crate::deserialize::short(&mut value)?,
+		})
+	}
+}
+
+//
 // MARK: 0x36 set creative mode slot
 //
 
