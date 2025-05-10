@@ -1038,18 +1038,18 @@ use super::*;
 
 
 
-    if block.properties.contains(&Property::X) {
+    if block.properties.contains(&Property::RotatedPillarAxis(lib::data::blocks::RotatedPillarAxis::X)) {
       if parsed_packet.face == 4 || parsed_packet.face == 5 {
-        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::X)).unwrap().id;
+        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::RotatedPillarAxis(lib::data::blocks::RotatedPillarAxis::X))).unwrap().id;
       }
     }
-    if block.properties.contains(&Property::Z) {
+    if block.properties.contains(&Property::RotatedPillarAxis(lib::data::blocks::RotatedPillarAxis::Z)) {
       if parsed_packet.face == 2 || parsed_packet.face == 3 {
-        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::Z)).unwrap().id;
+        block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::RotatedPillarAxis(lib::data::blocks::RotatedPillarAxis::Z))).unwrap().id;
       }
     }
 
-    
+
 
     let block_id_to_place = block_state_id;
 
