@@ -1,0 +1,7 @@
+[package]
+name = "data"
+version = "0.1.0"
+edition = "2024"
+description = "contains functions that are generated from the data_generator_tools binary crate"
+
+[dependencies]

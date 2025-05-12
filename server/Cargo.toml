@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 lib = {path = "../lib", version = "*"}
+data = {path = "../data", version = "*"}

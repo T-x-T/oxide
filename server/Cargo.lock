@@ -3,12 +3,20 @@
 version = 4
 
 [[package]]
+name = "data"
+version = "0.1.0"
+
+[[package]]
 name = "lib"
 version = "0.1.0"
+dependencies = [
+ "data",
+]
 
 [[package]]
 name = "oxide"
 version = "0.1.0"
 dependencies = [
+ "data",
  "lib",
 ]
