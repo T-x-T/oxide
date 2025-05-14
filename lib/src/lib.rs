@@ -1,11 +1,14 @@
 use std::{error::Error, fmt::{Display, Formatter, Result}};
 
+pub use types::*;
+
 pub mod serialize;
 pub mod deserialize;
 pub mod nbt;
 pub mod utils;
 pub mod packets;
 pub mod blockstates;
+pub mod types;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
@@ -14,6 +17,7 @@ pub enum CustomError {
   InputEmpty,
   InvalidNbtTag(u8),
   InvalidNextHandshakeState(u8),
+  ChunkNotFound(Position),
 }
 
 impl Display for CustomError {
@@ -24,6 +28,7 @@ impl Display for CustomError {
       CustomError::InputEmpty => write!(f, "Input was empty, whoops"),
       CustomError::InvalidNbtTag(x) => write!(f, "Got a f*cked up value as a nbt tag: {x}"),
       CustomError::InvalidNextHandshakeState(x) => write!(f, "Got a next handshake state that doesn't exist (yet): {x}"),
+      CustomError::ChunkNotFound(x) => write!(f, "couldn't find chunk at position {x:?}"),
     }
   }
 }

@@ -12,9 +12,11 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 		connections.insert(stream.peer_addr().unwrap(), Connection { state: ConnectionState::Handshaking, peer_address: stream.peer_addr().unwrap(), player_name: None, player_uuid: None });
 	}
 
-	if !connection_streams.contains_key(&stream.peer_addr().unwrap()) {
-		connection_streams.insert(stream.peer_addr().unwrap(), stream.try_clone().unwrap());
-	}
+	//if connections.get(&stream.peer_addr().unwrap()).unwrap().state == ConnectionState::Play {
+  	if !connection_streams.contains_key(&stream.peer_addr().unwrap()) {
+  		connection_streams.insert(stream.peer_addr().unwrap(), stream.try_clone().unwrap());
+  	}
+   //}
 
 	//println!("client {} is in state {:?}", stream.peer_addr().unwrap(), connection_states.get(&stream.peer_addr().unwrap()).unwrap());
 
@@ -52,7 +54,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
-      0x27 => play::player_action(&mut packet.data, stream, connection_streams),
+      0x27 => play::player_action(&mut packet.data, stream, connection_streams, game),
       0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
       0x33 => play::set_held_item(&mut packet.data, stream, game, connections),
       0x3e => play::use_item_on(&mut packet.data, stream, connection_streams, game, connections),
@@ -136,7 +138,8 @@ use super::*;
 }
 
 pub mod configuration {
-  use lib::packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet, Position};
+  use lib::packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet};
+  use lib::types::position::Position;
 
 use super::*;
 
@@ -661,31 +664,19 @@ use super::*;
     let z_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11, 12, -12, 13, -13, 14, -14, 15, -15, 16, -16, 17, -17, 18, -18, 19, -19, 20, -20];
     for x in &x_vec {
       for z in &z_vec {
-        let filled_chunk_sections = vec![lib::packets::clientbound::play::ChunkSection {
-          block_count: 4096,
-          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
-            bits_per_entry: 15,
-            //data_array: (0..4096).map(|i| i + if i < 0 {i*-1} else {i}+ if *z < 0 {z*-1} else {*z}).collect(),
-            data_array: vec![1; 4096],
-          }),
-          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-            bits_per_entry: 0,
-            value: 40,
-          }),
-        }; 1];
-        let empty_chunk_sections = vec![lib::packets::clientbound::play::ChunkSection {
-          block_count: 0,
-          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-            bits_per_entry: 0,
-            value: 0,
-          }),
-          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-            bits_per_entry: 0,
-            value: 40,
-          }),
-        }; 23];
-        let mut all_chunk_sections = filled_chunk_sections.clone();
-        all_chunk_sections.append(&mut empty_chunk_sections.clone());
+        let all_chunk_sections = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: *x, y: 0, z: *z }).unwrap().sections.iter().map(|section| {
+          lib::packets::clientbound::play::ChunkSection {
+            block_count: section.get_non_air_block_count(),
+            block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+              bits_per_entry: 15,
+              data_array: section.blocks.clone(),
+            }),
+            biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
+              bits_per_entry: 0,
+              value: 40,
+            }),
+          }
+        }).collect();
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::get_id(), lib::packets::clientbound::play::ChunkDataAndUpdateLight {
           chunk_x: *x,
           chunk_z: *z,
@@ -989,11 +980,14 @@ use super::*;
     return false;
   }
 
-  pub fn player_action(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> bool {
+  pub fn player_action(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> bool {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.clone()).unwrap();
     send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
       sequence_id: parsed_packet.sequence,
     }.try_into().unwrap());
+
+    game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0).unwrap();
+
 
     for stream in connection_streams {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {

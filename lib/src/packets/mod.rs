@@ -23,13 +23,6 @@ pub fn get_version_string() -> String {
   return "1.21.5".to_string();
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct Position {
-  pub x: i32,
-  pub y: i16,
-  pub z: i32,
-}
-
 #[derive(Debug, Clone)]
 pub struct Slot {
   pub item_count: i32,
@@ -98,7 +91,7 @@ pub enum SlotComponent {
   JukeboxPlayable, //TODO: still missing some stuffs
   ProvidesBannerPatterns(String),
   Recipes(NbtTag),
-  LodestoneTracker(bool, String, Position, bool),
+  LodestoneTracker(bool, String, crate::Position, bool),
   FireworkExplosion, //TODO: Missing firework explosion implementation
   Fireworks, //TODO: Missing firework explosion implementation
   Profile(Option<String>, Option<u128>, Vec<(String, String, Option<String>)>),

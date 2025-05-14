@@ -1,4 +1,5 @@
 use super::*;
+use crate::types::position::Position;
 
 //
 // MARK: 0x01 Spawn entity
@@ -337,7 +338,7 @@ pub struct BlockEntity {
 
 #[derive(Debug, Clone)]
 pub struct ChunkSection {
-	pub block_count: i16,
+	pub block_count: u16,
 	pub block_states: BlockStatesPalettedContainer,
 	pub biomes: BiomesPalettedContainer,
 }
@@ -436,7 +437,7 @@ impl TryFrom<ChunkSection> for Vec<u8> {
 	fn try_from(value: ChunkSection) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
 
-		output.append(&mut crate::serialize::short(value.block_count));
+		output.append(&mut crate::serialize::unsigned_short(value.block_count));
 		output.append(&mut value.block_states.try_into()?);
 		output.append(&mut value.biomes.try_into()?);
 
@@ -639,7 +640,7 @@ impl TryFrom<&mut Vec<u8>> for ChunkSection {
 
 	fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
 	  return Ok(Self {
-			block_count: crate::deserialize::short(&mut value)?,
+			block_count: crate::deserialize::unsigned_short(&mut value)?,
 			block_states: value.try_into()?,
 			biomes: value.try_into()?,
 		});

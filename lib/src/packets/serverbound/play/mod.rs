@@ -185,7 +185,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
   pub status: i32,
-  pub location: Position,
+  pub location: crate::Position,
   pub face: u8,
   pub sequence: i32,
 }
@@ -308,7 +308,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 #[derive(Debug, Clone)]
 pub struct UseItemOn {
   pub hand: i32,
-  pub location: Position,
+  pub location: crate::Position,
   pub face: u8,
   pub cursor_position_x: f32,
   pub cursor_position_y: f32,

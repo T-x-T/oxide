@@ -34,6 +34,10 @@ pub fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) {
   packet.append(&mut serialized_id);
   packet.append(&mut data);
 
-  stream.write(packet.as_slice()).unwrap();
-  stream.flush().unwrap();
+  if stream.write(packet.as_slice()).is_err() {
+    println!("failed to write to stream");
+  };
+  if stream.flush().is_err() {
+    println!("failed to flush stream");
+  };
 }

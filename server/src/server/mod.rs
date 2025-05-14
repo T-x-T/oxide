@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 use std::net::{TcpListener, SocketAddr, TcpStream};
 use std::sync::{Arc, Mutex};
-use lib::packets::{Position, Slot};
+use lib::packets::Slot;
+use lib::types::position::Position;
+use lib::types::world::World;
 use lib::ConnectionState;
 
 pub mod packet;
@@ -12,6 +14,7 @@ pub fn initialize_server() {
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(Game {
     players: Vec::new(),
+    world: World::new(),
     last_created_entity_id: 0,
   }));
 
@@ -67,6 +70,7 @@ pub fn initialize_server() {
 #[derive(Debug, Clone)]
 pub struct Game {
   pub players: Vec<Player>,
+  pub world: World,
   pub last_created_entity_id: i32,
 }
 
