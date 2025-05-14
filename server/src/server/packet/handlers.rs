@@ -793,7 +793,7 @@ use super::*;
 }
 
 pub mod play {
-  use lib::{packets::Packet, utils::send_packet};
+  use lib::{packets::Packet, utils::send_packet, CardinalDirection};
 
 use super::*;
 
@@ -1019,7 +1019,7 @@ use super::*;
         Some(x.0)}
         else {None}
       });
-    let player = game.players.get_mut(player_index.unwrap());
+    let player = game.players.get(player_index.unwrap());
     if player.is_none() {
       println!("got use_item_on packet from invalid player");
       return false;
@@ -1027,18 +1027,23 @@ use super::*;
 
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
-    let block_id_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, used_item_name);
+    let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name);
 
-    let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(new_block_location, block_id_to_place);
-    if res.is_err() {
-      println!("couldn't place block because {}", res.err().unwrap());
-    };
+    for block_to_place in &blocks_to_place {
+      let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0);
+      if res.is_err() {
+        println!("couldn't place block because {}", res.err().unwrap());
+        return false;
+      };
+    }
 
     for stream in connection_streams {
-      send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
-        location: new_block_location,
-        block_id: block_id_to_place,
-      }.try_into().unwrap());
+      for block_to_place in &blocks_to_place {
+        send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
+          location: block_to_place.1,
+          block_id: block_to_place.0,
+        }.try_into().unwrap());
+      }
     }
 
     return false;

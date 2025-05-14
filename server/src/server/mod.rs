@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use lib::packets::Slot;
 use lib::types::position::Position;
 use lib::types::world::World;
-use lib::ConnectionState;
+use lib::{CardinalDirection, ConnectionState};
 
 pub mod packet;
 
@@ -120,6 +120,33 @@ impl Player {
     } else {
       return self.inventory.get(45).unwrap();
     }
+  }
+
+  pub fn get_looking_cardinal_direction(&self) -> CardinalDirection {
+    let yaw = self.yaw;
+    let cardinal_direction: CardinalDirection;
+    if yaw >= 0.0 {
+      if yaw >= 135.0 && yaw < 225.0 {
+        cardinal_direction = CardinalDirection::North;
+      } else if yaw >= 225.0 && yaw < 315.0 {
+        cardinal_direction = CardinalDirection::East;
+      } else if yaw >= 315.0 || yaw < 45.0 {
+        cardinal_direction = CardinalDirection::South;
+      } else {
+        cardinal_direction = CardinalDirection::West;
+      }
+    } else {
+      if yaw <= -135.0 && yaw > -225.0 {
+        cardinal_direction = CardinalDirection::North;
+      } else if yaw >= -135.0 && yaw < -45.0 {
+        cardinal_direction = CardinalDirection::East;
+      } else if yaw <= -315.0 || yaw > -45.0 {
+        cardinal_direction = CardinalDirection::South;
+      } else {
+        cardinal_direction = CardinalDirection::West;
+      }
+    }
+    return cardinal_direction;
   }
 }
 
