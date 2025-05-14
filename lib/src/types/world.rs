@@ -76,6 +76,9 @@ impl Dimension {
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
     }
+    if position.y < -64 || position.y > 319 {
+      return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
+    }
 
     chunk.unwrap().set_block(position.convert_to_position_in_chunk(), block_state_id);
 

@@ -1029,6 +1029,11 @@ use super::*;
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
     let block_id_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, used_item_name);
 
+    let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(new_block_location, block_id_to_place);
+    if res.is_err() {
+      println!("couldn't place block because {}", res.err().unwrap());
+    };
+
     for stream in connection_streams {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
         location: new_block_location,

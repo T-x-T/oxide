@@ -18,6 +18,7 @@ pub enum CustomError {
   InvalidNbtTag(u8),
   InvalidNextHandshakeState(u8),
   ChunkNotFound(Position),
+  PositionOutOfBounds(Position),
 }
 
 impl Display for CustomError {
@@ -29,6 +30,7 @@ impl Display for CustomError {
       CustomError::InvalidNbtTag(x) => write!(f, "Got a f*cked up value as a nbt tag: {x}"),
       CustomError::InvalidNextHandshakeState(x) => write!(f, "Got a next handshake state that doesn't exist (yet): {x}"),
       CustomError::ChunkNotFound(x) => write!(f, "couldn't find chunk at position {x:?}"),
+      CustomError::PositionOutOfBounds(x) => write!(f, "tried to something at position {x:?}, but that is not within the bounds of possible locations"),
     }
   }
 }
