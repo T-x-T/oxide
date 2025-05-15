@@ -84,6 +84,18 @@ impl Dimension {
 
     return Ok(());
   }
+
+  pub fn get_block(&self, position: Position) -> Result<i32, Box<dyn Error>> {
+    let chunk = self.get_chunk_from_position(position);
+    if chunk.is_none() {
+      return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
+    }
+    if position.y < -64 || position.y > 319 {
+      return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
+    }
+
+    return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
+  }
 }
 
 impl Chunk {
@@ -108,6 +120,12 @@ impl Chunk {
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
+  }
+
+  pub fn get_block(&self, position_in_chunk: Position) -> i32 {
+    let section_id = (position_in_chunk.y + 64) / 16;
+    let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+    return self.sections[section_id as usize].blocks[block_id as usize];
   }
 }
 
