@@ -660,8 +660,8 @@ use super::*;
       value: 0.0,
     }.try_into().unwrap());
 
-    let x_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11, 12, -12, 13, -13, 14, -14, 15, -15, 16, -16, 17, -17, 18, -18, 19, -19, 20, -20];
-    let z_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10, 11, -11, 12, -12, 13, -13, 14, -14, 15, -15, 16, -16, 17, -17, 18, -18, 19, -19, 20, -20];
+    let x_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10];
+    let z_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10];
     for x in &x_vec {
       for z in &z_vec {
         let all_chunk_sections = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: *x, y: 0, z: *z }).unwrap().sections.iter().map(|section| {
@@ -1027,7 +1027,7 @@ use super::*;
 
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
-    let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name);
+    let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z);
 
     for block_to_place in &blocks_to_place {
       let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0);
