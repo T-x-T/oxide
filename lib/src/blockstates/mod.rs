@@ -41,7 +41,6 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, Position { x: position.x, y: position.y + 1, z: position.z }));
     },
     Type::Slab => {
-      //TODO: logic of doubling slabs is still kinda wonky, for example it gets doubled when placing against the bottom face of a lower slab
       let position_to_check = if face == 0 {
         Position { y: position.y + 1, ..position }
       } else if face == 1 {
@@ -49,14 +48,24 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       } else {
         position
       };
-      let existing_block_id = dimension.get_block(position_to_check).unwrap_or(0);
-      let block_ids_of_slabs: Vec<i32> = block.states.iter().filter(|x| !x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
-      let double_it_up = block_ids_of_slabs.contains(&existing_block_id);
+      let block_id_at_position_to_check = dimension.get_block(position_to_check).unwrap_or(0);
+      let block_id_at_position = dimension.get_block(position).unwrap_or(0);
+
+      let block_ids_of_half_slabs: Vec<i32> = block.states.iter().filter(|x| !x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
+      let block_ids_of_top_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Top))).map(|x| x.id).collect();
+      let block_ids_of_bottom_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom))).map(|x| x.id).collect();
+      let block_ids_of_double_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
+
+      let placed_underneath_bottom_slab = block_ids_of_bottom_slabs.contains(&block_id_at_position_to_check) && face == 0;
+      let double_up_placed_underneath_bottom_slab = placed_underneath_bottom_slab && block_ids_of_bottom_slabs.contains(&block_id_at_position);
+      let placed_ontop_top_slab = block_ids_of_top_slabs.contains(&block_id_at_position_to_check) && face == 1;
+      let double_up_placed_ontop_top_slab = placed_ontop_top_slab && block_ids_of_top_slabs.contains(&block_id_at_position);
+      let double_it_up = (block_ids_of_half_slabs.contains(&block_id_at_position_to_check) && !placed_underneath_bottom_slab && !placed_ontop_top_slab) || double_up_placed_underneath_bottom_slab || double_up_placed_ontop_top_slab;
+
       let place_top = (face >= 2 && cursor_position_y > 0.5) || face == 0;
       let slab_type_to_place = if double_it_up { SlabType::Double } else if place_top { SlabType::Top } else { SlabType::Bottom };
 
-      let block_ids_of_double_slab: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
-      let its_already_doubled = block_ids_of_double_slab.contains(&existing_block_id);
+      let its_already_doubled = block_ids_of_double_slabs.contains(&block_id_at_position_to_check);
       let position_to_place = if its_already_doubled { position } else if double_it_up { position_to_check } else { position };
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::SlabType(slab_type_to_place.clone())) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id, position_to_place));
