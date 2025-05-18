@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use data::blocks::*;
 
 use crate::{CardinalDirection, Dimension, Position};
@@ -69,7 +71,21 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let position_to_place = if its_already_doubled { position } else if double_it_up { position_to_check } else { position };
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::SlabType(slab_type_to_place.clone())) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id, position_to_place));
-     }
+    },
+    Type::Stair => {
+      //TODO: Missing curved stairs
+      let facing = match cardinal_direction {
+        CardinalDirection::North => StairFacing::North,
+        CardinalDirection::East => StairFacing::East,
+        CardinalDirection::South => StairFacing::South,
+        CardinalDirection::West => StairFacing::West,
+      };
+
+      let flip_it = face == 0 || (cursor_position_y > 0.5 && cursor_position_y < 0.9999);
+      let stair_half = if flip_it { StairHalf::Top } else { StairHalf::Bottom };
+
+      output.push((block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(facing.clone())) && x.properties.contains(&Property::StairHalf(stair_half.clone())) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id, position));
+    },
     _ => (),
   }
 
