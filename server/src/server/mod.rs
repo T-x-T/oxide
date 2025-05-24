@@ -29,28 +29,21 @@ pub fn initialize_server() {
     let connection_streams_clone = connection_streams.clone();
     let game_clone = game.clone();
     std::thread::spawn(move || {
+      let mut stream = stream.try_clone().unwrap();
+      let peer_addr = stream.peer_addr().unwrap();
       loop {
-        let mut stream = stream.try_clone().unwrap();
 
         let mut peek_buf = [0; 1];
 
         match stream.peek(&mut peek_buf) {
           Ok(0) => {
             println!("client disconnected.");
-            connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
-            connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
-            let all_players = game_clone.lock().unwrap().players.clone();
-            game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
-            packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
+            disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
             break;
           }
           Err(e) => {
             eprintln!("error reading from client: {}", e);
-            connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
-            connection_streams_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
-            let all_players = game_clone.lock().unwrap().players.clone();
-            game_clone.lock().unwrap().players.retain(|x| x.peer_socket_address != stream.peer_addr().unwrap());
-            packet::handlers::update_players(&mut connection_streams_clone.lock().unwrap(), &mut connections_clone.lock().unwrap(), game_clone.lock().unwrap().players.clone(), Some(all_players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap()));
+            disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
             break;
           }
           _ => {}
@@ -58,13 +51,27 @@ pub fn initialize_server() {
 
         let packet = lib::utils::read_packet(&mut stream);
 
-        if packet::handlers::handle_packet(packet, &mut stream, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap()) {
-          connections_clone.lock().unwrap().remove(&stream.peer_addr().unwrap());
+        if stream.peer_addr().is_err() {
+          disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
+          break;
+        }
+
+        if packet::handlers::handle_packet(packet, &mut stream, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap()).is_err() {
+          disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
           break;
         }
       }
     });
   }
+}
+
+fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, players: &mut Vec<Player>) {
+  let players_clone = players.clone();
+  let player_to_remove = players_clone.iter().find(|x| x.peer_socket_address == peer_addr.clone());
+  packet::handlers::update_players(connection_streams, connections, players.clone(), player_to_remove);
+  connections.remove(peer_addr);
+  connection_streams.remove(peer_addr);
+  players.retain(|x| x.peer_socket_address != peer_addr.clone());
 }
 
 #[derive(Debug, Clone)]

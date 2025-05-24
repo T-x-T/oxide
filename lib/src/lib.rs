@@ -19,6 +19,7 @@ pub enum CustomError {
   InvalidNextHandshakeState(u8),
   ChunkNotFound(Position),
   PositionOutOfBounds(Position),
+  NotActuallyAnErrorButPleaseDisconnectMe,
 }
 
 impl Display for CustomError {
@@ -31,6 +32,7 @@ impl Display for CustomError {
       CustomError::InvalidNextHandshakeState(x) => write!(f, "Got a next handshake state that doesn't exist (yet): {x}"),
       CustomError::ChunkNotFound(x) => write!(f, "couldn't find chunk at position {x:?}"),
       CustomError::PositionOutOfBounds(x) => write!(f, "tried to something at position {x:?}, but that is not within the bounds of possible locations"),
+      CustomError::NotActuallyAnErrorButPleaseDisconnectMe => write!(f, "yeah this is just a normal disconnect, that we are somehow treating as an error, because it is cleaner or so i dont know :cry:"),
     }
   }
 }

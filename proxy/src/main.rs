@@ -130,9 +130,9 @@ fn main() {
         }
 
         if parsed_server_packet.is_some() {
-          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, parsed_server_packet.unwrap());
+          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, parsed_server_packet.unwrap()).unwrap();
         } else {
-          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data);
+          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data).unwrap();
         }
       }
     });
@@ -264,9 +264,9 @@ fn main() {
         }
 
         if parsed_client_packet.is_some() {
-          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, parsed_client_packet.unwrap());
+          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, parsed_client_packet.unwrap()).unwrap();
         } else {
-          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, client_packet.data);
+          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, client_packet.data).unwrap();
         }
       }
     });
