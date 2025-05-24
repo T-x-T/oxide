@@ -982,12 +982,8 @@ use super::*;
 
   pub fn player_action(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> bool {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.clone()).unwrap();
-    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
-      sequence_id: parsed_packet.sequence,
-    }.try_into().unwrap());
 
     game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0).unwrap();
-
 
     for stream in connection_streams {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::get_id(), lib::packets::clientbound::play::BlockUpdate {
@@ -995,14 +991,16 @@ use super::*;
         block_id: 0,
       }.try_into().unwrap());
     }
+
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into().unwrap());
+
     return false;
   }
 
   pub fn use_item_on(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> bool {
     let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.clone()).unwrap();
-    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
-      sequence_id: parsed_packet.sequence,
-    }.try_into().unwrap());
 
     let mut new_block_location = parsed_packet.location.clone();
     match parsed_packet.face {
@@ -1045,6 +1043,10 @@ use super::*;
         }.try_into().unwrap());
       }
     }
+
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into().unwrap());
 
     return false;
   }
