@@ -1,3 +1,8 @@
+#![allow(
+  clippy::needless_return,
+  clippy::too_many_arguments,
+)]
+
 use std::{error::Error, fmt::{Display, Formatter, Result}};
 
 pub use types::*;

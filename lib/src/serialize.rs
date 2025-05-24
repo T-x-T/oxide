@@ -104,14 +104,14 @@ pub fn slot(input: &crate::packets::Slot) -> Vec<u8> {
       crate::packets::SlotComponent::CustomName(a) => nbt(a),
       crate::packets::SlotComponent::ItemName(a) => nbt(a),
       crate::packets::SlotComponent::ItemModel(a) => string(&a),
-      crate::packets::SlotComponent::Lore(a) => a.into_iter().map(|x| nbt(x)).flatten().collect(),
+      crate::packets::SlotComponent::Lore(a) => a.into_iter().flat_map(nbt).collect(),
       crate::packets::SlotComponent::Rarity(a) => vec![a],
-      crate::packets::SlotComponent::Enchantments(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::Enchantments(a) => a.into_iter().flat_map(|(x, y)| vec![varint(x), varint(y)]).flatten().collect(),
       crate::packets::SlotComponent::CanPlaceOn => todo!(),
       crate::packets::SlotComponent::CanBreak => todo!(),
       crate::packets::SlotComponent::AttributeModifiers => todo!(),
-      crate::packets::SlotComponent::CustomModelData(a, b, c, d) => vec![a.into_iter().map(|x| float(x)).flatten().collect::<Vec<u8>>(), b.into_iter().map(|x| boolean(x)).flatten().collect(), c.into_iter().map(|x| string(&x)).flatten().collect(), d.into_iter().map(|x| int(x)).flatten().collect()].into_iter().flatten().collect(),
-      crate::packets::SlotComponent::TooltipDisplay(a, b) => vec![boolean(a), b.into_iter().map(|x| varint(x)).flatten().collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::CustomModelData(a, b, c, d) => vec![a.into_iter().flat_map(float).collect::<Vec<u8>>(), b.into_iter().flat_map(boolean).collect(), c.into_iter().flat_map(|x| string(&x)).collect(), d.into_iter().flat_map(int).collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::TooltipDisplay(a, b) => vec![boolean(a), b.into_iter().flat_map(varint).collect()].into_iter().flatten().collect(),
       crate::packets::SlotComponent::RepairCost(a) => varint(a),
       crate::packets::SlotComponent::CreativeSlotLock => vec![],
       crate::packets::SlotComponent::EnchantmentGlintOverride(a) => boolean(a),
@@ -130,19 +130,19 @@ pub fn slot(input: &crate::packets::Slot) -> Vec<u8> {
       crate::packets::SlotComponent::TooltipStyle(a) => string(&a),
       crate::packets::SlotComponent::DeathProtection => todo!(),
       crate::packets::SlotComponent::BlockAttacks => todo!(),
-      crate::packets::SlotComponent::StoredEnchantments(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::StoredEnchantments(a) => a.into_iter().flat_map(|(x, y)| vec![varint(x), varint(y)]).flatten().collect(),
       crate::packets::SlotComponent::DyedColor(a) => int(a),
       crate::packets::SlotComponent::MapColor(a) => int(a),
       crate::packets::SlotComponent::MapId(a) => varint(a),
       crate::packets::SlotComponent::MapDecorations(a) => nbt(a),
       crate::packets::SlotComponent::MapPostProcessing(a) => vec![a],
-      crate::packets::SlotComponent::ChargedProjectiles(a) => a.into_iter().map(|x| slot(&x)).flatten().collect(),
-      crate::packets::SlotComponent::BundleContents(a) => a.into_iter().map(|x| slot(&x)).flatten().collect(),
+      crate::packets::SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
+      crate::packets::SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
       crate::packets::SlotComponent::PotionContents => todo!(),
       crate::packets::SlotComponent::PotionDurationScale(a) => float(a),
-      crate::packets::SlotComponent::SuspiciousStewEffects(a) => a.into_iter().map(|(x, y)| vec![varint(x), varint(y)]).flatten().flatten().collect(),
-      crate::packets::SlotComponent::WritableBookContent(a) => a.into_iter().map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect(),
-      crate::packets::SlotComponent::WrittenBookContent(a) => a.into_iter().map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect(),
+      crate::packets::SlotComponent::SuspiciousStewEffects(a) => a.into_iter().flat_map(|(x, y)| vec![varint(x), varint(y)]).flatten().collect(),
+      crate::packets::SlotComponent::WritableBookContent(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).flatten().collect(),
+      crate::packets::SlotComponent::WrittenBookContent(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).flatten().collect(),
       crate::packets::SlotComponent::Trim => todo!(),
       crate::packets::SlotComponent::DebugStickState(a) => nbt(a),
       crate::packets::SlotComponent::EntityData(a) => nbt(a),
@@ -157,14 +157,14 @@ pub fn slot(input: &crate::packets::Slot) -> Vec<u8> {
       crate::packets::SlotComponent::LodestoneTracker(a, b, c, d) => vec![boolean(a), string(&b), position(&c), boolean(d)].into_iter().flatten().collect(),
       crate::packets::SlotComponent::FireworkExplosion => todo!(),
       crate::packets::SlotComponent::Fireworks => todo!(),
-      crate::packets::SlotComponent::Profile(a, b, c) => vec![if a.is_some(){vec![vec![0x01], string(&a.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, if b.is_some() {vec![vec![0x01], uuid(&b.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, c.into_iter().map(|(x, y, z)| vec![string(&x), string(&y), if z.is_some() {vec![vec![0x01], string(&z.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).into_iter().flatten().flatten().collect()].into_iter().flatten().collect(),
+      crate::packets::SlotComponent::Profile(a, b, c) => vec![if a.is_some(){vec![vec![0x01], string(&a.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, if b.is_some() {vec![vec![0x01], uuid(&b.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}, c.into_iter().flat_map(|(x, y, z)| vec![string(&x), string(&y), if z.is_some() {vec![vec![0x01], string(&z.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).flatten().collect()].into_iter().flatten().collect(),
       crate::packets::SlotComponent::NoteblockSound(a) => string(&a),
       crate::packets::SlotComponent::BannerPatterns => todo!(),
       crate::packets::SlotComponent::BaseColor(a) => vec![a],
-      crate::packets::SlotComponent::PotDecorations(a) => a.into_iter().map(|x| varint(x)).flatten().collect(),
-      crate::packets::SlotComponent::Container(a) => a.into_iter().map(|x| varint(x)).flatten().collect(),
-      crate::packets::SlotComponent::BlockState(a) => a.into_iter().map(|(x, y)| vec![string(&x), string(&y)]).flatten().flatten().collect(),
-      crate::packets::SlotComponent::Bees(a) => a.into_iter().map(|(x, y, z)| vec![nbt(x), varint(y), varint(z)]).flatten().flatten().collect(),
+      crate::packets::SlotComponent::PotDecorations(a) => a.into_iter().flat_map(varint).collect(),
+      crate::packets::SlotComponent::Container(a) => a.into_iter().flat_map(varint).collect(),
+      crate::packets::SlotComponent::BlockState(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), string(&y)]).flatten().collect(),
+      crate::packets::SlotComponent::Bees(a) => a.into_iter().flat_map(|(x, y, z)| vec![nbt(x), varint(y), varint(z)]).flatten().collect(),
       crate::packets::SlotComponent::Lock(a) => nbt(a),
       crate::packets::SlotComponent::ContainerLoot(a) => nbt(a),
       crate::packets::SlotComponent::BreakSound => todo!(),
@@ -226,8 +226,8 @@ fn nbt_byte(description: Option<String>, payload: u8, include_id: bool) -> Vec<u
     output.push(0x01);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
     output.push(payload);
@@ -242,8 +242,8 @@ fn nbt_short(description: Option<String>, payload: i16, include_id: bool) -> Vec
     output.push(0x02);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut payload.to_be_bytes().into());
@@ -258,8 +258,8 @@ fn nbt_int(description: Option<String>, payload: i32, include_id: bool) -> Vec<u
     output.push(0x03);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut payload.to_be_bytes().into());
@@ -274,8 +274,8 @@ fn nbt_long(description: Option<String>, payload: i64, include_id: bool) -> Vec<
     output.push(0x04);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut payload.to_be_bytes().into());
@@ -290,8 +290,8 @@ fn nbt_float(description: Option<String>, payload: f32, include_id: bool) -> Vec
     output.push(0x05);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut payload.to_be_bytes().into());
@@ -306,8 +306,8 @@ fn nbt_double(description: Option<String>, payload: f64, include_id: bool) -> Ve
     output.push(0x06);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut payload.to_be_bytes().into());
@@ -322,8 +322,8 @@ fn nbt_byte_array(description: Option<String>, payload: Vec<u8>, include_id: boo
     output.push(0x07);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut (payload.len() as i32).to_be_bytes().to_vec());
@@ -340,8 +340,8 @@ fn nbt_string(description: Option<String>, payload: String, include_id: bool) ->
     output.push(0x08);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   output.append(&mut nbt_short(None, payload.len() as i16, false));
@@ -357,11 +357,11 @@ fn nbt_list(description: Option<String>, payload: Vec<NbtTag>, include_id: bool)
     output.push(0x09);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
-  if payload.len() == 0 {
+  if payload.is_empty() {
     return output;
   }
 
@@ -476,11 +476,11 @@ fn nbt_tag_compound(description: Option<String>, payload: Vec<NbtTag>, include_i
     output.push(0x0a);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
-  if payload.len() == 0 {
+  if payload.is_empty() {
     return output;
   }
 
@@ -512,8 +512,8 @@ fn nbt_int_array(description: Option<String>, payload: Vec<i32>, include_id: boo
     output.push(0x0b);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   let length: i32 = payload.len() as i32;
@@ -531,8 +531,8 @@ fn nbt_long_array(description: Option<String>, payload: Vec<i64>, include_id: bo
     output.push(0x0c);
   }
 
-  if description.is_some() {
-    output.append(&mut nbt_string(None, description.unwrap(), false));
+  if let Some(description) = description {
+    output.append(&mut nbt_string(None, description, false));
   }
 
   let length: i32 = payload.len() as i32;
@@ -575,51 +575,5 @@ mod test {
   fn varint_works_medium_number() {
     let res = varint(26740);
     assert_eq!(res, vec![0xf4, 0xd0, 0x01]);
-  }
-
-  #[test]
-  #[ignore]
-  fn test() {
-    use std::fs::write;
-
-    let test_nbt = NbtTag::TagCompound(Some("Level".to_string()), vec![
-        NbtTag::Long(Some("longTest".to_string()), 9223372036854775807),
-        NbtTag::Short(Some("shortTest".to_string()), 32767),
-        NbtTag::String(Some("stringTest".to_string()), "HELLO WORLD THIS IS A TEST STRING ÅÄÖ!".to_string()),
-        NbtTag::Float(Some("floatTest".to_string()), 0.4982314705848694),
-        NbtTag::Int(Some("intTest".to_string()), 2147483647),
-        NbtTag::TagCompound(Some("nested compound test".to_string()), vec![
-          NbtTag::TagCompound(Some("ham".to_string()), vec![
-            NbtTag::String(Some("name".to_string()), "Hampus".to_string()),
-            NbtTag::Float(Some("value".to_string()), 0.75)
-          ]),
-          NbtTag::TagCompound(Some("egg".to_string()), vec![
-            NbtTag::String(Some("name".to_string()), "Eggbert".to_string()),
-            NbtTag::Float(Some("value".to_string()), 0.5)
-          ])
-        ]),
-        NbtTag::List(Some("listTest (long)".to_string()), vec![
-          NbtTag::Long(None, 11),
-          NbtTag::Long(None, 12),
-          NbtTag::Long(None, 13),
-          NbtTag::Long(None, 14),
-          NbtTag::Long(None, 15)
-        ]),
-        NbtTag::List(Some("listTest (compound)".to_string()), vec![
-          NbtTag::TagCompound(None, vec![
-            NbtTag::String(Some("name".to_string()), "Compound tag #0".to_string()),
-            NbtTag::Long(Some("created-on".to_string()), 1264099775885)
-          ]),
-          NbtTag::TagCompound(None, vec![
-            NbtTag::String(Some("name".to_string()), "Compound tag #1".to_string()),
-            NbtTag::Long(Some("created-on".to_string()), 1264099775885)
-          ])
-        ]),
-        NbtTag::Byte(Some("byteTest".to_string()), 127),
-        NbtTag::ByteArray(Some("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))".to_string()), vec![0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48,0,62,34,16,8,10,22,44,76,18,70,32,4,86,78,80,92,14,46,88,40,2,74,56,48,50,62,84,16,58,10,72,44,26,18,20,32,54,86,28,80,42,14,96,88,90,2,24,56,98,50,12,84,66,58,60,72,94,26,68,20,82,54,36,28,30,42,64,96,38,90,52,24,6,98,0,12,34,66,8,60,22,94,76,68,70,82,4,36,78,30,92,64,46,38,40,52,74,6,48]),
-        NbtTag::Double(Some("doubleTest".to_string()), 0.4931287132182315),
-      ]);
-
-    write("/tmp/my_bigtest.nbt", nbt(test_nbt.clone())).unwrap();
   }
 }

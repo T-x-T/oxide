@@ -49,7 +49,7 @@ pub fn initialize_server() {
           _ => {}
         }
 
-        let packet = lib::utils::read_packet(&mut stream);
+        let packet = lib::utils::read_packet(&stream);
 
         if stream.peer_addr().is_err() {
           disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
@@ -67,11 +67,11 @@ pub fn initialize_server() {
 
 fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, players: &mut Vec<Player>) {
   let players_clone = players.clone();
-  let player_to_remove = players_clone.iter().find(|x| x.peer_socket_address == peer_addr.clone());
+  let player_to_remove = players_clone.iter().find(|x| x.peer_socket_address == *peer_addr);
   packet::handlers::update_players(connection_streams, connections, players.clone(), player_to_remove);
   connections.remove(peer_addr);
   connection_streams.remove(peer_addr);
-  players.retain(|x| x.peer_socket_address != peer_addr.clone());
+  players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 
 #[derive(Debug, Clone)]
@@ -133,43 +133,31 @@ impl Player {
     let yaw = self.yaw;
     let cardinal_direction: CardinalDirection;
     if yaw >= 0.0 {
-      if yaw >= 135.0 && yaw < 225.0 {
+      if (135.0..225.0).contains(&yaw) {
         cardinal_direction = CardinalDirection::North;
-      } else if yaw >= 225.0 && yaw < 315.0 {
+      } else if (225.0..315.0).contains(&yaw) {
         cardinal_direction = CardinalDirection::East;
-      } else if yaw >= 315.0 || yaw < 45.0 {
+      } else if !(45.0..315.0).contains(&yaw) {
         cardinal_direction = CardinalDirection::South;
       } else {
         cardinal_direction = CardinalDirection::West;
       }
+    } else if yaw <= -135.0 && yaw > -225.0 {
+      cardinal_direction = CardinalDirection::North;
+    } else if (-135.0..-45.0).contains(&yaw) {
+      cardinal_direction = CardinalDirection::East;
+    } else if yaw <= -315.0 || yaw > -45.0 {
+      cardinal_direction = CardinalDirection::South;
     } else {
-      if yaw <= -135.0 && yaw > -225.0 {
-        cardinal_direction = CardinalDirection::North;
-      } else if yaw >= -135.0 && yaw < -45.0 {
-        cardinal_direction = CardinalDirection::East;
-      } else if yaw <= -315.0 || yaw > -45.0 {
-        cardinal_direction = CardinalDirection::South;
-      } else {
-        cardinal_direction = CardinalDirection::West;
-      }
+      cardinal_direction = CardinalDirection::West;
     }
     return cardinal_direction;
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Connection {
   pub state: ConnectionState,
   pub player_name: Option<String>,
   pub player_uuid: Option<u128>,
-}
-
-impl Default for Connection {
-  fn default() -> Self {
-    Self {
-      state: Default::default(),
-      player_name: Default::default(),
-      player_uuid: Default::default(),
-    }
-  }
 }

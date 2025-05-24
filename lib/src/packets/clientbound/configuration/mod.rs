@@ -19,8 +19,7 @@ impl TryFrom<ClientboundKnownPacks> for Vec<u8> {
 
 	fn try_from(value: ClientboundKnownPacks) -> Result<Self, Box<dyn Error>> {
 		let data: Vec<u8> = value.known_packs.clone().into_iter()
-			.map(|x| vec![crate::serialize::string(x.namespace.as_str()), crate::serialize::string(x.id.as_str()), crate::serialize::string(x.version.as_str())])
-			.flatten()
+			.flat_map(|x| vec![crate::serialize::string(x.namespace.as_str()), crate::serialize::string(x.id.as_str()), crate::serialize::string(x.version.as_str())])
 			.flatten()
 			.collect();
 

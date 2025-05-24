@@ -8,9 +8,9 @@ pub struct Position {
 impl Position {
   pub fn convert_to_position_in_chunk(&self) -> Position {
     return Position {
-      x: if self.x >= 0 {self.x % 16} else {if 16 - ((self.x * -1) % 16) != 16 {16 - ((self.x * -1) % 16)} else {0}},
+      x: if self.x >= 0 {self.x % 16} else if 16 - ((-self.x) % 16) != 16 {16 - ((-self.x) % 16)} else {0},
       y: self.y,
-      z: if self.z >= 0 {self.z % 16} else {if 16 - ((self.z * -1) % 16) != 16 {16 - ((self.z * -1) % 16)} else {0}},
+      z: if self.z >= 0 {self.z % 16} else if 16 - ((-self.z) % 16) != 16 {16 - ((-self.z) % 16)} else {0},
     };
   }
 

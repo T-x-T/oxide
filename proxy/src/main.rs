@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 
@@ -9,12 +11,12 @@ fn main() {
   let listener = TcpListener::bind("127.0.0.1:35565").unwrap();
 
   for stream in listener.incoming() {
-    let mut server_read_stream = stream.unwrap();
+    let server_read_stream = stream.unwrap();
     println!("New Connection from {}", server_read_stream.peer_addr().unwrap());
 
-    let mut client_send_stream = TcpStream::connect("127.0.0.1:25565").unwrap();
-    let mut client_read_stream = client_send_stream.try_clone().unwrap();
-    let mut server_send_stream = server_read_stream.try_clone().unwrap();
+    let client_send_stream = TcpStream::connect("127.0.0.1:25565").unwrap();
+    let client_read_stream = client_send_stream.try_clone().unwrap();
+    let server_send_stream = server_read_stream.try_clone().unwrap();
 
     let connection = Arc::new(Mutex::new(Connection { state: lib::ConnectionState::Handshaking, protocol_version: 0 }));
     let connection_clone = connection.clone();
@@ -37,7 +39,7 @@ fn main() {
           _ => {}
         }
 
-        let server_packet = lib::utils::read_packet(&mut server_read_stream);
+        let server_packet = lib::utils::read_packet(&server_read_stream);
         let mut parsed_server_packet: Option<Vec<u8>> = None;
 
         let packet_id = server_packet.id;
@@ -129,10 +131,9 @@ fn main() {
           },
         }
 
-        if parsed_server_packet.is_some() {
-          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, parsed_server_packet.unwrap()).unwrap();
-        } else {
-          lib::utils::send_packet(&mut client_send_stream, packet_id as u8, server_packet.data).unwrap();
+        match parsed_server_packet {
+          Some(x) => lib::utils::send_packet(&client_send_stream, packet_id, x).unwrap(),
+          None => lib::utils::send_packet(&client_send_stream, packet_id, server_packet.data).unwrap(),
         }
       }
     });
@@ -156,7 +157,7 @@ fn main() {
           _ => {}
         }
 
-        let client_packet = lib::utils::read_packet(&mut client_read_stream);
+        let client_packet = lib::utils::read_packet(&client_read_stream);
         let mut parsed_client_packet: Option<Vec<u8>> = None;
 
         let packet_id = client_packet.id;
@@ -263,10 +264,9 @@ fn main() {
           },
         }
 
-        if parsed_client_packet.is_some() {
-          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, parsed_client_packet.unwrap()).unwrap();
-        } else {
-          lib::utils::send_packet(&mut server_send_stream, packet_id as u8, client_packet.data).unwrap();
+        match parsed_client_packet {
+          Some(x) => lib::utils::send_packet(&server_send_stream, packet_id, x).unwrap(),
+          None => lib::utils::send_packet(&server_send_stream, packet_id, client_packet.data).unwrap(),
         }
       }
     });

@@ -26,6 +26,7 @@ pub struct ChunkSection {
 
 
 impl World {
+  #[allow(clippy::new_without_default)]
   pub fn new() -> Self {
     println!("create new world");
     let mut dimensions: HashMap<String, Dimension> = HashMap::new();
@@ -37,6 +38,7 @@ impl World {
 }
 
 impl Dimension {
+  #[allow(clippy::new_without_default)]
   pub fn new() -> Self {
     let mut chunks: Vec<Chunk> = Vec::new();
 

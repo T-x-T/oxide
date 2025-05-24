@@ -638,9 +638,9 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 impl TryFrom<&mut Vec<u8>> for ChunkSection {
 	type Error = Box<dyn Error>;
 
-	fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
 	  return Ok(Self {
-			block_count: crate::deserialize::unsigned_short(&mut value)?,
+			block_count: crate::deserialize::unsigned_short(value)?,
 			block_states: value.try_into()?,
 			biomes: value.try_into()?,
 		});
@@ -650,31 +650,31 @@ impl TryFrom<&mut Vec<u8>> for ChunkSection {
 impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
   type Error = Box<dyn Error>;
 
-  fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+  fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
     let bits_per_entry = value.remove(0);
 
     return match bits_per_entry {
    		0 => {
-        let value_entry = crate::deserialize::varint(&mut value)?;
+        let value_entry = crate::deserialize::varint(value)?;
    			Ok(BlockStatesPalettedContainer::SingleValued(SingleValued {
    				bits_per_entry,
    				value: value_entry,
    			}))
        },
    		1..=14 => {
-   			let palette_length = crate::deserialize::varint(&mut value)?;
+   			let palette_length = crate::deserialize::varint(value)?;
    			let mut palette: Vec<i32> = Vec::new();
    			for _ in 0..palette_length {
-   				palette.push(crate::deserialize::varint(&mut value)?);
+   				palette.push(crate::deserialize::varint(value)?);
    			}
         let entries_per_long = 64 / bits_per_entry as i32;
    			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
    			let mut data_array: Vec<i32> = Vec::new();
    			for _ in 0..long_array_length {
-          let value = crate::deserialize::unsigned_long(&mut value)?;
+          let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
-            let entry = value.clone() >> i * bits_per_entry as i32;
-            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            let entry = value >> (i * bits_per_entry as i32);
+            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -689,10 +689,10 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
   			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
   			let mut data_array: Vec<i32> = Vec::new();
   			for _ in 0..long_array_length {
-          let value = crate::deserialize::unsigned_long(&mut value)?;
+          let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
-            let entry = value.clone() >> i * bits_per_entry as i32;
-            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            let entry = value >> (i * bits_per_entry as i32);
+            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
   			}
@@ -708,32 +708,32 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
 impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
   type Error = Box<dyn Error>;
 
-  fn try_from(mut value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+  fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
     let bits_per_entry = value.remove(0);
 
     return match bits_per_entry {
    		0 => {
-        let value_entry = crate::deserialize::varint(&mut value)?;
+        let value_entry = crate::deserialize::varint(value)?;
    			Ok(BiomesPalettedContainer::SingleValued(SingleValued {
    				bits_per_entry,
    				value: value_entry,
    			}))
        },
    		1..=5 => {
-   			let palette_length = crate::deserialize::varint(&mut value)?;
+   			let palette_length = crate::deserialize::varint(value)?;
    			let mut palette: Vec<i32> = Vec::new();
    			for _ in 0..palette_length {
-   				palette.push(crate::deserialize::varint(&mut value)?);
+   				palette.push(crate::deserialize::varint(value)?);
    			}
 
    			let entries_per_long = 64 / bits_per_entry as i32;
    			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
    			let mut data_array: Vec<i32> = Vec::new();
    			for _ in 0..data_array_length {
-          let value = crate::deserialize::unsigned_long(&mut value)?;
+          let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
-            let entry = value.clone() >> i * bits_per_entry as i32;
-            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            let entry = value >> (i * bits_per_entry as i32);
+            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -748,10 +748,10 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
    			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
    			let mut data_array: Vec<i32> = Vec::new();
    			for _ in 0..data_array_length {
-          let value = crate::deserialize::unsigned_long(&mut value)?;
+          let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
-            let entry = value.clone() >> i * bits_per_entry as i32;
-            let entry = entry & u64::MAX >> (64 - bits_per_entry);
+            let entry = value >> (i * bits_per_entry as i32);
+            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1115,14 +1115,17 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 							}
 						},
 						PlayerAction::InitializeChat(data) => {
-							if data.is_some() {
-								output.push(1);
-								output.append(&mut crate::serialize::uuid(&data.clone().unwrap().0));
-								output.append(&mut crate::serialize::long(data.clone().unwrap().1));
-								output.append(&mut data.clone().unwrap().2.clone());
-								output.append(&mut data.unwrap().3.clone());
-							} else {
-								output.push(0);
+						  match data {
+								Some(data) => {
+  								output.push(1);
+  								output.append(&mut crate::serialize::uuid(&data.clone().0));
+  								output.append(&mut crate::serialize::long(data.clone().1));
+  								output.append(&mut data.clone().2.clone());
+  								output.append(&mut data.3.clone());
+								},
+								None => {
+								  output.push(0);
+								}
 							}
 						},
 						PlayerAction::UpdateGameMode(game_mode) => output.append(&mut crate::serialize::varint(game_mode)),
@@ -1130,8 +1133,8 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 						PlayerAction::UpdateLatency(ping) => output.append(&mut crate::serialize::varint(ping)),
 						PlayerAction::UpdateDisplayName(display_name) => {
 							output.append(&mut crate::serialize::boolean(display_name.is_some()));
-							if display_name.is_some() {
-								output.append(&mut crate::serialize::nbt(display_name.unwrap()));
+							if let Some(display_name) = display_name {
+								output.append(&mut crate::serialize::nbt(display_name));
 							}
 						},
 						PlayerAction::UpdateListPriority(priority) => output.append(&mut crate::serialize::varint(priority)),
@@ -1398,6 +1401,7 @@ pub enum EntityMetadataValue {
 	Quaternion(f32, f32, f32, f32),
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<i32> for EntityMetadataValue {
 	fn into(self) -> i32 {
 		match self {
@@ -1456,11 +1460,14 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
 				EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt(a)),
 				EntityMetadataValue::OptionalTextComponent(a) => {
-					if a.is_some() {
-						output.push(0x01);
-						output.append(&mut crate::serialize::nbt(a.unwrap()));
-					} else {
-						output.push(0x00);
+					match a {
+					  Some(a) => {
+							output.push(0x01);
+							output.append(&mut crate::serialize::nbt(a));
+						},
+						None => {
+						  output.push(0x00);
+						}
 					}
 				},
 				EntityMetadataValue::Slot(_) => output.append(&mut vec![0; 6]),
@@ -1472,11 +1479,14 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				},
 				EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
 				EntityMetadataValue::OptionalPosition(a) => {
-					if a.is_some() {
-						output.push(0x01);
-						output.append(&mut crate::serialize::long(a.unwrap()));
-					} else {
-						output.push(0x00);
+				  match a {
+						Some(a) => {
+  						output.push(0x01);
+  						output.append(&mut crate::serialize::long(a));
+						},
+						None => {
+						  output.push(0x00);
+						}
 					}
 				},
 				EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),

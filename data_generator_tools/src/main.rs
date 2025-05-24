@@ -1,4 +1,8 @@
-#![allow(unused)]
+#![allow(
+  clippy::needless_return,
+  clippy::format_collect,
+  unused
+)]
 
 use std::{collections::HashMap};
 
@@ -42,15 +46,15 @@ fn do_blocks() {
     let key = x.0;
     let block_type = convert_to_upper_camel_case(block["definition"]["type"].as_str().unwrap());
     let properties: String = if block["properties"].is_object() {
-      block["properties"].as_object().unwrap().iter().map(|x| x.1.as_array().unwrap().into_iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(x.0), block_type, convert_to_upper_camel_case(x.0), if (u8::MIN..u8::MAX).into_iter().map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.as_str().unwrap())) } else { convert_to_upper_camel_case(y.as_str().unwrap()) } ))).flatten().collect()
+      block["properties"].as_object().unwrap().iter().flat_map(|x| x.1.as_array().unwrap().iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(x.0), block_type, convert_to_upper_camel_case(x.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.as_str().unwrap())) } else { convert_to_upper_camel_case(y.as_str().unwrap()) } ))).collect()
     } else {
       String::new()
     };
 
     println!("fn add_{}(map: &mut HashMap<String, Block>) {{", convert_to_upper_camel_case(key).to_lowercase());
     println!("let mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};");
-    for x in block["states"].as_array().unwrap().into_iter() {
-      println!("block.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).into_iter().map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } )
+    for x in block["states"].as_array().unwrap().iter() {
+      println!("block.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } )
     }
     println!("map.insert(\"{key}\".to_string(), block);");
     println!("}}");
@@ -86,9 +90,7 @@ fn do_properties() {
     }
     for property in block.1["properties"].as_object().unwrap().iter() {
       let property_entry = format!("{}{}", convert_to_upper_camel_case(block.1["definition"]["type"].as_str().unwrap()), convert_to_upper_camel_case(property.0));
-      if !properties.contains_key(&property_entry) {
-        properties.insert(property_entry, property.1.as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect());
-      }
+      properties.entry(property_entry).or_insert(property.1.as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect());
     }
   }
 
@@ -96,7 +98,7 @@ fn do_properties() {
     println!("#[derive(Debug, Clone, PartialEq, Eq)]\npub enum {} {{", property.0);
     for variant in property.1 {
       let mut variant = convert_to_upper_camel_case(&variant);
-      if (u8::MIN..u8::MAX).into_iter().map(|x| x.to_string()).collect::<Vec<String>>().contains(&variant) {
+      if (u8::MIN..u8::MAX).map(|x| x.to_string()).collect::<Vec<String>>().contains(&variant) {
         variant = format!("Num{variant}")
       }
       println!("\t{},", variant);

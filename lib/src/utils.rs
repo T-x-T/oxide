@@ -4,7 +4,7 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
   let mut packet_length_bits: Vec<u8> = Vec::new();
   loop {
     let buf: &mut [u8] = &mut [0];
-    stream.read(buf).unwrap();
+    stream.read_exact(buf).unwrap();
     packet_length_bits.push(buf[0]);
 
     if buf[0] & 0x80 == 0 {
@@ -34,7 +34,7 @@ pub fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) -> 
   packet.append(&mut serialized_id);
   packet.append(&mut data);
 
-  stream.write(packet.as_slice())?;
+  stream.write_all(packet.as_slice())?;
   stream.flush()?;
 
   return Ok(());

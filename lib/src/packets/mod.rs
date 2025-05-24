@@ -131,12 +131,14 @@ pub enum SlotComponent {
   ShulkerColor(u8),
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<i32> for &SlotComponent {
   fn into(self) -> i32 {
     return self.clone().into();
   }
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<i32> for SlotComponent {
   fn into(self) -> i32 {
     return match self {

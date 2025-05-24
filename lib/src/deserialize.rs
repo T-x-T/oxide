@@ -21,7 +21,7 @@ pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
   let second_byte = data.pop().unwrap();
   data.reverse();
 
-  let output: u16 = (first_byte as u16 * 256 as u16) + second_byte as u16;
+  let output: u16 = (first_byte as u16 * 256) + second_byte as u16;
 
   return Ok(output);
 }
@@ -255,8 +255,8 @@ pub fn nbt(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
   return nbt_tag_compound(data, false, true);
 }
 
-fn nbt_byte_array_value(mut data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
-  let len = int(&mut data)?;
+fn nbt_byte_array_value(data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
+  let len = int(data)?;
   let mut bytes: Vec<u8> = Vec::new();
   data.reverse();
   for _ in 0..len {
@@ -279,20 +279,20 @@ pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
   return Ok(string);
 }
 
-fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
+fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
   data.reverse();
   if has_id {
     data.pop();
   }
 
   let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
+    Some(nbt_string_value(data)?)
   } else {
     None
   };
 
   let id = data.pop().unwrap();
-  let len = int(&mut data)?;
+  let len = int(data)?;
 
   let output: NbtTag = match id {
     0x01 => {
@@ -307,7 +307,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::Short(None, short(&mut data)?));
+        list.push(NbtTag::Short(None, short(data)?));
       }
       data.reverse();
 
@@ -317,7 +317,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::Int(None, int(&mut data)?));
+        list.push(NbtTag::Int(None, int(data)?));
       }
       data.reverse();
 
@@ -327,7 +327,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::Long(None, long(&mut data)?));
+        list.push(NbtTag::Long(None, long(data)?));
       }
       data.reverse();
 
@@ -337,7 +337,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::Float(None, float(&mut data)?));
+        list.push(NbtTag::Float(None, float(data)?));
       }
       data.reverse();
 
@@ -347,7 +347,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::Double(None, double(&mut data)?));
+        list.push(NbtTag::Double(None, double(data)?));
       }
       data.reverse();
 
@@ -357,7 +357,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::ByteArray(None, nbt_byte_array_value(&mut data)?));
+        list.push(NbtTag::ByteArray(None, nbt_byte_array_value(data)?));
       }
       data.reverse();
 
@@ -367,7 +367,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
+        list.push(NbtTag::String(None, nbt_string_value(data)?));
       }
       data.reverse();
 
@@ -399,7 +399,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::IntArray(None, nbt_int_array_value(&mut data)?));
+        list.push(NbtTag::IntArray(None, nbt_int_array_value(data)?));
       }
       data.reverse();
 
@@ -409,7 +409,7 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
       let mut list: Vec<NbtTag> = Vec::new();
       data.reverse();
       for _ in 0..len {
-        list.push(NbtTag::LongArray(None, nbt_long_array_value(&mut data)?));
+        list.push(NbtTag::LongArray(None, nbt_long_array_value(data)?));
       }
       data.reverse();
 
@@ -425,13 +425,13 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
   return Ok(output);
 }
 
-fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
+fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
   if has_id {
     data.remove(0);
   }
 
   let description: Option<String> = if has_description {
-    Some(nbt_string_value(&mut data)?)
+    Some(nbt_string_value(data)?)
   } else {
     None
   };
@@ -444,40 +444,40 @@ fn nbt_tag_compound(mut data: &mut Vec<u8>, has_description: bool, has_id: bool)
     match id {
       0x00 => break,
       0x01 => {
-        tags.push(NbtTag::Byte(Some(nbt_string_value(&mut data)?), data.remove(0)));
+        tags.push(NbtTag::Byte(Some(nbt_string_value(data)?), data.remove(0)));
       },
       0x02 => {
-        tags.push(NbtTag::Short(Some(nbt_string_value(&mut data)?), short(&mut data)?));
+        tags.push(NbtTag::Short(Some(nbt_string_value(data)?), short(data)?));
       },
       0x03 => {
-        tags.push(NbtTag::Int(Some(nbt_string_value(&mut data)?), int(&mut data)?));
+        tags.push(NbtTag::Int(Some(nbt_string_value(data)?), int(data)?));
       },
       0x04 => {
-        tags.push(NbtTag::Long(Some(nbt_string_value(&mut data)?), long(&mut data)?));
+        tags.push(NbtTag::Long(Some(nbt_string_value(data)?), long(data)?));
       },
       0x05 => {
-        tags.push(NbtTag::Float(Some(nbt_string_value(&mut data)?), float(&mut data)?));
+        tags.push(NbtTag::Float(Some(nbt_string_value(data)?), float(data)?));
       },
       0x06 => {
-        tags.push(NbtTag::Double(Some(nbt_string_value(&mut data)?), double(&mut data)?));
+        tags.push(NbtTag::Double(Some(nbt_string_value(data)?), double(data)?));
       },
       0x07 => {
-        tags.push(NbtTag::ByteArray(Some(nbt_string_value(&mut data)?), nbt_byte_array_value(&mut data)?));
+        tags.push(NbtTag::ByteArray(Some(nbt_string_value(data)?), nbt_byte_array_value(data)?));
       },
       0x08 => {
-        tags.push(NbtTag::String(Some(nbt_string_value(&mut data)?), nbt_string_value(&mut data)?));
+        tags.push(NbtTag::String(Some(nbt_string_value(data)?), nbt_string_value(data)?));
       },
       0x09 => {
-        tags.push(nbt_list(&mut data, true, false)?);
+        tags.push(nbt_list(data, true, false)?);
       },
       0x0a => {
-        tags.push(nbt_tag_compound(&mut data, true, false)?);
+        tags.push(nbt_tag_compound(data, true, false)?);
       },
       0x0b => {
-        tags.push(NbtTag::IntArray(Some(nbt_string_value(&mut data)?), nbt_int_array_value(&mut data)?));
+        tags.push(NbtTag::IntArray(Some(nbt_string_value(data)?), nbt_int_array_value(data)?));
       },
       0x0c => {
-        tags.push(NbtTag::LongArray(Some(nbt_string_value(&mut data)?), nbt_long_array_value(&mut data)?));
+        tags.push(NbtTag::LongArray(Some(nbt_string_value(data)?), nbt_long_array_value(data)?));
       },
       x => {
         return Err(Box::new(CustomError::InvalidNbtTag(x)));

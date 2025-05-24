@@ -7,13 +7,8 @@ use lib::ConnectionState;
 use crate::server::{Game, Player, Connection};
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
-	if !connections.contains_key(&stream.peer_addr().unwrap()) {
-		connections.insert(stream.peer_addr().unwrap(), Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
-	}
-
- 	if !connection_streams.contains_key(&stream.peer_addr().unwrap()) {
-		connection_streams.insert(stream.peer_addr().unwrap(), stream.try_clone().unwrap());
- 	}
+	connections.entry(stream.peer_addr().unwrap()).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
+ 	connection_streams.entry(stream.peer_addr().unwrap()).or_insert_with(|| stream.try_clone().unwrap());
 
 	return match connections.get(&stream.peer_addr().unwrap()).unwrap().state {
     ConnectionState::Handshaking => match packet.id {
@@ -53,8 +48,8 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 pub mod handshaking {
   use super::*;
 
-  pub fn handshake(data: &mut Vec<u8>, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.clone()).unwrap();
+  pub fn handshake(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.to_vec()).unwrap();
 
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = parsed_packet.next_state.into());
 
@@ -75,12 +70,13 @@ use super::*;
     return Ok(());
   }
 
+  //TODO: implement actual packet struct
   pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
     let mut output: Vec<u8> = Vec::new();
     output.push(9);
     output.push(1);
     output.append(data);
-    stream.write(output.as_slice()).unwrap();
+    stream.write_all(output.as_slice()).unwrap();
 
     return Err(Box::new(lib::CustomError::NotActuallyAnErrorButPleaseDisconnectMe));
   }
@@ -91,8 +87,8 @@ pub mod login {
 
 use super::*;
 
-  pub fn login_start(data: &mut Vec<u8>, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.clone()).unwrap();
+  pub fn login_start(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.to_vec()).unwrap();
 
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| {
       x.player_name = Some(parsed_packet.name.clone());
@@ -780,8 +776,8 @@ pub mod play {
   use lib::{packets::Packet, utils::send_packet};
   use super::*;
 
-  pub fn set_player_position(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.clone()).unwrap();
+  pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec()).unwrap();
     let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
     let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
@@ -798,7 +794,7 @@ pub mod play {
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
-      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+      if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         /* lib::utils::send_packet(other_stream.1, 0x2f, lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
           delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
@@ -825,8 +821,8 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn set_player_position_and_rotation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.clone()).unwrap();
+  pub fn set_player_position_and_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec()).unwrap();
     let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
     let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
@@ -845,7 +841,7 @@ pub mod play {
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
-      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+      if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::get_id(), lib::packets::clientbound::play::TeleportEntity {
           entity_id: player.entity_id,
           x: player.x,
@@ -864,8 +860,8 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn set_player_rotation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.clone()).unwrap();
+  pub fn set_player_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec()).unwrap();
     let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
     let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
@@ -882,7 +878,7 @@ pub mod play {
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
-      if other_stream.0.clone() != stream.peer_addr().unwrap() && connections.get(&other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+      if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::get_id(), lib::packets::clientbound::play::TeleportEntity {
           entity_id: player.entity_id,
           x: player.x,
@@ -901,13 +897,13 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn confirm_teleportation(data: &mut Vec<u8>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn confirm_teleportation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
     let player = game.players.iter().find(|x| x.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default());
     if player.is_none() {
       println!("got confirm_teleportation packet from invalid player");
       return Ok(());
     }
-    let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.clone()).unwrap();
+    let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.to_vec()).unwrap();
     if player.unwrap().current_teleport_id == parsed_packet.teleport_id {
       game.players = game.players.clone().into_iter().map(|mut x| {
         if player.is_some() && player.unwrap().peer_socket_address == stream.peer_addr().unwrap() {
@@ -922,8 +918,8 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn set_creative_mode_slot(data: &mut Vec<u8>, stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.clone()).unwrap();
+  pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.to_vec()).unwrap();
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
         Some(x.0)}
@@ -939,8 +935,8 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn set_held_item(data: &mut Vec<u8>, stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::SetHandItem::try_from(data.clone()).unwrap();
+  pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::SetHandItem::try_from(data.to_vec()).unwrap();
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
         Some(x.0)}
@@ -957,8 +953,8 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn player_action(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.clone()).unwrap();
+  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec()).unwrap();
 
     game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0).unwrap();
 
@@ -976,10 +972,10 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn use_item_on(data: &mut Vec<u8>, stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.clone()).unwrap();
+  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.to_vec()).unwrap();
 
-    let mut new_block_location = parsed_packet.location.clone();
+    let mut new_block_location = parsed_packet.location;
     match parsed_packet.face {
       0 => new_block_location.y -= 1,
       1 => new_block_location.y += 1,
@@ -1036,8 +1032,8 @@ pub fn update_players(connection_streams: &mut HashMap<SocketAddr, TcpStream>, c
     .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
     .for_each(|x| {
       let mut uuids_to_remove: Vec<u128> = all_players.iter().map(|x| x.uuid).collect();
-      if removed_player.is_some() {
-        uuids_to_remove.push(removed_player.clone().unwrap().uuid);
+      if let Some(removed_player) = removed_player {
+        uuids_to_remove.push(removed_player.uuid);
       }
       let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::get_id(), lib::packets::clientbound::play::PlayerInfoRemove {
         uuids: uuids_to_remove,
@@ -1057,9 +1053,9 @@ pub fn update_players(connection_streams: &mut HashMap<SocketAddr, TcpStream>, c
         ])).collect(),
       }.try_into().unwrap());
 
-      if removed_player.is_some() {
+      if let Some(removed_player) = removed_player {
         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::RemoveEntities::get_id(), lib::packets::clientbound::play::RemoveEntities {
-          entity_ids: vec![removed_player.clone().unwrap().entity_id]
+          entity_ids: vec![removed_player.entity_id]
         }.try_into().unwrap());
       }
     });
