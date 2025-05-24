@@ -160,7 +160,6 @@ impl Player {
 #[derive(Debug, Clone)]
 pub struct Connection {
   pub state: ConnectionState,
-  pub peer_address: SocketAddr,
   pub player_name: Option<String>,
   pub player_uuid: Option<u128>,
 }
@@ -169,7 +168,6 @@ impl Default for Connection {
   fn default() -> Self {
     Self {
       state: Default::default(),
-      peer_address: SocketAddr::V4(std::net::SocketAddrV4::new(std::net::Ipv4Addr::from_bits(0), 0)),
       player_name: Default::default(),
       player_uuid: Default::default(),
     }

@@ -8,7 +8,7 @@ use crate::server::{Game, Player, Connection};
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
 	if !connections.contains_key(&stream.peer_addr().unwrap()) {
-		connections.insert(stream.peer_addr().unwrap(), Connection { state: ConnectionState::Handshaking, peer_address: stream.peer_addr().unwrap(), player_name: None, player_uuid: None });
+		connections.insert(stream.peer_addr().unwrap(), Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
 	}
 
  	if !connection_streams.contains_key(&stream.peer_addr().unwrap()) {
@@ -789,10 +789,6 @@ pub mod play {
       return Ok(());
     }
     game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
-
-    let old_x = player.x;
-    let old_y_feet = player.y_feet;
-    let old_z = player.z;
 
     player.x = parsed_packet.x;
     player.y_feet = parsed_packet.feet_y;

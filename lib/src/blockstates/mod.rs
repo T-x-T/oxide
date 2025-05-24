@@ -1,10 +1,8 @@
-use std::ops::Deref;
-
 use data::blocks::*;
 
 use crate::{CardinalDirection, Dimension, Position};
 
-pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32) -> Vec<(i32, Position)> {
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, _cursor_position_x: f32, cursor_position_y: f32, _cursor_position_z: f32) -> Vec<(i32, Position)> {
   let block = data::blocks::get_block_from_name(used_item_name);
   let mut output: Vec<(i32, Position)> = Vec::new();
 

@@ -375,25 +375,25 @@ fn nbt_list(mut data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Resu
     },
     0x09 => {
       todo!("this isnt implemented yet lol");
-      let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
-      for _ in 0..len {
-        list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
-      }
-      data.reverse();
+      //let mut list: Vec<NbtTag> = Vec::new();
+      //data.reverse();
+      //for _ in 0..len {
+      //  list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
+      //}
+      //data.reverse();
 
-      NbtTag::List(description, list)
+      //NbtTag::List(description, list)
     },
     0x0a => {
       todo!("this isnt implemented yet lol");
-      let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
-      for _ in 0..len {
-        list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
-      }
-      data.reverse();
+      //let mut list: Vec<NbtTag> = Vec::new();
+      //data.reverse();
+      //for _ in 0..len {
+      //  list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
+      //}
+      //data.reverse();
 
-      NbtTag::List(description, list)
+      //NbtTag::List(description, list)
     },
     0x0b => {
       let mut list: Vec<NbtTag> = Vec::new();
