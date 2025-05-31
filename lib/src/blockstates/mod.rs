@@ -1,9 +1,9 @@
-use data::blocks::*;
+use data::blocks::{self, *};
 
 use crate::{CardinalDirection, Dimension, Position};
 
 pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, _cursor_position_x: f32, cursor_position_y: f32, _cursor_position_z: f32) -> Vec<(i32, Position)> {
-  let block = data::blocks::get_block_from_name(used_item_name);
+  let block = data::blocks::get_block_from_name(used_item_name.clone());
   let mut output: Vec<(i32, Position)> = Vec::new();
 
   match block.block_type {
@@ -83,6 +83,32 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let stair_half = if flip_it { StairHalf::Top } else { StairHalf::Bottom };
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(facing.clone())) && x.properties.contains(&Property::StairHalf(stair_half.clone())) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id, position));
+    },
+    Type::IronBars => {
+      //TODO: update existing surrounding blocks
+      let all_blocks = blocks::get_blocks();
+      let block_ids_to_check: Vec<i32> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+
+      let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { IronBarsNorth::True } else { IronBarsNorth::False };
+      let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { IronBarsSouth::True } else { IronBarsSouth::False };
+      let east = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x + 1, ..position }).unwrap_or(0)) { IronBarsEast::True } else { IronBarsEast::False };
+      let west = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x - 1, ..position }).unwrap_or(0)) { IronBarsWest::True } else { IronBarsWest::False };
+      let water_logged = IronBarsWaterlogged::False;
+
+      output.push((block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(north.clone())) && x.properties.contains(&Property::IronBarsSouth(south.clone())) && x.properties.contains(&Property::IronBarsEast(east.clone())) && x.properties.contains(&Property::IronBarsWest(west.clone())) && x.properties.contains(&Property::IronBarsWaterlogged(water_logged.clone()))).unwrap().id, position));
+    },
+    Type::StainedGlassPane => {
+      //TODO: update existing surrounding blocks
+      let all_blocks = blocks::get_blocks();
+      let block_ids_to_check: Vec<i32> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+
+      let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { StainedGlassPaneNorth::True } else { StainedGlassPaneNorth::False };
+      let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { StainedGlassPaneSouth::True } else { StainedGlassPaneSouth::False };
+      let east = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x + 1, ..position }).unwrap_or(0)) { StainedGlassPaneEast::True } else { StainedGlassPaneEast::False };
+      let west = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x - 1, ..position }).unwrap_or(0)) { StainedGlassPaneWest::True } else { StainedGlassPaneWest::False };
+      let water_logged = StainedGlassPaneWaterlogged::False;
+
+      output.push((block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(north.clone())) && x.properties.contains(&Property::StainedGlassPaneSouth(south.clone())) && x.properties.contains(&Property::StainedGlassPaneEast(east.clone())) && x.properties.contains(&Property::StainedGlassPaneWest(west.clone())) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(water_logged.clone()))).unwrap().id, position));
     },
     _ => (),
   }
