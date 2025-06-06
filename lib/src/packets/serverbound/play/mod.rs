@@ -38,6 +38,81 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 }
 
 //
+// MARK: 0x07 chat message
+//
+
+#[derive(Debug, Clone)]
+pub struct ChatMessage {
+	pub message: String,
+	pub timestamp: i64,
+	pub salt: i64,
+	pub signature: Vec<u8>,
+	pub message_count: i32,
+	pub acknowledged: Vec<u8>, //len should always be 3 for 20 bits
+	pub checksum: u8,
+}
+
+impl Packet for ChatMessage {
+  fn get_id() -> u8 { 0x07 }
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<ChatMessage> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ChatMessage) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::string(&value.message));
+		result.append(&mut crate::serialize::long(value.timestamp));
+		result.append(&mut crate::serialize::long(value.salt));
+		if value.signature.is_empty() {
+      result.append(&mut crate::serialize::boolean(false));
+		} else {
+      result.append(&mut crate::serialize::boolean(true));
+      result.append(&mut crate::serialize::varint(value.signature.len() as i32));
+      value.signature.iter().for_each(|x| result.push(*x));
+		}
+		result.append(&mut crate::serialize::varint(value.message_count));
+		value.acknowledged.iter().for_each(|x| result.push(*x));
+		result.push(value.checksum);
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChatMessage {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+	  let message = crate::deserialize::string(&mut value)?;
+	  let timestamp = crate::deserialize::long(&mut value)?;
+	  let salt = crate::deserialize::long(&mut value)?;
+		let has_signature = crate::deserialize::boolean(&mut value)?;
+		let signature: Vec<u8> = if has_signature {
+		  let signature_length = crate::deserialize::varint(&mut value)?;
+		  (0..signature_length).map(|_| value.remove(0)).collect()
+		} else {
+      vec![]
+		};
+	  let message_count = crate::deserialize::varint(&mut value)?;
+		let acknowledged: Vec<u8> = (0..3).map(|_| value.remove(0)).collect();
+	  let checksum = value.remove(0);
+
+		return Ok(Self {
+      message,
+      timestamp,
+      salt,
+      signature,
+      message_count,
+      acknowledged,
+      checksum,
+		});
+	}
+}
+
+//
 // MARK: 0x1c set player position
 //
 

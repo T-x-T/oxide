@@ -1016,6 +1016,146 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 }
 
 //
+// MARK: 0x3a player chat message
+//
+
+#[derive(Debug, Clone)]
+pub struct PlayerChatMessage {
+	pub global_index: i32,
+	pub sender: u128,
+	pub index: i32,
+	pub message_signature_bytes: Vec<u8>,
+	pub message: String,
+	pub timestamp: i64,
+	pub salt: i64,
+	pub signature_array: Vec<(i32, Vec<u8>)>,
+	pub unsigned_content: Option<NbtTag>,
+	pub filter_type: i32,
+	pub filter_type_bits: Vec<u64>, //only contains data if filter type is 2
+	pub chat_type: i32,
+	pub sender_name: NbtTag,
+	pub target_name: Option<NbtTag>,
+}
+
+impl Packet for PlayerChatMessage {
+  fn get_id() -> u8 { 0x3a }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<PlayerChatMessage> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PlayerChatMessage) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.global_index));
+		output.append(&mut crate::serialize::uuid(&value.sender));
+		output.append(&mut crate::serialize::varint(value.index));
+		if value.message_signature_bytes.is_empty() {
+      output.append(&mut crate::serialize::boolean(false));
+		} else {
+      output.append(&mut crate::serialize::boolean(true));
+      value.message_signature_bytes.iter().for_each(|x| output.push(*x));
+		}
+		output.append(&mut crate::serialize::string(&value.message));
+		output.append(&mut crate::serialize::long(value.timestamp));
+		output.append(&mut crate::serialize::long(value.salt));
+		output.append(&mut crate::serialize::varint(value.signature_array.len() as i32));
+		value.signature_array.iter().for_each(|x| {
+		  output.append(&mut crate::serialize::varint(x.0));
+			if x.0 == 0 {
+			  x.1.iter().for_each(|x| output.push(*x));
+			}
+		});
+		if value.unsigned_content.is_some() {
+		  output.append(&mut crate::serialize::boolean(true));
+		  output.append(&mut crate::serialize::nbt(value.unsigned_content.unwrap()));
+		} else {
+		  output.append(&mut crate::serialize::boolean(false));
+		}
+		output.append(&mut crate::serialize::varint(value.filter_type));
+		if value.filter_type == 2 {
+			output.append(&mut crate::serialize::bitset(&value.filter_type_bits));
+		}
+		output.append(&mut crate::serialize::varint(value.chat_type));
+		output.append(&mut crate::serialize::nbt(value.sender_name));
+		if value.target_name.is_some() {
+			output.append(&mut crate::serialize::nbt(value.target_name.unwrap()));
+		}
+		output.push(0); //not sure why this is needed
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PlayerChatMessage {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let global_index = crate::deserialize::varint(&mut value)?;
+		let sender = crate::deserialize::uuid(&mut value)?;
+		let index = crate::deserialize::varint(&mut value)?;
+		let message_signature_bytes_present = crate::deserialize::boolean(&mut value)?;
+		let message_signature_bytes = if message_signature_bytes_present {
+			(0..255).map(|_| value.remove(0)).collect()
+		} else {
+			Vec::new()
+		};
+		let message = crate::deserialize::string(&mut value)?;
+		let timestamp = crate::deserialize::long(&mut value)?;
+		let salt = crate::deserialize::long(&mut value)?;
+		let signature_array_len = crate::deserialize::varint(&mut value)?;
+		let signature_array: Vec<(i32, Vec<u8>)> = (0..signature_array_len).map(|_| {
+			let message_id = crate::deserialize::varint(&mut value).unwrap();
+			let signature = if message_id == 0 {
+				(0..255).map(|_| value.remove(0)).collect()
+			} else {
+				Vec::new()
+			};
+			(message_id, signature)
+		}).collect();
+		let unsigned_content_present = crate::deserialize::boolean(&mut value)?;
+		let unsigned_content = if unsigned_content_present {
+			Some(crate::deserialize::nbt(&mut value)?)
+		} else {
+			None
+		};
+		let filter_type = crate::deserialize::varint(&mut value)?;
+		let filter_type_bits = if filter_type == 2 {
+			crate::deserialize::bitset(&mut value)?
+		} else {
+			Vec::new()
+		};
+		let chat_type = crate::deserialize::varint(&mut value)?;
+		let sender_name = crate::deserialize::nbt(&mut value)?;
+		let target_name_present = crate::deserialize::boolean(&mut value)?;
+		let target_name = if target_name_present {
+			Some(crate::deserialize::nbt(&mut value)?)
+		} else {
+			None
+		};
+
+		return Ok(Self {
+	    global_index,
+	    sender,
+	    index,
+	    message_signature_bytes,
+	    message,
+	    timestamp,
+	    salt,
+	    signature_array,
+	    unsigned_content,
+	    filter_type,
+	    filter_type_bits,
+	    chat_type,
+	    sender_name,
+	    target_name,
+		});
+	}
+}
+
+//
 // MARK: 0x3e player info remove
 //
 

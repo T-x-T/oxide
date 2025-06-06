@@ -32,6 +32,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
+      0x07 => play::chat_message(&mut packet.data, connection_streams, game, stream, connections),
       0x27 => play::player_action(&mut packet.data, stream, connection_streams, game),
       0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
       0x33 => play::set_held_item(&mut packet.data, stream, game, connections),
@@ -64,7 +65,7 @@ use super::*;
 
   pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> Result<(), Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::status::StatusResponse::get_id(), lib::packets::clientbound::status::StatusResponse {
-      status: format!("{{\"version\": {{\"name\": \"Oxide {}\",\"protocol\": {}}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": true}}", lib::packets::get_version_string(), lib::packets::get_protocol_version(), game.players.len()).to_string(),
+      status: format!("{{\"version\": {{\"name\": \"Oxide {}\",\"protocol\": {}}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": false}}", lib::packets::get_version_string(), lib::packets::get_protocol_version(), game.players.len()).to_string(),
     }.try_into().unwrap())?;
 
     return Ok(());
@@ -773,7 +774,7 @@ use super::*;
 }
 
 pub mod play {
-  use lib::{packets::Packet, utils::send_packet};
+  use lib::{nbt::NbtTag, packets::Packet, utils::send_packet};
   use super::*;
 
   pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
@@ -1020,6 +1021,52 @@ pub mod play {
     send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::get_id(), lib::packets::clientbound::play::AcknowledgeBlockChange {
       sequence_id: parsed_packet.sequence,
     }.try_into().unwrap())?;
+
+    return Ok(());
+  }
+
+  pub fn chat_message(data: &mut[u8], connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::ChatMessage::try_from(data.to_vec()).unwrap();
+
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let Some(player) = game.players.get(player_index.unwrap()) else {
+      println!("got chat_message packet from invalid player");
+      return Ok(());
+    };
+
+    let packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
+      global_index: game.chat_message_index,
+      sender: player.uuid,
+      index: 0,
+      message_signature_bytes: Vec::new(),
+      message: parsed_packet.message.clone(),
+      timestamp: parsed_packet.timestamp,
+      salt: parsed_packet.salt,
+      signature_array: Vec::new(),
+      unsigned_content: None,
+      filter_type: 0,
+      filter_type_bits: Vec::new(),
+      chat_type: 1,
+      sender_name: NbtTag::TagCompound(None, vec![
+    		NbtTag::TagCompound(Some("click_event".to_string()), vec![
+     			NbtTag::String(Some("action".to_string()), "suggest_command".to_string()),
+     			NbtTag::String(Some("command".to_string()), format!("/tell {}", player.display_name).to_string()),
+     	]),
+     	NbtTag::String(Some("insertion".to_string()), player.display_name.clone()),
+     	NbtTag::String(Some("text".to_string()), player.display_name.clone()),
+      ]),
+      target_name: None,
+		};
+
+    game.chat_message_index += 1;
+
+    for connection in connection_streams {
+	   	send_packet(connection.1, lib::packets::clientbound::play::PlayerChatMessage::get_id(), packet_to_send.clone().try_into().unwrap())?;
+    }
 
     return Ok(());
   }

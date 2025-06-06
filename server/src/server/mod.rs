@@ -16,6 +16,7 @@ pub fn initialize_server() {
     players: Vec::new(),
     world: World::new(),
     last_created_entity_id: 0,
+    chat_message_index: 0,
   }));
 
   let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
@@ -42,7 +43,7 @@ pub fn initialize_server() {
             break;
           }
           Err(e) => {
-            eprintln!("error reading from client: {}", e);
+            eprintln!("error reading from client: {e}");
             disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
             break;
           }
@@ -79,6 +80,7 @@ pub struct Game {
   pub players: Vec<Player>,
   pub world: World,
   pub last_created_entity_id: i32,
+  pub chat_message_index: i32,
 }
 
 #[derive(Debug, Clone)]
