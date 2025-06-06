@@ -1842,3 +1842,43 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 		});
 	}
 }
+
+//
+// MARK: 0x72 system chat message
+//
+
+#[derive(Debug, Clone)]
+pub struct SystemChatMessage {
+	pub content: NbtTag,
+	pub overlay: bool,
+}
+
+impl Packet for SystemChatMessage {
+  fn get_id() -> u8 { 0x72 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SystemChatMessage> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SystemChatMessage) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::nbt(value.content));
+		output.append(&mut crate::serialize::boolean(value.overlay));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SystemChatMessage {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			content: crate::deserialize::nbt(&mut value)?,
+			overlay: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}

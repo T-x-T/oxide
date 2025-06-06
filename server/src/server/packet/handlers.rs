@@ -32,6 +32,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       0x00 => play::confirm_teleportation(&mut packet.data, game, stream, connections),
+      0x05 => play::chat_command(&mut packet.data, stream),
       0x07 => play::chat_message(&mut packet.data, connection_streams, game, stream, connections),
       0x27 => play::player_action(&mut packet.data, stream, connection_streams, game),
       0x36 => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
@@ -1088,6 +1089,20 @@ pub mod play {
     }
 
     return Ok(());
+  }
+
+  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+  	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
+
+  	send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::get_id(), lib::packets::clientbound::play::SystemChatMessage {
+	    content: NbtTag::TagCompound(None, vec![
+				NbtTag::String(Some("type".to_string()), "text".to_string()),
+				NbtTag::String(Some("text".to_string()), "pong".to_string()),
+			]),
+	    overlay: false,
+   	}.try_into()?)?;
+
+  	return Ok(());
   }
 }
 
