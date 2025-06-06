@@ -1016,6 +1016,52 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 }
 
 //
+// MARK: 0x31 Update entity rotation
+//
+
+#[derive(Debug, Clone)]
+pub struct UpdateEntityRotation {
+	pub entity_id: i32,
+	pub yaw: u8,
+	pub pitch: u8,
+	pub on_ground: bool,
+}
+
+impl Packet for UpdateEntityRotation {
+  fn get_id() -> u8 { 0x31 }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<UpdateEntityRotation> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UpdateEntityRotation) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.push(value.yaw);
+		output.push(value.pitch);
+		output.append(&mut crate::serialize::boolean(value.on_ground));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UpdateEntityRotation {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			yaw: value.remove(0),
+			pitch: value.remove(0),
+			on_ground: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x3a player chat message
 //
 
@@ -1480,6 +1526,46 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 
 		return Ok(Self {
 			entity_ids,
+		});
+	}
+}
+
+//
+// MARK: 0x4c set head rotation
+//
+
+#[derive(Debug, Clone)]
+pub struct SetHeadRotation {
+	pub entity_id: i32,
+	pub head_yaw: u8,
+}
+
+impl Packet for SetHeadRotation {
+  fn get_id() -> u8 { 0x4c }
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetHeadRotation> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetHeadRotation) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.push(value.head_yaw);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetHeadRotation {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			head_yaw: value.remove(0),
 		});
 	}
 }

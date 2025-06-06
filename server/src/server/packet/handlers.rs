@@ -787,6 +787,10 @@ pub mod play {
     }
     game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
 
+    let old_x = player.x;
+    let old_y_feet = player.y_feet;
+    let old_z = player.z;
+
     player.x = parsed_packet.x;
     player.y_feet = parsed_packet.feet_y;
     player.z = parsed_packet.z;
@@ -796,25 +800,12 @@ pub mod play {
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
-        /* lib::utils::send_packet(other_stream.1, 0x2f, lib::packets::clientbound::play::UpdateEntityPosition {
+        lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPosition::get_id(), lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
           delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
           delta_y: ((player.y_feet * 4096.0) - (old_y_feet * 4096.0)) as i16,
           delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
           on_ground: player.y_feet == -48.0, //TODO: add proper check
-        }.try_into().unwrap()); */
-
-        lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::get_id(), lib::packets::clientbound::play::TeleportEntity {
-          entity_id: player.entity_id,
-          x: player.x,
-          y: player.y_feet,
-          z: player.z,
-          velocity_x: 0.0,
-          velocity_y: 0.0,
-          velocity_z: 0.0,
-          yaw: player.yaw,
-          pitch: player.pitch,
-          on_ground: player.y_feet == -48.0,
         }.try_into().unwrap())?;
       }
     }
@@ -832,6 +823,10 @@ pub mod play {
     }
     game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
 
+    let old_x = player.x;
+    let old_y_feet = player.y_feet;
+    let old_z = player.z;
+
     player.x = parsed_packet.x;
     player.y_feet = parsed_packet.feet_y;
     player.z = parsed_packet.z;
@@ -840,21 +835,35 @@ pub mod play {
 
     game.players.push(player.clone());
 
+    let pitch: u8 = if parsed_packet.pitch < 0.0 {
+   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
+    } else {
+    	((parsed_packet.pitch / 90.0) * 64.0) as u8
+    };
+
+    let yaw: u8 = if player.yaw < 0.0 {
+   		(((player.yaw / 90.0) * 64.0) + 256.0) as u8
+    } else {
+    	((player.yaw / 90.0) * 64.0) as u8
+    };
+
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
-        lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::get_id(), lib::packets::clientbound::play::TeleportEntity {
-          entity_id: player.entity_id,
-          x: player.x,
-          y: player.y_feet,
-          z: player.z,
-          velocity_x: 0.0,
-          velocity_y: 0.0,
-          velocity_z: 0.0,
-          yaw: player.yaw,
-          pitch: player.pitch,
-          on_ground: player.y_feet == -48.0,
-        }.try_into().unwrap())?;
+	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::get_id(), lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
+	        entity_id: player.entity_id,
+	        delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
+	        delta_y: ((player.y_feet * 4096.0) - (old_y_feet * 4096.0)) as i16,
+	        delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
+	        on_ground: player.y_feet == -48.0, //TODO: add proper check
+	        yaw,
+	        pitch,
+	      }.try_into().unwrap())?;
+
+	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::get_id(), lib::packets::clientbound::play::SetHeadRotation {
+	        entity_id: player.entity_id,
+					head_yaw: yaw,
+	      }.try_into().unwrap())?;
       }
     }
 
@@ -871,27 +880,37 @@ pub mod play {
     }
     game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
 
-    //player.yaw = if parsed_packet.yaw % 360.0 > 180.0 {(parsed_packet.yaw % 360.0) - 360.0} else {parsed_packet.yaw % 360.0};
     player.yaw = parsed_packet.yaw % 360.0;
-    player.pitch = parsed_packet.pitch % 360.0;
+    player.pitch = parsed_packet.pitch;
+
+    let pitch: u8 = if parsed_packet.pitch < 0.0 {
+   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
+    } else {
+    	((parsed_packet.pitch / 90.0) * 64.0) as u8
+    };
+
+    let yaw: u8 = if player.yaw < 0.0 {
+   		(((player.yaw / 90.0) * 64.0) + 256.0) as u8
+    } else {
+    	((player.yaw / 90.0) * 64.0) as u8
+    };
 
     game.players.push(player.clone());
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
-        lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::get_id(), lib::packets::clientbound::play::TeleportEntity {
-          entity_id: player.entity_id,
-          x: player.x,
-          y: player.y_feet,
-          z: player.z,
-          velocity_x: 0.0,
-          velocity_y: 0.0,
-          velocity_z: 0.0,
-          yaw: player.yaw,
-          pitch: player.pitch,
-          on_ground: player.y_feet == -48.0,
-        }.try_into().unwrap())?;
+      	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::get_id(), lib::packets::clientbound::play::UpdateEntityRotation {
+	        entity_id: player.entity_id,
+	        on_ground: player.y_feet == -48.0, //TODO: add proper check
+	        yaw,
+	        pitch,
+	      }.try_into().unwrap())?;
+
+	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::get_id(), lib::packets::clientbound::play::SetHeadRotation {
+	        entity_id: player.entity_id,
+					head_yaw: yaw,
+	      }.try_into().unwrap())?;
       }
     }
 

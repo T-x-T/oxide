@@ -227,6 +227,11 @@ fn main() {
             //   println!("parsed packet: {parsed_packet:?}");
             //   parsed_client_packet = Some(parsed_packet.try_into().unwrap());
             // }
+            if packet_id == lib::packets::clientbound::play::UpdateEntityRotation::get_id() {
+              let parsed_packet = lib::packets::clientbound::play::UpdateEntityRotation::try_from(client_packet.data.clone()).unwrap();
+              println!("parsed packet: {parsed_packet:?}");
+              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+            }
             if packet_id == lib::packets::clientbound::play::Login::get_id() {
               let parsed_packet = lib::packets::clientbound::play::Login::try_from(client_packet.data.clone()).unwrap();
               println!("parsed packet: {parsed_packet:?}");
