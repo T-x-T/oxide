@@ -23,7 +23,7 @@ pub struct SpawnEntity {
 }
 
 impl Packet for SpawnEntity {
-  fn get_id() -> u8 { 0x01 }
+	const PACKET_ID: u8 = 0x01;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -84,7 +84,7 @@ pub struct AcknowledgeBlockChange {
 }
 
 impl Packet for AcknowledgeBlockChange {
-  fn get_id() -> u8 { 0x04 }
+	const PACKET_ID: u8 = 0x04;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -122,7 +122,7 @@ pub struct BlockUpdate {
 }
 
 impl Packet for BlockUpdate {
-  fn get_id() -> u8 { 0x08 }
+	const PACKET_ID: u8 = 0x08;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -171,7 +171,7 @@ pub struct TeleportEntity {
 }
 
 impl Packet for TeleportEntity {
-  fn get_id() -> u8 { 0x1f }
+	const PACKET_ID: u8 = 0x1f;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -227,7 +227,7 @@ pub struct GameEvent {
 }
 
 impl Packet for GameEvent {
-  fn get_id() -> u8 { 0x22 }
+	const PACKET_ID: u8 = 0x22;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -266,7 +266,7 @@ pub struct ClientboundKeepAlive {
 }
 
 impl Packet for ClientboundKeepAlive {
-  fn get_id() -> u8 { 0x26 }
+	const PACKET_ID: u8 = 0x26;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -313,7 +313,7 @@ pub struct ChunkDataAndUpdateLight {
 }
 
 impl Packet for ChunkDataAndUpdateLight {
-  fn get_id() -> u8 { 0x27 }
+	const PACKET_ID: u8 = 0x27;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -795,7 +795,7 @@ pub struct Login {
 }
 
 impl Packet for Login {
-  fn get_id() -> u8 { 0x2b }
+	const PACKET_ID: u8 = 0x2b;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -925,7 +925,7 @@ pub struct UpdateEntityPosition {
 }
 
 impl Packet for UpdateEntityPosition {
-  fn get_id() -> u8 { 0x2e }
+	const PACKET_ID: u8 = 0x2e;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -976,7 +976,7 @@ pub struct UpdateEntityPositionAndRotation {
 }
 
 impl Packet for UpdateEntityPositionAndRotation {
-  fn get_id() -> u8 { 0x2f }
+	const PACKET_ID: u8 = 0x2f;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1028,7 +1028,7 @@ pub struct UpdateEntityRotation {
 }
 
 impl Packet for UpdateEntityRotation {
-  fn get_id() -> u8 { 0x31 }
+	const PACKET_ID: u8 = 0x31;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1084,7 +1084,7 @@ pub struct PlayerChatMessage {
 }
 
 impl Packet for PlayerChatMessage {
-  fn get_id() -> u8 { 0x3a }
+	const PACKET_ID: u8 = 0x3a;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1211,7 +1211,7 @@ pub struct PlayerInfoRemove {
 }
 
 impl Packet for PlayerInfoRemove {
-  fn get_id() -> u8 { 0x3e }
+	const PACKET_ID: u8 = 0x3e;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1257,7 +1257,7 @@ pub struct PlayerInfoUpdate {
 }
 
 impl Packet for PlayerInfoUpdate {
-  fn get_id() -> u8 { 0x3f }
+	const PACKET_ID: u8 = 0x3f;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1440,7 +1440,7 @@ pub struct SynchronizePlayerPosition {
 }
 
 impl Packet for SynchronizePlayerPosition {
-  fn get_id() -> u8 { 0x41 }
+	const PACKET_ID: u8 = 0x41;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1495,7 +1495,7 @@ pub struct RemoveEntities {
 }
 
 impl Packet for RemoveEntities {
-  fn get_id() -> u8 { 0x46 }
+	const PACKET_ID: u8 = 0x46;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1541,7 +1541,7 @@ pub struct SetHeadRotation {
 }
 
 impl Packet for SetHeadRotation {
-  fn get_id() -> u8 { 0x4c }
+	const PACKET_ID: u8 = 0x4c;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1581,7 +1581,7 @@ pub struct SetEntityMetadata {
 }
 
 impl Packet for SetEntityMetadata {
-  fn get_id() -> u8 { 0x5c }
+	const PACKET_ID: u8 = 0x5c;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1854,7 +1854,7 @@ pub struct SystemChatMessage {
 }
 
 impl Packet for SystemChatMessage {
-  fn get_id() -> u8 { 0x72 }
+	const PACKET_ID: u8 = 0x72;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }

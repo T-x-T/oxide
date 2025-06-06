@@ -8,7 +8,7 @@ pub struct LoginSuccess {
 }
 
 impl Packet for LoginSuccess {
-  fn get_id() -> u8 { 0x02 }
+	const PACKET_ID: u8 = 0x02;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Login }
 }

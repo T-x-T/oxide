@@ -7,7 +7,7 @@ pub struct StatusResponse {
 }
 
 impl Packet for StatusResponse {
-  fn get_id() -> u8 { 0x00 }
+	const PACKET_ID: u8 = 0x00;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Status }
 }

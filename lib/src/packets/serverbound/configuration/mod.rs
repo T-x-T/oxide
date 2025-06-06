@@ -10,7 +10,7 @@ pub struct ServerboundKnownPackets {
 }
 
 impl Packet for ServerboundKnownPackets {
-  fn get_id() -> u8 { 0x07 }
+	const PACKET_ID: u8 = 0x07;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
@@ -57,7 +57,7 @@ pub struct AcknowledgeFinishConfiguration {
 }
 
 impl Packet for AcknowledgeFinishConfiguration {
-  fn get_id() -> u8 { 0x03 }
+	const PACKET_ID: u8 = 0x03;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }

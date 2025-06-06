@@ -7,7 +7,7 @@ pub struct LoginStart {
 }
 
 impl Packet for LoginStart {
-  fn get_id() -> u8 { 0x00 }
+	const PACKET_ID: u8 = 0x00;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Login }
 }
@@ -42,7 +42,7 @@ pub struct LoginAcknowledged {
 }
 
 impl Packet for LoginAcknowledged {
-  fn get_id() -> u8 { 0x03 }
+	const PACKET_ID: u8 = 0x03;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Login }
 }

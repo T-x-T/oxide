@@ -10,7 +10,7 @@ pub struct ConfirmTeleportation {
 }
 
 impl Packet for ConfirmTeleportation {
-  fn get_id() -> u8 { 0x00 }
+	const PACKET_ID: u8 = 0x00;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -47,7 +47,7 @@ pub struct ChatCommand {
 }
 
 impl Packet for ChatCommand {
-  fn get_id() -> u8 { 0x05 }
+	const PACKET_ID: u8 = 0x05;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -90,7 +90,7 @@ pub struct ChatMessage {
 }
 
 impl Packet for ChatMessage {
-  fn get_id() -> u8 { 0x07 }
+	const PACKET_ID: u8 = 0x07;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -162,7 +162,7 @@ pub struct SetPlayerPosition {
 }
 
 impl Packet for SetPlayerPosition {
-  fn get_id() -> u8 { 0x1c }
+	const PACKET_ID: u8 = 0x1c;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -210,7 +210,7 @@ pub struct SetPlayerPositionAndRotation {
 }
 
 impl Packet for SetPlayerPositionAndRotation {
-  fn get_id() -> u8 { 0x1d }
+	const PACKET_ID: u8 = 0x1d;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -259,7 +259,7 @@ pub struct SetPlayerRotation {
 }
 
 impl Packet for SetPlayerRotation {
-  fn get_id() -> u8 { 0x1e }
+	const PACKET_ID: u8 = 0x1e;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -303,7 +303,7 @@ pub struct PlayerAction {
 }
 
 impl Packet for PlayerAction {
-  fn get_id() -> u8 { 0x27 }
+	const PACKET_ID: u8 = 0x27;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -346,7 +346,7 @@ pub struct SetHandItem {
 }
 
 impl Packet for SetHandItem {
-  fn get_id() -> u8 { 0x33 }
+	const PACKET_ID: u8 = 0x33;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -384,7 +384,7 @@ pub struct SetCreativeModeSlot {
 }
 
 impl Packet for SetCreativeModeSlot {
-  fn get_id() -> u8 { 0x36 }
+	const PACKET_ID: u8 = 0x36;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -431,7 +431,7 @@ pub struct UseItemOn {
 }
 
 impl Packet for UseItemOn {
-  fn get_id() -> u8 { 0x3e }
+	const PACKET_ID: u8 = 0x3e;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }

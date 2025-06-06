@@ -5,14 +5,14 @@ pub mod serverbound;
 pub mod clientbound;
 
 pub enum PacketTarget {
-    Client,
-    Server,
+  Client,
+  Server,
 }
 
 pub trait Packet {
-    fn get_id() -> u8;
-    fn get_target() -> PacketTarget;
-    fn get_state() -> ConnectionState;
+	const PACKET_ID: u8;
+  fn get_target() -> PacketTarget;
+  fn get_state() -> ConnectionState;
 }
 
 pub fn get_protocol_version() -> i32 {

@@ -9,7 +9,7 @@ pub struct Handshake {
 }
 
 impl Packet for Handshake {
-  fn get_id() -> u8 { 0x00 }
+	const PACKET_ID: u8 = 0x00;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Handshaking }
 }

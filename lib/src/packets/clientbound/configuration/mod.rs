@@ -9,7 +9,7 @@ pub struct ClientboundKnownPacks {
 }
 
 impl Packet for ClientboundKnownPacks {
-  fn get_id() -> u8 { 0x0e }
+	const PACKET_ID: u8 = 0x0e;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
@@ -57,7 +57,7 @@ pub struct RegistryData {
 }
 
 impl Packet for RegistryData {
-  fn get_id() -> u8 { 0x07 }
+	const PACKET_ID: u8 = 0x07;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
@@ -129,7 +129,7 @@ pub struct FinishConfiguration {
 }
 
 impl Packet for FinishConfiguration {
-  fn get_id() -> u8 { 0x03 }
+	const PACKET_ID: u8 = 0x03;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
@@ -166,7 +166,7 @@ pub struct Tag {
 }
 
 impl Packet for UpdateTags {
-  fn get_id() -> u8 { 0x0d }
+	const PACKET_ID: u8 = 0x0d;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Configuration }
 }
