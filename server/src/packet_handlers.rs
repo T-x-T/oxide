@@ -115,7 +115,7 @@ pub mod login {
 
 pub mod configuration {
   use super::*;
-  use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}, CommandNode, ParserProperty};
+  use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}};
   use lib::types::position::Position;
 
   pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
@@ -748,7 +748,7 @@ pub mod configuration {
     }
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {
-      nodes: command::get_command_packet_data(game),
+      nodes: crate::command::get_command_packet_data(game),
       root_index: 0,
     }.try_into().unwrap())?;
 

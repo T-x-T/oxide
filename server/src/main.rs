@@ -8,6 +8,7 @@ use types::*;
 
 mod packet_handlers;
 mod types;
+mod command;
 
 fn main() {
   println!("Starting the oxide server");
@@ -25,7 +26,7 @@ fn initialize_server() {
     chat_message_index: 0,
     commands: Vec::new(),
   };
-  init(&mut game);
+  command::init(&mut game);
 
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));
 
