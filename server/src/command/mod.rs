@@ -1,5 +1,6 @@
 mod ping;
 mod hi;
+mod tp;
 
 use crate::types::*;
 use std::net::TcpStream;
@@ -9,6 +10,7 @@ use lib::packets::Packet;
 pub fn init(game: &mut Game) {
 	ping::init(game);
 	hi::init(game);
+	tp::init(game);
 }
 
 
@@ -41,7 +43,7 @@ pub fn get_command_packet_data(game: &Game) -> Vec<CommandNode> {
 
 		process_arguments(&command.arguments, &mut nodes, command_index);
 	};
-	println!("{nodes:?}");
+
 	return nodes;
 }
 

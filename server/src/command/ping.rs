@@ -1,9 +1,11 @@
+use std::{collections::HashMap, net::SocketAddr};
+
 use super::*;
 
 pub fn init(game: &mut Game) {
 	game.commands.push(Command {
 		name: "ping".to_string(),
-		execute: execute_ping,
+		execute,
 		arguments: vec![
 			CommandArgument {
 				name: "message".to_string(),
@@ -35,7 +37,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute_ping(command: String, stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: &mut TcpStream, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	let reply_msg = if command.as_str() == "ping" {
     	"pong".to_string()
     } else {

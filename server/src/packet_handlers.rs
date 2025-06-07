@@ -32,7 +32,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, game, stream, connections),
-      lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream, game),
+      lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream, game, connection_streams, connections),
       lib::packets::serverbound::play::ChatMessage::PACKET_ID => play::chat_message(&mut packet.data, connection_streams, game, stream, connections),
       lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, connection_streams, game),
       lib::packets::serverbound::play::SetCreativeModeSlot::PACKET_ID => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
@@ -1091,7 +1091,7 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &Game) -> Result<(), Box<dyn Error>> {
+  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
 
    	let Some(command) = game.commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
@@ -1106,7 +1106,7 @@ pub mod play {
     	return Ok(());
     };
 
-    (command.execute)(parsed_packet.command, stream)?;
+    (command.execute)(parsed_packet.command, stream, game, connection_streams, connections)?;
 
   	return Ok(());
   }

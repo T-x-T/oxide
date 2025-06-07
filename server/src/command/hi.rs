@@ -1,14 +1,16 @@
+use std::{collections::HashMap, net::SocketAddr};
+
 use super::*;
 
 pub fn init(game: &mut Game) {
 	game.commands.push(Command {
 		name: "hi".to_string(),
-		execute: execute_hi,
+		execute,
 		arguments: Vec::new(),
 	});
 }
 
-fn execute_hi(_command: String, stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+fn execute(_command: String, stream: &mut TcpStream, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
   	lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::TagCompound(None, vec![
 				NbtTag::String(Some("type".to_string()), "text".to_string()),
