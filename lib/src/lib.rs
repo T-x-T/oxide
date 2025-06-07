@@ -9,7 +9,6 @@ pub use types::*;
 
 pub mod serialize;
 pub mod deserialize;
-pub mod nbt;
 pub mod utils;
 pub mod packets;
 pub mod blockstates;

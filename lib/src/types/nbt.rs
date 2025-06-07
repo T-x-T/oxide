@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub enum NbtTag {
 	Byte(Option<String>, u8),

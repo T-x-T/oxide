@@ -1,4 +1,5 @@
 use super::*;
+use crate::types::*;
 
 //
 // MARK: 0x00 confirm teleportation

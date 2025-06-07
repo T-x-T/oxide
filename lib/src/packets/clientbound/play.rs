@@ -1,5 +1,5 @@
 use super::*;
-use crate::{types::position::Position, CommandNode};
+use crate::types::*;
 
 //
 // MARK: 0x01 Spawn entity

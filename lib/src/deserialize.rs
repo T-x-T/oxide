@@ -1,7 +1,6 @@
 use std::error::Error;
-use crate::packets::SlotComponent;
+use crate::types::*;
 use crate::CustomError;
-use crate::nbt::NbtTag;
 
 pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
   data.reverse();
@@ -94,18 +93,18 @@ pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::Position, 
   });
 }
 
-pub fn slot(data: &mut Vec<u8>) -> Result<crate::packets::Slot, Box<dyn Error>> {
+pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
   let item_count = varint(data)?;
 
   if item_count == 0 {
-    return Ok(crate::packets::Slot { item_count, item_id: None, components_to_add: vec![], components_to_remove: vec![] });
+    return Ok(Slot { item_count, item_id: None, components_to_add: vec![], components_to_remove: vec![] });
   }
 
   let item_id = varint(data)?;
   let number_of_components_to_add = varint(data)?;
   let number_of_components_to_remove = varint(data)?;
 
-  let mut components_to_add: Vec<crate::packets::SlotComponent> = Vec::new();
+  let mut components_to_add: Vec<SlotComponent> = Vec::new();
   for _ in 0..number_of_components_to_add {
     let component_id = varint(data)?;
     components_to_add.push(match component_id {
@@ -213,7 +212,7 @@ pub fn slot(data: &mut Vec<u8>) -> Result<crate::packets::Slot, Box<dyn Error>> 
     components_to_remove.push(varint(data)?);
   }
 
-  return Ok(crate::packets::Slot {
+  return Ok(Slot {
     item_count,
     item_id: Some(item_id),
     components_to_add,

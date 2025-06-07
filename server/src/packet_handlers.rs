@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use lib::packets::Packet;
 use lib::ConnectionState;
-use crate::server::{Game, Player, Connection};
+use crate::types::*;
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
 	connections.entry(stream.peer_addr().unwrap()).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
