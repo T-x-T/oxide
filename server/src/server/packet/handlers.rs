@@ -115,7 +115,7 @@ pub mod login {
 
 pub mod configuration {
   use super::*;
-  use lib::packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet};
+  use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}, CommandNode, ParserProperty};
   use lib::types::position::Position;
 
   pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
@@ -747,6 +747,36 @@ pub mod configuration {
       }.try_into().unwrap())?;
     }
 
+    lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {
+      nodes: vec![
+     		CommandNode {
+       		flags: 0,
+          children: vec![1],
+          redirect_node: None,
+          name: None,
+          properties: None,
+          suggestions_type: None,
+        },
+     		CommandNode {
+       		flags: 0b0000_0101,
+          children: vec![2],
+          redirect_node: None,
+          name: Some("ping".to_string()),
+          properties: None,
+          suggestions_type: None,
+        },
+     		CommandNode {
+       		flags: 2,
+          children: vec![],
+          redirect_node: None,
+          name: Some("message".to_string()),
+          properties: Some(ParserProperty::String(2)),
+          suggestions_type: None,
+        },
+      ],
+      root_index: 0,
+    }.try_into().unwrap())?;
+
     //TODO: get rid of this once we have a real game loop
     let stream_clone = stream.try_clone().unwrap();
     std::thread::spawn(move || {
@@ -1089,10 +1119,16 @@ pub mod play {
   pub fn chat_command(data: &mut[u8], stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
 
+   	let reply_msg = if parsed_packet.command.as_str() == "ping" {
+    	"pong".to_string()
+    } else {
+   		parsed_packet.command.replace("ping ", "")
+    };
+
   	send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 	    content: NbtTag::TagCompound(None, vec![
 				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), "pong".to_string()),
+				NbtTag::String(Some("text".to_string()), reply_msg),
 			]),
 	    overlay: false,
    	}.try_into()?)?;

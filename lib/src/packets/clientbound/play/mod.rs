@@ -1,5 +1,5 @@
 use super::*;
-use crate::types::position::Position;
+use crate::{types::position::Position, CommandNode};
 
 //
 // MARK: 0x01 Spawn entity
@@ -147,6 +147,51 @@ impl TryFrom<Vec<u8>> for BlockUpdate {
 		return Ok(Self {
 			location: crate::deserialize::position(&mut value)?,
 			block_id: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x10 commands
+//
+
+#[derive(Debug, Clone)]
+pub struct Commands {
+	pub nodes: Vec<CommandNode>,
+	pub root_index: i32,
+}
+
+impl Packet for Commands {
+	const PACKET_ID: u8 = 0x10;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<Commands> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Commands) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.nodes.len() as i32));
+		value.nodes.into_iter().for_each(|x| output.append(&mut x.try_into().unwrap()));
+		output.append(&mut crate::serialize::varint(value.root_index));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Commands {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let nodes_len = crate::deserialize::varint(&mut value)?;
+		let nodes: Vec<CommandNode> = (0..nodes_len).map(|x| {println!("start of id {x}"); CommandNode::try_from(&mut value).unwrap() }).collect();
+		let root_index = crate::deserialize::varint(&mut value)?;
+
+		return Ok(Self {
+			nodes,
+			root_index,
 		});
 	}
 }
