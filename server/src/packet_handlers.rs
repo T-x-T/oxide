@@ -32,7 +32,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
     },
     ConnectionState::Play => match packet.id {
       lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, game, stream, connections),
-      lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream),
+      lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream, game),
       lib::packets::serverbound::play::ChatMessage::PACKET_ID => play::chat_message(&mut packet.data, connection_streams, game, stream, connections),
       lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, connection_streams, game),
       lib::packets::serverbound::play::SetCreativeModeSlot::PACKET_ID => play::set_creative_mode_slot(&mut packet.data, stream, game, connections),
@@ -748,32 +748,7 @@ pub mod configuration {
     }
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {
-      nodes: vec![
-     		CommandNode {
-       		flags: 0,
-          children: vec![1],
-          redirect_node: None,
-          name: None,
-          properties: None,
-          suggestions_type: None,
-        },
-     		CommandNode {
-       		flags: 0b0000_0101,
-          children: vec![2],
-          redirect_node: None,
-          name: Some("ping".to_string()),
-          properties: None,
-          suggestions_type: None,
-        },
-     		CommandNode {
-       		flags: 2,
-          children: vec![],
-          redirect_node: None,
-          name: Some("message".to_string()),
-          properties: Some(ParserProperty::String(2)),
-          suggestions_type: None,
-        },
-      ],
+      nodes: command::get_command_packet_data(game),
       root_index: 0,
     }.try_into().unwrap())?;
 
@@ -1116,22 +1091,22 @@ pub mod play {
     return Ok(());
   }
 
-  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &Game) -> Result<(), Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
 
-   	let reply_msg = if parsed_packet.command.as_str() == "ping" {
-    	"pong".to_string()
-    } else {
-   		parsed_packet.command.replace("ping ", "")
+   	let Some(command) = game.commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
+  		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+			  content: NbtTag::TagCompound(None, vec![
+				NbtTag::String(Some("type".to_string()), "text".to_string()),
+				NbtTag::String(Some("text".to_string()), "command not found".to_string()),
+			]),
+		  overlay: false,
+    	}.try_into()?)?;
+
+    	return Ok(());
     };
 
-  	send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-	    content: NbtTag::TagCompound(None, vec![
-				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), reply_msg),
-			]),
-	    overlay: false,
-   	}.try_into()?)?;
+    (command.execute)(parsed_packet.command, stream)?;
 
   	return Ok(());
   }

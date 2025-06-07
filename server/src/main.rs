@@ -18,12 +18,16 @@ fn initialize_server() {
   let listener = TcpListener::bind("0.0.0.0:25565").unwrap();
 
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
-  let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(Game {
+  let mut game = Game {
     players: Vec::new(),
     world: World::new(),
     last_created_entity_id: 0,
     chat_message_index: 0,
-  }));
+    commands: Vec::new(),
+  };
+  init(&mut game);
+
+  let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));
 
   let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
 
