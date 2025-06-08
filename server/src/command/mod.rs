@@ -1,6 +1,8 @@
 mod ping;
 mod hi;
 mod tp;
+mod tell;
+mod panic;
 
 use crate::types::*;
 use std::net::TcpStream;
@@ -11,6 +13,8 @@ pub fn init(game: &mut Game) {
 	ping::init(game);
 	hi::init(game);
 	tp::init(game);
+	tell::init(game);
+	panic::init(game);
 }
 
 
