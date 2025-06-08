@@ -1058,6 +1058,8 @@ pub mod play {
       return Ok(());
     };
 
+    println!("<{}>: {}", player.display_name, parsed_packet.message);
+
     let packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
       global_index: game.chat_message_index,
       sender: player.uuid,
@@ -1094,19 +1096,21 @@ pub mod play {
   pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
 
+   println!("<{}> invoked: {}", game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().display_name, parsed_packet.command);
+
    	let Some(command) = game.commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
   		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-			  content: NbtTag::TagCompound(None, vec![
-				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), "command not found".to_string()),
-			]),
-		  overlay: false,
+				  content: NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("type".to_string()), "text".to_string()),
+					NbtTag::String(Some("text".to_string()), "command not found".to_string()),
+				]),
+			  overlay: false,
     	}.try_into()?)?;
 
     	return Ok(());
     };
 
-    (command.execute)(parsed_packet.command, stream, game, connection_streams, connections)?;
+    (command.execute)(parsed_packet.command, Some(stream), game, connection_streams, connections)?;
 
   	return Ok(());
   }

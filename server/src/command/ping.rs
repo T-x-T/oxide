@@ -37,20 +37,25 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: &mut TcpStream, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	let reply_msg = if command.as_str() == "ping" {
-    	"pong".to_string()
-    } else {
-   		command.replace("ping ", "")
-    };
+   	"pong".to_string()
+  } else {
+  		command.replace("ping ", "")
+  };
 
-  	lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-			  content: NbtTag::TagCompound(None, vec![
-				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), reply_msg),
-			]),
-		  overlay: false,
-   	}.try_into()?)?;
+	let Some(stream) = stream else {
+		println!("{reply_msg}");
+		return Ok(());
+	};
+
+ 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+	  content: NbtTag::TagCompound(None, vec![
+			NbtTag::String(Some("type".to_string()), "text".to_string()),
+			NbtTag::String(Some("text".to_string()), reply_msg),
+		]),
+	  overlay: false,
+ 	}.try_into()?)?;
 
 	return Ok(());
 }

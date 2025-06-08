@@ -9,6 +9,7 @@ use types::*;
 mod packet_handlers;
 mod types;
 mod command;
+mod terminal_input;
 
 fn main() {
   println!("Starting the oxide server");
@@ -32,6 +33,8 @@ fn initialize_server() {
 
   let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
 
+  terminal_input::init(connection_streams.clone(), game.clone(), connections.clone());
+
   for stream in listener.incoming() {
     let stream = stream.unwrap();
 
@@ -44,7 +47,6 @@ fn initialize_server() {
       let mut stream = stream.try_clone().unwrap();
       let peer_addr = stream.peer_addr().unwrap();
       loop {
-
         let mut peek_buf = [0; 1];
 
         match stream.peek(&mut peek_buf) {

@@ -20,8 +20,13 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	let Some(target_player) = game.players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
+		let Some(stream) = stream else {
+			println!("Couldn't find that player :(");
+			return Ok(());
+		};
+
 		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::TagCompound(None, vec![
 				NbtTag::String(Some("type".to_string()), "text".to_string()),
@@ -33,12 +38,19 @@ fn execute(command: String, stream: &mut TcpStream, game: &mut Game, connection_
 		return Ok(());
 	};
 
-	let sending_player = game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let sending_player_name = if stream.is_some() {
+		game.players
+			.iter()
+			.find(|x| x.peer_socket_address == stream.as_ref().unwrap().peer_addr().unwrap()).unwrap()
+			.display_name.clone()
+	} else {
+		"console".to_string()
+	};
 
 	lib::utils::send_packet(connection_streams.get(&target_player.peer_socket_address).unwrap(), lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 		  content: NbtTag::TagCompound(None, vec![
 			NbtTag::String(Some("type".to_string()), "text".to_string()),
-			NbtTag::String(Some("text".to_string()), format!("<{}> whispered: {}", sending_player.display_name, command.split(" ").skip(2).collect::<Vec<&str>>().join(" "))),
+			NbtTag::String(Some("text".to_string()), format!("<{}> whispered: {}", sending_player_name, command.split(" ").skip(2).collect::<Vec<&str>>().join(" "))),
 		]),
 	  overlay: false,
  	}.try_into()?)?;

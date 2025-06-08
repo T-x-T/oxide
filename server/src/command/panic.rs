@@ -10,7 +10,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(_command: String, _stream: &mut TcpStream, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(_command: String, _stream: Option<&mut TcpStream>, _game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	eprintln!("panic command was used");
 	process::exit(1000);
 }

@@ -25,7 +25,12 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+	let Some(stream) = stream else {
+		println!("this command doesnt work from the console");
+		return Ok(());
+	};
+
 	let arg_string = command.replace("tp ", "");
 	if arg_string.is_empty() {
 		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
