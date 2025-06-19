@@ -79,8 +79,12 @@ impl super::WorldLoader for Loader {
        			break;
          	}
         	let entry = value as u64 >> (64 - ((i+1) * bits_per_entry));
-         	let entry = entry & (u64::MAX >> (64 - bits_per_entry));
-          data_array.push(entry as i32);
+         	let mut entry = entry & (u64::MAX >> (64 - bits_per_entry));
+          if entry as usize >= palette.len() {
+          	entry = palette.len() as u64 - 1;
+          }
+          let block_state_id = block_states.get(&palette[entry as usize].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id;
+          data_array.push(block_state_id);
         }
       }
       assert_eq!(data_array.len(), 4096);
