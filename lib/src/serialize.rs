@@ -96,15 +96,15 @@ pub fn slot(input: &Slot) -> Vec<u8> {
   for component_to_add in &input.components_to_add {
     output.append(&mut varint(component_to_add.into()));
     output.append(&mut match component_to_add.clone() {
-      SlotComponent::CustomData(a) => nbt(a),
+      SlotComponent::CustomData(a) => nbt_network(a),
       SlotComponent::MaxStackSize(a) => varint(a),
       SlotComponent::MaxDamage(a) => varint(a),
       SlotComponent::Damage(a) => varint(a),
       SlotComponent::Unbreakable => vec![],
-      SlotComponent::CustomName(a) => nbt(a),
-      SlotComponent::ItemName(a) => nbt(a),
+      SlotComponent::CustomName(a) => nbt_network(a),
+      SlotComponent::ItemName(a) => nbt_network(a),
       SlotComponent::ItemModel(a) => string(&a),
-      SlotComponent::Lore(a) => a.into_iter().flat_map(nbt).collect(),
+      SlotComponent::Lore(a) => a.into_iter().flat_map(nbt_network).collect(),
       SlotComponent::Rarity(a) => vec![a],
       SlotComponent::Enchantments(a) => a.into_iter().flat_map(|(x, y)| vec![varint(x), varint(y)]).flatten().collect(),
       SlotComponent::CanPlaceOn => todo!(),
@@ -115,7 +115,7 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::RepairCost(a) => varint(a),
       SlotComponent::CreativeSlotLock => vec![],
       SlotComponent::EnchantmentGlintOverride(a) => boolean(a),
-      SlotComponent::IntangibleProjectile(a) => nbt(a),
+      SlotComponent::IntangibleProjectile(a) => nbt_network(a),
       SlotComponent::Food(a, b, c) => vec![varint(a), float(b), boolean(c)].into_iter().flatten().collect(),
       SlotComponent::Consumable => todo!(),
       SlotComponent::UseRemainder(a) => slot(&a),
@@ -134,7 +134,7 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::DyedColor(a) => int(a),
       SlotComponent::MapColor(a) => int(a),
       SlotComponent::MapId(a) => varint(a),
-      SlotComponent::MapDecorations(a) => nbt(a),
+      SlotComponent::MapDecorations(a) => nbt_network(a),
       SlotComponent::MapPostProcessing(a) => vec![a],
       SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
       SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
@@ -144,16 +144,16 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::WritableBookContent(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).flatten().collect(),
       SlotComponent::WrittenBookContent(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), if y.is_some() {vec![vec![0x01], string(&y.unwrap())].into_iter().flatten().collect()} else {vec![0x00]}]).flatten().collect(),
       SlotComponent::Trim => todo!(),
-      SlotComponent::DebugStickState(a) => nbt(a),
-      SlotComponent::EntityData(a) => nbt(a),
-      SlotComponent::BucketEntityData(a) => nbt(a),
-      SlotComponent::BlockEntityData(a) => nbt(a),
+      SlotComponent::DebugStickState(a) => nbt_network(a),
+      SlotComponent::EntityData(a) => nbt_network(a),
+      SlotComponent::BucketEntityData(a) => nbt_network(a),
+      SlotComponent::BlockEntityData(a) => nbt_network(a),
       SlotComponent::Instrument => todo!(),
       SlotComponent::ProvidesTrimMaterial => todo!(),
       SlotComponent::OminousBottleAmplifier(a) => vec![a],
       SlotComponent::JukeboxPlayable => todo!(),
       SlotComponent::ProvidesBannerPatterns(a) => string(&a),
-      SlotComponent::Recipes(a) => nbt(a),
+      SlotComponent::Recipes(a) => nbt_network(a),
       SlotComponent::LodestoneTracker(a, b, c, d) => vec![boolean(a), string(&b), position(&c), boolean(d)].into_iter().flatten().collect(),
       SlotComponent::FireworkExplosion => todo!(),
       SlotComponent::Fireworks => todo!(),
@@ -164,9 +164,9 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::PotDecorations(a) => a.into_iter().flat_map(varint).collect(),
       SlotComponent::Container(a) => a.into_iter().flat_map(varint).collect(),
       SlotComponent::BlockState(a) => a.into_iter().flat_map(|(x, y)| vec![string(&x), string(&y)]).flatten().collect(),
-      SlotComponent::Bees(a) => a.into_iter().flat_map(|(x, y, z)| vec![nbt(x), varint(y), varint(z)]).flatten().collect(),
-      SlotComponent::Lock(a) => nbt(a),
-      SlotComponent::ContainerLoot(a) => nbt(a),
+      SlotComponent::Bees(a) => a.into_iter().flat_map(|(x, y, z)| vec![nbt_network(x), varint(y), varint(z)]).flatten().collect(),
+      SlotComponent::Lock(a) => nbt_network(a),
+      SlotComponent::ContainerLoot(a) => nbt_network(a),
       SlotComponent::BreakSound => todo!(),
       SlotComponent::VillagerVariant => todo!(),
       SlotComponent::WolfVariant => todo!(),
@@ -213,10 +213,22 @@ pub fn prefixed_array(mut data: Vec<u8>, len: i32) -> Vec<u8> {
   return output;
 }
 
-pub fn nbt(input: NbtTag) -> Vec<u8> {
-  let mut nbt = nbt_tag_compound(None, vec![input], false);
-  nbt.pop(); //Otherwise we have one 0x00 byte too much at the end
-  return nbt;
+pub fn nbt_network(input: NbtTag) -> Vec<u8> {
+	match input {
+		NbtTag::TagCompound(_, p) => {
+			return nbt_tag_compound(None, p, true);
+		},
+		_ => panic!("root node must be a tag compound"),
+	}
+}
+
+pub fn nbt_disk(input: NbtTag) -> Vec<u8> {
+	match input {
+		NbtTag::TagCompound(_, p) => {
+			return nbt_tag_compound(Some("".to_string()), p, true);
+		},
+		_ => panic!("root node must be a tag compound"),
+	}
 }
 
 fn nbt_byte(description: Option<String>, payload: u8, include_id: bool) -> Vec<u8> {
@@ -362,6 +374,7 @@ fn nbt_list(description: Option<String>, payload: Vec<NbtTag>, include_id: bool)
   }
 
   if payload.is_empty() {
+  	output.append(&mut vec![0;5]);
     return output;
   }
 

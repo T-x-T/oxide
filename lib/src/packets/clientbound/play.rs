@@ -451,7 +451,7 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 			output.append(&mut crate::serialize::short(x.y));
 			output.append(&mut crate::serialize::varint(x.block_entity_type));
 			if x.data.is_some() {
-				output.append(&mut crate::serialize::nbt(x.data.unwrap()));
+				output.append(&mut crate::serialize::nbt_network(x.data.unwrap()));
 			} else {
 				output.push(0x00);
 			}
@@ -628,7 +628,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			let data = if *value.first().unwrap() == 0 {
 				None
 			} else {
-				Some(crate::deserialize::nbt(&mut value)?)
+				Some(crate::deserialize::nbt_network(&mut value)?)
 			};
 			block_entities.push(BlockEntity {
 				packed_xz,
@@ -1161,7 +1161,7 @@ impl TryFrom<PlayerChatMessage> for Vec<u8> {
 		});
 		if value.unsigned_content.is_some() {
 		  output.append(&mut crate::serialize::boolean(true));
-		  output.append(&mut crate::serialize::nbt(value.unsigned_content.unwrap()));
+		  output.append(&mut crate::serialize::nbt_network(value.unsigned_content.unwrap()));
 		} else {
 		  output.append(&mut crate::serialize::boolean(false));
 		}
@@ -1170,9 +1170,9 @@ impl TryFrom<PlayerChatMessage> for Vec<u8> {
 			output.append(&mut crate::serialize::bitset(&value.filter_type_bits));
 		}
 		output.append(&mut crate::serialize::varint(value.chat_type));
-		output.append(&mut crate::serialize::nbt(value.sender_name));
+		output.append(&mut crate::serialize::nbt_network(value.sender_name));
 		if value.target_name.is_some() {
-			output.append(&mut crate::serialize::nbt(value.target_name.unwrap()));
+			output.append(&mut crate::serialize::nbt_network(value.target_name.unwrap()));
 		}
 		output.push(0); //not sure why this is needed
 
@@ -1208,7 +1208,7 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 		}).collect();
 		let unsigned_content_present = crate::deserialize::boolean(&mut value)?;
 		let unsigned_content = if unsigned_content_present {
-			Some(crate::deserialize::nbt(&mut value)?)
+			Some(crate::deserialize::nbt_network(&mut value)?)
 		} else {
 			None
 		};
@@ -1219,10 +1219,10 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 			Vec::new()
 		};
 		let chat_type = crate::deserialize::varint(&mut value)?;
-		let sender_name = crate::deserialize::nbt(&mut value)?;
+		let sender_name = crate::deserialize::nbt_network(&mut value)?;
 		let target_name_present = crate::deserialize::boolean(&mut value)?;
 		let target_name = if target_name_present {
-			Some(crate::deserialize::nbt(&mut value)?)
+			Some(crate::deserialize::nbt_network(&mut value)?)
 		} else {
 			None
 		};
@@ -1365,7 +1365,7 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 						PlayerAction::UpdateDisplayName(display_name) => {
 							output.append(&mut crate::serialize::boolean(display_name.is_some()));
 							if let Some(display_name) = display_name {
-								output.append(&mut crate::serialize::nbt(display_name));
+								output.append(&mut crate::serialize::nbt_network(display_name));
 							}
 						},
 						PlayerAction::UpdateListPriority(priority) => output.append(&mut crate::serialize::varint(priority)),
@@ -1441,7 +1441,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 
 			if actions & 0x20 != 0 {
 				let display_name = if crate::deserialize::boolean(&mut value)? {
-					Some(crate::deserialize::nbt(&mut value)?)
+					Some(crate::deserialize::nbt_network(&mut value)?)
 				} else {
 					None
 				};
@@ -1729,12 +1729,12 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				EntityMetadataValue::Varlong(_) => todo!(),
 				EntityMetadataValue::Float(a) => output.append(&mut crate::serialize::float(a)),
 				EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
-				EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt(a)),
+				EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt_network(a)),
 				EntityMetadataValue::OptionalTextComponent(a) => {
 					match a {
 					  Some(a) => {
 							output.push(0x01);
-							output.append(&mut crate::serialize::nbt(a));
+							output.append(&mut crate::serialize::nbt_network(a));
 						},
 						None => {
 						  output.push(0x00);
@@ -1769,7 +1769,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 				},
 				EntityMetadataValue::BlockState(a) => output.append(&mut crate::serialize::varint(a)),
 				EntityMetadataValue::OptionalBlockState(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::Nbt(a) => output.append(&mut crate::serialize::nbt(a)),
+				EntityMetadataValue::Nbt(a) => output.append(&mut crate::serialize::nbt_network(a)),
 				EntityMetadataValue::Particle(_) => todo!(),
 				EntityMetadataValue::Particles(_, _) => todo!(),
 				EntityMetadataValue::VillagerData(_, _, _) => todo!(),
@@ -1833,11 +1833,11 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				2 => todo!(),
 				3 => EntityMetadataValue::Float(crate::deserialize::float(&mut value)?),
 				4 => EntityMetadataValue::String(crate::deserialize::string(&mut value)?),
-				5 => EntityMetadataValue::TextComponent(crate::deserialize::nbt(&mut value)?),
+				5 => EntityMetadataValue::TextComponent(crate::deserialize::nbt_network(&mut value)?),
 				6 => {
 					let nbt_present = crate::deserialize::boolean(&mut value)?;
 					let nbt = if nbt_present {
-						Some(crate::deserialize::nbt(&mut value)?)
+						Some(crate::deserialize::nbt_network(&mut value)?)
 					} else {
 						None
 					};
@@ -1860,7 +1860,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				13 => todo!(),
 				14 => EntityMetadataValue::BlockState(crate::deserialize::varint(&mut value)?),
 				15 => EntityMetadataValue::OptionalBlockState(crate::deserialize::varint(&mut value)?),
-				16 => EntityMetadataValue::Nbt(crate::deserialize::nbt(&mut value)?),
+				16 => EntityMetadataValue::Nbt(crate::deserialize::nbt_network(&mut value)?),
 				17 => todo!(),
 				18 => todo!(),
 				19 => EntityMetadataValue::VillagerData(crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?),
@@ -1910,7 +1910,7 @@ impl TryFrom<SystemChatMessage> for Vec<u8> {
 	fn try_from(value: SystemChatMessage) -> Result<Self, Box<dyn Error>> {
 		let mut output: Vec<u8> = Vec::new();
 
-		output.append(&mut crate::serialize::nbt(value.content));
+		output.append(&mut crate::serialize::nbt_network(value.content));
 		output.append(&mut crate::serialize::boolean(value.overlay));
 
 		return Ok(output);
@@ -1922,7 +1922,7 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
-			content: crate::deserialize::nbt(&mut value)?,
+			content: crate::deserialize::nbt_network(&mut value)?,
 			overlay: crate::deserialize::boolean(&mut value)?,
 		});
 	}

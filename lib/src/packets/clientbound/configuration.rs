@@ -81,7 +81,7 @@ impl TryFrom<RegistryData> for Vec<u8> {
 			data.append(&mut crate::serialize::string(&x.entry_id));
 			data.append(&mut crate::serialize::boolean(x.has_data));
 			if x.has_data {
-				data.append(&mut crate::serialize::nbt(x.clone().data.unwrap()));
+				data.append(&mut crate::serialize::nbt_network(x.clone().data.unwrap()));
 			}
 		});
 
@@ -103,7 +103,7 @@ impl TryFrom<Vec<u8>> for RegistryData {
 			let entry_id = crate::deserialize::string(&mut value)?;
 			let has_data = crate::deserialize::boolean(&mut value)?;
 			let data: Option<crate::nbt::NbtTag> = if has_data {
-				Some(crate::deserialize::nbt(&mut value)?)
+				Some(crate::deserialize::nbt_network(&mut value)?)
 			} else {
 				None
 			};

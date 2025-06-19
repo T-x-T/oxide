@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 use std::net::{TcpListener, SocketAddr, TcpStream};
+use std::path::Path;
 use std::sync::{Arc, Mutex};
-use lib::types::world::World;
 use types::*;
 
 mod packet_handlers;
@@ -19,10 +19,14 @@ fn main() {
 fn initialize_server() {
   let listener = TcpListener::bind("0.0.0.0:25565").unwrap();
 
+  let world_loader = lib::world::loader::vanilla::Loader {
+    path: Path::new("./world").to_owned(),
+  };
+
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
   let mut game = Game {
     players: Vec::new(),
-    world: World::new(),
+    world: World::new(world_loader),
     last_created_entity_id: 0,
     chat_message_index: 0,
     commands: Vec::new(),

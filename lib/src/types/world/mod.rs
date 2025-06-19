@@ -1,3 +1,5 @@
+pub mod loader;
+
 use std::{collections::HashMap, error::Error};
 
 use crate::types::position::Position;
@@ -27,12 +29,18 @@ pub struct ChunkSection {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new() -> Self {
-    println!("create new world");
-    let mut dimensions: HashMap<String, Dimension> = HashMap::new();
-    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
-    println!("creation of new world finished");
-
+  pub fn new(loader: impl loader::WorldLoader) -> Self {
+   	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
+  	if loader.is_initialized() {
+   		let now = std::time::Instant::now();
+ 			println!("loading existing world");
+   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(loader));
+    	println!("finished loading existing world in {:.2?}", now.elapsed());
+   	} else {
+	    println!("create new world");
+	    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
+	    println!("creation of new world finished");
+    }
     return Self { dimensions };
   }
 }
@@ -52,6 +60,20 @@ impl Dimension {
       chunks,
     };
   }
+
+  pub fn new_from_loader(loader: impl loader::WorldLoader) -> Self {
+  	let mut chunks: Vec<Chunk> = Vec::new();
+
+   	for x in -20..=20 {
+    	for z in -20..=20 {
+     		chunks.push(loader.load_chunk(x, z));
+      }
+    }
+
+    return Self {
+   		chunks,
+    }
+	}
 
   pub fn get_chunk_from_position_mut(&mut self, position: Position) -> Option<&mut Chunk> {
     let chunk_coordinates = position.convert_to_coordinates_of_chunk();

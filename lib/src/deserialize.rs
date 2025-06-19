@@ -108,15 +108,15 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
   for _ in 0..number_of_components_to_add {
     let component_id = varint(data)?;
     components_to_add.push(match component_id {
-      0 => SlotComponent::CustomData(nbt(data)?),
+      0 => SlotComponent::CustomData(nbt_network(data)?),
       1 => SlotComponent::MaxStackSize(varint(data)?),
       2 => SlotComponent::MaxDamage(varint(data)?),
       3 => SlotComponent::Damage(varint(data)?),
       4 => SlotComponent::Unbreakable,
-      5 => SlotComponent::CustomName(nbt(data)?),
-      6 => SlotComponent::ItemName(nbt(data)?),
+      5 => SlotComponent::CustomName(nbt_network(data)?),
+      6 => SlotComponent::ItemName(nbt_network(data)?),
       7 => SlotComponent::ItemModel(string(data)?),
-      8 => SlotComponent::Lore((0..varint(data)?).map(|_| nbt(data).unwrap()).collect()),
+      8 => SlotComponent::Lore((0..varint(data)?).map(|_| nbt_network(data).unwrap()).collect()),
       9 => SlotComponent::Rarity(data.remove(0)),
       10 => SlotComponent::Enchantments((0..varint(data)?).map(|_| (varint(data).unwrap(), varint(data).unwrap())).collect()),
       11 => todo!(), //SlotComponent::CanPlaceOn,
@@ -127,7 +127,7 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       16 => SlotComponent::RepairCost(varint(data)?),
       17 => SlotComponent::CreativeSlotLock,
       18 => SlotComponent::EnchantmentGlintOverride(boolean(data)?),
-      19 => SlotComponent::IntangibleProjectile(nbt(data)?),
+      19 => SlotComponent::IntangibleProjectile(nbt_network(data)?),
       20 => SlotComponent::Food(varint(data)?, float(data)?, boolean(data)?),
       21 => todo!(), //SlotComponent::Consumable,
       22 => SlotComponent::UseRemainder(slot(data)?),
@@ -146,7 +146,7 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       35 => SlotComponent::DyedColor(int(data)?),
       36 => SlotComponent::MapColor(int(data)?),
       37 => SlotComponent::MapId(varint(data)?),
-      38 => SlotComponent::MapDecorations(nbt(data)?),
+      38 => SlotComponent::MapDecorations(nbt_network(data)?),
       39 => SlotComponent::MapPostProcessing(data.remove(0)),
       40 => SlotComponent::ChargedProjectiles((0..varint(data)?).map(|_| slot(data).unwrap()).collect()),
       41 => SlotComponent::BundleContents((0..varint(data)?).map(|_| slot(data).unwrap()).collect()),
@@ -156,16 +156,16 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       45 => SlotComponent::WritableBookContent((0..varint(data)?).map(|_| (string(data).unwrap(), if boolean(data).unwrap() {Some(string(data).unwrap())} else {None})).collect()),
       46 => SlotComponent::WrittenBookContent((0..varint(data)?).map(|_| (string(data).unwrap(), if boolean(data).unwrap() {Some(string(data).unwrap())} else {None})).collect()),
       47 => todo!(), //SlotComponent::Trim,
-      48 => SlotComponent::DebugStickState(nbt(data)?),
-      49 => SlotComponent::EntityData(nbt(data)?),
-      50 => SlotComponent::BucketEntityData(nbt(data)?),
-      51 => SlotComponent::BlockEntityData(nbt(data)?),
+      48 => SlotComponent::DebugStickState(nbt_network(data)?),
+      49 => SlotComponent::EntityData(nbt_network(data)?),
+      50 => SlotComponent::BucketEntityData(nbt_network(data)?),
+      51 => SlotComponent::BlockEntityData(nbt_network(data)?),
       52 => todo!(), //SlotComponent::Instrument,
       53 => todo!(), //SlotComponent::ProvidesTrimMaterial,
       54 => SlotComponent::OminousBottleAmplifier(data.remove(0)),
       55 => todo!(), //SlotComponent::JukeboxPlayable,
       56 => SlotComponent::ProvidesBannerPatterns(string(data)?),
-      57 => SlotComponent::Recipes(nbt(data)?),
+      57 => SlotComponent::Recipes(nbt_network(data)?),
       58 => SlotComponent::LodestoneTracker(boolean(data)?, string(data)?, position(data)?, boolean(data)?),
       59 => todo!(), //SlotComponent::FireworkExplosion,
       60 => todo!(), //SlotComponent::Fireworks,
@@ -176,9 +176,9 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       65 => SlotComponent::PotDecorations((0..varint(data)?).map(|_| varint(data).unwrap()).collect()),
       66 => SlotComponent::Container((0..varint(data)?).map(|_| varint(data).unwrap()).collect()),
       67 => SlotComponent::BlockState((0..varint(data)?).map(|_| (string(data).unwrap(), string(data).unwrap())).collect()),
-      68 => SlotComponent::Bees((0..varint(data)?).map(|_| (nbt(data).unwrap(), varint(data).unwrap(), varint(data).unwrap())).collect()),
-      69 => SlotComponent::Lock(nbt(data)?),
-      70 => SlotComponent::ContainerLoot(nbt(data)?),
+      68 => SlotComponent::Bees((0..varint(data)?).map(|_| (nbt_network(data).unwrap(), varint(data).unwrap(), varint(data).unwrap())).collect()),
+      69 => SlotComponent::Lock(nbt_network(data)?),
+      70 => SlotComponent::ContainerLoot(nbt_network(data)?),
       71 => todo!(), //SlotComponent::BreakSound,
       72 => todo!(), //SlotComponent::VillagerVariant,
       73 => todo!(), //SlotComponent::WolfVariant,
@@ -249,9 +249,13 @@ pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
   return Ok(value);
 }
 
-pub fn nbt(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
-  //println!("deserialize nbt:\n\n{data:?}\n\n\n\n");
+
+pub fn nbt_network(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
   return nbt_tag_compound(data, false, true);
+}
+
+pub fn nbt_disk(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
+  return nbt_tag_compound(data, true, true);
 }
 
 fn nbt_byte_array_value(data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
@@ -279,9 +283,8 @@ pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
 }
 
 fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  data.reverse();
   if has_id {
-    data.pop();
+    data.remove(0);
   }
 
   let description: Option<String> = if has_description {
@@ -290,127 +293,105 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     None
   };
 
-  let id = data.pop().unwrap();
+  let id = data.remove(0);
   let len = int(data)?;
+
+  if len == 0 {
+  	return Ok(NbtTag::List(description, Vec::new()));
+  }
 
   let output: NbtTag = match id {
     0x01 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Byte(None, data.pop().unwrap()));
+        list.push(NbtTag::Byte(None, data.remove(0)));
       }
 
       NbtTag::List(description, list)
     },
     0x02 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::Short(None, short(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x03 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::Int(None, int(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x04 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::Long(None, long(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x05 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::Float(None, float(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x06 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::Double(None, double(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x07 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::ByteArray(None, nbt_byte_array_value(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x08 => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::String(None, nbt_string_value(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x09 => {
-      todo!("this isnt implemented yet lol");
-      //let mut list: Vec<NbtTag> = Vec::new();
-      //data.reverse();
-      //for _ in 0..len {
-      //  list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
-      //}
-      //data.reverse();
-
-      //NbtTag::List(description, list)
+    	let mut list: Vec<NbtTag> = Vec::new();
+			for _ in 0..len {
+				list.push(nbt_list(data, false, false).unwrap());
+			}
+			NbtTag::List(description, list)
     },
     0x0a => {
-      todo!("this isnt implemented yet lol");
-      //let mut list: Vec<NbtTag> = Vec::new();
-      //data.reverse();
-      //for _ in 0..len {
-      //  list.push(NbtTag::String(None, nbt_string_value(&mut data)?));
-      //}
-      //data.reverse();
-
-      //NbtTag::List(description, list)
+	    let mut list: Vec<NbtTag> = Vec::new();
+			for _ in 0..len {
+				list.push(nbt_tag_compound(data, false, false).unwrap());
+			}
+			NbtTag::List(description, list)
     },
     0x0b => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::IntArray(None, nbt_int_array_value(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
     0x0c => {
       let mut list: Vec<NbtTag> = Vec::new();
-      data.reverse();
       for _ in 0..len {
         list.push(NbtTag::LongArray(None, nbt_long_array_value(data)?));
       }
-      data.reverse();
 
       NbtTag::List(description, list)
     },
@@ -419,13 +400,11 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     }
   };
 
-  data.reverse();
-
   return Ok(output);
 }
 
 fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  if has_id {
+	if has_id {
     data.remove(0);
   }
 
@@ -439,7 +418,6 @@ fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> 
 
   loop {
     let id = data.remove(0);
-
     match id {
       0x00 => break,
       0x01 => {
@@ -577,6 +555,61 @@ mod test {
 
     let mut nbt_bytes: Vec<u8> = vec![10,2,0,17,77,97,120,78,101,97,114,98,121,69,110,116,105,116,105,101,115,0,6,2,0,19,82,101,113,117,105,114,101,100,80,108,97,121,101,114,82,97,110,103,101,0,16,2,0,10,83,112,97,119,110,67,111,117,110,116,0,4,10,0,9,83,112,97,119,110,68,97,116,97,10,0,6,101,110,116,105,116,121,8,0,2,105,100,0,16,109,105,110,101,99,114,97,102,116,58,115,112,105,100,101,114,0,0,2,0,13,77,97,120,83,112,97,119,110,68,101,108,97,121,3,32,2,0,10,83,112,97,119,110,82,97,110,103,101,0,4,2,0,5,68,101,108,97,121,0,20,2,0,13,77,105,110,83,112,97,119,110,68,101,108,97,121,0,200,0];
 
-    assert_eq!(nbt(&mut nbt_bytes).unwrap(), nbt_parsed);
+    assert_eq!(nbt_network(&mut nbt_bytes).unwrap(), nbt_parsed);
+  }
+
+  #[test]
+  fn nbt_with_list_of_compounds_network() {
+    let nbt = NbtTag::TagCompound(None, vec![
+	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+	    ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_network(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(nbt_network(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_with_list_of_compounds_disk() {
+    let nbt = NbtTag::TagCompound(Some("".to_string()), vec![
+	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+				NbtTag::TagCompound(None, vec![
+					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				]),
+	    ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_with_empty_list_disk() {
+    let nbt = NbtTag::TagCompound(Some("".to_string()), vec![
+	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
+
+	    ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(nbt_disk(&mut nbt_bytes).unwrap(), nbt);
   }
 }
