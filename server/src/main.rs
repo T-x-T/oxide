@@ -19,8 +19,11 @@ fn main() {
 fn initialize_server() {
   let listener = TcpListener::bind("0.0.0.0:25565").unwrap();
 
+  let block_states = data::blocks::get_blocks();
+
   let world_loader = lib::world::loader::vanilla::Loader {
     path: Path::new("./world").to_owned(),
+    block_states,
   };
 
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));

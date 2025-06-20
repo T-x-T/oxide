@@ -29,12 +29,12 @@ impl NbtTag {
 		}
 	}
 
-	pub fn get_child(&self, description: &str) -> Option<NbtTag> {
+	pub fn get_child(&self, description: &str) -> Option<&NbtTag> {
 		match self {
 			NbtTag::TagCompound(_, p) => {
 				for tag in p {
-					if tag.get_description().unwrap_or_default().as_str() == description {
-						return Some(tag.clone());
+					if tag.get_description().as_ref()?.as_str() == description {
+						return Some(tag);
 					}
 				}
 				return None;
@@ -43,20 +43,20 @@ impl NbtTag {
 		}
 	}
 
-	pub fn get_description(&self) -> Option<String> {
+	pub fn get_description(&self) -> &Option<String> {
 		return match self {
-	    NbtTag::Byte(d, _) => d.clone(),
-	    NbtTag::Short(d, _) => d.clone(),
-	    NbtTag::Int(d, _) => d.clone(),
-	    NbtTag::Long(d, _) => d.clone(),
-	    NbtTag::Float(d, _) => d.clone(),
-	    NbtTag::Double(d, _) => d.clone(),
-	    NbtTag::ByteArray(d, _) => d.clone(),
-	    NbtTag::String(d, _) => d.clone(),
-	    NbtTag::List(d, _) => d.clone(),
-	    NbtTag::TagCompound(d, _) => d.clone(),
-	    NbtTag::IntArray(d, _) => d.clone(),
-	    NbtTag::LongArray(d, _) => d.clone(),
+	    NbtTag::Byte(d, _) => d,
+	    NbtTag::Short(d, _) => d,
+	    NbtTag::Int(d, _) => d,
+	    NbtTag::Long(d, _) => d,
+	    NbtTag::Float(d, _) => d,
+	    NbtTag::Double(d, _) => d,
+	    NbtTag::ByteArray(d, _) => d,
+	    NbtTag::String(d, _) => d,
+	    NbtTag::List(d, _) => d,
+	    NbtTag::TagCompound(d, _) => d,
+	    NbtTag::IntArray(d, _) => d,
+	    NbtTag::LongArray(d, _) => d,
 		};
 	}
 
@@ -109,9 +109,9 @@ impl NbtTag {
 		}
 	}
 
-	pub fn as_string(&self) -> String {
+	pub fn as_string(&self) -> &str {
 		match self {
-			NbtTag::String(_, p) => return p.clone(),
+			NbtTag::String(_, p) => return p,
 			_ => panic!("wrong type of Tag!"),
 		}
 	}

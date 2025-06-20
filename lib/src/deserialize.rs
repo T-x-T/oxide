@@ -3,9 +3,7 @@ use crate::types::*;
 use crate::CustomError;
 
 pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
-  data.reverse();
-  let value = data.pop().unwrap();
-  data.reverse();
+  let value = data.remove(0);
 
   return match value {
     0x00 => Ok(false),
@@ -15,10 +13,8 @@ pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
 }
 
 pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
-  data.reverse();
-  let first_byte = data.pop().unwrap();
-  let second_byte = data.pop().unwrap();
-  data.reverse();
+  let first_byte = data.remove(0);
+  let second_byte = data.remove(0);
 
   let output: u16 = (first_byte as u16 * 256) + second_byte as u16;
 
@@ -26,44 +22,44 @@ pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
 }
 
 pub fn short(data: &mut Vec<u8>) -> Result<i16, Box<dyn Error>> {
-  let output: i16 = i16::from_be_bytes(data[..2].try_into().unwrap());
-  data.drain(0..2);
+  let drained_data = data.drain(0..2);
+  let output: i16 = i16::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn int(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
-  let output: i32 = i32::from_be_bytes(data[..4].try_into().unwrap());
-  data.drain(0..4);
+	let drained_data = data.drain(0..4);
+  let output: i32 = i32::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn long(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
-  let output: i64 = i64::from_be_bytes(data[..8].try_into().unwrap());
-  data.drain(0..8);
+	let drained_data = data.drain(0..8);
+  let output: i64 = i64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn unsigned_long(data: &mut Vec<u8>) -> Result<u64, Box<dyn Error>> {
-  let output: u64 = u64::from_be_bytes(data[..8].try_into().unwrap());
-  data.drain(0..8);
+	let drained_data = data.drain(0..8);
+  let output: u64 = u64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn double(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
-  let output: f64 = f64::from_be_bytes(data[..8].try_into().unwrap());
-  data.drain(0..8);
+	let drained_data = data.drain(0..8);
+  let output: f64 = f64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn float(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
-  let output: f32 = f32::from_be_bytes(data[..4].try_into().unwrap());
-  data.drain(0..4);
+	let drained_data = data.drain(0..4);
+  let output: f32 = f32::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
 pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
-  let output: u128 = u128::from_be_bytes(data[..16].try_into().unwrap());
-  data.drain(0..16);
+	let drained_data = data.drain(0..16);
+  let output: u128 = u128::from_be_bytes(drained_data.as_slice().try_into().unwrap());
   return Ok(output);
 }
 
@@ -275,8 +271,8 @@ pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
   bytes[1] = data.remove(0);
   let len = i16::from_be_bytes(bytes);
 
-  let raw_string: &[u8] = &data.clone()[..len as usize];
-  data.drain(..len as usize);
+  let drained_data = data.drain(..len as usize);
+  let raw_string: &[u8] = drained_data.as_slice();
   let string = String::from_utf8(raw_string.to_vec())?;
 
   return Ok(string);
@@ -479,13 +475,18 @@ fn nbt_int_array_value(data: &mut Vec<u8>) -> Result<Vec<i32>, Box<dyn Error>> {
 }
 
 fn nbt_long_array_value(data: &mut Vec<u8>) -> Result<Vec<i64>, Box<dyn Error>> {
-  let length = int(data)?;
+  data.reverse();
+
+  let drained_data = data.drain(data.len()-4..);
+  let length: i32 = i32::from_be_bytes(drained_data.rev().collect::<Vec<u8>>().try_into().unwrap());
 
   let mut arr: Vec<i64> = Vec::new();
   for _ in 0..length {
-    arr.push(long(data)?);
+  	let drained_data = data.drain(data.len()-8..);
+    arr.push(i64::from_be_bytes(drained_data.rev().collect::<Vec<u8>>().try_into().unwrap()));
   }
 
+  data.reverse();
   return Ok(arr);
 }
 

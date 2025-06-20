@@ -1,11 +1,13 @@
 use std::{fs, io::prelude::*, path::PathBuf, str::FromStr};
+use data::blocks::Block;
 use flate2::read::ZlibDecoder;
 
 use super::*;
 
 #[derive(Debug)]
 pub struct Loader {
-	pub path: PathBuf
+	pub path: PathBuf,
+	pub block_states: HashMap<String, Block>,
 }
 
 impl super::WorldLoader for Loader {
@@ -16,7 +18,7 @@ impl super::WorldLoader for Loader {
   	region_file_path.push(PathBuf::from_str("region").unwrap());
   	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
-   	if !fs::exists(region_file_path.clone()).unwrap() {
+   	if !fs::exists(&region_file_path).unwrap() {
    		return Chunk::new(x, z);
     }
 
@@ -49,49 +51,45 @@ impl super::WorldLoader for Loader {
     	return Chunk::new(x, z);
     }
 
-    let block_states = data::blocks::get_blocks();
+    let mut sections: Vec<super::ChunkSection> = Vec::new();
+    for x in chunk_nbt.get_child("sections").unwrap().as_list() {
+	    let palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
 
-    let sections: Vec<super::ChunkSection> = chunk_nbt.get_child("sections").unwrap().as_list().into_iter().map(|x| {
-    	let palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
-
-     	if palette.len() == 1 {
-     		return ChunkSection { blocks: vec![block_states.get(&palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096] }
+    	if palette.len() == 1 {
+    		sections.push(ChunkSection { blocks: vec![self.block_states.get(palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096] });
+     		continue;
       }
 
-      let bits_per_entry = match palette.len() {
-        0..=16 => 4,
-        17..=32 => 5,
-        33..=64 => 6,
-        65..=128 => 7,
-        129..=256 => 8,
-        257..=512 => 9,
-        513..=1024 => 10,
-        1025..=2048 => 11,
-        _ => 12,
-      };
+			let bits_per_entry = match palette.len() {
+			  0..=16 => 4,
+			  17..=32 => 5,
+			  33..=64 => 6,
+			  65..=128 => 7,
+			  129..=256 => 8,
+			  257..=512 => 9,
+			  513..=1024 => 10,
+			  1025..=2048 => 11,
+			  _ => 12,
+			};
 
-      let long_array = x.get_child("block_states").unwrap().get_child("data").unwrap().as_long_array();
-      let mut data_array: Vec<i32> = Vec::new();
-      for value in long_array {
-      	let entries_per_long = 64 / bits_per_entry;
-       	for i in 0..entries_per_long {
-        	if data_array.len() == 4096 {
-       			break;
-         	}
-        	let entry = value as u64 >> (64 - ((i+1) * bits_per_entry));
-         	let mut entry = entry & (u64::MAX >> (64 - bits_per_entry));
-          if entry as usize >= palette.len() {
-          	entry = palette.len() as u64 - 1;
-          }
-          let block_state_id = block_states.get(&palette[entry as usize].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id;
-          data_array.push(block_state_id);
-        }
-      }
-      assert_eq!(data_array.len(), 4096);
-    	return ChunkSection { blocks: data_array };
-    }).collect();
+			let long_array = x.get_child("block_states").unwrap().get_child("data").unwrap().as_long_array();
+			let mut data_array: Vec<i32> = Vec::new();
+			let entries_per_long = 64 / bits_per_entry;
+			for value in long_array {
+			 	for i in 0..entries_per_long {
+			 	if data_array.len() == 4096 {
+			 			break;
+			   	}
+			    let entry = (value as u64) << (64 - (bits_per_entry * (i+1))) >> (64 - bits_per_entry);
+			    let block_state_id = self.block_states.get(palette[entry as usize].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id;
+			    data_array.push(block_state_id);
+			  }
+			}
+			assert_eq!(data_array.len(), 4096);
+	   	sections.push(ChunkSection { blocks: data_array });
+    }
 
-  	return Chunk {
+	 	return Chunk {
 	    x: chunk_nbt.get_child("xPos").unwrap().as_int(),
 	    z: chunk_nbt.get_child("zPos").unwrap().as_int(),
 	    sections,
