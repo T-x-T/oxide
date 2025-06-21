@@ -266,15 +266,14 @@ fn nbt_byte_array_value(data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
 }
 
 pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
-  let mut bytes: [u8; 2] = [0, 0];
-  bytes[0] = data.remove(0);
-  bytes[1] = data.remove(0);
-  let len = i16::from_be_bytes(bytes);
+  data.reverse();
+	let bytes = data.drain(data.len()-2..);
+  let len = i16::from_be_bytes(bytes.rev().collect::<Vec<u8>>().try_into().unwrap());
 
-  let drained_data = data.drain(..len as usize);
-  let raw_string: &[u8] = drained_data.as_slice();
-  let string = String::from_utf8(raw_string.to_vec())?;
+  let drained_data = data.drain(data.len()-len as usize..);
+  let string = String::from_utf8(drained_data.rev().collect())?;
 
+  data.reverse();
   return Ok(string);
 }
 

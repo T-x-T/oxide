@@ -1,4 +1,4 @@
-use std::{fs, io::prelude::*, path::PathBuf, str::FromStr};
+use std::{fs::{self, File}, io::{prelude::*, SeekFrom}, path::PathBuf, str::FromStr};
 use data::blocks::Block;
 use flate2::read::ZlibDecoder;
 
@@ -22,24 +22,39 @@ impl super::WorldLoader for Loader {
    		return Chunk::new(x, z);
     }
 
-    //TODO: only read in necessary ranges and not whole file
-  	let region_file = fs::read(region_file_path).unwrap();
-   	let chunk_pos_in_header = 4 * ((x & 31) + (z & 31) * 32);
-    let chunk_location_bytes = &region_file[(chunk_pos_in_header as usize)..=((chunk_pos_in_header+2) as usize)];
+  	let mut region_file = File::open(region_file_path).unwrap();
+
+    let chunk_pos_in_header = 4 * ((x & 31) + (z & 31) * 32);
+    region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64)).unwrap();
+    let mut chunk_location_bytes = vec![0; 3];
+    region_file.read_exact(&mut chunk_location_bytes).unwrap();
     let chunk_offset = i32::from_be_bytes([0, chunk_location_bytes[0], chunk_location_bytes[1], chunk_location_bytes[2]]) * 4096;
-    let chunk_length_padded = region_file[(chunk_pos_in_header+3) as usize] as i32 * 4096;
+
+    region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64 + 3)).unwrap();
+    let mut chunk_length_padded_bytes = vec![0];
+    region_file.read_exact(&mut chunk_length_padded_bytes).unwrap();
+    let chunk_length_padded = chunk_location_bytes[0] as i32 * 4096;
 
     if chunk_offset == 0 && chunk_length_padded == 0 {
     	return Chunk::new(x, z);
     }
 
-    let actual_chunk_length_bytes = &region_file[(chunk_offset as usize)..=(chunk_offset+3) as usize];
+    region_file.seek(SeekFrom::Start(chunk_offset as u64)).unwrap();
+    let mut actual_chunk_length_bytes = vec![0; 4];
+    region_file.read_exact(&mut actual_chunk_length_bytes).unwrap();
     let actual_chunk_length = i32::from_be_bytes([actual_chunk_length_bytes[0], actual_chunk_length_bytes[1], actual_chunk_length_bytes[2], actual_chunk_length_bytes[3]]);
-    let compression_scheme = region_file[(chunk_offset+4) as usize];
-    let compressed_data: &[u8] = &region_file[((chunk_offset+5) as usize)..=(chunk_offset+actual_chunk_length) as usize];
+
+    region_file.seek(SeekFrom::Start(chunk_offset as u64 + 4)).unwrap();
+    let mut compression_scheme_bytes = vec![0];
+    region_file.read_exact(&mut compression_scheme_bytes).unwrap();
+    let compression_scheme = compression_scheme_bytes[0];
+
+    region_file.seek(SeekFrom::Start(chunk_offset as u64 + 5)).unwrap();
+    let mut compressed_data = vec![0; (actual_chunk_length - 1) as usize];
+    region_file.read_exact(&mut compressed_data).unwrap();
     let mut uncompressed_data: Vec<u8> = Vec::new();
     if compression_scheme == 2 {
-	    let mut decoder: ZlibDecoder<&[u8]> = ZlibDecoder::new(compressed_data);
+	    let mut decoder: ZlibDecoder<&[u8]> = ZlibDecoder::new(compressed_data.as_slice());
 	    decoder.read_to_end(&mut uncompressed_data).unwrap();
     } else {
    		panic!("unknown chunk compression scheme {compression_scheme}");
