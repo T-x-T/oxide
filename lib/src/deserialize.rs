@@ -23,43 +23,73 @@ pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
 
 pub fn short(data: &mut Vec<u8>) -> Result<i16, Box<dyn Error>> {
   let drained_data = data.drain(0..2);
-  let output: i16 = i16::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: i16 = i16::from_be_bytes(drained_data.as_slice().try_into()?);
+  return Ok(output);
+}
+
+pub fn short_le(data: &mut Vec<u8>) -> Result<i16, Box<dyn Error>> {
+  let drained_data = data.drain(data.len()-2..);
+  let output: i16 = i16::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn int(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
 	let drained_data = data.drain(0..4);
-  let output: i32 = i32::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: i32 = i32::from_be_bytes(drained_data.as_slice().try_into()?);
+  return Ok(output);
+}
+
+pub fn int_le(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
+	let drained_data = data.drain(data.len()-4..);
+  let output: i32 = i32::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn long(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
 	let drained_data = data.drain(0..8);
-  let output: i64 = i64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: i64 = i64::from_be_bytes(drained_data.as_slice().try_into()?);
+  return Ok(output);
+}
+
+pub fn long_le(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
+	let drained_data = data.drain(data.len()-8..);
+  let output: i64 = i64::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn unsigned_long(data: &mut Vec<u8>) -> Result<u64, Box<dyn Error>> {
 	let drained_data = data.drain(0..8);
-  let output: u64 = u64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: u64 = u64::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn double(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
 	let drained_data = data.drain(0..8);
-  let output: f64 = f64::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: f64 = f64::from_be_bytes(drained_data.as_slice().try_into()?);
+  return Ok(output);
+}
+
+pub fn double_le(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
+	let drained_data = data.drain(data.len()-8..);
+  let output: f64 = f64::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn float(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
 	let drained_data = data.drain(0..4);
-  let output: f32 = f32::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: f32 = f32::from_be_bytes(drained_data.as_slice().try_into()?);
+  return Ok(output);
+}
+
+pub fn float_le(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
+	let drained_data = data.drain(data.len()-4..);
+  let output: f32 = f32::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
 	let drained_data = data.drain(0..16);
-  let output: u128 = u128::from_be_bytes(drained_data.as_slice().try_into().unwrap());
+  let output: u128 = u128::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
@@ -247,39 +277,40 @@ pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
 
 
 pub fn nbt_network(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
-  return nbt_tag_compound(data, false, true);
+	data.reverse();
+	let output = nbt_tag_compound(data, false, true);
+  data.reverse();
+	return output;
 }
 
 pub fn nbt_disk(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
-  return nbt_tag_compound(data, true, true);
+	data.reverse();
+	let output = nbt_tag_compound(data, true, true);
+	data.reverse();
+  return output;
 }
 
 fn nbt_byte_array_value(data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
-  let len = int(data)?;
+  let len = int_le(data)?;
   let mut bytes: Vec<u8> = Vec::new();
-  data.reverse();
   for _ in 0..len {
     bytes.push(data.pop().unwrap());
   }
-  data.reverse();
   return Ok(bytes);
 }
 
 pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
-  data.reverse();
-	let bytes = data.drain(data.len()-2..);
-  let len = i16::from_be_bytes(bytes.rev().collect::<Vec<u8>>().try_into().unwrap());
+  let len = short_le(data)?;
 
   let drained_data = data.drain(data.len()-len as usize..);
   let string = String::from_utf8(drained_data.rev().collect())?;
 
-  data.reverse();
   return Ok(string);
 }
 
 fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
   if has_id {
-    data.remove(0);
+    data.pop().unwrap();
   }
 
   let description: Option<String> = if has_description {
@@ -288,8 +319,8 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     None
   };
 
-  let id = data.remove(0);
-  let len = int(data)?;
+  let id = data.pop().unwrap();
+  let len = int_le(data)?;
 
   if len == 0 {
   	return Ok(NbtTag::List(description, Vec::new()));
@@ -299,7 +330,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x01 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Byte(None, data.remove(0)));
+        list.push(NbtTag::Byte(None, data.pop().unwrap()));
       }
 
       NbtTag::List(description, list)
@@ -307,7 +338,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x02 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Short(None, short(data)?));
+        list.push(NbtTag::Short(None, short_le(data)?));
       }
 
       NbtTag::List(description, list)
@@ -315,7 +346,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x03 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Int(None, int(data)?));
+        list.push(NbtTag::Int(None, int_le(data)?));
       }
 
       NbtTag::List(description, list)
@@ -323,7 +354,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x04 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Long(None, long(data)?));
+        list.push(NbtTag::Long(None, long_le(data)?));
       }
 
       NbtTag::List(description, list)
@@ -331,7 +362,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x05 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Float(None, float(data)?));
+        list.push(NbtTag::Float(None, float_le(data)?));
       }
 
       NbtTag::List(description, list)
@@ -339,7 +370,7 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
     0x06 => {
       let mut list: Vec<NbtTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Double(None, double(data)?));
+        list.push(NbtTag::Double(None, double_le(data)?));
       }
 
       NbtTag::List(description, list)
@@ -400,38 +431,36 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
 
 fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
 	if has_id {
-    data.remove(0);
+    data.pop().unwrap();
   }
-
   let description: Option<String> = if has_description {
     Some(nbt_string_value(data)?)
   } else {
     None
   };
-
   let mut tags: Vec<NbtTag> = Vec::new();
 
   loop {
-    let id = data.remove(0);
+    let id = data.pop().unwrap();
     match id {
       0x00 => break,
       0x01 => {
-        tags.push(NbtTag::Byte(Some(nbt_string_value(data)?), data.remove(0)));
+        tags.push(NbtTag::Byte(Some(nbt_string_value(data)?), data.pop().unwrap()));
       },
       0x02 => {
-        tags.push(NbtTag::Short(Some(nbt_string_value(data)?), short(data)?));
+        tags.push(NbtTag::Short(Some(nbt_string_value(data)?), short_le(data)?));
       },
       0x03 => {
-        tags.push(NbtTag::Int(Some(nbt_string_value(data)?), int(data)?));
+        tags.push(NbtTag::Int(Some(nbt_string_value(data)?), int_le(data)?));
       },
       0x04 => {
-        tags.push(NbtTag::Long(Some(nbt_string_value(data)?), long(data)?));
+        tags.push(NbtTag::Long(Some(nbt_string_value(data)?), long_le(data)?));
       },
       0x05 => {
-        tags.push(NbtTag::Float(Some(nbt_string_value(data)?), float(data)?));
+        tags.push(NbtTag::Float(Some(nbt_string_value(data)?), float_le(data)?));
       },
       0x06 => {
-        tags.push(NbtTag::Double(Some(nbt_string_value(data)?), double(data)?));
+        tags.push(NbtTag::Double(Some(nbt_string_value(data)?), double_le(data)?));
       },
       0x07 => {
         tags.push(NbtTag::ByteArray(Some(nbt_string_value(data)?), nbt_byte_array_value(data)?));
@@ -463,29 +492,24 @@ fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> 
 }
 
 fn nbt_int_array_value(data: &mut Vec<u8>) -> Result<Vec<i32>, Box<dyn Error>> {
-  let length = int(data)?;
+  let length = int_le(data)?;
 
   let mut arr: Vec<i32> = Vec::new();
   for _ in 0..length {
-    arr.push(int(data)?);
+    arr.push(int_le(data)?);
   }
 
   return Ok(arr);
 }
 
 fn nbt_long_array_value(data: &mut Vec<u8>) -> Result<Vec<i64>, Box<dyn Error>> {
-  data.reverse();
-
-  let drained_data = data.drain(data.len()-4..);
-  let length: i32 = i32::from_be_bytes(drained_data.rev().collect::<Vec<u8>>().try_into().unwrap());
+  let length: i32 = int_le(data)?;
 
   let mut arr: Vec<i64> = Vec::new();
   for _ in 0..length {
-  	let drained_data = data.drain(data.len()-8..);
-    arr.push(i64::from_be_bytes(drained_data.rev().collect::<Vec<u8>>().try_into().unwrap()));
+ 		arr.push(long_le(data)?);
   }
 
-  data.reverse();
   return Ok(arr);
 }
 
