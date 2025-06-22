@@ -114,7 +114,8 @@ pub mod login {
 }
 
 pub mod configuration {
-  use super::*;
+
+use super::*;
   use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}};
   use lib::types::position::Position;
 
@@ -635,11 +636,9 @@ pub mod configuration {
       value: 0.0,
     }.try_into().unwrap())?;
 
-    let x_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10];
-    let z_vec = vec![0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 7, -7, 8, -8, 9, -9, 10, -10];
-    for x in &x_vec {
-      for z in &z_vec {
-        let all_chunk_sections = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: *x, y: 0, z: *z }).unwrap().sections.iter().map(|section| {
+    for x in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
+      for z in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
+        let all_chunk_sections = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: x as i32, y: 0, z: z as i32 }).unwrap().sections.iter().map(|section| {
           lib::packets::clientbound::play::ChunkSection {
             block_count: section.get_non_air_block_count(),
             block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
@@ -653,8 +652,8 @@ pub mod configuration {
           }
         }).collect();
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
-          chunk_x: *x,
-          chunk_z: *z,
+          chunk_x: x as i32,
+          chunk_z: z as i32,
           heightmaps: vec![],
           data: all_chunk_sections,
           block_entities: vec![],

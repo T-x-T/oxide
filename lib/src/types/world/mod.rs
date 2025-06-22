@@ -2,7 +2,7 @@ pub mod loader;
 
 use std::{collections::HashMap, error::Error};
 
-use crate::types::position::Position;
+use crate::{types::position::Position, SPAWN_CHUNK_RADIUS};
 
 #[derive(Debug, Clone)]
 pub struct World {
@@ -50,9 +50,9 @@ impl Dimension {
   pub fn new() -> Self {
     let mut chunks: Vec<Chunk> = Vec::new();
 
-    for x in -20..=20 {
-      for z in -20..=20 {
-        chunks.push(Chunk::new(x, z));
+    for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
+      for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
+        chunks.push(Chunk::new(x as i32, z as i32));
       }
     }
 
@@ -64,9 +64,9 @@ impl Dimension {
   pub fn new_from_loader(loader: impl loader::WorldLoader) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
 
-   	for x in -20..=20 {
-    	for z in -20..=20 {
-     		chunks.push(loader.load_chunk(x, z));
+   	for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
+    	for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
+     		chunks.push(loader.load_chunk(x as i32, z as i32));
       }
     }
 

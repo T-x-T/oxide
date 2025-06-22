@@ -96,7 +96,7 @@ impl super::WorldLoader for Loader {
 			 			break;
 			   	}
 			    let entry = (value as u64) << (64 - (bits_per_entry * (i+1))) >> (64 - bits_per_entry);
-			    let block_state_id = self.block_states.get(palette[entry as usize].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id;
+			    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, palette[entry as usize].get_child("Name").unwrap().as_string(), palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
 			    data_array.push(block_state_id);
 			  }
 			}
