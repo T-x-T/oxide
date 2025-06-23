@@ -638,7 +638,8 @@ use super::*;
 
     for x in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
       for z in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
-        let all_chunk_sections = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: x as i32, y: 0, z: z as i32 }).unwrap().sections.iter().map(|section| {
+        let all_chunk_sections = &game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_chunk_position(Position { x: x as i32, y: 0, z: z as i32 }).unwrap().sections;
+        let all_processed_chunk_sections = all_chunk_sections.iter().map(|section| {
           lib::packets::clientbound::play::ChunkSection {
             block_count: section.get_non_air_block_count(),
             block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
@@ -651,18 +652,44 @@ use super::*;
             }),
           }
         }).collect();
+
+        let mut sky_light_mask = 0u64;
+        let mut block_light_mask = 0u64;
+        let mut sky_light_arrays: Vec<Vec<u8>> = Vec::new();
+        let mut block_light_arrays: Vec<Vec<u8>> = Vec::new();
+        for section in all_chunk_sections.iter().rev() {
+        	if section.sky_lights.is_empty() {
+       			sky_light_mask += 0;
+         	} else {
+        		sky_light_mask += 1;
+         		sky_light_arrays.push(section.sky_lights.clone());
+          }
+        	sky_light_mask <<= 1;
+        	if section.block_lights.is_empty() {
+       			block_light_mask += 0;
+         	} else {
+        		block_light_mask += 1;
+         		block_light_arrays.push(section.block_lights.clone());
+          }
+        	block_light_mask <<= 1;
+        }
+
+        if x == -5 && z == -4 {
+       		println!("{sky_light_mask}, {block_light_mask}");
+        }
+
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
           chunk_x: x as i32,
           chunk_z: z as i32,
           heightmaps: vec![],
-          data: all_chunk_sections,
+          data: all_processed_chunk_sections,
           block_entities: vec![],
-          sky_light_mask: vec![],
-          block_light_mask: vec![],
-          empty_sky_light_mask: vec![],
-          empty_block_light_mask: vec![],
-          sky_light_arrays: vec![],
-          block_light_arrays: vec![],
+          sky_light_mask: vec![sky_light_mask],
+          block_light_mask: vec![block_light_mask],
+          empty_sky_light_mask: vec![!sky_light_mask],
+          empty_block_light_mask: vec![!block_light_mask],
+          sky_light_arrays,
+          block_light_arrays,
         }.try_into().unwrap())?;
       }
     }

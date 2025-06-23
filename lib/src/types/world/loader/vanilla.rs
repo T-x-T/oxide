@@ -68,14 +68,25 @@ impl super::WorldLoader for Loader {
 
     let mut sections: Vec<super::ChunkSection> = Vec::new();
     for x in chunk_nbt.get_child("sections").unwrap().as_list() {
-	    let palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
+    	let block_light_nbt = x.get_child("BlockLight");
+     	let mut block_lights: Vec<u8> = Vec::new();
+     	if let Some(block_light_nbt) = block_light_nbt {
+      	block_lights = block_light_nbt.as_byte_array();
+      }
+    	let sky_light_nbt = x.get_child("SkyLight");
+     	let mut sky_lights: Vec<u8> = Vec::new();
+     	if let Some(sky_light_nbt) = sky_light_nbt {
+      	sky_lights = sky_light_nbt.as_byte_array();
+      }
 
-    	if palette.len() == 1 {
-    		sections.push(ChunkSection { blocks: vec![self.block_states.get(palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096] });
+	    let block_palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
+
+    	if block_palette.len() == 1 {
+    		sections.push(ChunkSection { block_lights, sky_lights, blocks: vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096] });
      		continue;
       }
 
-			let bits_per_entry = match palette.len() {
+			let bits_per_entry = match block_palette.len() {
 			  0..=16 => 4,
 			  17..=32 => 5,
 			  33..=64 => 6,
@@ -96,12 +107,12 @@ impl super::WorldLoader for Loader {
 			 			break;
 			   	}
 			    let entry = (value as u64) << (64 - (bits_per_entry * (i+1))) >> (64 - bits_per_entry);
-			    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, palette[entry as usize].get_child("Name").unwrap().as_string(), palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
+			    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
 			    data_array.push(block_state_id);
 			  }
 			}
 			assert_eq!(data_array.len(), 4096);
-	   	sections.push(ChunkSection { blocks: data_array });
+	   	sections.push(ChunkSection { blocks: data_array, sky_lights, block_lights });
     }
 
 	 	return Chunk {

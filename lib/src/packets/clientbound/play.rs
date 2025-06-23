@@ -186,7 +186,7 @@ impl TryFrom<Vec<u8>> for Commands {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let nodes_len = crate::deserialize::varint(&mut value)?;
-		let nodes: Vec<CommandNode> = (0..nodes_len).map(|x| {println!("start of id {x}"); CommandNode::try_from(&mut value).unwrap() }).collect();
+		let nodes: Vec<CommandNode> = (0..nodes_len).map(|_| {CommandNode::try_from(&mut value).unwrap() }).collect();
 		let root_index = crate::deserialize::varint(&mut value)?;
 
 		return Ok(Self {
@@ -662,7 +662,6 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			}
 			block_light_arrays.push(light_array);
 		}
-		//println!("uuuh hello there are some bytes maybe left over: {value:?}");
 
 		return Ok(Self {
 			chunk_x,

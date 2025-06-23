@@ -24,6 +24,8 @@ pub struct Chunk {
 #[derive(Debug, Clone)]
 pub struct ChunkSection {
   pub blocks: Vec<i32>,
+  pub sky_lights: Vec<u8>,
+  pub block_lights: Vec<u8>,
 }
 
 
@@ -126,9 +128,13 @@ impl Chunk {
   pub fn new(chunk_x: i32, chunk_z: i32) -> Self {
     let filled_chunk_sections = vec![ChunkSection {
       blocks: vec![1; 4096],
+      sky_lights: vec![],
+      block_lights: vec![],
     }; 1];
     let empty_chunk_sections = vec![ChunkSection {
       blocks: vec![0; 4096],
+      sky_lights: vec![],
+      block_lights: vec![],
     }; 23];
     let mut all_chunk_sections = filled_chunk_sections.clone();
     all_chunk_sections.append(&mut empty_chunk_sections.clone());
