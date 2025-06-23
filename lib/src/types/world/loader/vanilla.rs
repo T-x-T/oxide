@@ -79,40 +79,71 @@ impl super::WorldLoader for Loader {
       	sky_lights = sky_light_nbt.as_byte_array();
       }
 
+	    let biome_palette = x.get_child("biomes").unwrap().get_child("palette").unwrap().as_list();
+
+			let mut biomes: Vec<i32> = Vec::new();
+			if biome_palette.len() == 1 {
+				biomes = vec![*data::biomes::get_biome_ids().get(biome_palette[0].as_string()).unwrap(); 64];
+			} else {
+				let biomes_bits_per_entry = match biome_palette.len() {
+				  0..=2 => 1,
+					3..=4 => 2,
+					5..=8 => 3,
+					9..=16 => 4,
+				  17..=32 => 5,
+				  _ => 6,
+				};
+
+				let long_array = x.get_child("biomes").unwrap().get_child("data").unwrap().as_long_array();
+				let entries_per_long = 64 / biomes_bits_per_entry;
+				for value in long_array {
+				 	for i in 0..entries_per_long {
+				 	if biomes.len() == 64 {
+				 			break;
+				   	}
+				    let entry = (value as u64) << (64 - (biomes_bits_per_entry * (i+1))) >> (64 - biomes_bits_per_entry);
+				    let biome_id = *data::biomes::get_biome_ids().get(biome_palette[entry as usize].as_string()).unwrap();
+				    biomes.push(biome_id);
+				  }
+				}
+			}
+
 	    let block_palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
 
+			let mut blocks: Vec<i32> = Vec::new();
     	if block_palette.len() == 1 {
-    		sections.push(ChunkSection { block_lights, sky_lights, blocks: vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096] });
-     		continue;
+    		blocks = vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096];
+      } else {
+	      let blocks_bits_per_entry = match block_palette.len() {
+				  0..=16 => 4,
+				  17..=32 => 5,
+				  33..=64 => 6,
+				  65..=128 => 7,
+				  129..=256 => 8,
+				  257..=512 => 9,
+				  513..=1024 => 10,
+				  1025..=2048 => 11,
+				  _ => 12,
+				};
+
+				let long_array = x.get_child("block_states").unwrap().get_child("data").unwrap().as_long_array();
+				let entries_per_long = 64 / blocks_bits_per_entry;
+				for value in long_array {
+				 	for i in 0..entries_per_long {
+				 	if blocks.len() == 4096 {
+				 			break;
+				   	}
+				    let entry = (value as u64) << (64 - (blocks_bits_per_entry * (i+1))) >> (64 - blocks_bits_per_entry);
+				    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
+				    blocks.push(block_state_id);
+				  }
+				}
       }
 
-			let bits_per_entry = match block_palette.len() {
-			  0..=16 => 4,
-			  17..=32 => 5,
-			  33..=64 => 6,
-			  65..=128 => 7,
-			  129..=256 => 8,
-			  257..=512 => 9,
-			  513..=1024 => 10,
-			  1025..=2048 => 11,
-			  _ => 12,
-			};
+      assert_eq!(biomes.len(), 64);
+			assert_eq!(blocks.len(), 4096);
 
-			let long_array = x.get_child("block_states").unwrap().get_child("data").unwrap().as_long_array();
-			let mut data_array: Vec<i32> = Vec::new();
-			let entries_per_long = 64 / bits_per_entry;
-			for value in long_array {
-			 	for i in 0..entries_per_long {
-			 	if data_array.len() == 4096 {
-			 			break;
-			   	}
-			    let entry = (value as u64) << (64 - (bits_per_entry * (i+1))) >> (64 - bits_per_entry);
-			    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
-			    data_array.push(block_state_id);
-			  }
-			}
-			assert_eq!(data_array.len(), 4096);
-	   	sections.push(ChunkSection { blocks: data_array, sky_lights, block_lights });
+	   	sections.push(ChunkSection { blocks, biomes, sky_lights, block_lights });
     }
 
 	 	return Chunk {

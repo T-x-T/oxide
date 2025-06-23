@@ -646,9 +646,9 @@ use super::*;
               bits_per_entry: 15,
               data_array: section.blocks.clone(),
             }),
-            biomes: lib::packets::clientbound::play::BiomesPalettedContainer::SingleValued(lib::packets::clientbound::play::SingleValued {
-              bits_per_entry: 0,
-              value: 40,
+            biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+              bits_per_entry: 7,
+              data_array: section.biomes.clone(),
             }),
           }
         }).collect();
@@ -672,10 +672,6 @@ use super::*;
          		block_light_arrays.push(section.block_lights.clone());
           }
         	block_light_mask <<= 1;
-        }
-
-        if x == -5 && z == -4 {
-       		println!("{sky_light_mask}, {block_light_mask}");
         }
 
         lib::utils::send_packet(stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
