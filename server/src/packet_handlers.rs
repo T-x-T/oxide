@@ -621,7 +621,7 @@ use super::*;
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
       teleport_id: current_player.current_teleport_id,
       x: current_player.x,
-      y: current_player.y_feet,
+      y: current_player.y,
       z: current_player.z,
       velocity_x: 0.0,
       velocity_y: 0.0,
@@ -705,7 +705,7 @@ use super::*;
         entity_uuid: player.uuid,
         entity_type: 148, //Player
         x: player.x,
-        y: player.y_feet,
+        y: player.y,
         z: player.z,
         pitch: 0,
         yaw: 0,
@@ -743,7 +743,7 @@ use super::*;
         entity_uuid: current_player.uuid,
         entity_type: 148, //Player
         x: current_player.x,
-        y: current_player.y_feet,
+        y: current_player.y,
         z: current_player.z,
         pitch: 0,
         yaw: 0,
@@ -802,23 +802,19 @@ pub mod play {
 
   pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec()).unwrap();
-    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
-    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
-    if player.waiting_for_confirm_teleportation {
-      return Ok(());
-    }
-    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap()).unwrap();
 
     let old_x = player.x;
-    let old_y_feet = player.y_feet;
+    let old_y = player.y;
     let old_z = player.z;
 
-    player.x = parsed_packet.x;
-    player.y_feet = parsed_packet.feet_y;
-    player.z = parsed_packet.z;
-
-    game.players.push(player.clone());
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z);
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
@@ -826,9 +822,9 @@ pub mod play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
           delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
-          delta_y: ((player.y_feet * 4096.0) - (old_y_feet * 4096.0)) as i16,
+          delta_y: ((player.y * 4096.0) - (old_y * 4096.0)) as i16,
           delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: player.y_feet == -48.0, //TODO: add proper check
+          on_ground: player.y == -48.0, //TODO: add proper check
         }.try_into().unwrap())?;
       }
     }
@@ -838,25 +834,19 @@ pub mod play {
 
   pub fn set_player_position_and_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec()).unwrap();
-    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
-    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
-    if player.waiting_for_confirm_teleportation {
-      return Ok(());
-    }
-    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap()).unwrap();
 
     let old_x = player.x;
-    let old_y_feet = player.y_feet;
+    let old_y = player.y;
     let old_z = player.z;
 
-    player.x = parsed_packet.x;
-    player.y_feet = parsed_packet.feet_y;
-    player.z = parsed_packet.z;
-    player.yaw = parsed_packet.yaw % 360.0;
-    player.pitch = parsed_packet.pitch % 360.0;
-
-    game.players.push(player.clone());
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch);
 
     let pitch: u8 = if parsed_packet.pitch < 0.0 {
    		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
@@ -876,9 +866,9 @@ pub mod play {
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
 	        entity_id: player.entity_id,
 	        delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
-	        delta_y: ((player.y_feet * 4096.0) - (old_y_feet * 4096.0)) as i16,
+	        delta_y: ((player.y * 4096.0) - (old_y * 4096.0)) as i16,
 	        delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
-	        on_ground: player.y_feet == -48.0, //TODO: add proper check
+	        on_ground: player.y == -48.0, //TODO: add proper check
 	        yaw,
 	        pitch,
 	      }.try_into().unwrap())?;
@@ -895,16 +885,15 @@ pub mod play {
 
   pub fn set_player_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec()).unwrap();
-    let uuid = connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap();
 
-    let mut player = game.players.iter().find(|x| x.uuid == uuid).unwrap().clone();
-    if player.waiting_for_confirm_teleportation {
-      return Ok(());
-    }
-    game.players = game.players.iter().filter(|x| x.uuid != uuid).cloned().collect();
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let player = game.players.get_mut(player_index.unwrap()).unwrap();
 
-    player.yaw = parsed_packet.yaw % 360.0;
-    player.pitch = parsed_packet.pitch;
+    player.new_rotation(parsed_packet.yaw % 360.0, parsed_packet.pitch);
 
     let pitch: u8 = if parsed_packet.pitch < 0.0 {
    		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
@@ -918,14 +907,12 @@ pub mod play {
     	((player.yaw / 90.0) * 64.0) as u8
     };
 
-    game.players.push(player.clone());
-
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
-	        on_ground: player.y_feet == -48.0, //TODO: add proper check
+	        on_ground: player.y == -48.0, //TODO: add proper check
 	        yaw,
 	        pitch,
 	      }.try_into().unwrap())?;

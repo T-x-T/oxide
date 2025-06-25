@@ -47,7 +47,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 		.find(|x| x.display_name == arg_string.split(" ").next().unwrap_or_default());
 
 	let target_coordinates: (f64, f64, f64, f32, f32) = if target_player.as_ref().is_some() {
-		(target_player.as_ref().unwrap().x, target_player.as_ref().unwrap().y_feet, target_player.as_ref().unwrap().z, target_player.as_ref().unwrap().yaw, target_player.as_ref().unwrap().pitch)
+		(target_player.as_ref().unwrap().x, target_player.as_ref().unwrap().y, target_player.as_ref().unwrap().z, target_player.as_ref().unwrap().yaw, target_player.as_ref().unwrap().pitch)
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();
@@ -66,10 +66,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     .unwrap();
 
 	let sending_player = game.players.get_mut(sending_player_index).unwrap();
-
-	sending_player.x = target_coordinates.0;
-	sending_player.y_feet = target_coordinates.1;
-	sending_player.z = target_coordinates.2;
+	sending_player.new_position(target_coordinates.0, target_coordinates.1, target_coordinates.2);
 
 	sending_player.current_teleport_id += 1;
 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {

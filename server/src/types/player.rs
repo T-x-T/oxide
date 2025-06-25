@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 #[derive(Debug, Clone)]
 pub struct Player {
   pub x: f64,
-  pub y_feet: f64,
+  pub y: f64,
   pub z: f64,
   pub yaw: f32,
   pub pitch: f32,
@@ -22,7 +22,7 @@ impl Player {
   pub fn new(position: Position, display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game) -> Self {
     let player = Self {
       x: position.x as f64,
-      y_feet: position.y as f64,
+      y: position.y as f64,
       z: position.z as f64,
       yaw: 0.0,
       pitch: 0.0,
@@ -72,5 +72,32 @@ impl Player {
       cardinal_direction = CardinalDirection::West;
     }
     return cardinal_direction;
+  }
+
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64) {
+  	let old_x = self.x;
+   	let old_z = self.z;
+
+  	self.x = x;
+   	self.y = y;
+    self.z = z;
+
+    let old_chunk_position = Position {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
+    let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
+
+    if old_chunk_position != new_chunk_position {
+
+    }
+  }
+
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32) {
+    self.yaw = yaw;
+    self.pitch = pitch;
+ 		self.new_position(x, y, z);
+  }
+
+  pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
+    self.yaw = yaw;
+    self.pitch = pitch;
   }
 }
