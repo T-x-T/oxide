@@ -1,8 +1,9 @@
 use super::*;
 use std::net::SocketAddr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Player {
+	//TODO: consider making position fields private, so we don't accidentally forget to call right methods for updating them
   pub x: f64,
   pub y: f64,
   pub z: f64,

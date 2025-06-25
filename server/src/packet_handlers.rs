@@ -591,10 +591,10 @@ use super::*;
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
     let connection_player = connections.get(&stream.peer_addr().unwrap()).unwrap();
-    let current_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game);
+    let new_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game);
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Login::PACKET_ID, lib::packets::clientbound::play::Login {
-      entity_id: current_player.entity_id,
+      entity_id: new_player.entity_id,
       is_hardcore: false,
       dimension_names: vec!["minecraft:overworld".to_string()],
       max_players: 9,
@@ -619,15 +619,15 @@ use super::*;
     }.try_into().unwrap())?;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
-      teleport_id: current_player.current_teleport_id,
-      x: current_player.x,
-      y: current_player.y,
-      z: current_player.z,
+      teleport_id: new_player.current_teleport_id,
+      x: new_player.x,
+      y: new_player.y,
+      z: new_player.z,
       velocity_x: 0.0,
       velocity_y: 0.0,
       velocity_z: 0.0,
-      yaw: current_player.yaw,
-      pitch: current_player.pitch,
+      yaw: new_player.yaw,
+      pitch: new_player.pitch,
       flags: 0,
     }.try_into().unwrap())?;
 
@@ -690,13 +690,39 @@ use super::*;
       }
     }
 
-    game.players.push(current_player.clone());
+    let new_player_uuid = new_player.uuid;
+    let new_player_entity_id = new_player.entity_id;
+    let new_player_x = new_player.x;
+    let new_player_y = new_player.y;
+    let new_player_z = new_player.z;
+    game.players.push(new_player);
 
-    update_players(connection_streams, connections, game.players.clone(), None);
+    connection_streams.iter()
+       .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+       .for_each(|x| {
+       	//TODO: proper logic for updating players instead of removing and readding all
+         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
+           uuids: game.players.iter().map(|x| x.uuid).collect(),
+         }.try_into().unwrap());
+
+         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID, lib::packets::clientbound::play::PlayerInfoUpdate {
+           actions: 255,
+           players: game.players.iter().map(|y| (y.uuid, vec![
+             lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
+             lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+             lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+             lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+             lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+             lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+             lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+             lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+           ])).collect(),
+         }.try_into().unwrap());
+       });
 
     //Spawn other already connected player entities for newly joined player
     for player in &game.players {
-      if player.uuid == current_player.uuid {
+      if player.uuid == new_player_uuid {
         continue;
       }
 
@@ -739,12 +765,12 @@ use super::*;
       let player_stream = connection_streams.get(&player.peer_socket_address).unwrap();
 
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
-        entity_id: current_player.entity_id,
-        entity_uuid: current_player.uuid,
+        entity_id: new_player_entity_id,
+        entity_uuid: new_player_uuid,
         entity_type: 148, //Player
-        x: current_player.x,
-        y: current_player.y,
-        z: current_player.z,
+        x: new_player_x,
+        y: new_player_y,
+        z: new_player_z,
         pitch: 0,
         yaw: 0,
         head_yaw: 0,
@@ -755,7 +781,7 @@ use super::*;
       }.try_into().unwrap())?;
 
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
-        entity_id: current_player.entity_id,
+        entity_id: new_player_entity_id,
         metadata: vec![
           lib::packets::clientbound::play::EntityMetadata {
             index: 9,
@@ -928,21 +954,15 @@ pub mod play {
   }
 
   pub fn confirm_teleportation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
-    let player = game.players.iter().find(|x| x.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default());
-    if player.is_none() {
-      println!("got confirm_teleportation packet from invalid player");
-      return Ok(());
-    }
+	  let player_index = game.players.iter().enumerate().find_map(|x| {
+	    if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+	      Some(x.0)}
+	      else {None}
+	    });
+	  let player = game.players.get_mut(player_index.unwrap()).unwrap();
     let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.to_vec()).unwrap();
-    if player.unwrap().current_teleport_id == parsed_packet.teleport_id {
-      game.players = game.players.clone().into_iter().map(|mut x| {
-        if player.is_some() && player.unwrap().peer_socket_address == stream.peer_addr().unwrap() {
-          x.waiting_for_confirm_teleportation = false;
-          return x;
-        } else {
-          return x;
-        }
-      }).collect();
+    if player.current_teleport_id == parsed_packet.teleport_id {
+   		player.waiting_for_confirm_teleportation = false;
     }
 
     return Ok(());
@@ -1123,40 +1143,4 @@ pub mod play {
 
   	return Ok(());
   }
-}
-
-
-
-pub fn update_players(connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>, all_players: Vec<Player>, removed_player: Option<&Player>) {
-  connection_streams.iter()
-    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
-    .for_each(|x| {
-      let mut uuids_to_remove: Vec<u128> = all_players.iter().map(|x| x.uuid).collect();
-      if let Some(removed_player) = removed_player {
-        uuids_to_remove.push(removed_player.uuid);
-      }
-      let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
-        uuids: uuids_to_remove,
-      }.try_into().unwrap());
-
-      let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID, lib::packets::clientbound::play::PlayerInfoUpdate {
-        actions: 255,
-        players: all_players.iter().map(|y| (y.uuid, vec![
-          lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
-          lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-          lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
-          lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
-          lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
-          lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
-          lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
-          lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
-        ])).collect(),
-      }.try_into().unwrap());
-
-      if let Some(removed_player) = removed_player {
-        let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
-          entity_ids: vec![removed_player.entity_id]
-        }.try_into().unwrap());
-      }
-    });
 }

@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::net::{TcpListener, SocketAddr, TcpStream};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
+use lib::packets::Packet;
+use lib::ConnectionState;
 use types::*;
 
 mod packet_handlers;
@@ -87,9 +89,24 @@ fn initialize_server() {
 }
 
 fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, players: &mut Vec<Player>) {
-  let players_clone = players.clone();
-  let player_to_remove = players_clone.iter().find(|x| x.peer_socket_address == *peer_addr);
-  packet_handlers::update_players(connection_streams, connections, players.clone(), player_to_remove);
+	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
+	if player_to_remove.is_none() {
+		return;
+	}
+	if let Some(player_to_remove) = player_to_remove {
+		connection_streams.iter()
+	    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+	    .for_each(|x| {
+		    let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
+		      uuids: vec![player_to_remove.uuid],
+		    }.try_into().unwrap());
+
+				let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
+          entity_ids: vec![player_to_remove.entity_id]
+        }.try_into().unwrap());
+	    });
+	}
+
   connections.remove(peer_addr);
   connection_streams.remove(peer_addr);
   players.retain(|x| x.peer_socket_address != *peer_addr);
