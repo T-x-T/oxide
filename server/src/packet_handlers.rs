@@ -591,7 +591,7 @@ use super::*;
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
     let connection_player = connections.get(&stream.peer_addr().unwrap()).unwrap();
-    let new_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game);
+    let new_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game, stream.try_clone().unwrap());
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Login::PACKET_ID, lib::packets::clientbound::play::Login {
       entity_id: new_player.entity_id,
@@ -840,7 +840,7 @@ pub mod play {
     let old_y = player.y;
     let old_z = player.z;
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z);
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world);
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
@@ -872,7 +872,7 @@ pub mod play {
     let old_y = player.y;
     let old_z = player.z;
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch);
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world);
 
     let pitch: u8 = if parsed_packet.pitch < 0.0 {
    		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8

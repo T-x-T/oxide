@@ -1615,6 +1615,46 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 }
 
 //
+// MARK: 0x57 set center chunk
+//
+
+#[derive(Debug, Clone)]
+pub struct SetCenterChunk {
+	pub chunk_x: i32,
+	pub chunk_z: i32,
+}
+
+impl Packet for SetCenterChunk {
+	const PACKET_ID: u8 = 0x57;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetCenterChunk> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetCenterChunk) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.chunk_x));
+		output.append(&mut crate::serialize::varint(value.chunk_z));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetCenterChunk {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			chunk_x: crate::deserialize::varint(&mut value)?,
+			chunk_z: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x5c Set Entity Metadata
 //
 

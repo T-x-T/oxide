@@ -1,12 +1,13 @@
 pub mod loader;
 
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap, error::Error, fmt::Debug};
 
-use crate::{types::position::Position, SPAWN_CHUNK_RADIUS};
+use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct World {
-  pub dimensions: HashMap<String, Dimension>
+  pub dimensions: HashMap<String, Dimension>,
+  pub loader: Box<dyn WorldLoader>,
 }
 
 #[derive(Debug, Clone)]
@@ -32,19 +33,19 @@ pub struct ChunkSection {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new(loader: impl loader::WorldLoader) -> Self {
+  pub fn new(loader: impl WorldLoader + 'static) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
-   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(loader));
+   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader));
     	println!("finished loading existing world in {:.2?}", now.elapsed());
    	} else {
 	    println!("create new world");
 	    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
 	    println!("creation of new world finished");
     }
-    return Self { dimensions };
+    return Self { dimensions, loader: Box::new(loader) };
   }
 }
 
@@ -64,7 +65,7 @@ impl Dimension {
     };
   }
 
-  pub fn new_from_loader(loader: impl loader::WorldLoader) -> Self {
+  pub fn new_from_loader(loader: &impl loader::WorldLoader) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
 
    	for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
@@ -130,13 +131,13 @@ impl Chunk {
     let filled_chunk_sections = vec![ChunkSection {
       blocks: vec![1; 4096],
       biomes: vec![40; 64],
-      sky_lights: vec![],
+      sky_lights: vec![0xFF;2048],
       block_lights: vec![],
     }; 1];
     let empty_chunk_sections = vec![ChunkSection {
       blocks: vec![0; 4096],
       biomes: vec![40; 64],
-      sky_lights: vec![],
+      sky_lights: vec![0xFF;2048],
       block_lights: vec![],
     }; 23];
     let mut all_chunk_sections = filled_chunk_sections.clone();

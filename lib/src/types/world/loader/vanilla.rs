@@ -10,6 +10,8 @@ pub struct Loader {
 	pub block_states: HashMap<String, Block>,
 }
 
+impl super::InnerWorldLoader for Loader{}
+
 impl super::WorldLoader for Loader {
   fn load_chunk(&self, x: i32, z: i32) -> Chunk {
    	let region = chunk_to_region(x, z);
