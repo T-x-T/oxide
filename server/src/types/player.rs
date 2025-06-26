@@ -117,67 +117,10 @@ impl Player {
 
 
 
-      let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
+
 
       for chunk_coords in chunk_coords_to_send {
-      	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_coords.0, y: 0, z: chunk_coords.1 });
-
-	      let all_chunk_sections = if let Some(chunk) = chunk {
-					&chunk.sections
-				} else {
-					let new_chunk = (*world.loader).load_chunk(chunk_coords.0, chunk_coords.1);
-					dimension.chunks.push(new_chunk);
-					&dimension.get_chunk_from_chunk_position(Position { x: chunk_coords.0, y: 0, z: chunk_coords.1 }).unwrap().sections
-				};
-
-	      let all_processed_chunk_sections = all_chunk_sections.iter().map(|section| {
-	        lib::packets::clientbound::play::ChunkSection {
-	          block_count: section.get_non_air_block_count(),
-	          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
-	            bits_per_entry: 15,
-	            data_array: if section.blocks.is_empty() { vec![0;4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
-	          }),
-	          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
-	            bits_per_entry: 7,
-	            data_array: section.biomes.iter().map(|x| *x as i32).collect(),
-	          }),
-	        }
-	      }).collect();
-
-	      let mut sky_light_mask = 0u64;
-	      let mut block_light_mask = 0u64;
-	      let mut sky_light_arrays: Vec<Vec<u8>> = Vec::new();
-	      let mut block_light_arrays: Vec<Vec<u8>> = Vec::new();
-	      for section in all_chunk_sections.iter().rev() {
-	      	if section.sky_lights.is_empty() {
-	     			sky_light_mask += 0;
-	       	} else {
-	      		sky_light_mask += 1;
-	       		sky_light_arrays.push(section.sky_lights.clone());
-	        }
-	      	sky_light_mask <<= 1;
-	      	if section.block_lights.is_empty() {
-	     			block_light_mask += 0;
-	       	} else {
-	      		block_light_mask += 1;
-	       		block_light_arrays.push(section.block_lights.clone());
-	        }
-	      	block_light_mask <<= 1;
-	      }
-
-	      lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
-	        chunk_x: chunk_coords.0,
-	        chunk_z: chunk_coords.1,
-	        heightmaps: vec![],
-	        data: all_processed_chunk_sections,
-	        block_entities: vec![],
-	        sky_light_mask: vec![sky_light_mask],
-	        block_light_mask: vec![block_light_mask],
-	        empty_sky_light_mask: vec![!sky_light_mask],
-	        empty_block_light_mask: vec![!block_light_mask],
-	        sky_light_arrays,
-	        block_light_arrays,
-	      }.try_into().unwrap()).unwrap();
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1);
       }
     }
   }
@@ -191,5 +134,66 @@ impl Player {
   pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
     self.yaw = yaw;
     self.pitch = pitch;
+  }
+
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) {
+  	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
+	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
+	  let all_chunk_sections = if let Some(chunk) = chunk {
+			&chunk.sections
+		} else {
+			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z);
+			dimension.chunks.push(new_chunk);
+			&dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap().sections
+		};
+
+	  let all_processed_chunk_sections = all_chunk_sections.iter().map(|section| {
+	    lib::packets::clientbound::play::ChunkSection {
+	      block_count: section.get_non_air_block_count(),
+	      block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+	        bits_per_entry: 15,
+	        data_array: if section.blocks.is_empty() { vec![0;4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
+	      }),
+	      biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+	        bits_per_entry: 7,
+	        data_array: section.biomes.iter().map(|x| *x as i32).collect(),
+	      }),
+	    }
+	  }).collect();
+
+	  let mut sky_light_mask = 0u64;
+	  let mut block_light_mask = 0u64;
+	  let mut sky_light_arrays: Vec<Vec<u8>> = Vec::new();
+	  let mut block_light_arrays: Vec<Vec<u8>> = Vec::new();
+	  for section in all_chunk_sections.iter().rev() {
+	   	if section.sky_lights.is_empty() {
+	 			sky_light_mask += 0;
+	   	} else {
+	  		sky_light_mask += 1;
+	    		sky_light_arrays.push(section.sky_lights.clone());
+	    }
+	   	sky_light_mask <<= 1;
+	   	if section.block_lights.is_empty() {
+	 			block_light_mask += 0;
+	   	} else {
+	  		block_light_mask += 1;
+	    		block_light_arrays.push(section.block_lights.clone());
+	    }
+	   	block_light_mask <<= 1;
+	  }
+
+	  lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
+	    chunk_x,
+	    chunk_z,
+	    heightmaps: vec![],
+	    data: all_processed_chunk_sections,
+	    block_entities: vec![],
+	    sky_light_mask: vec![sky_light_mask],
+	    block_light_mask: vec![block_light_mask],
+	    empty_sky_light_mask: vec![!sky_light_mask],
+	    empty_block_light_mask: vec![!block_light_mask],
+	    sky_light_arrays,
+	    block_light_arrays,
+	  }.try_into().unwrap()).unwrap();
   }
 }
