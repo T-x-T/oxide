@@ -644,11 +644,11 @@ use super::*;
             block_count: section.get_non_air_block_count(),
             block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
               bits_per_entry: 15,
-              data_array: section.blocks.clone(),
+              data_array: if section.blocks.is_empty() { vec![0;4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
             }),
             biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
               bits_per_entry: 7,
-              data_array: section.biomes.clone(),
+              data_array: section.biomes.iter().map(|x| *x as i32).collect(),
             }),
           }
         }).collect();
@@ -1062,7 +1062,7 @@ pub mod play {
       for block_to_place in &blocks_to_place {
         send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
           location: block_to_place.1,
-          block_id: block_to_place.0,
+          block_id: block_to_place.0 as i32,
         }.try_into().unwrap())?;
       }
     }

@@ -83,7 +83,7 @@ impl super::WorldLoader for Loader {
 
 	    let biome_palette = x.get_child("biomes").unwrap().get_child("palette").unwrap().as_list();
 
-			let mut biomes: Vec<i32> = Vec::new();
+			let mut biomes: Vec<u8> = Vec::new();
 			if biome_palette.len() == 1 {
 				biomes = vec![*data::biomes::get_biome_ids().get(biome_palette[0].as_string()).unwrap(); 64];
 			} else {
@@ -112,9 +112,14 @@ impl super::WorldLoader for Loader {
 
 	    let block_palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
 
-			let mut blocks: Vec<i32> = Vec::new();
+			let mut blocks: Vec<u16> = Vec::new();
     	if block_palette.len() == 1 {
-    		blocks = vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096];
+     		let block_name = block_palette[0].get_child("Name").unwrap().as_string();
+       	if block_name == "minecraft:air" {
+       		blocks = vec![];
+        } else {
+      		blocks = vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096];
+        }
       } else {
 	      let blocks_bits_per_entry = match block_palette.len() {
 				  0..=16 => 4,
@@ -141,9 +146,6 @@ impl super::WorldLoader for Loader {
 				  }
 				}
       }
-
-      assert_eq!(biomes.len(), 64);
-			assert_eq!(blocks.len(), 4096);
 
 	   	sections.push(ChunkSection { blocks, biomes, sky_lights, block_lights });
     }

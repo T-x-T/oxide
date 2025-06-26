@@ -24,8 +24,8 @@ pub struct Chunk {
 
 #[derive(Debug, Clone)]
 pub struct ChunkSection {
-  pub blocks: Vec<i32>,
-  pub biomes: Vec<i32>,
+  pub blocks: Vec<u16>,
+  pub biomes: Vec<u8>,
   pub sky_lights: Vec<u8>,
   pub block_lights: Vec<u8>,
 }
@@ -99,7 +99,7 @@ impl Dimension {
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn overwrite_block(&mut self, position: Position, block_state_id: i32) -> Result<(), Box<dyn Error>> {
+  pub fn overwrite_block(&mut self, position: Position, block_state_id: u16) -> Result<(), Box<dyn Error>> {
     let chunk = self.get_chunk_from_position_mut(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -113,7 +113,7 @@ impl Dimension {
     return Ok(());
   }
 
-  pub fn get_block(&self, position: Position) -> Result<i32, Box<dyn Error>> {
+  pub fn get_block(&self, position: Position) -> Result<u16, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -150,13 +150,13 @@ impl Chunk {
     };
   }
 
-  pub fn set_block(&mut self, position_in_chunk: Position, block_state_id: i32) {
+  pub fn set_block(&mut self, position_in_chunk: Position, block_state_id: u16) {
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
   }
 
-  pub fn get_block(&self, position_in_chunk: Position) -> i32 {
+  pub fn get_block(&self, position_in_chunk: Position) -> u16 {
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     return self.sections[section_id as usize].blocks[block_id as usize];

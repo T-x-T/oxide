@@ -135,11 +135,11 @@ impl Player {
 	          block_count: section.get_non_air_block_count(),
 	          block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
 	            bits_per_entry: 15,
-	            data_array: section.blocks.clone(),
+	            data_array: if section.blocks.is_empty() { vec![0;4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
 	          }),
 	          biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
 	            bits_per_entry: 7,
-	            data_array: section.biomes.clone(),
+	            data_array: section.biomes.iter().map(|x| *x as i32).collect(),
 	          }),
 	        }
 	      }).collect();

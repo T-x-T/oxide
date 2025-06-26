@@ -2,9 +2,9 @@ use data::blocks::{self, *};
 
 use crate::{CardinalDirection, Dimension, Position};
 
-pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, _cursor_position_x: f32, cursor_position_y: f32, _cursor_position_z: f32) -> Vec<(i32, Position)> {
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, _cursor_position_x: f32, cursor_position_y: f32, _cursor_position_z: f32) -> Vec<(u16, Position)> {
   let block = data::blocks::get_block_from_name(used_item_name.clone());
-  let mut output: Vec<(i32, Position)> = Vec::new();
+  let mut output: Vec<(u16, Position)> = Vec::new();
 
   match block.block_type {
     Type::RotatedPillar => {
@@ -51,10 +51,10 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let block_id_at_position_to_check = dimension.get_block(position_to_check).unwrap_or(0);
       let block_id_at_position = dimension.get_block(position).unwrap_or(0);
 
-      let block_ids_of_half_slabs: Vec<i32> = block.states.iter().filter(|x| !x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
-      let block_ids_of_top_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Top))).map(|x| x.id).collect();
-      let block_ids_of_bottom_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom))).map(|x| x.id).collect();
-      let block_ids_of_double_slabs: Vec<i32> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
+      let block_ids_of_half_slabs: Vec<u16> = block.states.iter().filter(|x| !x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
+      let block_ids_of_top_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Top))).map(|x| x.id).collect();
+      let block_ids_of_bottom_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom))).map(|x| x.id).collect();
+      let block_ids_of_double_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
 
       let placed_underneath_bottom_slab = block_ids_of_bottom_slabs.contains(&block_id_at_position_to_check) && face == 0;
       let double_up_placed_underneath_bottom_slab = placed_underneath_bottom_slab && block_ids_of_bottom_slabs.contains(&block_id_at_position);
@@ -87,7 +87,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
     Type::IronBars => {
       //TODO: update existing surrounding blocks
       let all_blocks = blocks::get_blocks();
-      let block_ids_to_check: Vec<i32> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+      let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
       let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { IronBarsNorth::True } else { IronBarsNorth::False };
       let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { IronBarsSouth::True } else { IronBarsSouth::False };
@@ -100,7 +100,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
     Type::StainedGlassPane => {
       //TODO: update existing surrounding blocks
       let all_blocks = blocks::get_blocks();
-      let block_ids_to_check: Vec<i32> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+      let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
       let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { StainedGlassPaneNorth::True } else { StainedGlassPaneNorth::False };
       let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { StainedGlassPaneSouth::True } else { StainedGlassPaneSouth::False };
