@@ -40,7 +40,7 @@ fn do_blocks() {
   let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
   println!("pub fn get_blocks() -> HashMap<String, Block> {{");
-  println!("let mut output: HashMap<String, Block> = HashMap::new();");
+  println!("\tlet mut output: HashMap<String, Block> = HashMap::new();");
 
   for x in blocks_json.as_object().unwrap().iter() {
     let block = x.1.as_object().unwrap();
@@ -52,17 +52,17 @@ fn do_blocks() {
       String::new()
     };
 
-    println!("fn add_{}(map: &mut HashMap<String, Block>) {{", convert_to_upper_camel_case(key).to_lowercase());
-    println!("let mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};");
+    println!("\t\tfn add_{}(map: &mut HashMap<String, Block>) {{", convert_to_upper_camel_case(key).to_lowercase());
+    println!("\t\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};");
     for x in block["states"].as_array().unwrap().iter() {
-      println!("block.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } )
+      println!("\t\tblock.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } )
     }
-    println!("map.insert(\"{key}\".to_string(), block);");
-    println!("}}");
-    println!("add_{}(&mut output);", convert_to_upper_camel_case(key).to_lowercase());
+    println!("\t\tmap.insert(\"{key}\".to_string(), block);");
+    println!("\t}}");
+    println!("\tadd_{}(&mut output);", convert_to_upper_camel_case(key).to_lowercase());
 
   }
-  println!("return output;");
+  println!("\treturn output;");
   println!("}}");
 }
 

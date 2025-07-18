@@ -681,7 +681,7 @@ use super::*;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
-        entity_type: 148, //Player
+        entity_type: 149, //Player
         x: player.x,
         y: player.y,
         z: player.z,
@@ -719,7 +719,7 @@ use super::*;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: new_player_entity_id,
         entity_uuid: new_player_uuid,
-        entity_type: 148, //Player
+        entity_type: 149, //Player
         x: new_player_x,
         y: new_player_y,
         z: new_player_z,

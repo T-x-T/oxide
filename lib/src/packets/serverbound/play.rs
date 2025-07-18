@@ -39,7 +39,7 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 }
 
 //
-// MARK: 0x05 chat command
+// MARK: 0x06 chat command
 //
 
 #[derive(Debug, Clone)]
@@ -48,7 +48,7 @@ pub struct ChatCommand {
 }
 
 impl Packet for ChatCommand {
-	const PACKET_ID: u8 = 0x05;
+	const PACKET_ID: u8 = 0x06;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -76,7 +76,7 @@ impl TryFrom<Vec<u8>> for ChatCommand {
 }
 
 //
-// MARK: 0x07 chat message
+// MARK: 0x08 chat message
 //
 
 #[derive(Debug, Clone)]
@@ -91,7 +91,7 @@ pub struct ChatMessage {
 }
 
 impl Packet for ChatMessage {
-	const PACKET_ID: u8 = 0x07;
+	const PACKET_ID: u8 = 0x08;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -151,7 +151,7 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 }
 
 //
-// MARK: 0x1c set player position
+// MARK: 0x1d set player position
 //
 
 #[derive(Debug, Clone)]
@@ -163,7 +163,7 @@ pub struct SetPlayerPosition {
 }
 
 impl Packet for SetPlayerPosition {
-	const PACKET_ID: u8 = 0x1c;
+	const PACKET_ID: u8 = 0x1d;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -197,7 +197,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPosition {
 }
 
 //
-// MARK: 0x1d set player position and rotation
+// MARK: 0x1e set player position and rotation
 //
 
 #[derive(Debug, Clone)]
@@ -211,7 +211,7 @@ pub struct SetPlayerPositionAndRotation {
 }
 
 impl Packet for SetPlayerPositionAndRotation {
-	const PACKET_ID: u8 = 0x1d;
+	const PACKET_ID: u8 = 0x1e;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -249,7 +249,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPositionAndRotation {
 }
 
 //
-// MARK: 0x1e set player rotation
+// MARK: 0x1f set player rotation
 //
 
 #[derive(Debug, Clone)]
@@ -260,7 +260,7 @@ pub struct SetPlayerRotation {
 }
 
 impl Packet for SetPlayerRotation {
-	const PACKET_ID: u8 = 0x1e;
+	const PACKET_ID: u8 = 0x1f;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -292,7 +292,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 }
 
 //
-// MARK: 0x27 player action
+// MARK: 0x28 player action
 //
 
 #[derive(Debug, Clone)]
@@ -304,7 +304,7 @@ pub struct PlayerAction {
 }
 
 impl Packet for PlayerAction {
-	const PACKET_ID: u8 = 0x27;
+	const PACKET_ID: u8 = 0x28;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -338,7 +338,7 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
-// MARK: 0x33 set hand item
+// MARK: 0x34 set hand item
 //
 
 #[derive(Debug, Clone)]
@@ -347,7 +347,7 @@ pub struct SetHandItem {
 }
 
 impl Packet for SetHandItem {
-	const PACKET_ID: u8 = 0x33;
+	const PACKET_ID: u8 = 0x34;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -375,7 +375,7 @@ impl TryFrom<Vec<u8>> for SetHandItem {
 }
 
 //
-// MARK: 0x36 set creative mode slot
+// MARK: 0x37 set creative mode slot
 //
 
 #[derive(Debug, Clone)]
@@ -385,7 +385,7 @@ pub struct SetCreativeModeSlot {
 }
 
 impl Packet for SetCreativeModeSlot {
-	const PACKET_ID: u8 = 0x36;
+	const PACKET_ID: u8 = 0x37;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -415,7 +415,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 }
 
 //
-// MARK: 0x3e use item on
+// MARK: 0x3f use item on
 //
 
 #[derive(Debug, Clone)]
@@ -432,7 +432,7 @@ pub struct UseItemOn {
 }
 
 impl Packet for UseItemOn {
-	const PACKET_ID: u8 = 0x3e;
+	const PACKET_ID: u8 = 0x3f;
   fn get_target() -> PacketTarget { PacketTarget::Server }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
