@@ -3,6 +3,7 @@ mod hi;
 mod tp;
 mod tell;
 mod panic;
+mod print_players;
 
 use crate::types::*;
 use std::net::TcpStream;
@@ -15,6 +16,7 @@ pub fn init(game: &mut Game) {
 	tp::init(game);
 	tell::init(game);
 	panic::init(game);
+	print_players::init(game);
 }
 
 
