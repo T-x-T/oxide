@@ -10,7 +10,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	if stream.is_some() {
 		lib::utils::send_packet(stream.unwrap(), lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::TagCompound(None, vec![
@@ -23,7 +23,9 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, _c
 		return Ok(());
 	}
 
-	println!("{:?}", game.players);
+	println!("game.players:\n{:?}", game.players);
+	println!("connection_streams:\n{connection_streams:?}");
+	println!("connections:\n{connections:?}");
 
 	return Ok(());
 }

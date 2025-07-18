@@ -6,29 +6,33 @@ use lib::packets::Packet;
 use lib::ConnectionState;
 use crate::types::*;
 
-pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
+pub enum Action {
+	DisconnectPlayer,
+}
+
+pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
 	connections.entry(stream.peer_addr().unwrap()).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
  	connection_streams.entry(stream.peer_addr().unwrap()).or_insert_with(|| stream.try_clone().unwrap());
 
 	return match connections.get(&stream.peer_addr().unwrap()).unwrap().state {
     ConnectionState::Handshaking => match packet.id {
 			lib::packets::serverbound::handshaking::Handshake::PACKET_ID => handshaking::handshake(&mut packet.data, stream, connections),
-			_ => {Ok(())},
+			_ => {Ok(None)},
 		},
     ConnectionState::Status => match packet.id {
 			0x00 => status::status_request(stream, game),
 			0x01 => status::ping_request(&mut packet.data, stream),
-			_ => {Ok(())},
+			_ => {Ok(None)},
 		},
     ConnectionState::Login => match packet.id {
 			lib::packets::serverbound::login::LoginStart::PACKET_ID => login::login_start(&mut packet.data, stream, connections),
 			lib::packets::serverbound::login::LoginAcknowledged::PACKET_ID => login::login_acknowledged(stream, connections),
-			_ => {Ok(())},
+			_ => {Ok(None)},
 		},
     ConnectionState::Configuration => match packet.id {
       lib::packets::serverbound::configuration::ServerboundKnownPackets::PACKET_ID => configuration::serverbound_known_packets(stream),
       lib::packets::serverbound::configuration::AcknowledgeFinishConfiguration::PACKET_ID => configuration::acknowledge_finish_configuration(stream, connections, game, connection_streams),
-      _ => {Ok(())},
+      _ => {Ok(None)},
     },
     ConnectionState::Play => match packet.id {
       lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, game, stream, connections),
@@ -41,7 +45,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
-			_ => {Ok(())},
+      _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
   }
@@ -50,42 +54,42 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
 pub mod handshaking {
   use super::*;
 
-  pub fn handshake(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn handshake(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.to_vec()).unwrap();
 
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = parsed_packet.next_state.into());
 
-    return Ok(());
+    return Ok(None);
   }
 }
 
 pub mod status {
   use super::*;
 
-  pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> Result<(), Box<dyn Error>> {
+  pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::status::StatusResponse::PACKET_ID, lib::packets::clientbound::status::StatusResponse {
       status: format!("{{\"version\": {{\"name\": \"Oxide {}\",\"protocol\": {}}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": false}}", lib::packets::get_version_string(), lib::packets::get_protocol_version(), game.players.len()).to_string(),
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
   //TODO: implement actual packet struct
-  pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+  pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
     let mut output: Vec<u8> = Vec::new();
     output.push(9);
     output.push(1);
     output.append(data);
     stream.write_all(output.as_slice()).unwrap();
 
-    return Err(Box::new(lib::CustomError::NotActuallyAnErrorButPleaseDisconnectMe));
+    return Ok(Some(Action::DisconnectPlayer));
   }
 }
 
 pub mod login {
   use super::*;
 
-  pub fn login_start(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn login_start(data: &mut [u8], stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.to_vec()).unwrap();
 
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| {
@@ -98,17 +102,17 @@ pub mod login {
       username: parsed_packet.name,
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn login_acknowledged(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn login_acknowledged(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Configuration);
 
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::ClientboundKnownPacks::PACKET_ID, lib::packets::clientbound::configuration::ClientboundKnownPacks {
       known_packs: vec![lib::Datapack { namespace: "minecraft".to_string(), id: "core".to_string(), version: lib::packets::get_version_string() }],
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
 }
@@ -119,7 +123,7 @@ use super::*;
   use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}};
   use lib::types::position::Position;
 
-  pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<(), Box<dyn Error>> {
+  pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::RegistryData::PACKET_ID, lib::packets::clientbound::configuration::RegistryData {
       registry_id: "minecraft:worldgen/biome".to_string(),
       entries: vec![
@@ -584,10 +588,10 @@ use super::*;
 
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn acknowledge_finish_configuration(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+  pub fn acknowledge_finish_configuration(stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
     let connection_player = connections.get(&stream.peer_addr().unwrap()).unwrap();
@@ -770,7 +774,7 @@ use super::*;
       }
     });
 
-    return Ok(());
+    return Ok(None);
   }
 }
 
@@ -778,7 +782,7 @@ pub mod play {
   use lib::{nbt::NbtTag, packets::Packet, utils::send_packet};
   use super::*;
 
-  pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+  pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec()).unwrap();
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
@@ -807,10 +811,10 @@ pub mod play {
       }
     }
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn set_player_position_and_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+  pub fn set_player_position_and_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec()).unwrap();
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
@@ -858,10 +862,10 @@ pub mod play {
       }
     }
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn set_player_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+  pub fn set_player_rotation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec()).unwrap();
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
@@ -902,10 +906,10 @@ pub mod play {
       }
     }
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn confirm_teleportation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn confirm_teleportation(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
 	  let player_index = game.players.iter().enumerate().find_map(|x| {
 	    if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
 	      Some(x.0)}
@@ -917,10 +921,10 @@ pub mod play {
    		player.waiting_for_confirm_teleportation = false;
     }
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.to_vec()).unwrap();
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
@@ -930,14 +934,14 @@ pub mod play {
     let player = game.players.get_mut(player_index.unwrap());
     if player.is_none() {
       println!("got set_creative_mode_slot packet from invalid player");
-      return Ok(());
+      return Ok(None);
     }
 
     player.unwrap().inventory[parsed_packet.slot as usize] = parsed_packet.item;
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetHandItem::try_from(data.to_vec()).unwrap();
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
@@ -947,15 +951,15 @@ pub mod play {
     let player = game.players.get_mut(player_index.unwrap());
     if player.is_none() {
       println!("got set_creative_mode_slot packet from invalid player");
-      return Ok(());
+      return Ok(None);
     }
 
     player.unwrap().selected_slot = parsed_packet.slot as u8;
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
+  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec()).unwrap();
 
     game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0).unwrap();
@@ -971,10 +975,10 @@ pub mod play {
       sequence_id: parsed_packet.sequence,
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.to_vec()).unwrap();
 
     let mut new_block_location = parsed_packet.location;
@@ -995,7 +999,7 @@ pub mod play {
     let player = game.players.get(player_index.unwrap());
     if player.is_none() {
       println!("got use_item_on packet from invalid player");
-      return Ok(());
+      return Ok(None);
     }
 
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
@@ -1006,7 +1010,7 @@ pub mod play {
       let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0);
       if res.is_err() {
         println!("couldn't place block because {}", res.err().unwrap());
-        return Ok(());
+        return Ok(None);
       };
     }
 
@@ -1023,10 +1027,10 @@ pub mod play {
       sequence_id: parsed_packet.sequence,
     }.try_into().unwrap())?;
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn chat_message(data: &mut[u8], connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn chat_message(data: &mut[u8], connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::ChatMessage::try_from(data.to_vec()).unwrap();
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
@@ -1036,7 +1040,7 @@ pub mod play {
       });
     let Some(player) = game.players.get(player_index.unwrap()) else {
       println!("got chat_message packet from invalid player");
-      return Ok(());
+      return Ok(None);
     };
 
     println!("<{}>: {}", player.display_name, parsed_packet.message);
@@ -1071,10 +1075,10 @@ pub mod play {
 	   	send_packet(connection.1, lib::packets::clientbound::play::PlayerChatMessage::PACKET_ID, packet_to_send.clone().try_into().unwrap())?;
     }
 
-    return Ok(());
+    return Ok(None);
   }
 
-  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec()).unwrap();
 
    println!("<{}> invoked: {}", game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().display_name, parsed_packet.command);
@@ -1088,11 +1092,11 @@ pub mod play {
 			  overlay: false,
     	}.try_into()?)?;
 
-    	return Ok(());
+    	return Ok(None);
     };
 
     (command.execute)(parsed_packet.command, Some(stream), game, connection_streams, connections)?;
 
-  	return Ok(());
+  	return Ok(None);
   }
 }

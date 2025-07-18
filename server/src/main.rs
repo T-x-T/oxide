@@ -79,7 +79,14 @@ fn initialize_server() {
           break;
         }
 
-        if packet_handlers::handle_packet(packet, &mut stream, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap()).is_err() {
+        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap());
+        if packet_handler_result.is_err() {
+       		println!("got error, so lets disconnect: {}", packet_handler_result.err().unwrap());
+          disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
+          break;
+        }
+        if packet_handler_result.is_ok_and(|x| x.is_some()) {
+       		println!("handler told us to disconnect");
           disconnect_player(&peer_addr, &mut connections_clone.lock().unwrap(), &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap().players);
           break;
         }
@@ -90,9 +97,6 @@ fn initialize_server() {
 
 fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, players: &mut Vec<Player>) {
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
-	if player_to_remove.is_none() {
-		return;
-	}
 	if let Some(player_to_remove) = player_to_remove {
 		connection_streams.iter()
 	    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
