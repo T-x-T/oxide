@@ -59,5 +59,6 @@ name = "oxide"
 version = "0.1.0"
 dependencies = [
  "data",
+ "flate2",
  "lib",
 ]

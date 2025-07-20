@@ -1928,6 +1928,83 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 }
 
 //
+// MARK: 0x62 set held item
+//
+
+#[derive(Debug, Clone)]
+pub struct SetHeldItem {
+	pub slot: u8,
+}
+
+impl Packet for SetHeldItem {
+	const PACKET_ID: u8 = 0x62;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetHeldItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetHeldItem) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.slot as i32));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetHeldItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			slot: crate::deserialize::varint(&mut value)? as u8,
+		});
+	}
+}
+
+//
+// MARK: 0x65 set player inventory slot
+//
+
+#[derive(Debug, Clone)]
+pub struct SetPlayerInventorySlot {
+	pub slot: i32,
+	pub slot_data: Slot,
+}
+
+impl Packet for SetPlayerInventorySlot {
+	const PACKET_ID: u8 = 0x65;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetPlayerInventorySlot> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetPlayerInventorySlot) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.slot));
+		output.append(&mut crate::serialize::slot(&value.slot_data));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			slot: crate::deserialize::varint(&mut value)?,
+			slot_data: crate::deserialize::slot(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x72 system chat message
 //
 

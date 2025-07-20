@@ -1,16 +1,18 @@
-use lib::packets::Packet;
-
 use super::*;
+use lib::packets::Packet;
+use std::{fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
+use flate2::read::GzDecoder;
+use flate2::write::GzEncoder;
+use flate2::Compression;
 
 #[derive(Debug)]
 pub struct Player {
-	//TODO: consider making position fields private, so we don't accidentally forget to call right methods for updating them
-  pub x: f64,
-  pub y: f64,
-  pub z: f64,
-  pub yaw: f32,
-  pub pitch: f32,
+  x: f64,
+  y: f64,
+  z: f64,
+  yaw: f32,
+  pitch: f32,
   pub display_name: String,
   pub uuid: u128,
   pub peer_socket_address: SocketAddr,
@@ -23,13 +25,52 @@ pub struct Player {
 }
 
 impl Player {
-  pub fn new(position: Position, display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
-    let player = Self {
-      x: position.x as f64,
-      y: position.y as f64,
-      z: position.z as f64,
-      yaw: 0.0,
-      pitch: 0.0,
+  pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
+    let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
+	  	let player = Self {
+	      x: 0.0,
+	      y: 100.0,
+	      z: 0.0,
+	      yaw: 0.0,
+	      pitch: 0.0,
+	      display_name,
+	      uuid,
+	      peer_socket_address,
+	      connection_stream,
+	      entity_id: game.last_created_entity_id + 1,
+	      waiting_for_confirm_teleportation: false,
+	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
+	      inventory: vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46],
+	      selected_slot: 0,
+	    };
+
+	    game.last_created_entity_id += 1;
+
+	    return player;
+    };
+
+    let mut compressed_file_content: Vec<u8> = Vec::new();
+    file.read_to_end(&mut compressed_file_content).unwrap();
+
+    let mut file_content: Vec<u8> = Vec::new();
+    let mut decoder: GzDecoder<&[u8]> = GzDecoder::new(compressed_file_content.as_slice());
+    decoder.read_to_end(&mut file_content).unwrap();
+
+    let player_data = lib::deserialize::nbt_disk(&mut file_content).unwrap();
+
+    let mut inventory = vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46];
+    player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
+    	let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
+   		inventory[slot_index].item_count = x.get_child("count").unwrap().as_int();
+   		inventory[slot_index].item_id = Some(data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id);
+    });
+
+  	let player = Self {
+      x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+      y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+      z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+      yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+      pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
       display_name,
       uuid,
       peer_socket_address,
@@ -37,13 +78,52 @@ impl Player {
       entity_id: game.last_created_entity_id + 1,
       waiting_for_confirm_teleportation: false,
       current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
-      inventory: vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46],
-      selected_slot: 0,
+      inventory,
+      selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
     };
 
     game.last_created_entity_id += 1;
 
     return player;
+  }
+
+  //TODO: run this on some interval instead of on every movement
+  pub fn save_to_disk(&self) {
+  	let mut file = OpenOptions::new()
+    	.read(true)
+     	.write(true)
+	    .truncate(true)
+	    .create(true)
+	    .open(Player::get_playerdata_path(self.uuid))
+	    .unwrap();
+
+
+	  let player_data = NbtTag::TagCompound(None, vec![
+			NbtTag::List(Some("Pos".to_string()), vec![
+				NbtTag::Double(None, self.x),
+				NbtTag::Double(None, self.y),
+				NbtTag::Double(None, self.z),
+			]),
+			NbtTag::List(Some("Rotation".to_string()), vec![
+				NbtTag::Float(None, self.yaw),
+				NbtTag::Float(None, self.pitch),
+			]),
+			NbtTag::Int(Some("SelectedItemSlot".to_string()), self.selected_slot as i32),
+			NbtTag::List(Some("Inventory".to_string()), self.inventory.iter().enumerate().filter(|x| x.0 >= 9).filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).map(|x| {
+				NbtTag::TagCompound(None, vec![
+					NbtTag::Byte(Some("Slot".to_string()), x.0 as u8),
+					NbtTag::Int(Some("count".to_string()), x.1.item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(x.1.item_id.unwrap())),
+				])
+			}).collect()),
+		]);
+
+		let mut uncompressed_data = lib::serialize::nbt_disk(player_data);
+		let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
+		encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
+		let new_file_content = encoder.finish().unwrap();
+		file.write_all(&new_file_content).unwrap();
+		file.flush().unwrap();
   }
 
   pub fn get_held_item(&self, main_hand: bool) -> &Slot {
@@ -88,6 +168,8 @@ impl Player {
    	self.y = y;
     self.z = z;
 
+    self.save_to_disk();
+
     let old_chunk_position = Position {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
     let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
@@ -115,10 +197,6 @@ impl Player {
       	(temp_chunk_coords_to_send.0[x.0], temp_chunk_coords_to_send.1[x.0])
       }).collect();
 
-
-
-
-
       for chunk_coords in chunk_coords_to_send {
       	self.send_chunk(world, chunk_coords.0, chunk_coords.1);
       }
@@ -134,6 +212,7 @@ impl Player {
   pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
     self.yaw = yaw;
     self.pitch = pitch;
+    self.save_to_disk();
   }
 
   pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) {
@@ -196,4 +275,44 @@ impl Player {
 	    block_light_arrays,
 	  }.try_into().unwrap()).unwrap();
   }
+
+  pub fn get_position_and_rotation_float(&self) -> (f64, f64, f64, f32, f32) {
+  	return (self.x, self.y, self.z, self.yaw, self.pitch);
+  }
+
+  pub fn get_x(&self) -> f64 {
+  	return self.x;
+  }
+
+  pub fn get_y(&self) -> f64 {
+  	return self.y;
+  }
+
+  pub fn get_z(&self) -> f64 {
+  	return self.z;
+  }
+
+  pub fn get_yaw(&self) -> f32 {
+  	return self.yaw;
+  }
+
+  pub fn get_pitch(&self) -> f32 {
+  	return self.pitch;
+  }
+
+  pub fn get_position(&self) -> Position {
+	 	return Position {
+		  x: self.get_x() as i32,
+			y: self.get_y() as i16,
+			z: self.get_z() as i32,
+	  };
+  }
+
+ 	fn get_playerdata_path(uuid: u128) -> PathBuf {
+		let mut path = PathBuf::new();
+    	path.push(Path::new("./world/playerdata/"));
+    	path.push(Path::new(&lib::utils::u128_to_uuid_with_dashes(uuid)));
+    	path.set_extension("dat");
+     return path;
+	}
 }

@@ -42,6 +42,19 @@ impl NbtTag {
 			_ => return None,
 		}
 	}
+	pub fn get_child_mut(&mut self, description: &str) -> Option<&mut NbtTag> {
+		match self {
+			NbtTag::TagCompound(_, p) => {
+				for tag in p {
+					if tag.get_description().as_ref()?.as_str() == description {
+						return Some(tag);
+					}
+				}
+				return None;
+			},
+			_ => return None,
+		}
+	}
 
 	pub fn get_description(&self) -> &Option<String> {
 		return match self {
@@ -119,6 +132,13 @@ impl NbtTag {
 	pub fn as_list(&self) -> Vec<NbtTag> {
 		match self {
 			NbtTag::List(_, p) => return p.clone(),
+			_ => panic!("wrong type of Tag!"),
+		}
+	}
+
+	pub fn as_list_mut(&mut self) -> &mut Vec<NbtTag> {
+		match self {
+			NbtTag::List(_, p) => return p,
 			_ => panic!("wrong type of Tag!"),
 		}
 	}

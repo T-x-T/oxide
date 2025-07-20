@@ -47,7 +47,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 		.find(|x| x.display_name == arg_string.split(" ").next().unwrap_or_default());
 
 	let target_coordinates: (f64, f64, f64, f32, f32) = if target_player.as_ref().is_some() {
-		(target_player.as_ref().unwrap().x, target_player.as_ref().unwrap().y, target_player.as_ref().unwrap().z, target_player.as_ref().unwrap().yaw, target_player.as_ref().unwrap().pitch)
+		target_player.unwrap().get_position_and_rotation_float()
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();

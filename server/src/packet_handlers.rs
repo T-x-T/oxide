@@ -121,7 +121,6 @@ pub mod configuration {
 
 use super::*;
   use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}};
-  use lib::types::position::Position;
 
   pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::RegistryData::PACKET_ID, lib::packets::clientbound::configuration::RegistryData {
@@ -595,7 +594,7 @@ use super::*;
     connections.entry(stream.peer_addr().unwrap()).and_modify(|x| x.state = ConnectionState::Play);
 
     let connection_player = connections.get(&stream.peer_addr().unwrap()).unwrap();
-    let mut new_player = Player::new(Position {x: 0, y: -48, z: 0}, connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game, stream.try_clone().unwrap());
+    let mut new_player = Player::new(connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), stream.peer_addr().unwrap(), game, stream.try_clone().unwrap());
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Login::PACKET_ID, lib::packets::clientbound::play::Login {
       entity_id: new_player.entity_id,
@@ -624,14 +623,14 @@ use super::*;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
       teleport_id: new_player.current_teleport_id,
-      x: new_player.x,
-      y: new_player.y,
-      z: new_player.z,
+      x: new_player.get_x(),
+      y: new_player.get_y(),
+      z: new_player.get_z(),
       velocity_x: 0.0,
       velocity_y: 0.0,
       velocity_z: 0.0,
-      yaw: new_player.yaw,
-      pitch: new_player.pitch,
+      yaw: new_player.get_yaw(),
+      pitch: new_player.get_pitch(),
       flags: 0,
     }.try_into().unwrap())?;
 
@@ -640,17 +639,30 @@ use super::*;
       value: 0.0,
     }.try_into().unwrap())?;
 
-    for x in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
-      for z in -lib::SPAWN_CHUNK_RADIUS..=lib::SPAWN_CHUNK_RADIUS {
-     		new_player.send_chunk(&mut game.world, x as i32, z as i32);
+    new_player.inventory.iter().enumerate().filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).for_each(|x| {
+    	lib::utils::send_packet(stream, lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
+   			slot: if x.0 >= 36 { x.0 - 36 } else { x.0 } as i32,
+     		slot_data: x.1.clone(),
+     	}.try_into().unwrap()).unwrap();
+    });
+
+    let current_chunk_coords = new_player.get_position().convert_to_coordinates_of_chunk();
+
+    for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
+      for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
+     		new_player.send_chunk(&mut game.world, x, z);
       }
     }
 
+    lib::utils::send_packet(stream, lib::packets::clientbound::play::SetHeldItem::PACKET_ID, lib::packets::clientbound::play::SetHeldItem {
+   		slot: new_player.selected_slot
+    }.try_into().unwrap())?;
+
     let new_player_uuid = new_player.uuid;
     let new_player_entity_id = new_player.entity_id;
-    let new_player_x = new_player.x;
-    let new_player_y = new_player.y;
-    let new_player_z = new_player.z;
+    let new_player_x = new_player.get_x();
+    let new_player_y = new_player.get_y();
+    let new_player_z = new_player.get_z();
     game.players.push(new_player);
 
     connection_streams.iter()
@@ -686,9 +698,9 @@ use super::*;
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
         entity_type: 149, //Player
-        x: player.x,
-        y: player.y,
-        z: player.z,
+        x: player.get_x(),
+        y: player.get_y(),
+        z: player.get_z(),
         pitch: 0,
         yaw: 0,
         head_yaw: 0,
@@ -792,9 +804,9 @@ pub mod play {
       });
     let player = game.players.get_mut(player_index.unwrap()).unwrap();
 
-    let old_x = player.x;
-    let old_y = player.y;
-    let old_z = player.z;
+    let old_x = player.get_x();
+    let old_y = player.get_y();
+    let old_z = player.get_z();
 
     player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world);
 
@@ -803,10 +815,10 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
-          delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
-          delta_y: ((player.y * 4096.0) - (old_y * 4096.0)) as i16,
-          delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: player.y == -48.0, //TODO: add proper check
+          delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
+          delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: player.get_y() == -48.0, //TODO: add proper check
         }.try_into().unwrap())?;
       }
     }
@@ -824,9 +836,9 @@ pub mod play {
       });
     let player = game.players.get_mut(player_index.unwrap()).unwrap();
 
-    let old_x = player.x;
-    let old_y = player.y;
-    let old_z = player.z;
+    let old_x = player.get_x();
+    let old_y = player.get_y();
+    let old_z = player.get_z();
 
     player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world);
 
@@ -836,10 +848,10 @@ pub mod play {
     	((parsed_packet.pitch / 90.0) * 64.0) as u8
     };
 
-    let yaw: u8 = if player.yaw < 0.0 {
-   		(((player.yaw / 90.0) * 64.0) + 256.0) as u8
+    let yaw: u8 = if player.get_yaw() < 0.0 {
+   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
     } else {
-    	((player.yaw / 90.0) * 64.0) as u8
+    	((player.get_yaw() / 90.0) * 64.0) as u8
     };
 
     let default_connection = Connection::default();
@@ -847,10 +859,10 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
 	        entity_id: player.entity_id,
-	        delta_x: ((player.x * 4096.0) - (old_x * 4096.0)) as i16,
-	        delta_y: ((player.y * 4096.0) - (old_y * 4096.0)) as i16,
-	        delta_z: ((player.z * 4096.0) - (old_z * 4096.0)) as i16,
-	        on_ground: player.y == -48.0, //TODO: add proper check
+	        delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
+	        delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
+	        delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
+	        on_ground: player.get_y() == -48.0, //TODO: add proper check
 	        yaw,
 	        pitch,
 	      }.try_into().unwrap())?;
@@ -883,10 +895,10 @@ pub mod play {
     	((parsed_packet.pitch / 90.0) * 64.0) as u8
     };
 
-    let yaw: u8 = if player.yaw < 0.0 {
-   		(((player.yaw / 90.0) * 64.0) + 256.0) as u8
+    let yaw: u8 = if player.get_yaw() < 0.0 {
+   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
     } else {
-    	((player.yaw / 90.0) * 64.0) as u8
+    	((player.get_yaw() / 90.0) * 64.0) as u8
     };
 
     let default_connection = Connection::default();
@@ -894,7 +906,7 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
-	        on_ground: player.y == -48.0, //TODO: add proper check
+	        on_ground: player.get_y() == -48.0, //TODO: add proper check
 	        yaw,
 	        pitch,
 	      }.try_into().unwrap())?;
@@ -1003,6 +1015,7 @@ pub mod play {
     }
 
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
+    println!("used item id {used_item_id}");
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
     let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z);
 
