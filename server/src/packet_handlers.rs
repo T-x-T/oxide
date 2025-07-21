@@ -639,12 +639,12 @@ use super::*;
       value: 0.0,
     }.try_into().unwrap())?;
 
-    new_player.inventory.iter().enumerate().filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).for_each(|x| {
-    	lib::utils::send_packet(stream, lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
-   			slot: if x.0 >= 36 { x.0 - 36 } else { x.0 } as i32,
-     		slot_data: x.1.clone(),
-     	}.try_into().unwrap()).unwrap();
-    });
+    lib::utils::send_packet(stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+	   	window_id: 0,
+	    state_id: 1,
+	    slot_data: new_player.inventory.clone(),
+	    carried_item: Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() },
+    }.try_into().unwrap()).unwrap();
 
     let current_chunk_coords = new_player.get_position().convert_to_coordinates_of_chunk();
 

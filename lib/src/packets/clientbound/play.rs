@@ -196,6 +196,59 @@ impl TryFrom<Vec<u8>> for Commands {
 	}
 }
 
+//
+// MARK: 0x12 commands
+//
+
+#[derive(Debug, Clone)]
+pub struct SetContainerContent {
+	pub window_id: i32,
+	pub state_id: i32,
+	pub slot_data: Vec<Slot>,
+	pub carried_item: Slot,
+}
+
+impl Packet for SetContainerContent {
+	const PACKET_ID: u8 = 0x12;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetContainerContent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetContainerContent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::varint(value.state_id));
+		output.append(&mut crate::serialize::varint(value.slot_data.len() as i32));
+		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x)));
+		output.append(&mut crate::serialize::slot(&value.carried_item));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetContainerContent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let window_id = crate::deserialize::varint(&mut value)?;
+		let state_id = crate::deserialize::varint(&mut value)?;
+		let slot_data_len = crate::deserialize::varint(&mut value)?;
+		let slot_data = (0..slot_data_len).map(|_| crate::deserialize::slot(&mut value).unwrap()).collect();
+		let carried_item = crate::deserialize::slot(&mut value)?;
+
+		return Ok(Self {
+			window_id,
+			state_id,
+			slot_data,
+			carried_item,
+		});
+	}
+}
+
 
 //
 // MARK: 0x1f teleport entity

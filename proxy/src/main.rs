@@ -275,8 +275,23 @@ fn main() {
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::Commands::PACKET_ID => {
-	        			let parsed_packet = lib::packets::clientbound::play::Commands::try_from(client_packet.data.clone()).unwrap();
+	        			//let parsed_packet = lib::packets::clientbound::play::Commands::try_from(client_packet.data.clone()).unwrap();
 								//println!("parsed packet: {parsed_packet:?}");
+	              //parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID => {
+	        			let parsed_packet = lib::packets::clientbound::play::SetPlayerInventorySlot::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							lib::packets::clientbound::play::SetHeldItem::PACKET_ID => {
+	        			let parsed_packet = lib::packets::clientbound::play::SetHeldItem::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							lib::packets::clientbound::play::SetContainerContent::PACKET_ID => {
+	        			let parsed_packet = lib::packets::clientbound::play::SetContainerContent::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID => {
@@ -285,7 +300,9 @@ fn main() {
 		            // println!("parsed packet: {parsed_packet:?}");
 		            // parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
-           		_ => (),
+           		_ => {
+           			//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
+              },
            	};
           },
           lib::ConnectionState::Transfer => {

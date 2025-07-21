@@ -65,6 +65,49 @@ impl Player {
    		inventory[slot_index].item_id = Some(data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id);
     });
 
+    if let Some(equipment) = player_data.get_child("equipment") {
+    	if let Some(head) = equipment.get_child("head") {
+   			inventory[5] = Slot {
+    			item_count: head.get_child("count").unwrap().as_int(),
+     			item_id: Some(data::items::get_items().get(head.get_child("id").unwrap().as_string()).unwrap().id),
+	       	components_to_add: Vec::new(),
+	        components_to_remove: Vec::new(),
+      	}
+     	}
+    	if let Some(chest) = equipment.get_child("chest") {
+   			inventory[6] = Slot {
+    			item_count: chest.get_child("count").unwrap().as_int(),
+     			item_id: Some(data::items::get_items().get(chest.get_child("id").unwrap().as_string()).unwrap().id),
+	       	components_to_add: Vec::new(),
+	        components_to_remove: Vec::new(),
+      	}
+     	}
+    	if let Some(legs) = equipment.get_child("legs") {
+   			inventory[7] = Slot {
+    			item_count: legs.get_child("count").unwrap().as_int(),
+     			item_id: Some(data::items::get_items().get(legs.get_child("id").unwrap().as_string()).unwrap().id),
+	       	components_to_add: Vec::new(),
+	        components_to_remove: Vec::new(),
+      	}
+     	}
+    	if let Some(feet) = equipment.get_child("feet") {
+   			inventory[8] = Slot {
+    			item_count: feet.get_child("count").unwrap().as_int(),
+     			item_id: Some(data::items::get_items().get(feet.get_child("id").unwrap().as_string()).unwrap().id),
+	       	components_to_add: Vec::new(),
+	        components_to_remove: Vec::new(),
+      	}
+     	}
+    	if let Some(offhand) = equipment.get_child("offhand") {
+   			inventory[45] = Slot {
+    			item_count: offhand.get_child("count").unwrap().as_int(),
+     			item_id: Some(data::items::get_items().get(offhand.get_child("id").unwrap().as_string()).unwrap().id),
+	       	components_to_add: Vec::new(),
+	        components_to_remove: Vec::new(),
+      	}
+     	}
+    }
+
   	let player = Self {
       x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
       y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
@@ -116,6 +159,28 @@ impl Player {
 					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(x.1.item_id.unwrap())),
 				])
 			}).collect()),
+			NbtTag::TagCompound(Some("equipment".to_string()), vec![
+				NbtTag::TagCompound(Some("head".to_string()), vec![
+					NbtTag::Int(Some("count".to_string()), self.inventory[5].item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[5].item_id.unwrap_or(0))),
+				]),
+				NbtTag::TagCompound(Some("chest".to_string()), vec![
+					NbtTag::Int(Some("count".to_string()), self.inventory[6].item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[6].item_id.unwrap_or(0))),
+				]),
+				NbtTag::TagCompound(Some("legs".to_string()), vec![
+					NbtTag::Int(Some("count".to_string()), self.inventory[7].item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[7].item_id.unwrap_or(0))),
+				]),
+				NbtTag::TagCompound(Some("feet".to_string()), vec![
+					NbtTag::Int(Some("count".to_string()), self.inventory[8].item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[8].item_id.unwrap_or(0))),
+				]),
+				NbtTag::TagCompound(Some("offhand".to_string()), vec![
+					NbtTag::Int(Some("count".to_string()), self.inventory[45].item_count),
+					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[45].item_id.unwrap_or(0))),
+				]),
+			]),
 		]);
 
 		let mut uncompressed_data = lib::serialize::nbt_disk(player_data);
