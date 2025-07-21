@@ -2096,3 +2096,54 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 		});
 	}
 }
+
+//
+// MARK: 0x82 server links
+//
+
+#[derive(Debug, Clone)]
+pub struct ServerLinks {
+	pub links: Vec<(NbtTag, String)>, //TODO: proper type, also handle Text Component instead of varint enum
+}
+
+impl Packet for ServerLinks {
+	const PACKET_ID: u8 = 0x82;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<ServerLinks> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ServerLinks) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.links.len() as i32));
+		for link in value.links {
+			output.append(&mut crate::serialize::boolean(false));
+			output.append(&mut crate::serialize::nbt_network(link.0));
+			output.append(&mut crate::serialize::string(&link.1));
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ServerLinks {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let links_len = crate::deserialize::varint(&mut value)?;
+		let links: Vec<(NbtTag, String)> = (0..links_len).map(|_| {
+			value.remove(0);
+			return (
+				crate::deserialize::nbt_network(&mut value).unwrap(),
+				crate::deserialize::string(&mut value).unwrap(),
+			);
+		}).collect();
+
+		return Ok(Self {
+			links,
+		});
+	}
+}

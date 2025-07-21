@@ -1,4 +1,5 @@
 use super::*;
+use crate::NbtTag;
 
 //
 // MARK: 0x0e ClientBoundKnownPacks
@@ -219,6 +220,92 @@ impl TryFrom<Vec<u8>> for UpdateTags {
 
 	  return Ok(Self {
       data,
+		});
+	}
+}
+
+//
+// MARK: 0x10 server links
+//
+
+#[derive(Debug, Clone)]
+pub struct ServerLinks {
+	pub links: Vec<(NbtTag, String)>, //TODO: proper type, also handle Text Component AND varint enum
+}
+
+impl Packet for ServerLinks {
+	const PACKET_ID: u8 = 0x10;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
+
+impl TryFrom<ServerLinks> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ServerLinks) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.links.len() as i32));
+		for link in value.links {
+			output.append(&mut crate::serialize::boolean(false));
+			output.append(&mut crate::serialize::nbt_network(link.0));
+			output.append(&mut crate::serialize::string(&link.1));
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ServerLinks {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let links_len = crate::deserialize::varint(&mut value)?;
+		let links: Vec<(NbtTag, String)> = (0..links_len).map(|_| {
+			value.remove(0);
+			return (
+				crate::deserialize::nbt_network(&mut value).unwrap(),
+				crate::deserialize::string(&mut value).unwrap(),
+			);
+		}).collect();
+
+		return Ok(Self {
+			links,
+		});
+	}
+}
+//
+// MARK: 0x12 show dialog
+//
+
+#[derive(Debug, Clone)]
+pub struct ShowDialog {
+	pub dialog: NbtTag,
+}
+
+impl Packet for ShowDialog {
+	const PACKET_ID: u8 = 0x12;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+}
+
+impl TryFrom<ShowDialog> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ShowDialog) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+		output.append(&mut crate::serialize::nbt_network(value.dialog));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ShowDialog {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			dialog: crate::deserialize::nbt_network(&mut value)?,
 		});
 	}
 }

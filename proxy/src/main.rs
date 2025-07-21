@@ -209,12 +209,24 @@ fn main() {
 	              println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
               },
+              lib::packets::clientbound::configuration::ShowDialog::PACKET_ID => {
+	              let parsed_packet = lib::packets::clientbound::configuration::ShowDialog::try_from(client_packet.data.clone()).unwrap();
+	              println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+              },
+              lib::packets::clientbound::configuration::ServerLinks::PACKET_ID => {
+	              let parsed_packet = lib::packets::clientbound::configuration::ServerLinks::try_from(client_packet.data.clone()).unwrap();
+	              println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+              },
               lib::packets::clientbound::configuration::UpdateTags::PACKET_ID => {
 	              let parsed_packet = lib::packets::clientbound::configuration::UpdateTags::try_from(client_packet.data.clone()).unwrap();
 	              //println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
               }
-           		_ => (),
+           		_ => {
+           			println!("received unkown packet in clientbound::configuration with id 0x{packet_id:02x}");
+              },
            	};
           },
           lib::ConnectionState::Play => {
@@ -291,6 +303,11 @@ fn main() {
 							},
 							lib::packets::clientbound::play::SetContainerContent::PACKET_ID => {
 	        			let parsed_packet = lib::packets::clientbound::play::SetContainerContent::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							lib::packets::clientbound::play::ServerLinks::PACKET_ID => {
+	        			let parsed_packet = lib::packets::clientbound::play::ServerLinks::try_from(client_packet.data.clone()).unwrap();
 								println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
