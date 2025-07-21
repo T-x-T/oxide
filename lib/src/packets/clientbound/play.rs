@@ -902,6 +902,54 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 }
 
 //
+// MARK: 0x28 world event
+//
+
+#[derive(Debug, Clone)]
+pub struct WorldEvent {
+	pub event: i32,
+	pub location: Position,
+	pub data: i32,
+}
+
+impl Packet for WorldEvent {
+	const PACKET_ID: u8 = 0x28;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<WorldEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: WorldEvent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::int(value.event));
+		output.append(&mut crate::serialize::position(&value.location));
+		output.append(&mut crate::serialize::int(value.data));
+		if value.event == 1023 || value.event == 1028 || value.event == 1038 {
+			output.push(1);
+		} else {
+			output.push(0);
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for WorldEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			event: crate::deserialize::int(&mut value)?,
+			location: crate::deserialize::position(&mut value)?,
+			data: crate::deserialize::int(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x2b Login
 //
 

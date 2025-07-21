@@ -38,7 +38,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, game, stream, connections),
       lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream, game, connection_streams, connections),
       lib::packets::serverbound::play::ChatMessage::PACKET_ID => play::chat_message(&mut packet.data, connection_streams, game, stream, connections),
-      lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, connection_streams, game),
+      lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, connection_streams, game, connections),
       lib::packets::serverbound::play::SetCreativeModeSlot::PACKET_ID => play::set_creative_mode_slot(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::SetHandItem::PACKET_ID => play::set_held_item(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::UseItemOn::PACKET_ID => play::use_item_on(&mut packet.data, stream, connection_streams, game, connections),
@@ -1024,12 +1024,13 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec()).unwrap();
 
+    let old_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location).unwrap();
     game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0).unwrap();
 
-    for stream in connection_streams {
+    for stream in connection_streams.iter() {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
         location: parsed_packet.location,
         block_id: 0,
@@ -1039,6 +1040,17 @@ pub mod play {
     send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
       sequence_id: parsed_packet.sequence,
     }.try_into().unwrap())?;
+
+   	connection_streams.iter()
+     	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+     	.filter(|x| *x.0 != stream.peer_addr().unwrap())
+     	.for_each(|x| {
+	      send_packet(x.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+	      	event: 2001,
+	      	location: parsed_packet.location,
+	       	data: old_block as i32,
+	      }.try_into().unwrap()).unwrap();
+      });
 
     return Ok(None);
   }
