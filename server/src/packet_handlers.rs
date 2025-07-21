@@ -784,6 +784,16 @@ use super::*;
       root_index: 0,
     }.try_into().unwrap())?;
 
+    lib::utils::send_packet(stream, lib::packets::clientbound::play::SetTabListHeaderAndFooter::PACKET_ID, lib::packets::clientbound::play::SetTabListHeaderAndFooter {
+  		header: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
+  		footer: NbtTag::TagCompound(None, vec![
+    		NbtTag::String(Some("type".to_string()), "text".to_string()),
+    		NbtTag::String(Some("text".to_string()), " powered by Oxide ".to_string()),
+    		NbtTag::String(Some("color".to_string()), "gray".to_string()),
+    		NbtTag::Byte(Some("italic".to_string()), 1),
+    	]),
+    }.try_into().unwrap())?;
+
     //TODO: get rid of this once we have a real game loop
     let stream_clone = stream.try_clone().unwrap();
     std::thread::spawn(move || {

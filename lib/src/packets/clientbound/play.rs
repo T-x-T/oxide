@@ -2098,6 +2098,46 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 }
 
 //
+// MARK: 0x73 set tab list header and footer
+//
+
+#[derive(Debug, Clone)]
+pub struct SetTabListHeaderAndFooter {
+	pub header: NbtTag,
+	pub footer: NbtTag,
+}
+
+impl Packet for SetTabListHeaderAndFooter {
+	const PACKET_ID: u8 = 0x73;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetTabListHeaderAndFooter> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetTabListHeaderAndFooter) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::nbt_network(value.header));
+		output.append(&mut crate::serialize::nbt_network(value.footer));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			header: crate::deserialize::nbt_network(&mut value)?,
+			footer: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x82 server links
 //
 
