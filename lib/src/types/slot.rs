@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Slot {
   pub item_count: i32,
   pub item_id: Option<i32>,

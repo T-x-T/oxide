@@ -2021,6 +2021,69 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 }
 
 //
+// MARK: 0x5f set equipment
+//
+
+#[derive(Debug, Clone)]
+pub struct SetEquipment {
+	pub entity_id: i32,
+	pub equipment: Vec<(u8, Slot)>,
+}
+
+impl Packet for SetEquipment {
+	const PACKET_ID: u8 = 0x5f;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetEquipment> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetEquipment) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		value.equipment.iter()
+    	.enumerate()
+    	.for_each(|x| {
+  			let mask = if x.0 < value.equipment.len() -1 {
+     			0b1000_0000
+     		} else {
+       		0b0000_0000
+       	};
+   			output.push(x.1.0 + mask);
+     		output.append(&mut crate::serialize::slot(&x.1.1));
+     	});
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetEquipment {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let entity_id = crate::deserialize::varint(&mut value)?;
+		let mut equipment: Vec<(u8, Slot)> = Vec::new();
+
+		loop {
+			let slot = value.remove(0);
+			let item = crate::deserialize::slot(&mut value)?;
+			equipment.push((slot, item));
+
+			if slot & 0b1000_0000 == 0b1000_0000 {
+				break;
+			}
+		}
+
+		return Ok(Self {
+			entity_id,
+			equipment
+		});
+	}
+}
+
+//
 // MARK: 0x62 set held item
 //
 

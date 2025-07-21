@@ -1,6 +1,6 @@
 use super::*;
-use lib::packets::Packet;
-use std::{fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
+use lib::{packets::Packet, ConnectionState};
+use std::{collections::HashMap, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -20,8 +20,8 @@ pub struct Player {
   pub entity_id: i32,
   pub waiting_for_confirm_teleportation: bool,
   pub current_teleport_id: i32,
-  pub inventory: Vec<Slot>,
-  pub selected_slot: u8,
+  inventory: Vec<Slot>,
+  selected_slot: u8,
 }
 
 impl Player {
@@ -379,5 +379,75 @@ impl Player {
     	path.push(Path::new(&lib::utils::u128_to_uuid_with_dashes(uuid)));
     	path.set_extension("dat");
      return path;
+	}
+
+	pub fn get_selected_slot(&self) -> u8 {
+		return self.selected_slot;
+	}
+
+	pub fn set_selected_slot(&mut self, slot: u8, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+		self.selected_slot = slot;
+
+		connection_streams.iter()
+	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+	   	.filter(|x| *x.0 != self.peer_socket_address)
+	   	.for_each(|x| {
+		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		 			entity_id: self.entity_id,
+		  		equipment: vec![
+						(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
+		     	]
+		   	}.try_into().unwrap()).unwrap();
+			}
+		);
+	}
+
+	pub fn get_inventory(&self) -> &Vec<Slot> {
+		return &self.inventory;
+	}
+
+	pub fn set_selected_inventory_slot(&mut self, item: Slot, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+		self.set_inventory_slot(self.get_selected_slot() + 36, item, connections, connection_streams);
+	}
+
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Slot, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+		self.inventory[slot as usize] = item.clone();
+
+  	lib::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
+   		slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
+    	slot: (self.get_selected_slot()) as i32,
+    }.try_into().unwrap()).unwrap();
+
+		if (slot <= 4 || (9..=44).contains(&slot)) && self.get_selected_slot() + 36 != slot {
+			return;
+		}
+
+		connection_streams.iter()
+	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+	   	.filter(|x| *x.0 != self.peer_socket_address)
+	   	.for_each(|x| {
+				let mut equipment: Vec<(u8, Slot)> = vec![
+					(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
+				];
+
+				if [5,6,7,8,45].contains(&slot) {
+   				equipment.push(
+						match slot {
+		      		5 => (5, item.clone()),
+		      		6 => (4, item.clone()),
+		      		7 => (3, item.clone()),
+		      		8 => (2, item.clone()),
+		      		45 => (1, item.clone()),
+		         	_ => panic!(""),
+		       	}
+       		);
+				};
+
+		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		 			entity_id: self.entity_id,
+		  		equipment,
+		   	}.try_into().unwrap()).unwrap();
+			}
+		);
 	}
 }
