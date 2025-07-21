@@ -455,6 +455,43 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 }
 
 //
+// MARK: 0x3c swing arm
+//
+
+#[derive(Debug, Clone)]
+pub struct SwingArm {
+  pub hand: i32,
+}
+
+impl Packet for SwingArm {
+	const PACKET_ID: u8 = 0x3c;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SwingArm> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SwingArm) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.hand));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SwingArm {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			hand: crate::deserialize::varint(&mut value)?,
+		})
+	}
+}
+
+//
 // MARK: 0x3f use item on
 //
 

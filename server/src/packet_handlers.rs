@@ -46,6 +46,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game, connections),
+      lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1042,7 +1043,6 @@ pub mod play {
     }
 
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
-    println!("used item id {used_item_id}");
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
     let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z);
 
@@ -1144,7 +1144,7 @@ pub mod play {
   	let parsed_packet = lib::packets::serverbound::play::PickItemFromBlock::try_from(data.to_vec()).unwrap();
    	let picked_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
     let picked_block_name = data::blocks::get_blocks().iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
-    let item_id = data::items::get_items().get(&picked_block_name).unwrap().id;
+    let item_id = data::items::get_items().get(&picked_block_name).unwrap_or(&data::items::Item {max_stack_size: 0, rarity: data::items::ItemRarity::Common, id:0, repair_cost:0}).id;
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
@@ -1167,6 +1167,22 @@ pub mod play {
    		slot_data: player.inventory[(player.selected_slot + 36) as usize].clone(),
     	slot: (player.selected_slot) as i32,
     }.try_into().unwrap())?;
+
+  	return Ok(None);
+  }
+
+  pub fn swing_arm(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
+  	let parsed_packet = lib::packets::serverbound::play::SwingArm::try_from(data.to_vec()).unwrap();
+
+  	connection_streams.iter()
+    	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+     	.filter(|x| *x.0 != stream.peer_addr().unwrap())
+     	.for_each(|x| {
+      	lib::utils::send_packet(x.1, lib::packets::clientbound::play::EntityAnimation::PACKET_ID, lib::packets::clientbound::play::EntityAnimation {
+     			entity_id: game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().entity_id,
+       		animation: if parsed_packet.hand == 0 { 0 } else { 3 },
+       	}.try_into().unwrap()).unwrap();
+      });
 
   	return Ok(None);
   }

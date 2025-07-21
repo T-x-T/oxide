@@ -75,6 +75,46 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 }
 
 //
+// MARK: 0x02 entity animation
+//
+
+#[derive(Debug, Clone)]
+pub struct EntityAnimation {
+	pub entity_id: i32,
+	pub animation: u8,
+}
+
+impl Packet for EntityAnimation {
+	const PACKET_ID: u8 = 0x02;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<EntityAnimation> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: EntityAnimation) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.push(value.animation);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for EntityAnimation {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			animation: value.remove(0),
+		});
+	}
+}
+
+//
 // MARK: 0x04 acknowledge block change
 //
 
