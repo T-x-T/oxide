@@ -292,6 +292,46 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 }
 
 //
+// MARK: 0x23 pick item from block
+//
+
+#[derive(Debug, Clone)]
+pub struct PickItemFromBlock {
+	pub location: Position,
+	pub include_data: bool,
+}
+
+impl Packet for PickItemFromBlock {
+	const PACKET_ID: u8 = 0x23;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<PickItemFromBlock> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PickItemFromBlock) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::position(&value.location));
+		result.append(&mut crate::serialize::boolean(value.include_data));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PickItemFromBlock {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			include_data: crate::deserialize::boolean(&mut value)?,
+		})
+	}
+}
+
+//
 // MARK: 0x28 player action
 //
 

@@ -14,7 +14,6 @@ pub mod packets;
 pub mod blockstates;
 pub mod types;
 
-//ALSO EXISTS IN SERVER!!
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 
 #[derive(Debug, Clone)]

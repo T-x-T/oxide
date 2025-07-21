@@ -45,6 +45,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
+      lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game, connections),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1135,6 +1136,37 @@ pub mod play {
     };
 
     (command.execute)(parsed_packet.command, Some(stream), game, connection_streams, connections)?;
+
+  	return Ok(None);
+  }
+
+  pub fn pick_item_from_block(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
+  	let parsed_packet = lib::packets::serverbound::play::PickItemFromBlock::try_from(data.to_vec()).unwrap();
+   	let picked_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let picked_block_name = data::blocks::get_blocks().iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
+    let item_id = data::items::get_items().get(&picked_block_name).unwrap().id;
+
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let Some(player) = game.players.get_mut(player_index.unwrap()) else {
+      println!("got pick_item_from_block packet from invalid player");
+      return Ok(None);
+    };
+
+    player.inventory[(player.selected_slot + 36) as usize] = Slot {
+	   	item_count: 1,
+	    item_id: Some(item_id),
+	    components_to_add: Vec::new(),
+	    components_to_remove: Vec::new(),
+    };
+
+    lib::utils::send_packet(stream, lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
+   		slot_data: player.inventory[(player.selected_slot + 36) as usize].clone(),
+    	slot: (player.selected_slot) as i32,
+    }.try_into().unwrap())?;
 
   	return Ok(None);
   }
