@@ -1,6 +1,10 @@
-use std::{fs::{self, File}, io::{prelude::*, SeekFrom}, path::PathBuf, str::FromStr};
+use std::{collections::HashSet, fs::{self, File, OpenOptions}, io::{prelude::*, SeekFrom}, path::PathBuf, str::FromStr};
 use data::blocks::Block;
 use flate2::read::ZlibDecoder;
+use flate2::write::ZlibEncoder;
+use flate2::Compression;
+
+use crate::NbtTag;
 
 use super::*;
 
@@ -162,8 +166,190 @@ impl super::WorldLoader for Loader {
   	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
   	return std::fs::exists(level_dat_path).unwrap();
   }
+
+  fn save_to_disk(&self, chunks: &[Chunk]) {
+ 		println!("start saving world with {} chunks to disk", chunks.len());
+  	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
+   	for chunk in chunks {
+    	let region = chunk_to_region(chunk.x, chunk.z);
+     	regions.entry(region).or_default().push(chunk);
+    }
+    println!("there are {} regions to save", regions.len());
+    for region in regions {
+    	let now = std::time::Instant::now();
+   		save_region_to_disk(region.0, region.1.as_slice(), self.path.clone());
+     	println!("saved region {:?} in {:.2?}", region.0, now.elapsed());
+    }
+  }
 }
 
+fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
+  let all_blocks = data::blocks::get_blocks();
+	let mut locations_table = [(0u32, 0u8);1024];
+	let mut timestamps_table = [0u32;1024];
+	const EMPTY_CHUNK_DATA: Option<Vec<u8>> = None;
+	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA;1024];
+
+	let mut region_file_path = path;
+ 	region_file_path.push(PathBuf::from_str("region").unwrap());
+ 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
+
+ 	if fs::exists(&region_file_path).unwrap() {
+ 		let mut region_file = File::open(&region_file_path).unwrap();
+
+		let mut read_file_bytes: Vec<u8> = Vec::new();
+   	region_file.read_to_end(&mut read_file_bytes).unwrap();
+
+    for i in 0..1024 {
+   		locations_table[i] = (u32::from_be_bytes([0, read_file_bytes[i*4], read_file_bytes[(i*4)+1], read_file_bytes[(i*4)+2]]), read_file_bytes[(i*4)+3]);
+    	timestamps_table[i] = u32::from_be_bytes([read_file_bytes[(i*4) + 1024], read_file_bytes[(i*4) + 1025], read_file_bytes[(i*4) + 1026], read_file_bytes[(i*4) + 1027]]);
+    }
+
+    locations_table.iter()
+      .enumerate()
+      .filter(|(_i, (offset, length))| *offset != 0 && *length != 0)
+     	.for_each(|(i, (offset, length))| {
+     		chunk_data[i] = Some(read_file_bytes[(*offset as usize * 4096)..(*offset as usize * 4096 + *length as usize * 4096)].to_vec())
+      });
+  }
+
+  for chunk in chunks {
+  	let chunk_nbt = NbtTag::TagCompound(None, vec![
+ 			NbtTag::String(Some("Status".to_string()), "minecraft:full".to_string()),
+   		NbtTag::Int(Some("xPos".to_string()), chunk.x),
+   		NbtTag::Int(Some("yPos".to_string()), -4),
+   		NbtTag::Int(Some("zPos".to_string()), chunk.z),
+   		NbtTag::Int(Some("Dataversion".to_string()), 4325),
+     	NbtTag::List(Some("sections".to_string()), chunk.sections.iter().enumerate().map(|(i, section)| {
+      	let biome_palette: Vec<u8> = section.biomes.iter().copied().collect::<HashSet<u8>>().into_iter().collect();
+				let biomes_bits_per_entry = match biome_palette.len() {
+				  0..=2 => 1,
+					3..=4 => 2,
+					5..=8 => 3,
+					9..=16 => 4,
+				  17..=32 => 5,
+				  _ => 6,
+				};
+
+      	let block_palette: Vec<u16> = section.blocks.iter().copied().collect::<HashSet<u16>>().into_iter().collect();
+				let blocks_bits_per_entry = match block_palette.len() {
+				  0..=16 => 4,
+				  17..=32 => 5,
+				  33..=64 => 6,
+				  65..=128 => 7,
+				  129..=256 => 8,
+				  257..=512 => 9,
+				  513..=1024 => 10,
+				  1025..=2048 => 11,
+				  _ => 12,
+				};
+				//TODO: handle only one block/biome with no data array
+      	NbtTag::TagCompound(None, vec![
+     			NbtTag::Byte(Some("Y".to_string()), (i as i8 - 4) as u8),
+          NbtTag::ByteArray(Some("BlockLight".to_string()), section.block_lights.clone()),
+          NbtTag::ByteArray(Some("SkyLight".to_string()), section.sky_lights.clone()),
+          NbtTag::TagCompound(Some("biomes".to_string()), vec![
+         		NbtTag::List(Some("palette".to_string()), biome_palette.iter().map(|biome| {
+           		NbtTag::String(None, data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0)
+           	}).collect()),
+						NbtTag::LongArray(Some("data".to_string()), section.biomes.iter().map(|biome| {
+							*biome_palette.iter().find(|x| **x == *biome).unwrap()
+						}).collect::<Vec<u8>>().chunks(64/biomes_bits_per_entry).map(|byte_arr| {
+							let mut long = 0u64;
+							for byte in byte_arr {
+								long <<= biomes_bits_per_entry;
+								long &= *byte as u64;
+							}
+							return long as i64;
+						}).collect()
+          )]),
+          NbtTag::TagCompound(Some("block_states".to_string()), vec![
+         		NbtTag::List(Some("palette".to_string()), block_palette.iter().map(|blockstate_id| {
+              NbtTag::TagCompound(None, vec![
+                NbtTag::String(Some("Name".to_string()), all_blocks.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap().0.clone()),
+                //TODO: also add properties here
+              ])
+           	}).collect()),
+						NbtTag::LongArray(Some("data".to_string()), section.blocks.iter().map(|block| {
+							block_palette.iter().enumerate().find(|x| *x.1 == *block).unwrap().0 as u8
+						}).collect::<Vec<u8>>().chunks(64/blocks_bits_per_entry).map(|byte_arr| {
+							let mut long = 0u64;
+							for byte in byte_arr {
+								long <<= blocks_bits_per_entry;
+								long += *byte as u64;
+							}
+							return long as i64;
+						}).collect()
+          )]),
+	      ])
+      }).collect()),
+   	]);
+
+    let mut uncompressed_chunk = crate::serialize::nbt_disk(chunk_nbt);
+		let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+		encoder.write_all(uncompressed_chunk.as_mut_slice()).unwrap();
+		let mut compressed_chunk = encoder.finish().unwrap();
+		let length = (compressed_chunk.len() + 1) as i32;
+
+		let mut chunk_bytes: Vec<u8> = length.to_be_bytes().to_vec();
+		chunk_bytes.push(2);
+		chunk_bytes.append(&mut compressed_chunk);
+
+		let rounded_chunk_len = ((chunk_bytes.len()-1) / 4096) + 1;
+		let mut padding: Vec<u8> = (0..(rounded_chunk_len*4096)-chunk_bytes.len()).map(|_| 0).collect();
+		chunk_bytes.append(&mut padding);
+
+		assert!(rounded_chunk_len <= 255);
+		assert_eq!(chunk_bytes.len() % 4096, 0);
+
+		let chunk_index = (chunk.x & 31) + (chunk.z & 31) * 32;
+		locations_table[chunk_index as usize].1 = rounded_chunk_len as u8;
+		chunk_data[chunk_index as usize] = Some(chunk_bytes);
+  }
+
+  let mut first_chunk = true;
+  let mut last_chunk_offset = 0;
+  let mut last_chunk_len = 0;
+  for i in 0..locations_table.len() {
+    if locations_table[i].1 == 0 {
+      locations_table[i] = (0, 0);
+      continue;
+    }
+
+    if first_chunk {
+      locations_table[i].0 = 2;
+      first_chunk = false;
+    } else {
+      locations_table[i].0 = last_chunk_offset + last_chunk_len as u32;
+    }
+
+    last_chunk_offset = locations_table[i].0;
+    last_chunk_len = locations_table[i].1;
+  }
+
+ 	let mut file = OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(region_file_path)
+    .unwrap();
+
+  let mut output: Vec<u8> = Vec::new();
+  for location in locations_table {
+    output.push(location.0.to_be_bytes()[1]);
+    output.push(location.0.to_be_bytes()[2]);
+    output.push(location.0.to_be_bytes()[3]);
+    output.push(location.1);
+  }
+  for timestamp in timestamps_table {
+    output.append(&mut timestamp.to_be_bytes().to_vec());
+  }
+  chunk_data.into_iter().flatten().for_each(|mut x| output.append(&mut x));
+
+  file.write_all(&output).unwrap();
+  file.flush().unwrap();
+}
 
 fn chunk_to_region(x: i32, z: i32) -> (i32, i32) {
 	return ((x as f32 / 32.0).floor() as i32, (z as f32 / 32.0).floor() as i32)

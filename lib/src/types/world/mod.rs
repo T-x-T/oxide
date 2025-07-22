@@ -47,6 +47,10 @@ impl World {
     }
     return Self { dimensions, loader: Box::new(loader) };
   }
+
+  pub fn save_to_disk(&self) {
+  	self.dimensions.iter().for_each(|x| x.1.save_to_disk(&*self.loader));
+  }
 }
 
 impl Dimension {
@@ -123,6 +127,10 @@ impl Dimension {
     }
 
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
+  }
+
+  pub fn save_to_disk(&self, loader: &(impl WorldLoader + ?Sized)) {
+ 		loader.save_to_disk(&self.chunks);
   }
 }
 
