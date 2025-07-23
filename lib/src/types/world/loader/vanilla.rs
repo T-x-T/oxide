@@ -231,7 +231,11 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
 				  _ => 6,
 				};
 
-      	let block_palette: Vec<u16> = section.blocks.iter().copied().collect::<HashSet<u16>>().into_iter().collect();
+      	let block_palette: Vec<u16> = if section.blocks.is_empty() {
+          vec![0]
+        } else {
+          section.blocks.iter().copied().collect::<HashSet<u16>>().into_iter().collect()
+        };
 				let blocks_bits_per_entry = match block_palette.len() {
 				  0..=16 => 4,
 				  17..=32 => 5,
@@ -243,45 +247,84 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
 				  1025..=2048 => 11,
 				  _ => 12,
 				};
-				//TODO: handle only one block/biome with no data array
-      	NbtTag::TagCompound(None, vec![
-     			NbtTag::Byte(Some("Y".to_string()), (i as i8 - 4) as u8),
-          NbtTag::ByteArray(Some("BlockLight".to_string()), section.block_lights.clone()),
-          NbtTag::ByteArray(Some("SkyLight".to_string()), section.sky_lights.clone()),
-          NbtTag::TagCompound(Some("biomes".to_string()), vec![
-         		NbtTag::List(Some("palette".to_string()), biome_palette.iter().map(|biome| {
+
+				let mut biome_data = vec![
+				  NbtTag::List(Some("palette".to_string()), biome_palette.iter().map(|biome| {
            		NbtTag::String(None, data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0)
-           	}).collect()),
-						NbtTag::LongArray(Some("data".to_string()), section.biomes.iter().map(|biome| {
-							*biome_palette.iter().find(|x| **x == *biome).unwrap()
-						}).collect::<Vec<u8>>().chunks(64/biomes_bits_per_entry).map(|byte_arr| {
-							let mut long = 0u64;
-							for byte in byte_arr {
-								long <<= biomes_bits_per_entry;
-								long &= *byte as u64;
-							}
-							return long as i64;
-						}).collect()
-          )]),
-          NbtTag::TagCompound(Some("block_states".to_string()), vec![
-         		NbtTag::List(Some("palette".to_string()), block_palette.iter().map(|blockstate_id| {
-              NbtTag::TagCompound(None, vec![
-                NbtTag::String(Some("Name".to_string()), all_blocks.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap().0.clone()),
-                //TODO: also add properties here
-              ])
-           	}).collect()),
+         	}).collect())
+				];
+
+				if biome_palette.len() > 1 {
+		      biome_data.push(
+  					NbtTag::LongArray(Some("data".to_string()), section.biomes.iter().map(|biome| {
+  						biome_palette.iter().enumerate().find(|x| *x.1 == *biome).unwrap().0 as u8
+  					}).collect::<Vec<u8>>().chunks(64/biomes_bits_per_entry).map(|byte_arr| {
+     					let mut long = 0u64;
+     					for byte in byte_arr {
+    						long >>= biomes_bits_per_entry;
+    						long += (*byte as u64) << (64-biomes_bits_per_entry);
+     					}
+     					if 64/biomes_bits_per_entry > byte_arr.len() {
+     					  long >>= (64/biomes_bits_per_entry - byte_arr.len()) * biomes_bits_per_entry;
+     					}
+     					long >>= 64 % biomes_bits_per_entry;
+     					return long as i64;
+						}).collect())
+				  )
+				}
+
+				let mut block_data = vec![
+				  NbtTag::List(Some("palette".to_string()), block_palette.iter().map(|blockstate_id| {
+            let block = all_blocks.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap();
+            let mut children = vec![
+              NbtTag::String(Some("Name".to_string()), block.0.clone()),
+            ];
+
+            if block.1.states.len() > 1 {
+              children.push(
+                NbtTag::TagCompound(Some("Properties".to_string()), data::blocks::get_raw_properties_from_block_state_id(&all_blocks, *blockstate_id).into_iter().map(|x| {
+                  NbtTag::String(Some(x.0), x.1)
+                }).collect())
+              );
+            }
+
+            NbtTag::TagCompound(None, children)
+         	}).collect())
+				];
+
+				if block_palette.len() > 1 {
+				  block_data.push(
 						NbtTag::LongArray(Some("data".to_string()), section.blocks.iter().map(|block| {
 							block_palette.iter().enumerate().find(|x| *x.1 == *block).unwrap().0 as u8
 						}).collect::<Vec<u8>>().chunks(64/blocks_bits_per_entry).map(|byte_arr| {
 							let mut long = 0u64;
 							for byte in byte_arr {
-								long <<= blocks_bits_per_entry;
-								long += *byte as u64;
+								long >>= blocks_bits_per_entry;
+								long += (*byte as u64) << (64-blocks_bits_per_entry);
 							}
+							if 64/blocks_bits_per_entry > byte_arr.len() {
+							  long >>= (64/blocks_bits_per_entry - byte_arr.len()) * blocks_bits_per_entry;
+							}
+							long >>= 64 % blocks_bits_per_entry;
 							return long as i64;
-						}).collect()
-          )]),
-	      ])
+						}).collect())
+					);
+				}
+
+				let mut nbt_arr = vec![
+				  NbtTag::Byte(Some("Y".to_string()), (i as i8 - 4) as u8),
+          NbtTag::TagCompound(Some("biomes".to_string()), biome_data),
+          NbtTag::TagCompound(Some("block_states".to_string()), block_data),
+				];
+
+				if !section.block_lights.is_empty() {
+		      nbt_arr.push(NbtTag::ByteArray(Some("BlockLight".to_string()), section.block_lights.clone()));
+				}
+				if !section.sky_lights.is_empty() {
+		      nbt_arr.push(NbtTag::ByteArray(Some("SkyLight".to_string()), section.sky_lights.clone()));
+				}
+
+      	return NbtTag::TagCompound(None, nbt_arr);
       }).collect()),
    	]);
 
@@ -310,6 +353,8 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
   let mut first_chunk = true;
   let mut last_chunk_offset = 0;
   let mut last_chunk_len = 0;
+
+  #[allow(clippy::needless_range_loop)] //tried to implement this but it broke so idk man
   for i in 0..locations_table.len() {
     if locations_table[i].1 == 0 {
       locations_table[i] = (0, 0);

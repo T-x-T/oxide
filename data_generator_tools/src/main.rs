@@ -11,7 +11,8 @@ fn main() {
   //do_blocks();
   //do_block_types();
   //do_properties();
-  do_get_block_state_id_from_raw();
+  //do_get_block_state_id_from_raw();
+  do_get_raw_properties_from_block_state_id();
 }
 
 fn do_items() {
@@ -52,7 +53,7 @@ fn do_blocks() {
       String::new()
     };
 
-    println!("\t\tfn add_{}(map: &mut HashMap<String, Block>) {{", convert_to_upper_camel_case(key).to_lowercase());
+    println!("\tfn add_{}(map: &mut HashMap<String, Block>) {{", convert_to_upper_camel_case(key).to_lowercase());
     println!("\t\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};");
     for x in block["states"].as_array().unwrap().iter() {
       println!("\t\tblock.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } )
@@ -178,6 +179,51 @@ fn do_get_block_state_id_from_raw() {
 
 	println!("\t}};");
 	println!("}}");
+}
+
+fn do_get_raw_properties_from_block_state_id() {
+  let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+  let mut block_types: Vec<String> = Vec::new();
+  for x in blocks_file.lines(){
+    if x.trim().starts_with("\"type\":") {
+      block_types.push(convert_to_upper_camel_case(&x.trim().replace("\"type\": \"", "").replace("\",", "")));
+    }
+  }
+  block_types.sort();
+  block_types.dedup();
+  let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
+
+  //The key is the type and then the property, because properties can have different values depending on their type
+  let mut properties: HashMap<(String, String), Vec<String>> = HashMap::new();
+  for block in blocks_json.as_object().unwrap().iter() {
+    if !block.1["properties"].is_object() {
+      continue;
+    }
+    for property in block.1["properties"].as_object().unwrap().iter() {
+      let property_entry = format!("{}{}", convert_to_upper_camel_case(block.1["definition"]["type"].as_str().unwrap()), convert_to_upper_camel_case(property.0));
+      properties.entry((convert_to_upper_camel_case(block.1["definition"]["type"].as_str().unwrap()), property.0.to_string())).or_insert(property.1.as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect());
+    }
+  }
+
+
+  println!("pub fn get_raw_properties_from_block_state_id(block_states: &HashMap<String, Block>, block_state_id: u16) -> Vec<(String, String)> {{");
+  println!("\tlet state = block_states.iter().find(|x| x.1.states.iter().any(|x| x.id == block_state_id)).unwrap().1.states.iter().find(|x| x.id == block_state_id).unwrap().clone();");
+  println!("\tlet mut output: Vec<(String, String)> = Vec::new();\n");
+  println!("\tfor property in state.properties {{");
+  println!("\t\tmatch property {{");
+  for property in properties {
+    let enum_variant = convert_to_upper_camel_case(&format!("{}{}", property.0.0, convert_to_upper_camel_case(&property.0.1)));
+    for option in property.1 {
+      let variant = if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&option) {format!("Num{}", convert_to_upper_camel_case(&option))} else {convert_to_upper_camel_case(&option)};
+      println!("\t\t\tProperty::{enum_variant}({enum_variant}::{variant}) => output.push((\"{}\".to_string(), \"{option}\".to_string())),", property.0.1);
+    }
+  }
+  println!("\t\t}}");
+  println!("\t}}");
+  println!("\treturn output;");
+  println!("}}");
 }
 
 fn convert_to_upper_camel_case(input: &str) -> String {
