@@ -20,6 +20,9 @@ pub struct Chunk {
   pub x: i32,
   pub z: i32,
   pub sections: Vec<ChunkSection>,
+  pub inhabited_time: i64,
+  pub last_update: i64,
+  pub is_light_on: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -155,6 +158,9 @@ impl Chunk {
       x: chunk_x,
       z: chunk_z,
       sections: all_chunk_sections,
+      last_update: 0,
+      inhabited_time: 0,
+      is_light_on: true,
     };
   }
 

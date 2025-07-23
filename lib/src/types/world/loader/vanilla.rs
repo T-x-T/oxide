@@ -157,7 +157,10 @@ impl super::WorldLoader for Loader {
 	 	return Chunk {
 	    x: chunk_nbt.get_child("xPos").unwrap().as_int(),
 	    z: chunk_nbt.get_child("zPos").unwrap().as_int(),
-	    sections,
+			last_update: chunk_nbt.get_child("LastUpdate").unwrap_or(&NbtTag::Long(None, 0)).as_long(),
+			inhabited_time: chunk_nbt.get_child("InhabitedTime").unwrap_or(&NbtTag::Long(None, 0)).as_long(),
+			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(None, 1)).as_byte() == 1,
+			sections,
 		};
   }
 
@@ -220,6 +223,13 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
    		NbtTag::Int(Some("yPos".to_string()), -4),
    		NbtTag::Int(Some("zPos".to_string()), chunk.z),
    		NbtTag::Int(Some("Dataversion".to_string()), 4325),
+      NbtTag::Long(Some("InhabitedTime".to_string()), chunk.inhabited_time),
+      NbtTag::Long(Some("LastUpdate".to_string()), chunk.last_update),
+      NbtTag::Byte(Some("isLightOn".to_string()), chunk.is_light_on as u8),
+      NbtTag::TagCompound(Some("blending_data".to_string()), vec![
+        NbtTag::Int(Some("max_section".to_string()), 20),
+        NbtTag::Int(Some("min_section".to_string()), -4),
+      ]),
      	NbtTag::List(Some("sections".to_string()), chunk.sections.iter().enumerate().map(|(i, section)| {
       	let biome_palette: Vec<u8> = section.biomes.iter().copied().collect::<HashSet<u8>>().into_iter().collect();
 				let biomes_bits_per_entry = match biome_palette.len() {
