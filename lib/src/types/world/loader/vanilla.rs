@@ -1,7 +1,7 @@
 use std::{collections::HashSet, fs::{self, File, OpenOptions}, io::{prelude::*, SeekFrom}, path::PathBuf, str::FromStr};
 use data::blocks::Block;
-use flate2::read::ZlibDecoder;
-use flate2::write::ZlibEncoder;
+use flate2::read::{GzDecoder, ZlibDecoder};
+use flate2::write::{GzEncoder, ZlibEncoder};
 use flate2::Compression;
 
 use crate::NbtTag;
@@ -170,7 +170,7 @@ impl super::WorldLoader for Loader {
   	return std::fs::exists(level_dat_path).unwrap();
   }
 
-  fn save_to_disk(&self, chunks: &[Chunk]) {
+  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: Position) {
  		println!("start saving world with {} chunks to disk", chunks.len());
   	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
    	for chunk in chunks {
@@ -183,7 +183,58 @@ impl super::WorldLoader for Loader {
    		save_region_to_disk(region.0, region.1.as_slice(), self.path.clone());
      	println!("saved region {:?} in {:.2?}", region.0, now.elapsed());
     }
+    write_level_dat(self.path.clone(), default_spawn_location);
   }
+
+  fn get_default_spawn_location(&self) -> Position {
+    let mut level_dat_path = self.path.clone();
+   	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
+
+    let mut file = File::open(&level_dat_path).unwrap();
+
+    let mut compressed_file_content: Vec<u8> = Vec::new();
+    file.read_to_end(&mut compressed_file_content).unwrap();
+
+    let mut file_content: Vec<u8> = Vec::new();
+    let mut decoder: GzDecoder<&[u8]> = GzDecoder::new(compressed_file_content.as_slice());
+    decoder.read_to_end(&mut file_content).unwrap();
+
+    let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
+
+    return Position {
+      x: level_data.get_child("Data").unwrap().get_child("SpawnX").unwrap().as_int(),
+      y: level_data.get_child("Data").unwrap().get_child("SpawnY").unwrap().as_int() as i16,
+      z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
+    };
+  }
+}
+
+fn write_level_dat(path: PathBuf, default_spawn_location: Position) {
+  let mut level_dat_path = path;
+ 	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
+
+ 	let mut file = OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(level_dat_path)
+    .unwrap();
+
+  let level_data = NbtTag::TagCompound(None, vec![
+    NbtTag::TagCompound(Some("Data".to_string()), vec![
+      NbtTag::Int(Some("SpawnX".to_string()), default_spawn_location.x),
+      NbtTag::Int(Some("SpawnY".to_string()), default_spawn_location.y as i32),
+      NbtTag::Int(Some("SpawnZ".to_string()), default_spawn_location.z),
+    ]),
+  ]);
+
+  let mut uncompressed_data = crate::serialize::nbt_disk(level_data);
+	let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+	encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
+	let compressed_data = encoder.finish().unwrap();
+	file.write_all(&compressed_data).unwrap();
+	file.flush().unwrap();
 }
 
 fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {

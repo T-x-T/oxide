@@ -29,9 +29,9 @@ impl Player {
   pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
 	  	let player = Self {
-	      x: 0.0,
-	      y: 100.0,
-	      z: 0.0,
+	      x: game.world.default_spawn_location.x as f64,
+	      y: game.world.default_spawn_location.y as f64,
+	      z: game.world.default_spawn_location.z as f64,
 	      yaw: 0.0,
 	      pitch: 0.0,
 	      display_name,

@@ -8,6 +8,7 @@ use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 pub struct World {
   pub dimensions: HashMap<String, Dimension>,
   pub loader: Box<dyn WorldLoader>,
+  pub default_spawn_location: Position,
 }
 
 #[derive(Debug, Clone)]
@@ -38,21 +39,24 @@ impl World {
   #[allow(clippy::new_without_default)]
   pub fn new(loader: impl WorldLoader + 'static) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
+    let default_spawn_location: Position;
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
+      default_spawn_location = loader.get_default_spawn_location();
    		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader));
     	println!("finished loading existing world in {:.2?}", now.elapsed());
    	} else {
 	    println!("create new world");
 	    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
+			default_spawn_location = Position {x: 0, y: -48, z: 0};
 	    println!("creation of new world finished");
     }
-    return Self { dimensions, loader: Box::new(loader) };
+    return Self { dimensions, loader: Box::new(loader), default_spawn_location };
   }
 
   pub fn save_to_disk(&self) {
-  	self.dimensions.iter().for_each(|x| x.1.save_to_disk(&*self.loader));
+  	self.dimensions.iter().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location));
   }
 }
 
@@ -132,8 +136,8 @@ impl Dimension {
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
   }
 
-  pub fn save_to_disk(&self, loader: &(impl WorldLoader + ?Sized)) {
- 		loader.save_to_disk(&self.chunks);
+  pub fn save_to_disk(&self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: Position) {
+ 		loader.save_to_disk(&self.chunks, default_spawn_location);
   }
 }
 
