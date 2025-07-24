@@ -10,7 +10,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build server image
-        working-directory: server
         env:
           IMAGE_TAG: ghcr.io/t-x-t/oxide/server:${{ github.ref_name }}
         run: |
@@ -20,7 +19,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: server_image
-          path: server/server_image.tar
+          path: server_image.tar
 
   server_test:
     runs-on: ubuntu-latest
