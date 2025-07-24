@@ -2,6 +2,7 @@ use super::*;
 use lib::{packets::Packet, ConnectionState};
 use std::{collections::HashMap, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
+use std::fs;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
@@ -131,6 +132,10 @@ impl Player {
   }
 
   pub fn save_to_disk(&self) {
+    if !fs::exists(Player::get_playerdata_path(self.uuid).parent().unwrap()).unwrap() {
+      fs::create_dir_all(Player::get_playerdata_path(self.uuid).parent().unwrap()).unwrap();
+    }
+
   	let mut file = OpenOptions::new()
     	.read(true)
      	.write(true)

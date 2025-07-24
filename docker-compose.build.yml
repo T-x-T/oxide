@@ -1,0 +1,11 @@
+services:
+  server:
+    build: .
+    restart: unless-stopped
+    ports:
+      - 25565:25565
+    volumes:
+      - "data:/app/world"
+
+volumes:
+  data:

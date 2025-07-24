@@ -382,6 +382,10 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
     last_chunk_len = locations_table[i].1;
   }
 
+  if !fs::exists(region_file_path.parent().unwrap()).unwrap() {
+    fs::create_dir_all(region_file_path.parent().unwrap()).unwrap();
+    fs::write(region_file_path.parent().unwrap().with_file_name("level.dat"), String::new()).unwrap();
+  }
  	let mut file = OpenOptions::new()
    	.read(true)
    	.write(true)
