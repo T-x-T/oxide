@@ -101,6 +101,7 @@ fn initialize_server() {
 fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, players: &mut Vec<Player>) {
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
+    player_to_remove.save_to_disk();
 		connection_streams.iter()
 	    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
 	    .for_each(|x| {
