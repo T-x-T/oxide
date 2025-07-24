@@ -19,7 +19,8 @@ fn main() {
 }
 
 fn initialize_server() {
-  let listener = TcpListener::bind("0.0.0.0:25565").unwrap();
+  let listener = TcpListener::bind(std::env::var("OXIDE_LISTEN_ON").unwrap_or("0.0.0.0:25565".to_string())).unwrap();
+  println!("oxide listening on {}", listener.local_addr().unwrap());
 
   let block_states = data::blocks::get_blocks();
 
