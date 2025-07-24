@@ -686,27 +686,27 @@ use super::*;
     game.players.push(new_player);
 
     connection_streams.iter()
-       .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
-       .for_each(|x| {
-       	//TODO: proper logic for updating players instead of removing and readding all
-         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
-           uuids: game.players.iter().map(|x| x.uuid).collect(),
-         }.try_into().unwrap());
+      .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+      .for_each(|x| {
+     	//TODO: proper logic for updating players instead of removing and readding all
+        let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
+          uuids: game.players.iter().map(|x| x.uuid).collect(),
+        }.try_into().unwrap());
 
-         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID, lib::packets::clientbound::play::PlayerInfoUpdate {
-           actions: 255,
-           players: game.players.iter().map(|y| (y.uuid, vec![
-             lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
-             lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-             lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
-             lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
-             lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
-             lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
-             lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
-             lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
-           ])).collect(),
-         }.try_into().unwrap());
-       });
+        let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID, lib::packets::clientbound::play::PlayerInfoUpdate {
+          actions: 255,
+          players: game.players.iter().map(|y| (y.uuid, vec![
+            lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
+            lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+            lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+            lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+            lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+            lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+            lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+            lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+          ])).collect(),
+        }.try_into().unwrap());
+      });
 
     //Spawn other already connected player entities for newly joined player
     for player in &game.players {
@@ -755,6 +755,27 @@ use super::*;
 					(5, player.get_inventory()[5].clone()),
 				],
 	   	}.try_into().unwrap()).unwrap();
+
+      let yaw: u8 = if player.get_yaw() < 0.0 {
+     		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
+      } else {
+      	((player.get_yaw() / 90.0) * 64.0) as u8
+      };
+      let pitch: u8 = if player.get_pitch() < 0.0 {
+     		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
+      } else {
+      	((player.get_pitch() / 90.0) * 64.0) as u8
+      };
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+        entity_id: player.entity_id,
+        on_ground: player.get_y() == -48.0, //TODO: add proper check
+        yaw,
+        pitch,
+      }.try_into().unwrap())?;
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+	        entity_id: player.entity_id,
+					head_yaw: yaw,
+	      }.try_into().unwrap())?;
     }
 
     //Spawn player entity for other players that are already connected
@@ -805,6 +826,27 @@ use super::*;
 					(5, new_player_inventory[5].clone()),
 				],
 	   	}.try_into().unwrap()).unwrap();
+
+	    let yaw: u8 = if player.get_yaw() < 0.0 {
+    		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
+      } else {
+       	((player.get_yaw() / 90.0) * 64.0) as u8
+      };
+	    let pitch: u8 = if player.get_pitch() < 0.0 {
+    		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
+      } else {
+       	((player.get_pitch() / 90.0) * 64.0) as u8
+      };
+			lib::utils::send_packet(player_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+        entity_id: player.entity_id,
+        on_ground: player.get_y() == -48.0, //TODO: add proper check
+        yaw,
+        pitch,
+      }.try_into().unwrap())?;
+      lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+        entity_id: player.entity_id,
+  			head_yaw: yaw,
+      }.try_into().unwrap())?;
     }
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {
