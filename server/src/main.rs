@@ -35,6 +35,7 @@ fn initialize_server() {
     last_created_entity_id: 0,
     chat_message_index: 0,
     commands: Vec::new(),
+    last_save_all_timestamp: std::time::Instant::now(),
   };
   command::init(&mut game);
 
@@ -44,9 +45,11 @@ fn initialize_server() {
 
   terminal_input::init(connection_streams.clone(), game.clone(), connections.clone());
 
+  let game_clone = game.clone();
+  std::thread::spawn(move || main_loop(game_clone));
+
   for stream in listener.incoming() {
     let stream = stream.unwrap();
-
 
     println!("New Connection from {}", stream.peer_addr().unwrap());
     let connections_clone = connections.clone();
@@ -114,4 +117,28 @@ fn disconnect_player(peer_addr: &SocketAddr, connections: &mut HashMap<SocketAdd
   connections.remove(peer_addr);
   connection_streams.remove(peer_addr);
   players.retain(|x| x.peer_socket_address != *peer_addr);
+}
+
+fn main_loop(game: Arc<Mutex<Game>>) {
+  loop {
+    let start_time = std::time::Instant::now();
+
+    tick(game.clone());
+
+    let end_time = std::time::Instant::now();
+    let tick_duration = end_time - start_time;
+
+    if std::time::Duration::from_millis(50) > tick_duration {
+      std::thread::sleep(std::time::Duration::from_millis(50) - tick_duration);
+    } else {
+      println!("tick took longer than 50ms! It finished in {tick_duration:.2?}");
+    }
+  }
+}
+
+fn tick(game: Arc<Mutex<Game>>) {
+  if std::time::Instant::now() > game.lock().unwrap().last_save_all_timestamp + std::time::Duration::from_secs(60) {
+    println!("run save-all");
+    game.lock().unwrap().save_all();
+  }
 }

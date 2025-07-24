@@ -23,7 +23,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, _c
 		return Ok(());
 	}
 
-	game.world.save_to_disk();
+	game.save_all();
 
 	return Ok(());
 }

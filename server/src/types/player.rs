@@ -130,7 +130,6 @@ impl Player {
     return player;
   }
 
-  //TODO: run this on some interval instead of on every movement
   pub fn save_to_disk(&self) {
   	let mut file = OpenOptions::new()
     	.read(true)
@@ -233,8 +232,6 @@ impl Player {
    	self.y = y;
     self.z = z;
 
-    self.save_to_disk();
-
     let old_chunk_position = Position {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
     let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
@@ -277,7 +274,6 @@ impl Player {
   pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
     self.yaw = yaw;
     self.pitch = pitch;
-    self.save_to_disk();
   }
 
   pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) {
