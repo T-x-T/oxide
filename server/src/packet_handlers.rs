@@ -116,10 +116,10 @@ pub mod login {
 
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::ServerLinks::PACKET_ID, lib::packets::clientbound::configuration::ServerLinks {
    		links: vec![
-     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "View Github repository".to_string())]), "https://github.com/T-x-T/oxide".to_string()),
-     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Open new issue".to_string())]), "https://github.com/T-x-T/oxide/issues/new".to_string()),
-       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Start new discussion".to_string())]), "https://github.com/T-x-T/oxide/discussions/new?category=general".to_string()),
-       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Support development of Oxide ♥".to_string())]), "https://ko-fi.com/thetxt".to_string()),
+     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Github repository".to_string())]), "https://github.com/T-x-T/oxide".to_string()),
+     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Report bug".to_string())]), "https://github.com/T-x-T/oxide/issues/new".to_string()),
+       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Suggest feature".to_string())]), "https://github.com/T-x-T/oxide/discussions/new?category=general".to_string()),
+       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Support development of Oxide ♥".to_string())]), "https://coff.ee/thetxt".to_string()),
      	]
     }.try_into().unwrap())?;
 
