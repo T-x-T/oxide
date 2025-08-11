@@ -9,5 +9,5 @@ FROM alpine
 EXPOSE 25565
 
 COPY --from=builder /server/server/target/release/oxide /app/oxide
-
+WORKDIR /app
 CMD ["/app/oxide"]
