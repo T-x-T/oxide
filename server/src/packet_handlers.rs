@@ -1139,14 +1139,6 @@ pub mod play {
           location: block_to_place.1,
           block_id: block_to_place.0 as i32,
         }.try_into().unwrap())?;
-
-        if *stream.0 != player.unwrap().connection_stream.peer_addr().unwrap() {
-   	      send_packet(stream.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
-  	      	event: 2001,
-  	      	location: parsed_packet.location,
-  	       	data: block_to_place.0 as i32,
-  	      }.try_into().unwrap()).unwrap();
-        }
       }
     }
 
