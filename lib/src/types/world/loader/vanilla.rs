@@ -161,6 +161,7 @@ impl super::WorldLoader for Loader {
 			inhabited_time: chunk_nbt.get_child("InhabitedTime").unwrap_or(&NbtTag::Long(None, 0)).as_long(),
 			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(None, 1)).as_byte() == 1,
 			sections,
+			modified: false,
 		};
   }
 
@@ -175,7 +176,9 @@ impl super::WorldLoader for Loader {
   	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
    	for chunk in chunks {
     	let region = chunk_to_region(chunk.x, chunk.z);
-     	regions.entry(region).or_default().push(chunk);
+      if chunk.modified {
+       	regions.entry(region).or_default().push(chunk);
+      }
     }
     println!("there are {} regions to save", regions.len());
     for region in regions {

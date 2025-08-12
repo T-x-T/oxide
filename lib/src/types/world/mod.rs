@@ -24,6 +24,7 @@ pub struct Chunk {
   pub inhabited_time: i64,
   pub last_update: i64,
   pub is_light_on: bool,
+  pub modified: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -55,8 +56,8 @@ impl World {
     return Self { dimensions, loader: Box::new(loader), default_spawn_location };
   }
 
-  pub fn save_to_disk(&self) {
-  	self.dimensions.iter().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location));
+  pub fn save_to_disk(&mut self) {
+  	self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location));
   }
 }
 
@@ -136,8 +137,13 @@ impl Dimension {
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
   }
 
-  pub fn save_to_disk(&self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: Position) {
- 		loader.save_to_disk(&self.chunks, default_spawn_location);
+  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: Position) {
+ 		{
+      loader.save_to_disk(&self.chunks, default_spawn_location);
+    }
+    for chunk in &mut self.chunks {
+      chunk.modified = false;
+    }
   }
 }
 
@@ -165,10 +171,12 @@ impl Chunk {
       last_update: 0,
       inhabited_time: 0,
       is_light_on: true,
+      modified: true,
     };
   }
 
   pub fn set_block(&mut self, position_in_chunk: Position, block_state_id: u16) {
+    self.modified = true;
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
