@@ -668,7 +668,7 @@ use super::*;
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
-     		new_player.send_chunk(&mut game.world, x, z);
+     		new_player.send_chunk(&mut game.world, x, z)?;
       }
     }
 
@@ -904,7 +904,7 @@ pub mod play {
     let old_y = player.get_y();
     let old_z = player.get_z();
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world);
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world)?;
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
@@ -936,7 +936,7 @@ pub mod play {
     let old_y = player.get_y();
     let old_z = player.get_z();
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world);
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world)?;
 
     let pitch: u8 = if parsed_packet.pitch < 0.0 {
    		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
@@ -1140,11 +1140,13 @@ pub mod play {
           block_id: block_to_place.0 as i32,
         }.try_into().unwrap())?;
 
- 	      send_packet(stream.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
-	      	event: 2001,
-	      	location: parsed_packet.location,
-	       	data: block_to_place.0 as i32,
-	      }.try_into().unwrap()).unwrap();
+        if *stream.0 != player.unwrap().connection_stream.peer_addr().unwrap() {
+   	      send_packet(stream.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+  	      	event: 2001,
+  	      	location: parsed_packet.location,
+  	       	data: block_to_place.0 as i32,
+  	      }.try_into().unwrap()).unwrap();
+        }
       }
     }
 

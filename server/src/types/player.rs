@@ -1,6 +1,6 @@
 use super::*;
 use lib::{packets::Packet, ConnectionState};
-use std::{collections::HashMap, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
+use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
 use flate2::read::GzDecoder;
@@ -229,7 +229,7 @@ impl Player {
   }
 
   //TODO: chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World) {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -244,7 +244,7 @@ impl Player {
     	lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetCenterChunk::PACKET_ID, lib::packets::clientbound::play::SetCenterChunk {
 	   		chunk_x: new_chunk_position.x,
 	     	chunk_z: new_chunk_position.z,
-     	}.try_into().unwrap()).unwrap();
+     	}.try_into()?)?;
 
      	let temp_chunk_coords_to_send: (Vec<i32>, Vec<i32>) = if new_chunk_position.x > old_chunk_position.x {
       	let new_x = new_chunk_position.x + 10;
@@ -265,15 +265,19 @@ impl Player {
       }).collect();
 
       for chunk_coords in chunk_coords_to_send {
-      	self.send_chunk(world, chunk_coords.0, chunk_coords.1);
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1)?;
       }
     }
+
+    return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World) {
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World) -> Result<(), Box<dyn Error>> {
     self.yaw = yaw;
     self.pitch = pitch;
- 		self.new_position(x, y, z, world);
+ 		self.new_position(x, y, z, world)?;
+
+    return Ok(());
   }
 
   pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
@@ -281,7 +285,7 @@ impl Player {
     self.pitch = pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
 	  let all_chunk_sections = if let Some(chunk) = chunk {
@@ -339,7 +343,9 @@ impl Player {
 	    empty_block_light_mask: vec![!block_light_mask],
 	    sky_light_arrays,
 	    block_light_arrays,
-	  }.try_into().unwrap()).unwrap();
+	  }.try_into()?)?;
+
+		return Ok(());
   }
 
   pub fn get_position_and_rotation_float(&self) -> (f64, f64, f64, f32, f32) {
