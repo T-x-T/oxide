@@ -3,6 +3,10 @@ use crate::types::*;
 use crate::CustomError;
 
 pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
+  if data.is_empty() {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
   let value = data.remove(0);
 
   return match value {
@@ -13,6 +17,10 @@ pub fn boolean(data: &mut Vec<u8>) -> Result<bool, Box<dyn Error>> {
 }
 
 pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
+  if data.len() < 2 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
   let first_byte = data.remove(0);
   let second_byte = data.remove(0);
 
@@ -22,72 +30,120 @@ pub fn unsigned_short(data: &mut Vec<u8>) -> Result<u16, Box<dyn Error>> {
 }
 
 pub fn short(data: &mut Vec<u8>) -> Result<i16, Box<dyn Error>> {
+  if data.len() < 2 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
   let drained_data = data.drain(0..2);
   let output: i16 = i16::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn short_le(data: &mut Vec<u8>) -> Result<i16, Box<dyn Error>> {
+  if data.len() < 2 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
   let drained_data = data.drain(data.len()-2..);
   let output: i16 = i16::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn int(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
+  if data.len() < 4 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..4);
   let output: i32 = i32::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn int_le(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
+  if data.len() < 4 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(data.len()-4..);
   let output: i32 = i32::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn long(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
+  if data.len() < 8 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..8);
   let output: i64 = i64::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn long_le(data: &mut Vec<u8>) -> Result<i64, Box<dyn Error>> {
+  if data.len() < 8 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(data.len()-8..);
   let output: i64 = i64::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn unsigned_long(data: &mut Vec<u8>) -> Result<u64, Box<dyn Error>> {
+  if data.len() < 8 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..8);
   let output: u64 = u64::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn double(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
+  if data.len() < 8 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..8);
   let output: f64 = f64::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn double_le(data: &mut Vec<u8>) -> Result<f64, Box<dyn Error>> {
+  if data.len() < 8 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(data.len()-8..);
   let output: f64 = f64::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn float(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
+  if data.len() < 4 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..4);
   let output: f32 = f32::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn float_le(data: &mut Vec<u8>) -> Result<f32, Box<dyn Error>> {
+  if data.len() < 4 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(data.len()-4..);
   let output: f32 = f32::from_le_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
 }
 
 pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
+  if data.len() < 16 {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
+
 	let drained_data = data.drain(0..16);
   let output: u128 = u128::from_be_bytes(drained_data.as_slice().try_into()?);
   return Ok(output);
@@ -95,6 +151,9 @@ pub fn uuid(data: &mut Vec<u8>) -> Result<u128, Box<dyn Error>> {
 
 pub fn string(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
   let length = varint(data)?;
+  if data.len() < length as usize {
+    return Err(Box::new(CustomError::InputEmpty));
+  }
   let raw_string: &[u8] = &data.clone()[..length as usize];
   data.drain(..length as usize);
 
