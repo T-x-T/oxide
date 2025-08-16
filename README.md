@@ -1,3 +1,5 @@
+The primary source lives on my private forgejo instance at [git.thetxt.io](git.thetxt.io/thetxt/oxide). You can still use GitHub to create issues or discussions.
+
 # Oxide
 The Oxide Minecraft Server aims to implement a fully functional Minecraft Server, compatible with the latest version, from scratch entirely in Rust.
 
