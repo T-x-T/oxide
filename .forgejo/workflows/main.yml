@@ -22,6 +22,7 @@ jobs:
             tee /etc/apt/sources.list.d/docker.list > /dev/null
           apt-get update
           apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+          systemctl start docker
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
       - name: Save docker image
