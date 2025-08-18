@@ -6,37 +6,12 @@ on:
 jobs:
   build_server_docker_image:
     runs-on: docker
-    container:
-      image: node:20
-      options: >-
-        --volume certs:/certs
-    env:
-      DOCKER_HOST: tcp://docker:2376
-      DOCKER_TLS_VERIFY: "1"
-      DOCKER_CERT_PATH: /certs/client
-      IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Install docker client
-        run: |
-          apt-get update
-          apt-get install -y docker.io ca-certificates
-          docker --version
-      - name: Verify docker connectivity & certs
-        run: |
-          echo "Which docker:"
-          which docker || true
-          docker --version || true
-          echo "envs:"
-          echo "DOCKER_HOST=$DOCKER_HOST"
-          echo "DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY"
-          echo "DOCKER_CERT_PATH=$DOCKER_CERT_PATH"
-          echo "certs listing:"
-          ls -la /certs || true
-          echo "Try docker info:"
-          docker info || true
       - name: Build server image
+        env:
+          IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
