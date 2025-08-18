@@ -6,23 +6,33 @@ on:
 jobs:
   build_server_docker_image:
     runs-on: docker
+    container:
+      image: docker:stable
+    env:
+      DOCKER_HOST: tcp://docker:2376
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /certs/client
+      IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Verify docker connectivity & certs
+        run: |
+          echo "Which docker:"
+          which docker || true
+          docker --version || true
+          echo "envs:"
+          echo "DOCKER_HOST=$DOCKER_HOST"
+          echo "DOCKER_TLS_VERIFY=$DOCKER_TLS_VERIFY"
+          echo "DOCKER_CERT_PATH=$DOCKER_CERT_PATH"
+          echo "certs listing:"
+          ls -la /certs || true
+          echo "Try docker info:"
+          docker info || true
       - name: Build server image
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
-          install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-          chmod a+r /etc/apt/keyrings/docker.asc
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-            tee /etc/apt/sources.list.d/docker.list > /dev/null
-          apt-get update
-          apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-          systemctl start docker
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
       - name: Save docker image
