@@ -6,8 +6,6 @@ on:
 jobs:
   build_server_docker_image:
     runs-on: docker
-    container:
-      image: docker:stable
     env:
       DOCKER_HOST: tcp://docker:2376
       DOCKER_TLS_VERIFY: "1"
@@ -16,6 +14,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install docker client
+        run: |
+          apt-get update
+          apt-get install -y docker.io ca-certificates
+          docker --version
       - name: Verify docker connectivity & certs
         run: |
           echo "Which docker:"
@@ -30,8 +33,6 @@ jobs:
           echo "Try docker info:"
           docker info || true
       - name: Build server image
-        env:
-          IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
