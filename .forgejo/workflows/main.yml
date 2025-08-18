@@ -6,6 +6,10 @@ on:
 jobs:
   build_server_docker_image:
     runs-on: docker
+    container:
+      image: node:20
+      options: >-
+        --volume certs:/certs
     env:
       DOCKER_HOST: tcp://docker:2376
       DOCKER_TLS_VERIFY: "1"
