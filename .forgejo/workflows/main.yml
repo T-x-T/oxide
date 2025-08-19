@@ -10,12 +10,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build server image
-        shell: /bin/bash
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
-        run: |
-          docker build -t $IMAGE_TAG .
-          docker save -o server_image.tar $IMAGE_TAG
+        run: /bin/bash -c docker build -t $IMAGE_TAG . && docker save -o server_image.tar $IMAGE_TAG
       - name: Save docker image
         uses: actions/upload-artifact@v4
         with:
