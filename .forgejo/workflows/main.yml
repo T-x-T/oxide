@@ -5,7 +5,9 @@ on:
 
 jobs:
   build_server_docker_image:
-    runs-on: host
+    runs-on: vm
+    container:
+      image: runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,7 +22,9 @@ jobs:
           path: server_image.tar
 
   server_test:
-    runs-on: host
+    runs-on: vm
+    container:
+      image: runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +35,7 @@ jobs:
           rustup default nightly
           cargo test
   lib_test:
-    runs-on: host
+    runs-on: vm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,7 +47,7 @@ jobs:
           cargo test
 
   server_clippy:
-    runs-on: host
+    runs-on: vm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,7 +59,7 @@ jobs:
           rustup component add --toolchain nightly clippy
           cargo clippy
   lib_clippy:
-    runs-on: host
+    runs-on: vm
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -72,7 +76,7 @@ jobs:
 
 
   push_server:
-    runs-on: host
+    runs-on: vm
     permissions:
       packages: write
     needs:
