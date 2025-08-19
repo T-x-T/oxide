@@ -14,7 +14,9 @@ jobs:
       - name: Build server image
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
-        run: /bin/bash -c /usr/bin/docker build -t $IMAGE_TAG . && /usr/bin/docker save -o server_image.tar $IMAGE_TAG
+        run: |
+          docker build -t $IMAGE_TAG .
+          docker save -o server_image.tar $IMAGE_TAG
       - name: Save docker image
         uses: actions/upload-artifact@v4
         with:
