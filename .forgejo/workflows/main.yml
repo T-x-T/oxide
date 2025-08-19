@@ -7,6 +7,8 @@ jobs:
   build_server_docker_image:
     runs-on: host
     steps:
+      - name: test
+        run: /bin/bash -c env
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build server image
