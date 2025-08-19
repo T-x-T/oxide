@@ -7,11 +7,10 @@ jobs:
   build_server_docker_image:
     runs-on: host
     steps:
-      - name: test
-        run: /bin/bash -c env
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Build server image
+        shell: /bin/bash
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
