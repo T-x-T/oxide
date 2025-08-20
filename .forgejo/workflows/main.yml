@@ -15,7 +15,7 @@ jobs:
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
-          nohup /dockerd-entrypoint.sh &
+          nohup dockerd-entrypoint.sh &
           sleep 5
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
