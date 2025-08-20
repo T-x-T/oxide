@@ -40,6 +40,8 @@ jobs:
           cargo test
   lib_test:
     runs-on: vm
+    container:
+      image: runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -52,6 +54,8 @@ jobs:
 
   server_clippy:
     runs-on: vm
+    container:
+      image: runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,6 +68,8 @@ jobs:
           cargo clippy
   lib_clippy:
     runs-on: vm
+    container:
+      image: runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
