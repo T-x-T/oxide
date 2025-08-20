@@ -1,6 +1,6 @@
 services:
   server:
-    image: ghcr.io/t-x-t/oxide/server:main
+    image: git.thetxt.io/thetxt/oxide/server:main
     restart: unless-stopped
     ports:
       - 25565:25565
