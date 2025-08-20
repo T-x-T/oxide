@@ -20,7 +20,7 @@ jobs:
           docker build -t $IMAGE_TAG .
           docker save -o server_image.tar $IMAGE_TAG
       - name: Save docker image
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: server_image
           path: server_image.tar
@@ -97,7 +97,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Download backend image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: server_image
       - name: Push server image
