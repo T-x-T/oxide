@@ -79,8 +79,6 @@ jobs:
     runs-on: vm
     container:
       image: runner-base:latest
-    permissions:
-      packages: write
     needs:
       - build_server_docker_image
       - server_test
@@ -93,7 +91,7 @@ jobs:
         with:
           registry: git.thetxt.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PACKAGE_WRITER_TOKEN }}
       - name: Download backend image
         uses: actions/download-artifact@v3
         with:
