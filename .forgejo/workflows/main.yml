@@ -7,7 +7,7 @@ jobs:
   build_server_docker_image:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
   server_test:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,7 +38,7 @@ jobs:
   lib_test:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
   server_clippy:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
   lib_clippy:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,7 +78,7 @@ jobs:
   push_server:
     runs-on: vm
     container:
-      image: runner-base:latest
+      image: git.thetxt.io/thetxt/runner-base:latest
     needs:
       - build_server_docker_image
       - server_test
