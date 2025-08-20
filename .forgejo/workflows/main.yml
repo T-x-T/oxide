@@ -34,10 +34,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Test server
         working-directory: server
-        run: |
-          rustup toolchain install nightly --profile minimal --no-self-update
-          rustup default nightly
-          cargo test
+        run: cargo test
   lib_test:
     runs-on: vm
     container:
@@ -47,10 +44,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Test lib
         working-directory: lib
-        run: |
-          rustup toolchain install nightly --profile minimal --no-self-update
-          rustup default nightly
-          cargo test
+        run: cargo test
 
   server_clippy:
     runs-on: vm
@@ -62,8 +56,6 @@ jobs:
       - name: Run clippy on server
         working-directory: server
         run: |
-          rustup toolchain install nightly --profile minimal --no-self-update
-          rustup default nightly
           rustup component add --toolchain nightly clippy
           cargo clippy
   lib_clippy:
@@ -76,8 +68,6 @@ jobs:
       - name: Run clippy on lib
         working-directory: lib
         run: |
-          rustup toolchain install nightly --profile minimal --no-self-update
-          rustup default nightly
           rustup component add --toolchain nightly clippy
           cargo clippy
 
@@ -87,6 +77,8 @@ jobs:
 
   push_server:
     runs-on: vm
+    container:
+      image: runner-base:latest
     permissions:
       packages: write
     needs:
@@ -110,5 +102,7 @@ jobs:
         env:
           IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
         run: |
+          nohup dockerd-entrypoint.sh &
+          sleep 5
           docker load -i server_image.tar
           docker push $IMAGE_TAG
