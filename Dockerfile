@@ -1,9 +1,9 @@
-FROM alpine AS builder
+FROM git.thetxt.io/thetxt/runner-base:latest AS builder
 
 WORKDIR /server
 
 ADD . .
-RUN apk add --no-cache rustup build-base && /usr/bin/rustup-init -y --default-toolchain nightly-unknown-linux-musl --profile minimal && cd server && ~/.cargo/bin/cargo build --release
+RUN cd server && ~/.cargo/bin/cargo build --release
 
 FROM alpine
 EXPOSE 25565
