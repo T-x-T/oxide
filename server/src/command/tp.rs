@@ -51,11 +51,11 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();
-		let x: i32 = str::parse(x).unwrap();
+		let x: i32 = str::parse(x).unwrap_or_default(); //TODO: parsing needs proper bounds checking
 		let y = arg_iter.next().unwrap_or_default();
-		let y: i32 = str::parse(y).unwrap();
+		let y: i32 = str::parse(y).unwrap_or_default();
 		let z = arg_iter.next().unwrap_or_default();
-		let z: i32 = str::parse(z).unwrap();
+		let z: i32 = str::parse(z).unwrap_or_default();
 		(x as f64, y as f64, z as f64, 0.0, 0.0)
 	};
 
