@@ -1122,9 +1122,51 @@ pub mod play {
       return Ok(None);
     }
 
+    let all_blocks = data::blocks::get_blocks();
+    let openable_block_ids: Vec<u16> = all_blocks.iter()
+      .filter(|x| x.1.block_type == data::blocks::Type::Door || x.1.block_type == data::blocks::Type::Trapdoor || x.1.block_type == data::blocks::Type::FenceGate)
+      .flat_map(|x| x.1.states.iter().map(|x| x.id).collect::<Vec<u16>>())
+      .collect();
+    let door_block_ids: Vec<u16> = all_blocks.iter()
+      .filter(|x| x.1.block_type == data::blocks::Type::Door)
+      .flat_map(|x| x.1.states.iter().map(|x| x.id).collect::<Vec<u16>>())
+      .collect();
+
     let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
     let used_item_name = data::items::get_item_name_by_id(used_item_id);
-    let blocks_to_place = lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z);
+    let block_id_at_location = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location).unwrap_or_default();
+
+    let blocks_to_place: Vec<(u16, Position)> = if openable_block_ids.contains(&block_id_at_location) {
+      let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&all_blocks, block_id_at_location);
+      let is_open = block_properties.iter().find(|x| x.0 == "open").unwrap().1 == "true";
+      block_properties.retain(|x| x.0 != "open");
+      block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
+
+      let block_name = all_blocks.iter().find(|x| x.1.states.iter().map(|y| y.id).collect::<Vec<u16>>().contains(&block_id_at_location)).unwrap().0;
+
+      let new_block_id = data::blocks::get_block_state_id_from_raw(&all_blocks, block_name, block_properties.clone());
+      let mut output = vec![(new_block_id, parsed_packet.location)];
+
+      if door_block_ids.contains(&block_id_at_location) {
+        let is_upper = block_properties.iter().find(|x| x.0 == "half").unwrap().1 == "upper";
+        block_properties.retain(|x| x.0 != "half");
+        if is_upper {
+          block_properties.push(("half".to_string(), "lower".to_string()));
+          let other_half_id = data::blocks::get_block_state_id_from_raw(&all_blocks, block_name, block_properties);
+          let other_half_location = Position { y: parsed_packet.location.y - 1, ..parsed_packet.location};
+          output.push((other_half_id, other_half_location));
+        } else {
+          block_properties.push(("half".to_string(), "upper".to_string()));
+          let other_half_id = data::blocks::get_block_state_id_from_raw(&all_blocks, block_name, block_properties);
+          let other_half_location = Position { y: parsed_packet.location.y + 1, ..parsed_packet.location};
+          output.push((other_half_id, other_half_location));
+        }
+      }
+
+      output
+    } else {
+      lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
+    };
 
     for block_to_place in &blocks_to_place {
       let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0);

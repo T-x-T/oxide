@@ -151,6 +151,97 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 }
 
 //
+// MARK: 0x19 interact
+//
+
+#[derive(Debug, Clone)]
+pub struct Interact {
+	pub entity_id: i32,
+	pub interact_type: i32,
+	pub target_x: Option<f32>,
+	pub target_y: Option<f32>,
+	pub target_z: Option<f32>,
+	pub hand: Option<i32>,
+	pub sneak_key_pressed: bool,
+}
+
+impl Packet for Interact {
+	const PACKET_ID: u8 = 0x19;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<Interact> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Interact) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.entity_id));
+		result.append(&mut crate::serialize::varint(value.interact_type));
+		if value.interact_type == 2 {
+      result.push(1);
+		  result.append(&mut crate::serialize::float(value.target_x.unwrap()));
+      result.push(1);
+		  result.append(&mut crate::serialize::float(value.target_y.unwrap()));
+      result.push(1);
+		  result.append(&mut crate::serialize::float(value.target_z.unwrap()));
+		}
+		if value.interact_type == 0 || value.interact_type == 2 {
+      result.push(1);
+      result.append(&mut crate::serialize::varint(value.hand.unwrap()));
+		}
+		result.append(&mut crate::serialize::boolean(value.sneak_key_pressed));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Interact {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+	  let entity_id: i32 = crate::deserialize::varint(&mut value)?;
+	  let interact_type: i32 = crate::deserialize::varint(&mut value)?;
+		let target_x: Option<f32> = if interact_type == 2 {
+		  value.remove(0);
+		  Some(crate::deserialize::float(&mut value)?)
+		} else {
+		  None
+		};
+		let target_y: Option<f32> = if interact_type == 2 {
+		  value.remove(0);
+		  Some(crate::deserialize::float(&mut value)?)
+		} else {
+		  None
+		};
+		let target_z: Option<f32> = if interact_type == 2 {
+		  value.remove(0);
+		  Some(crate::deserialize::float(&mut value)?)
+		} else {
+		  None
+		};
+		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 {
+		  value.remove(0);
+		  Some(crate::deserialize::varint(&mut value)?)
+		} else {
+		  None
+		};
+		let sneak_key_pressed: bool = crate::deserialize::boolean(&mut value)?;
+
+	  return Ok(Interact {
+      entity_id,
+      interact_type,
+      target_x,
+      target_y,
+      target_z,
+      hand,
+      sneak_key_pressed,
+		});
+	}
+}
+
+//
 // MARK: 0x1d set player position
 //
 

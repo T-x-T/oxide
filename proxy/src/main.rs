@@ -131,6 +131,11 @@ fn main() {
 	              println!("parsed packet: {parsed_packet:?}");
 	              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
               }
+              lib::packets::serverbound::play::Interact::PACKET_ID => {
+	              let parsed_packet = lib::packets::serverbound::play::Interact::try_from(server_packet.data.clone()).unwrap();
+	              println!("parsed packet: {parsed_packet:?}");
+	              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+              }
             	_ => (),
             };
           },
