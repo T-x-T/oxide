@@ -1164,7 +1164,7 @@ pub mod play {
 
         output
       } else {
-        vec![(0, new_block_location)]
+        Vec::new()
       }
     } else {
       let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
