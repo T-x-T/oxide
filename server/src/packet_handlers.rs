@@ -1127,7 +1127,7 @@ pub mod play {
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
     let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() {
-      lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location)
+      lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face)
     } else {
       let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
