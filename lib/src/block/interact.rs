@@ -1,7 +1,13 @@
 use crate::Position;
 use data::blocks::Type;
 
-pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, face: u8) -> Vec<(u16, Position)> {
+pub enum BlockInteractionResult {
+  OverwriteBlocks(Vec<(u16, Position)>),
+  OpenInventory(u8), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
+  Nothing,
+}
+
+pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, face: u8) -> BlockInteractionResult {
   let block_states = data::blocks::get_blocks();
   let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
@@ -29,7 +35,7 @@ pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, f
         (other_half_id, other_half_location)
       };
 
-      vec![(new_block_id, location), other_half]
+      BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location), other_half])
     },
     Type::Trapdoor => {
       let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&block_states, block_id_at_location);
@@ -40,7 +46,7 @@ pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, f
       let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, &block_states);
       let new_block_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties.clone());
 
-      vec![(new_block_id, location)]
+      BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location)])
     },
     Type::FenceGate => {
       let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&block_states, block_id_at_location);
@@ -65,8 +71,30 @@ pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, f
       let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, &block_states);
       let new_block_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties.clone());
 
-      vec![(new_block_id, location)]
+      BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location)])
     },
-    _ => Vec::new(),
+    Type::CraftingTable => BlockInteractionResult::OpenInventory(12),
+    Type::Chest => BlockInteractionResult::OpenInventory(2),
+    Type::EnderChest => BlockInteractionResult::OpenInventory(2),
+    Type::Barrel => BlockInteractionResult::OpenInventory(2),
+    Type::Dispenser => BlockInteractionResult::OpenInventory(6),
+    Type::Dropper => BlockInteractionResult::OpenInventory(6),
+    Type::Crafter => BlockInteractionResult::OpenInventory(7),
+    Type::Anvil => BlockInteractionResult::OpenInventory(8),
+    Type::Beacon => BlockInteractionResult::OpenInventory(9),
+    Type::BlastFurnace => BlockInteractionResult::OpenInventory(10),
+    Type::BrewingStand => BlockInteractionResult::OpenInventory(11),
+    Type::EnchantmentTable => BlockInteractionResult::OpenInventory(13),
+    Type::Furnace => BlockInteractionResult::OpenInventory(14),
+    Type::Grindstone => BlockInteractionResult::OpenInventory(15),
+    Type::Hopper => BlockInteractionResult::OpenInventory(16),
+    Type::Lectern => BlockInteractionResult::OpenInventory(17),
+    Type::Loom => BlockInteractionResult::OpenInventory(18),
+    Type::ShulkerBox => BlockInteractionResult::OpenInventory(20),
+    Type::SmithingTable => BlockInteractionResult::OpenInventory(21),
+    Type::Smoker => BlockInteractionResult::OpenInventory(22),
+    Type::CartographyTable => BlockInteractionResult::OpenInventory(23),
+    Type::Stonecutter => BlockInteractionResult::OpenInventory(24),
+    _ => BlockInteractionResult::Nothing,
   };
 }

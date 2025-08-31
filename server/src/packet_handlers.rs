@@ -1127,7 +1127,18 @@ pub mod play {
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
     let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() {
-      lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face)
+      match lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
+        lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
+        lib::block::BlockInteractionResult::OpenInventory(window_type) => {
+          send_packet(stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
+            window_id: 1,
+            window_type: window_type as i32,
+            window_title: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
+          }.try_into()?)?;
+          Vec::new()
+        },
+        lib::block::BlockInteractionResult::Nothing => Vec::new(),
+      }
     } else {
       let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
       let used_item_name = data::items::get_item_name_by_id(used_item_id);

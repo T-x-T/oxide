@@ -1247,6 +1247,49 @@ impl TryFrom<Vec<u8>> for UpdateEntityRotation {
 }
 
 //
+// MARK: 0x34 Open Screen
+//
+
+#[derive(Debug, Clone)]
+pub struct OpenScreen {
+	pub window_id: i32,
+	pub window_type: i32,
+	pub window_title: NbtTag,
+}
+
+impl Packet for OpenScreen {
+	const PACKET_ID: u8 = 0x34;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<OpenScreen> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: OpenScreen) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::varint(value.window_type));
+		output.append(&mut crate::serialize::nbt_network(value.window_title));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for OpenScreen {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			window_type: crate::deserialize::varint(&mut value)?,
+			window_title: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x3a player chat message
 //
 
