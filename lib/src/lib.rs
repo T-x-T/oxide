@@ -11,7 +11,7 @@ pub mod serialize;
 pub mod deserialize;
 pub mod utils;
 pub mod packets;
-pub mod blockstates;
+pub mod block;
 pub mod types;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;

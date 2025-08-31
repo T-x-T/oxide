@@ -1127,50 +1127,12 @@ pub mod play {
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
     let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() {
-      let openable_block_ids: Vec<u16> = block_states.iter()
-        .filter(|x| x.1.block_type == data::blocks::Type::Door || x.1.block_type == data::blocks::Type::Trapdoor || x.1.block_type == data::blocks::Type::FenceGate)
-        .flat_map(|x| x.1.states.iter().map(|x| x.id).collect::<Vec<u16>>())
-        .collect();
-
-      if openable_block_ids.contains(&block_id_at_location) {
-        let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&block_states, block_id_at_location);
-        let is_open = block_properties.iter().find(|x| x.0 == "open").unwrap().1 == "true";
-        block_properties.retain(|x| x.0 != "open");
-        block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
-
-        let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, &block_states);
-        let new_block_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties.clone());
-        let mut output = vec![(new_block_id, parsed_packet.location)];
-
-        let door_block_ids: Vec<u16> = block_states.iter()
-          .filter(|x| x.1.block_type == data::blocks::Type::Door)
-          .flat_map(|x| x.1.states.iter().map(|x| x.id).collect::<Vec<u16>>())
-          .collect();
-        if door_block_ids.contains(&block_id_at_location) {
-          let is_upper = block_properties.iter().find(|x| x.0 == "half").unwrap().1 == "upper";
-          block_properties.retain(|x| x.0 != "half");
-          if is_upper {
-            block_properties.push(("half".to_string(), "lower".to_string()));
-            let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-            let other_half_location = Position { y: parsed_packet.location.y - 1, ..parsed_packet.location};
-            output.push((other_half_id, other_half_location));
-          } else {
-            block_properties.push(("half".to_string(), "upper".to_string()));
-            let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-            let other_half_location = Position { y: parsed_packet.location.y + 1, ..parsed_packet.location};
-            output.push((other_half_id, other_half_location));
-          }
-        }
-
-        output
-      } else {
-        Vec::new()
-      }
+      lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location)
     } else {
       let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
 
-      lib::blockstates::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
+      lib::block::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
     };
 
     for block_to_place in &blocks_to_place {
