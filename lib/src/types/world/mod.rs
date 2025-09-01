@@ -187,6 +187,9 @@ impl Chunk {
     self.modified = true;
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+    if self.sections[section_id as usize].blocks.is_empty() {
+      self.sections[section_id as usize].blocks = [0; 4096].to_vec();
+    }
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
   }
 
