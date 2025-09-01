@@ -338,7 +338,7 @@ impl Player {
         packed_xz: (x.position.x as u8 & 0x0f) << 4 | x.position.z as u8 & 0x0f,
         y: x.position.y,
         block_entity_type: 1,
-        data: None,
+        data: x.data.clone().map(|x| x.into())
       })
 		  .collect();
 

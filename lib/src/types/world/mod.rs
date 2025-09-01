@@ -1,10 +1,10 @@
 pub mod loader;
 
 use std::{collections::HashMap, error::Error, fmt::Debug};
-
+use super::*;
 use data::blocks::Type;
 
-use crate::{loader::WorldLoader, types::position::Position, NbtTag, SPAWN_CHUNK_RADIUS};
+use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 
 #[derive(Debug)]
 pub struct World {
@@ -36,13 +36,6 @@ pub struct ChunkSection {
   pub biomes: Vec<u8>,
   pub sky_lights: Vec<u8>,
   pub block_lights: Vec<u8>,
-}
-
-#[derive(Debug, Clone)]
-pub struct BlockEntity {
-  pub id: String,
-  pub position: Position,
-  pub components: Option<NbtTag>,
 }
 
 impl World {
@@ -195,7 +188,12 @@ impl Chunk {
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
 
     match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
-      Type::Chest => self.block_entities.push(BlockEntity { id: "minecraft:chest".to_string(), position: position_in_chunk, components: None }),
+      Type::Chest => self.block_entities.push(BlockEntity { id: "minecraft:chest".to_string(), position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![
+        BlockEntityDataItem { slot: 1, id: "minecraft:oak_planks".to_string(), count: 10, components: Vec::new() },
+        BlockEntityDataItem { slot: 3, id: "minecraft:stone".to_string(), count: 6, components: Vec::new() },
+        BlockEntityDataItem { slot: 1, id: "minecraft:oak_planks".to_string(), count: 10, components: Vec::new() },
+        BlockEntityDataItem { slot: 10, id: "minecraft:acacia_button".to_string(), count: 6, components: Vec::new() },
+      ])) }),
       Type::TrappedChest => (),
       _ => (),
     };
@@ -205,6 +203,10 @@ impl Chunk {
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     return self.sections[section_id as usize].blocks[block_id as usize];
+  }
+
+  pub fn try_get_block_entity(&self, position_in_chunk: Position) -> Option<&BlockEntity> {
+    return self.block_entities.iter().find(|x| x.position == position_in_chunk);
   }
 }
 

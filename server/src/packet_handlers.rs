@@ -1122,7 +1122,8 @@ pub mod play {
       return Ok(None);
     }
 
-    let block_id_at_location = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location).unwrap_or_default();
+    let dimension = game.world.dimensions.get("minecraft:overworld").unwrap();
+    let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
     let block_states = data::blocks::get_blocks();
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
@@ -1140,8 +1141,11 @@ pub mod play {
             send_packet(stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
               window_id: 1,
               state_id: 1,
-              slot_data: vec![Slot { item_count: 1, item_id: Some(1), components_to_add: Vec::new(), components_to_remove: Vec::new() }; 27],
-              carried_item: Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() },
+              //TODO: gracefully handle missing block entity instead of just panicing
+              slot_data: match dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location.convert_to_position_in_chunk()).unwrap().data.as_ref().unwrap() {
+                BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| Slot { item_count: x.count as i32, item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == x.id).unwrap().1.id), components_to_add: x.components.clone(), components_to_remove: Vec::new() }).collect(),
+              },
+              carried_item: Slot::default(),
             }.try_into()?)?;
           }
           Vec::new()
