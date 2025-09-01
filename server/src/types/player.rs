@@ -288,13 +288,14 @@ impl Player {
   pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
-	  let all_chunk_sections = if let Some(chunk) = chunk {
-			&chunk.sections
+	  let chunk = if let Some(chunk) = chunk {
+			chunk
 		} else {
 			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z);
 			dimension.chunks.push(new_chunk);
-			&dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap().sections
+			dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap()
 		};
+		let all_chunk_sections = &chunk.sections;
 
 	  let all_processed_chunk_sections = all_chunk_sections.iter().map(|section| {
 	    lib::packets::clientbound::play::ChunkSection {
@@ -331,12 +332,22 @@ impl Player {
 	   	block_light_mask <<= 1;
 	  }
 
+		let block_entities: Vec<lib::packets::clientbound::play::BlockEntity> = chunk.block_entities
+		  .iter()
+		  .map(|x| lib::packets::clientbound::play::BlockEntity {
+        packed_xz: (x.position.x as u8 & 0x0f) << 4 | x.position.z as u8 & 0x0f,
+        y: x.position.y,
+        block_entity_type: 1,
+        data: None,
+      })
+		  .collect();
+
 	  lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
 	    chunk_x,
 	    chunk_z,
 	    heightmaps: vec![],
 	    data: all_processed_chunk_sections,
-	    block_entities: vec![],
+	    block_entities,
 	    sky_light_mask: vec![sky_light_mask],
 	    block_light_mask: vec![block_light_mask],
 	    empty_sky_light_mask: vec![!sky_light_mask],

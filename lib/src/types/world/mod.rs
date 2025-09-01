@@ -2,6 +2,8 @@ pub mod loader;
 
 use std::{collections::HashMap, error::Error, fmt::Debug};
 
+use data::blocks::Type;
+
 use crate::{loader::WorldLoader, types::position::Position, NbtTag, SPAWN_CHUNK_RADIUS};
 
 #[derive(Debug)]
@@ -191,6 +193,12 @@ impl Chunk {
       self.sections[section_id as usize].blocks = [0; 4096].to_vec();
     }
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
+
+    match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) {
+      Type::Chest => self.block_entities.push(BlockEntity { id: "minecraft:chest".to_string(), position: position_in_chunk, components: None }),
+      Type::TrappedChest => (),
+      _ => (),
+    };
   }
 
   pub fn get_block(&self, position_in_chunk: Position) -> u16 {
