@@ -2,7 +2,7 @@ pub mod loader;
 
 use std::{collections::HashMap, error::Error, fmt::Debug};
 
-use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
+use crate::{loader::WorldLoader, types::position::Position, NbtTag, SPAWN_CHUNK_RADIUS};
 
 #[derive(Debug)]
 pub struct World {
@@ -25,6 +25,7 @@ pub struct Chunk {
   pub last_update: i64,
   pub is_light_on: bool,
   pub modified: bool,
+  pub block_entities: Vec<BlockEntity>,
 }
 
 #[derive(Debug, Clone)]
@@ -35,6 +36,12 @@ pub struct ChunkSection {
   pub block_lights: Vec<u8>,
 }
 
+#[derive(Debug, Clone)]
+pub struct BlockEntity {
+  pub id: String,
+  pub position: Position,
+  pub components: Option<NbtTag>,
+}
 
 impl World {
   #[allow(clippy::new_without_default)]
@@ -172,6 +179,7 @@ impl Chunk {
       inhabited_time: 0,
       is_light_on: true,
       modified: true,
+      block_entities: Vec::new(),
     };
   }
 

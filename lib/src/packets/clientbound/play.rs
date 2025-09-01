@@ -152,6 +152,49 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 }
 
 //
+// MARK: 0x06 block entity data
+//
+
+#[derive(Debug, Clone)]
+pub struct BlockEntityData {
+	pub location: Position,
+	pub block_entity_type: i32,
+	pub nbt_data: NbtTag,
+}
+
+impl Packet for BlockEntityData {
+	const PACKET_ID: u8 = 0x06;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<BlockEntityData> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: BlockEntityData) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.append(&mut crate::serialize::varint(value.block_entity_type));
+		output.append(&mut crate::serialize::nbt_network(value.nbt_data));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for BlockEntityData {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			block_entity_type: crate::deserialize::varint(&mut value)?,
+			nbt_data: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x08 block update
 //
 

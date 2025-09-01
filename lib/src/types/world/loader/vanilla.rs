@@ -162,6 +162,7 @@ impl super::WorldLoader for Loader {
 			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(None, 1)).as_byte() == 1,
 			sections,
 			modified: false,
+			block_entities: Vec::new(),
 		};
   }
 

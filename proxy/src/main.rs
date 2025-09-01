@@ -267,9 +267,9 @@ fn main() {
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID => {
-		        		// let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
-		            // println!("parsed packet: {parsed_packet:?}");
-		            // parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+		        		let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+		            println!("parsed packet: {parsed_packet:?}");
+		            parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
@@ -313,6 +313,11 @@ fn main() {
 							},
 							lib::packets::clientbound::play::ServerLinks::PACKET_ID => {
 	        			let parsed_packet = lib::packets::clientbound::play::ServerLinks::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							lib::packets::clientbound::play::BlockEntityData::PACKET_ID => {
+	        			let parsed_packet = lib::packets::clientbound::play::BlockEntityData::try_from(client_packet.data.clone()).unwrap();
 								println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
