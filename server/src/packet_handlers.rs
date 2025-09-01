@@ -1135,6 +1135,15 @@ pub mod play {
             window_type: window_type as i32,
             window_title: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
           }.try_into()?)?;
+
+          if matches!(block_type_at_location, data::blocks::Type::Chest) {
+            send_packet(stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+              window_id: 1,
+              state_id: 1,
+              slot_data: vec![Slot { item_count: 1, item_id: Some(1), components_to_add: Vec::new(), components_to_remove: Vec::new() }; 27],
+              carried_item: Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() },
+            }.try_into()?)?;
+          }
           Vec::new()
         },
         lib::block::BlockInteractionResult::Nothing => Vec::new(),
