@@ -9,6 +9,6 @@ services:
     environment:
       OXIDE_LISTEN_ON: "0.0.0.0:25565"
       OXIDE_WORLD_PATH: "./world"
-
+      OXIDE_SAVE_SECONDS: "60"
 volumes:
   data:
