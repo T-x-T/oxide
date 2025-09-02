@@ -280,7 +280,7 @@ impl TryFrom<Vec<u8>> for Commands {
 }
 
 //
-// MARK: 0x12 commands
+// MARK: 0x12 set container content
 //
 
 #[derive(Debug, Clone)]
@@ -328,6 +328,95 @@ impl TryFrom<Vec<u8>> for SetContainerContent {
 			state_id,
 			slot_data,
 			carried_item,
+		});
+	}
+}
+
+//
+// MARK: 0x13 set container property
+//
+
+#[derive(Debug, Clone)]
+pub struct SetContainerProperty {
+	pub window_id: i32,
+	pub property: i16,
+	pub value: i16,
+}
+
+impl Packet for SetContainerProperty {
+	const PACKET_ID: u8 = 0x13;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetContainerProperty> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetContainerProperty) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::short(value.property));
+		output.append(&mut crate::serialize::short(value.value));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetContainerProperty {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			property: crate::deserialize::short(&mut value)?,
+			value: crate::deserialize::short(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x14 set container slot
+//
+
+#[derive(Debug, Clone)]
+pub struct SetContainerSlot {
+	pub window_id: i32,
+	pub state_id: i32,
+	pub slot: i16,
+	pub slot_data: Slot,
+}
+
+impl Packet for SetContainerSlot {
+	const PACKET_ID: u8 = 0x14;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetContainerSlot> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetContainerSlot) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::varint(value.state_id));
+		output.append(&mut crate::serialize::short(value.slot));
+		output.append(&mut crate::serialize::slot(&value.slot_data));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetContainerSlot {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			state_id: crate::deserialize::varint(&mut value)?,
+			slot: crate::deserialize::short(&mut value)?,
+			slot_data: crate::deserialize::slot(&mut value)?,
 		});
 	}
 }

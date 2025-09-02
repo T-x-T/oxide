@@ -81,6 +81,29 @@ pub fn position(input: &crate::types::position::Position) -> Vec<u8> {
   return unsigned_long(((input.x as u64 & 0x3FFFFFF) << 38) | ((input.z as u64 & 0x3FFFFFF) << 12) | (input.y as u64 & 0xFFF));
 }
 
+pub fn hashed_slot(input: &Slot) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+
+  if input.item_count == 0 || input.item_id.is_none() {
+    output.append(&mut boolean(false));
+    return output;
+  }
+
+  output.append(&mut varint(input.item_count));
+  output.append(&mut varint(input.item_id.unwrap()));
+  output.append(&mut varint(input.components_to_add.len() as i32));
+  for component in &input.components_to_add {
+    output.append(&mut varint(component.into()));
+    output.append(&mut int(0)); //there should be a CRC32C calculation of some sorts here... https://minecraft.wiki/w/Java_Edition_protocol/Slot_data#Hashed_Format
+  }
+  output.append(&mut varint(input.components_to_remove.len() as i32));
+  for component in &input.components_to_remove {
+    output.append(&mut varint(*component));
+  }
+
+  return output;
+}
+
 pub fn slot(input: &Slot) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 

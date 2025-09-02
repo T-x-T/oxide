@@ -151,6 +151,81 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 }
 
 //
+// MARK: 0x11 click container
+//
+
+#[derive(Debug, Clone)]
+pub struct ClickContainer {
+	pub window_id: i32,
+	pub state_id: i32,
+	pub slot: i16,
+	pub button: u8,
+	pub mode: i32,
+	pub changed_slots: Vec<(i16, Slot)>, //This is actually a *hashed* slot (god why??)
+	pub carried_item: Slot, //Again actually **hashed**
+}
+
+impl Packet for ClickContainer {
+	const PACKET_ID: u8 = 0x11;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<ClickContainer> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ClickContainer) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.window_id));
+		result.append(&mut crate::serialize::varint(value.state_id));
+		result.append(&mut crate::serialize::short(value.slot));
+		result.push(value.button);
+		result.append(&mut crate::serialize::varint(value.mode));
+		result.append(&mut crate::serialize::varint(value.changed_slots.len() as i32));
+		for changed_slot in value.changed_slots {
+		  result.append(&mut crate::serialize::short(changed_slot.0));
+		  result.append(&mut crate::serialize::hashed_slot(&changed_slot.1));
+		}
+	  result.append(&mut crate::serialize::hashed_slot(&value.carried_item));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ClickContainer {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let window_id = crate::deserialize::varint(&mut value)?;
+		let state_id = crate::deserialize::varint(&mut value)?;
+		let slot = crate::deserialize::short(&mut value)?;
+		let button = value.remove(0);
+		let mode = crate::deserialize::varint(&mut value)?;
+
+		let changed_slots_len = crate::deserialize::varint(&mut value)?;
+		let mut changed_slots: Vec<(i16, Slot)> = Vec::new();
+		for _ in 0..changed_slots_len {
+      changed_slots.push((
+        crate::deserialize::short(&mut value)?,
+        crate::deserialize::hashed_slot(&mut value)?
+      ));
+		}
+    let carried_item = crate::deserialize::hashed_slot(&mut value)?;
+
+	  return Ok(ClickContainer {
+      window_id,
+      state_id,
+      slot,
+      button,
+      mode,
+      changed_slots,
+      carried_item,
+		});
+	}
+}
+
+//
 // MARK: 0x19 interact
 //
 

@@ -8,6 +8,7 @@ pub struct Slot {
   pub components_to_remove: Vec<i32>,
 }
 
+
 #[derive(Debug, Clone)]
 pub enum SlotComponent {
   CustomData(NbtTag),

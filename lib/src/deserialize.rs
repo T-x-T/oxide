@@ -178,11 +178,37 @@ pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::Position, 
   });
 }
 
+pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
+  let has_item = boolean(data)?;
+
+  if !has_item {
+    return Ok(Slot::default());
+  }
+
+  let item_id = varint(data)?;
+  let item_count = varint(data)?;
+
+  let components_to_add_len = varint(data)?;
+  let mut components_to_add: Vec<(i32, i32)> = Vec::new(); //(varint, int)
+  for _ in 0..components_to_add_len {
+    components_to_add.push((varint(data)?, int(data)?));
+  }
+
+  let components_to_remove_len = varint(data)?;
+  let mut components_to_remove: Vec<i32> = Vec::new();
+  for _ in 0..components_to_remove_len {
+    components_to_remove.push(varint(data)?);
+  }
+
+  //might have to do something about the components_to_add but probably not(?)
+  return Ok(Slot { item_count, item_id: Some(item_id), components_to_add: Vec::new(), components_to_remove });
+}
+
 pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
   let item_count = varint(data)?;
 
   if item_count == 0 {
-    return Ok(Slot { item_count, item_id: None, components_to_add: vec![], components_to_remove: vec![] });
+    return Ok(Slot::default());
   }
 
   let item_id = varint(data)?;
