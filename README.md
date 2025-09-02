@@ -43,7 +43,11 @@ Remember, this is very alpha software that _will_ at some point delete your worl
 I recommend running through docker using the provided `docker-compose.yml` file. There is also a `docker-compose.build.yaml` file that builds a fresh image locally, instead of using the pre-built image from the gibthub container registry.
 
 # Configuration
-Configuration is handled through environment variables. At the moment there only is `OXIDE_LISTEN_ON` which configures the ip and port the server should listen on. The default value is `0.0.0.0:25565`.
+
+Configuration is handled through environment variables.
+| Key | Default value | Format | Notes |
+| ------------------- | ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| OXIDE_LISTEN_ON | 0.0.0.0:25565 | [ip]:[port] | |
 
 # Repository contents
 ## server
