@@ -50,6 +50,7 @@ Configuration is handled through environment variables.
 | OXIDE_LISTEN_ON | 0.0.0.0:25565 | [ip]:[port] | |
 | OXIDE_WORLD_PATH    | ./world       | any path      | ./ must be explicitly stated                                                                                            |
 | OXIDE_SAVE_SECONDS | 60            | Whole seconds |                                                                                                                         |
+| OXIDE_MOTD          | Hello oxide!  | String        | Quick and dirty hack, Freaks out on windows if string is contained in quotes or includes spaces and i don't know why... |
 # Repository contents
 ## server
 This is the actual Minecraft server.
