@@ -8,6 +8,7 @@ services:
       - "data:/app/world"
     environment:
       OXIDE_LISTEN_ON: "0.0.0.0:25565"
+      OXIDE_WORLD_PATH: "./world"
 
 volumes:
   data:

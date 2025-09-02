@@ -25,7 +25,7 @@ fn initialize_server() {
   let block_states = data::blocks::get_blocks();
 
   let world_loader = lib::world::loader::vanilla::Loader {
-    path: Path::new("./world").to_owned(),
+    path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
     block_states,
   };
 

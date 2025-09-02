@@ -48,7 +48,7 @@ Configuration is handled through environment variables.
 | Key | Default value | Format | Notes |
 | ------------------- | ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | OXIDE_LISTEN_ON | 0.0.0.0:25565 | [ip]:[port] | |
-
+| OXIDE_WORLD_PATH    | ./world       | any path      | ./ must be explicitly stated                                                                                            |
 # Repository contents
 ## server
 This is the actual Minecraft server.
