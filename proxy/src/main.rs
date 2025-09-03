@@ -92,19 +92,19 @@ fn main() {
           lib::ConnectionState::Play => {
           	match packet_id {
            		lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => {
-								// let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(server_packet.data.clone()).unwrap();
+								let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(server_packet.data.clone()).unwrap();
 								// println!("parsed packet: {parsed_packet:?}");
-								// parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+								parsed_server_packet = Some(parsed_packet.try_into().unwrap());
               },
               lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => {
-	              // let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(server_packet.data.clone()).unwrap();
+	              let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(server_packet.data.clone()).unwrap();
 	              // println!("parsed packet: {parsed_packet:?}");
-	              // parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+	              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
               },
               lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => {
-	              // let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(server_packet.data.clone()).unwrap();
+	              let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(server_packet.data.clone()).unwrap();
 	              // println!("parsed packet: {parsed_packet:?}");
-	              // parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+	              parsed_server_packet = Some(parsed_packet.try_into().unwrap());
               },
               lib::packets::serverbound::play::PlayerAction::PACKET_ID => {
 	              let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(server_packet.data.clone()).unwrap();
@@ -244,19 +244,19 @@ fn main() {
           lib::ConnectionState::Play => {
           	match packet_id {
            		lib::packets::clientbound::play::SpawnEntity::PACKET_ID => {
-	            	//	let parsed_packet = lib::packets::clientbound::play::SpawnEntity::try_from(client_packet.data.clone()).unwrap();
+	            	let parsed_packet = lib::packets::clientbound::play::SpawnEntity::try_from(client_packet.data.clone()).unwrap();
 		            // println!("parsed packet: {parsed_packet:?}");
-		            // parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+		            parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID => {
-								// let parsed_packet = lib::packets::clientbound::play::UpdateEntityPosition::try_from(client_packet.data.clone()).unwrap();
+								let parsed_packet = lib::packets::clientbound::play::UpdateEntityPosition::try_from(client_packet.data.clone()).unwrap();
 								// println!("parsed packet: {parsed_packet:?}");
-								// parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID => {
-								// let parsed_packet = lib::packets::clientbound::play::UpdateEntityPositionAndRotation::try_from(client_packet.data.clone()).unwrap();
+								let parsed_packet = lib::packets::clientbound::play::UpdateEntityPositionAndRotation::try_from(client_packet.data.clone()).unwrap();
 								// println!("parsed packet: {parsed_packet:?}");
-								// parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::UpdateEntityRotation::try_from(client_packet.data.clone()).unwrap();
@@ -274,9 +274,9 @@ fn main() {
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID => {
-		        		// let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
-		          //   println!("parsed packet: {parsed_packet:?}");
-		          //   parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+  		        	let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+  		          // println!("parsed packet: {parsed_packet:?}");
+  		          parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
