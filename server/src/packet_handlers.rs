@@ -47,6 +47,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
+      lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game, connections, connection_streams),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1116,11 +1117,10 @@ pub mod play {
         Some(x.0)}
         else {None}
       });
-    let player = game.players.get(player_index.unwrap());
-    if player.is_none() {
+    let Some(player) = game.players.get_mut(player_index.unwrap()) else {
       println!("got use_item_on packet from invalid player");
       return Ok(None);
-    }
+    };
 
     let dimension = game.world.dimensions.get("minecraft:overworld").unwrap();
     let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
@@ -1147,16 +1147,18 @@ pub mod play {
               },
               carried_item: Slot::default(),
             }.try_into()?)?;
+
+            player.opened_container_at = Some(parsed_packet.location);
           }
           Vec::new()
         },
         lib::block::BlockInteractionResult::Nothing => Vec::new(),
       }
     } else {
-      let used_item_id = player.unwrap().get_held_item(true).item_id.unwrap_or(0);
+      let used_item_id = player.get_held_item(true).item_id.unwrap_or(0);
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
 
-      lib::block::get_block_state_id(parsed_packet.face, player.unwrap().get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
+      lib::block::get_block_state_id(parsed_packet.face, player.get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
     };
 
     for block_to_place in &blocks_to_place {
@@ -1295,5 +1297,77 @@ pub mod play {
       });
 
   	return Ok(None);
+  }
+
+  pub fn click_container(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::ClickContainer::try_from(data.to_vec())?;
+    println!("{parsed_packet:?}");
+
+    let player_index = game.players.iter().enumerate().find_map(|x| {
+      if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
+        Some(x.0)}
+        else {None}
+      });
+    let Some(player) = game.players.get_mut(player_index.unwrap()) else {
+      println!("got use_item_on packet from invalid player");
+      return Ok(None);
+    };
+
+    let Some(position) = player.opened_container_at else {
+      println!("player doesn't seems to have a container opened at the moment");
+      return Ok(None);
+    };
+
+    let block_entity = game.world.dimensions
+      .get_mut("minecraft:overworld").unwrap()
+      .get_chunk_from_position_mut(position).unwrap()
+      .try_get_block_entity_mut(position.convert_to_position_in_chunk()).unwrap();
+
+    match block_entity.data.as_mut().unwrap() {
+      BlockEntityData::Chest(chest_items) => {
+        assert!(parsed_packet.slot < 63);
+        if parsed_packet.slot < 0 {
+          println!("clicked outside window");
+        } else if parsed_packet.slot < 27 {
+          //Chest inventory
+          if chest_items[parsed_packet.slot as usize].count > 0 {
+            //Slot in chest has items
+            if player.cursor_item.is_some() {
+              println!("still need to implement swapping items, or stacking up in chest");
+            } else {
+              let item = &chest_items[parsed_packet.slot as usize];
+              player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
+              chest_items[parsed_packet.slot as usize] = BlockEntityDataItem { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
+            }
+          } else {
+            //Slot in chest doesnt have items
+            if player.cursor_item.is_some() {
+              chest_items[parsed_packet.slot as usize] = BlockEntityDataItem { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
+              player.cursor_item = None;
+            }
+          }
+        } else { //Player inventory
+          if player.get_inventory()[parsed_packet.slot as usize - 18].item_count > 0 {
+            //Slot in inventory has items
+            if player.cursor_item.is_some() {
+              println!("still need to implement swapping items, or stacking up in player inventory");
+            } else {
+              let item = &player.get_inventory()[parsed_packet.slot as usize - 18];
+              player.cursor_item = Some(item.clone());
+              player.set_inventory_slot(parsed_packet.slot as u8 - 18, Slot::default(), connections, connection_streams);
+            }
+          } else {
+            //Slot in inventory doesn't have items
+            if player.cursor_item.is_some() {
+              player.set_inventory_slot(parsed_packet.slot as u8 - 18, player.cursor_item.clone().unwrap(), connections, connection_streams);
+              player.cursor_item = None;
+            }
+          }
+        }
+        println!("{chest_items:?}");
+      },
+    }
+
+    return Ok(None);
   }
 }

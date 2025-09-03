@@ -189,10 +189,7 @@ impl Chunk {
 
     match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
       Type::Chest => self.block_entities.push(BlockEntity { id: "minecraft:chest".to_string(), position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![
-        BlockEntityDataItem { slot: 1, id: "minecraft:oak_planks".to_string(), count: 10, components: Vec::new() },
-        BlockEntityDataItem { slot: 3, id: "minecraft:stone".to_string(), count: 6, components: Vec::new() },
-        BlockEntityDataItem { slot: 1, id: "minecraft:oak_planks".to_string(), count: 10, components: Vec::new() },
-        BlockEntityDataItem { slot: 10, id: "minecraft:acacia_button".to_string(), count: 6, components: Vec::new() },
+        BlockEntityDataItem { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };27
       ])) }),
       Type::TrappedChest => (),
       _ => (),
@@ -207,6 +204,10 @@ impl Chunk {
 
   pub fn try_get_block_entity(&self, position_in_chunk: Position) -> Option<&BlockEntity> {
     return self.block_entities.iter().find(|x| x.position == position_in_chunk);
+  }
+
+  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: Position) -> Option<&mut BlockEntity> {
+    return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
   }
 }
 

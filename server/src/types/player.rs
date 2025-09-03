@@ -23,6 +23,8 @@ pub struct Player {
   pub current_teleport_id: i32,
   inventory: Vec<Slot>,
   selected_slot: u8,
+  pub opened_container_at: Option<Position>, //TODO: should be unset when container is closed again
+  pub cursor_item: Option<Slot>,
 }
 
 impl Player {
@@ -43,6 +45,8 @@ impl Player {
 	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
 	      inventory: vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46],
 	      selected_slot: 0,
+				opened_container_at: None,
+				cursor_item: None,
 	    };
 
 	    game.last_created_entity_id += 1;
@@ -124,6 +128,8 @@ impl Player {
       current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
       inventory,
       selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
+      opened_container_at: None,
+      cursor_item: None
     };
 
     game.last_created_entity_id += 1;
