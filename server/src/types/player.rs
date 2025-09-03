@@ -234,7 +234,7 @@ impl Player {
     return cardinal_direction;
   }
 
-  //TODO: chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player
+  //chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player https://git.thetxt.io/thetxt/oxide/issues/24
   pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;

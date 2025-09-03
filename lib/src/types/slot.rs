@@ -9,6 +9,7 @@ pub struct Slot {
 }
 
 
+//implement missing SlotComponent variants https://git.thetxt.io/thetxt/oxide/issues/18
 #[derive(Debug, Clone)]
 pub enum SlotComponent {
   CustomData(NbtTag),
@@ -22,9 +23,9 @@ pub enum SlotComponent {
   Lore(Vec<NbtTag>),
   Rarity(u8),
   Enchantments(Vec<(i32, i32)>),
-  CanPlaceOn, //TODO: Missing block predicate array
-  CanBreak, //TODO: Missing block predicate array
-  AttributeModifiers, //TODO: Missing attribute modifiers
+  CanPlaceOn, //Missing block predicate array
+  CanBreak, //Missing block predicate array
+  AttributeModifiers, //Missing attribute modifiers
   CustomModelData(Vec<f32>, Vec<bool>, Vec<String>, Vec<i32>),
   TooltipDisplay(bool, Vec<i32>),
   RepairCost(i32),
@@ -32,19 +33,19 @@ pub enum SlotComponent {
   EnchantmentGlintOverride(bool),
   IntangibleProjectile(NbtTag),
   Food(i32, f32, bool),
-  Consumable, //TODO: Missing consume effects implementation
+  Consumable, //Missing consume effects implementation
   UseRemainder(Slot),
   UseCooldown(f32, Option<String>),
   DamageResistant(String),
-  Tool, //TODO: missing Rules implementation
+  Tool, //missing Rules implementation
   Weapon(i32, f32),
   Enchantable(i32),
-  Equippable, //TODO: couldnt be bothered yet
-  Repairable, //TODO: Missing ID Set implementation
+  Equippable, //couldnt be bothered yet
+  Repairable, //Missing ID Set implementation
   Glider,
   TooltipStyle(String),
-  DeathProtection, //TODO: Missing consume effects implementation
-  BlockAttacks, //TODO: couldnt be bothered
+  DeathProtection, //Missing consume effects implementation
+  BlockAttacks, //couldnt be bothered
   StoredEnchantments(Vec<(i32, i32)>),
   DyedColor(i32),
   MapColor(i32),
@@ -53,28 +54,28 @@ pub enum SlotComponent {
   MapPostProcessing(u8),
   ChargedProjectiles(Vec<Slot>),
   BundleContents(Vec<Slot>),
-  PotionContents, //TODO: wont be doing that rn lol
+  PotionContents, //wont be doing that rn lol
   PotionDurationScale(f32),
   SuspiciousStewEffects(Vec<(i32, i32)>),
   WritableBookContent(Vec<(String, Option<String>)>),
   WrittenBookContent(Vec<(String, Option<String>)>),
-  Trim, //TODO: yeah this also needs data still
+  Trim, //yeah this also needs data still
   DebugStickState(NbtTag),
   EntityData(NbtTag),
   BucketEntityData(NbtTag),
   BlockEntityData(NbtTag),
-  Instrument, //TODO: not important enough for now
-  ProvidesTrimMaterial, //TODO: also still missing shit
+  Instrument, //not important enough for now
+  ProvidesTrimMaterial, //also still missing shit
   OminousBottleAmplifier(u8),
-  JukeboxPlayable, //TODO: still missing some stuffs
+  JukeboxPlayable, //still missing some stuffs
   ProvidesBannerPatterns(String),
   Recipes(NbtTag),
   LodestoneTracker(bool, String, crate::Position, bool),
-  FireworkExplosion, //TODO: Missing firework explosion implementation
-  Fireworks, //TODO: Missing firework explosion implementation
+  FireworkExplosion, //Missing firework explosion implementation
+  Fireworks, //Missing firework explosion implementation
   Profile(Option<String>, Option<u128>, Vec<(String, String, Option<String>)>),
   NoteblockSound(String),
-  BannerPatterns, //TODO: figure out later
+  BannerPatterns, //figure out later
   BaseColor(u8),
   PotDecorations(Vec<i32>),
   Container(Vec<i32>),
@@ -82,10 +83,10 @@ pub enum SlotComponent {
   Bees(Vec<(NbtTag, i32, i32)>),
   Lock(NbtTag),
   ContainerLoot(NbtTag),
-  BreakSound, //TODO: will be implemented in the future
-  VillagerVariant, //TODO: will be implemented in the future
-  WolfVariant, //TODO: will be implemented in the future
-  WolfSoundVariant, //TODO: will be implemented in the future
+  BreakSound, //will be implemented in the future
+  VillagerVariant, //will be implemented in the future
+  WolfVariant, //will be implemented in the future
+  WolfSoundVariant, //will be implemented in the future
   WolfCollar(u8),
   FoxVariant(u8),
   SalmonSize(u8),
@@ -97,10 +98,10 @@ pub enum SlotComponent {
   RabbitVariant(u8),
   PigVariant(u8),
   CowVariant(u8),
-  ChickenVariant, //TODO: will be implemented in the future
+  ChickenVariant, //will be implemented in the future
   FrogVariant(i32),
   HorseVariant(u8),
-  PaintingVariant, //TODO: will maybe be bothered in the future, idk
+  PaintingVariant, //will maybe be bothered in the future, idk
   LlamaVariant(u8),
   AxolotlVariant(u8),
   CatVariant(i32),

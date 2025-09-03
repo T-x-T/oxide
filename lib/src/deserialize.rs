@@ -317,7 +317,7 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       95 => SlotComponent::ShulkerColor(data.remove(0)),
       x => {
         println!("I cant deserialize the SlotComponent with id {x}, because I dont know it");
-        return Ok(Slot::default()); //TODO: Cant safely parse the rest so lets fall back to just default
+        return Ok(Slot::default());
       },
     });
   }

@@ -1622,7 +1622,7 @@ impl Packet for PlayerInfoUpdate {
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
-//TODO: proper types
+//proper types missing https://git.thetxt.io/thetxt/oxide/issues/17
 #[derive(Debug, Clone)]
 pub enum PlayerAction {
 	AddPlayer(String, Vec<(String, String, Option<String>)>), //Name, Property<Name, Value, Signature>
@@ -2469,7 +2469,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 
 #[derive(Debug, Clone)]
 pub struct ServerLinks {
-	pub links: Vec<(NbtTag, String)>, //TODO: proper type, also handle Text Component instead of varint enum
+	pub links: Vec<(NbtTag, String)>, //proper type, also handle Text Component instead of varint enum https://git.thetxt.io/thetxt/oxide/issues/15
 }
 
 impl Packet for ServerLinks {

@@ -4,7 +4,7 @@ use super::*;
 pub struct LoginSuccess {
 	pub uuid: u128,
 	pub username: String,
-	//TODO: missing properties array: https://minecraft.wiki/w/Java_Edition_protocol#Login_Success
+	//missing properties array: https://minecraft.wiki/w/Java_Edition_protocol#Login_Success https://git.thetxt.io/thetxt/oxide/issues/16
 }
 
 impl Packet for LoginSuccess {

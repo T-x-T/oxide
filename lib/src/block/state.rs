@@ -71,7 +71,6 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::SlabType(slab_type_to_place.clone())) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id, position_to_place));
     },
     Type::Stair => {
-      //TODO: Missing curved stairs
       let facing = match cardinal_direction {
         CardinalDirection::North => StairFacing::North,
         CardinalDirection::East => StairFacing::East,
@@ -85,7 +84,6 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(facing.clone())) && x.properties.contains(&Property::StairHalf(stair_half.clone())) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id, position));
     },
     Type::IronBars => {
-      //TODO: update existing surrounding blocks
       let all_blocks = blocks::get_blocks();
       let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
@@ -98,7 +96,6 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(north.clone())) && x.properties.contains(&Property::IronBarsSouth(south.clone())) && x.properties.contains(&Property::IronBarsEast(east.clone())) && x.properties.contains(&Property::IronBarsWest(west.clone())) && x.properties.contains(&Property::IronBarsWaterlogged(water_logged.clone()))).unwrap().id, position));
     },
     Type::StainedGlassPane => {
-      //TODO: update existing surrounding blocks
       let all_blocks = blocks::get_blocks();
       let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 

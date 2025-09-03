@@ -77,7 +77,7 @@ pub mod status {
     return Ok(None);
   }
 
-  //TODO: implement actual packet struct
+  //implement actual packet struct https://git.thetxt.io/thetxt/oxide/issues/20
   pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
     let mut output: Vec<u8> = Vec::new();
     output.push(9);
@@ -690,7 +690,7 @@ use super::*;
     connection_streams.iter()
       .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
       .for_each(|x| {
-     	//TODO: proper logic for updating players instead of removing and readding all
+     	//proper logic for updating players instead of removing and readding all https://git.thetxt.io/thetxt/oxide/issues/21
         let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
           uuids: game.players.iter().map(|x| x.uuid).collect(),
         }.try_into().unwrap());
@@ -770,7 +770,7 @@ use super::*;
       };
       lib::utils::send_packet(stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //TODO: add proper check
+        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         yaw,
         pitch,
       }.try_into()?)?;
@@ -841,7 +841,7 @@ use super::*;
       };
 			lib::utils::send_packet(player_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //TODO: add proper check
+        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         yaw,
         pitch,
       }.try_into()?)?;
@@ -866,7 +866,7 @@ use super::*;
     	]),
     }.try_into()?)?;
 
-    //TODO: get rid of this once we have a real game loop
+    //get rid of this once we have a real game loop https://git.thetxt.io/thetxt/oxide/issues/23
     let stream_clone = stream.try_clone()?;
     std::thread::spawn(move || {
       loop {
@@ -916,7 +916,7 @@ pub mod play {
           delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
           delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
           delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: player.get_y() == -48.0, //TODO: add proper check
+          on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         }.try_into()?)?;
       }
     }
@@ -960,7 +960,7 @@ pub mod play {
 	        delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
 	        delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
 	        delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-	        on_ground: player.get_y() == -48.0, //TODO: add proper check
+	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
 	        yaw,
 	        pitch,
 	      }.try_into()?)?;
@@ -1004,7 +1004,7 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
-	        on_ground: player.get_y() == -48.0, //TODO: add proper check
+	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
 	        yaw,
 	        pitch,
 	      }.try_into()?)?;
