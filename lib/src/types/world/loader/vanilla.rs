@@ -154,6 +154,50 @@ impl super::WorldLoader for Loader {
 	   	sections.push(ChunkSection { blocks, biomes, sky_lights, block_lights });
     }
 
+    let mut block_entities: Vec<BlockEntity> = Vec::new();
+    if chunk_nbt.get_child("block_entities").is_some() {
+      for block_entity in chunk_nbt.get_child("block_entities").unwrap().as_list() {
+        let id = block_entity.get_child("id").unwrap().as_string();
+        let x = block_entity.get_child("x").unwrap().as_int();
+        let y = block_entity.get_child("y").unwrap().as_int() as i16;
+        let z = block_entity.get_child("z").unwrap().as_int();
+        let position = Position { x, y, z }.convert_to_position_in_chunk();
+
+        match id {
+          "minecraft:chest" => {
+            let mut data = vec![
+              BlockEntityDataItem {
+                id: "minecraft:air".to_string(),
+                count: 0,
+                components: Vec::new()
+              }; 27
+            ];
+
+            if block_entity.get_child("Items").is_some() {
+              for entry in block_entity.get_child("Items").unwrap().as_list() {
+                let slot = entry.get_child("Slot").unwrap().as_byte();
+                let count = entry.get_child("count").unwrap().as_int() as u8;
+                let id = entry.get_child("id").unwrap().as_string().to_string();
+
+                data[slot as usize] = BlockEntityDataItem { id, count, components: Vec::new() };
+              }
+            }
+
+            block_entities.push(
+              BlockEntity {
+                id: id.to_string(),
+                position,
+                components: None,
+                data: Some(BlockEntityData::Chest(data))
+              }
+            )
+          },
+          _ => block_entities.push(BlockEntity { id: id.to_string(), position: Position { x, y, z }, components: None, data: None }),
+        };
+      }
+    }
+
+
 	 	return Chunk {
 	    x: chunk_nbt.get_child("xPos").unwrap().as_int(),
 	    z: chunk_nbt.get_child("zPos").unwrap().as_int(),
@@ -162,7 +206,7 @@ impl super::WorldLoader for Loader {
 			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(None, 1)).as_byte() == 1,
 			sections,
 			modified: false,
-			block_entities: Vec::new(),
+			block_entities,
 		};
   }
 
