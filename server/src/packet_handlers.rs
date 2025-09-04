@@ -1128,33 +1128,18 @@ pub mod play {
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
     let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() {
-      match lib::block::interacted_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
+      //Don't place block, because player right clicked something that does something when right clicked
+      match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
         lib::block::BlockInteractionResult::OpenInventory(window_type) => {
-          send_packet(stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
-            window_id: 1,
-            window_type: window_type as i32,
-            window_title: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
-          }.try_into()?)?;
-
-          if matches!(block_type_at_location, data::blocks::Type::Chest) {
-            send_packet(stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
-              window_id: 1,
-              state_id: 1,
-              //TODO: gracefully handle missing block entity instead of just panicing
-              slot_data: match dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location.convert_to_position_in_chunk()).unwrap().data.as_ref().unwrap() {
-                BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| Slot { item_count: x.count as i32, item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == x.id).unwrap().1.id), components_to_add: x.components.clone(), components_to_remove: Vec::new() }).collect(),
-              },
-              carried_item: Slot::default(),
-            }.try_into()?)?;
-
-            player.opened_container_at = Some(parsed_packet.location);
-          }
+          let block_entity = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location.convert_to_position_in_chunk());
+          player.open_inventory(window_type, block_entity, parsed_packet.location);
           Vec::new()
         },
         lib::block::BlockInteractionResult::Nothing => Vec::new(),
       }
     } else {
+      //Let's go - we can place a block
       let used_item_id = player.get_held_item(true).item_id.unwrap_or(0);
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
 

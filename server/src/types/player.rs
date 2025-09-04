@@ -474,4 +474,28 @@ impl Player {
 			}
 		);
 	}
+
+	//TODO: position can be replaced once we are always passing in a proper block entity, then we can also remove the Option from block_entity
+	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: Option<&BlockEntity>, position: Position) {
+	  let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
+      window_id: 1,
+      window_type: inventory as i32,
+      window_title: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
+    }.try_into().unwrap());
+
+	  self.opened_container_at = Some(position);
+
+		if block_entity.is_none() {
+      return;
+		}
+
+    let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+      window_id: 1,
+      state_id: 1,
+      slot_data: match block_entity.unwrap().data.as_ref().unwrap() {
+        BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| Slot { item_count: x.count as i32, item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == x.id).unwrap().1.id), components_to_add: x.components.clone(), components_to_remove: Vec::new() }).collect(),
+      },
+      carried_item: Slot::default(),
+    }.try_into().unwrap());
+	}
 }

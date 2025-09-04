@@ -1,13 +1,14 @@
 use crate::Position;
 use data::blocks::Type;
+use data::inventory::Inventory;
 
 pub enum BlockInteractionResult {
   OverwriteBlocks(Vec<(u16, Position)>),
-  OpenInventory(u8), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
+  OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
   Nothing,
 }
 
-pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, face: u8) -> BlockInteractionResult {
+pub fn interact_with_block_at(location: Position, block_id_at_location: u16, face: u8) -> BlockInteractionResult {
   let block_states = data::blocks::get_blocks();
   let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
@@ -73,28 +74,28 @@ pub fn interacted_with_block_at(location: Position, block_id_at_location: u16, f
 
       BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location)])
     },
-    Type::CraftingTable => BlockInteractionResult::OpenInventory(12),
-    Type::Chest => BlockInteractionResult::OpenInventory(2),
-    Type::EnderChest => BlockInteractionResult::OpenInventory(2),
-    Type::Barrel => BlockInteractionResult::OpenInventory(2),
-    Type::Dispenser => BlockInteractionResult::OpenInventory(6),
-    Type::Dropper => BlockInteractionResult::OpenInventory(6),
-    Type::Crafter => BlockInteractionResult::OpenInventory(7),
-    Type::Anvil => BlockInteractionResult::OpenInventory(8),
-    Type::Beacon => BlockInteractionResult::OpenInventory(9),
-    Type::BlastFurnace => BlockInteractionResult::OpenInventory(10),
-    Type::BrewingStand => BlockInteractionResult::OpenInventory(11),
-    Type::EnchantmentTable => BlockInteractionResult::OpenInventory(13),
-    Type::Furnace => BlockInteractionResult::OpenInventory(14),
-    Type::Grindstone => BlockInteractionResult::OpenInventory(15),
-    Type::Hopper => BlockInteractionResult::OpenInventory(16),
-    Type::Lectern => BlockInteractionResult::OpenInventory(17),
-    Type::Loom => BlockInteractionResult::OpenInventory(18),
-    Type::ShulkerBox => BlockInteractionResult::OpenInventory(20),
-    Type::SmithingTable => BlockInteractionResult::OpenInventory(21),
-    Type::Smoker => BlockInteractionResult::OpenInventory(22),
-    Type::CartographyTable => BlockInteractionResult::OpenInventory(23),
-    Type::Stonecutter => BlockInteractionResult::OpenInventory(24),
+    Type::CraftingTable => BlockInteractionResult::OpenInventory(Inventory::Crafting),
+    Type::Chest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
+    Type::EnderChest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
+    Type::Barrel => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
+    Type::Dispenser => BlockInteractionResult::OpenInventory(Inventory::Generic3x3),
+    Type::Dropper => BlockInteractionResult::OpenInventory(Inventory::Generic3x3),
+    Type::Crafter => BlockInteractionResult::OpenInventory(Inventory::Crafter3x3),
+    Type::Anvil => BlockInteractionResult::OpenInventory(Inventory::Anvil),
+    Type::Beacon => BlockInteractionResult::OpenInventory(Inventory::Beacon),
+    Type::BlastFurnace => BlockInteractionResult::OpenInventory(Inventory::BlastFurnace),
+    Type::BrewingStand => BlockInteractionResult::OpenInventory(Inventory::BrewingStand),
+    Type::EnchantmentTable => BlockInteractionResult::OpenInventory(Inventory::Enchantment),
+    Type::Furnace => BlockInteractionResult::OpenInventory(Inventory::Furnace),
+    Type::Grindstone => BlockInteractionResult::OpenInventory(Inventory::Grindstone),
+    Type::Hopper => BlockInteractionResult::OpenInventory(Inventory::Hopper),
+    Type::Lectern => BlockInteractionResult::OpenInventory(Inventory::Lectern),
+    Type::Loom => BlockInteractionResult::OpenInventory(Inventory::Loom),
+    Type::ShulkerBox => BlockInteractionResult::OpenInventory(Inventory::ShulkerBox),
+    Type::SmithingTable => BlockInteractionResult::OpenInventory(Inventory::Smithing),
+    Type::Smoker => BlockInteractionResult::OpenInventory(Inventory::Smoker),
+    Type::CartographyTable => BlockInteractionResult::OpenInventory(Inventory::CartographyTable),
+    Type::Stonecutter => BlockInteractionResult::OpenInventory(Inventory::Stonecutter),
     _ => BlockInteractionResult::Nothing,
   };
 }

@@ -13,7 +13,7 @@ pub enum BlockEntityData {
   Chest(Vec<BlockEntityDataItem>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct BlockEntityDataItem {
   pub id: String,
   pub count: u8,
