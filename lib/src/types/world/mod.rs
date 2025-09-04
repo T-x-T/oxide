@@ -207,6 +207,7 @@ impl Chunk {
   }
 
   pub fn try_get_block_entity_mut(&mut self, position_in_chunk: Position) -> Option<&mut BlockEntity> {
+    self.modified = true; //cant know what caller will do with the &mut so better be safe
     return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
   }
 }
