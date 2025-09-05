@@ -157,43 +157,12 @@ impl super::WorldLoader for Loader {
     let mut block_entities: Vec<BlockEntity> = Vec::new();
     if chunk_nbt.get_child("block_entities").is_some() {
       for block_entity in chunk_nbt.get_child("block_entities").unwrap().as_list() {
-        let id = block_entity.get_child("id").unwrap().as_string();
-        let x = block_entity.get_child("x").unwrap().as_int();
-        let y = block_entity.get_child("y").unwrap().as_int() as i16;
-        let z = block_entity.get_child("z").unwrap().as_int();
-        let position = Position { x, y, z }.convert_to_position_in_chunk();
-
-        match id {
-          "minecraft:chest" => {
-            let mut data = vec![
-              BlockEntityDataItem {
-                id: "minecraft:air".to_string(),
-                count: 0,
-                components: Vec::new()
-              }; 27
-            ];
-
-            if block_entity.get_child("Items").is_some() {
-              for entry in block_entity.get_child("Items").unwrap().as_list() {
-                let slot = entry.get_child("Slot").unwrap().as_byte();
-                let count = entry.get_child("count").unwrap().as_int() as u8;
-                let id = entry.get_child("id").unwrap().as_string().to_string();
-
-                data[slot as usize] = BlockEntityDataItem { id, count, components: Vec::new() };
-              }
-            }
-
-            block_entities.push(
-              BlockEntity {
-                id: id.to_string(),
-                position,
-                components: None,
-                data: Some(BlockEntityData::Chest(data))
-              }
-            )
-          },
-          _ => block_entities.push(BlockEntity { id: id.to_string(), position: Position { x, y, z }, components: None, data: None }),
-        };
+        let res = parse_blockentity_nbt(block_entity);
+        if let Ok(res) = res {
+          block_entities.push(res);
+        } else {
+          println!("tried to load an unkown blockentity from disk, skipping it: {:?}", res.err());
+        }
       }
     }
 
@@ -255,6 +224,46 @@ impl super::WorldLoader for Loader {
       z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
     };
   }
+}
+
+fn parse_blockentity_nbt(block_entity: NbtTag) -> Result<BlockEntity, Box<dyn Error>> {
+  let id: BlockEntityId = block_entity.get_child("id").unwrap().as_string().try_into()?;
+  let x = block_entity.get_child("x").unwrap().as_int();
+  let y = block_entity.get_child("y").unwrap().as_int() as i16;
+  let z = block_entity.get_child("z").unwrap().as_int();
+  let position = Position { x, y, z }.convert_to_position_in_chunk();
+
+  match id {
+    BlockEntityId::Chest => {
+      let mut data = vec![
+        BlockEntityDataItem {
+          id: "minecraft:air".to_string(),
+          count: 0,
+          components: Vec::new()
+        }; 27
+      ];
+
+      if block_entity.get_child("Items").is_some() {
+        for entry in block_entity.get_child("Items").unwrap().as_list() {
+          let slot = entry.get_child("Slot").unwrap().as_byte();
+          let count = entry.get_child("count").unwrap().as_int() as u8;
+          let id = entry.get_child("id").unwrap().as_string().to_string();
+
+          data[slot as usize] = BlockEntityDataItem { id, count, components: Vec::new() };
+        }
+      }
+
+      return Ok(
+        BlockEntity {
+          id,
+          position,
+          components: None,
+          data: Some(BlockEntityData::Chest(data))
+        }
+      )
+    },
+    _ => return Ok(BlockEntity { id, position: Position { x, y, z }, components: None, data: None }),
+  };
 }
 
 fn write_level_dat(path: PathBuf, default_spawn_location: Position) {
@@ -458,7 +467,7 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
           };
 
           let default_tags: Vec<NbtTag> = vec![
-            NbtTag::String(Some("id".to_string()), block_entity.id.clone()),
+            NbtTag::String(Some("id".to_string()), Into::<&str>::into(block_entity.id).to_string()),
             NbtTag::Int(Some("x".to_string()), block_entity.position.x),
             NbtTag::Int(Some("y".to_string()), block_entity.position.y as i32),
             NbtTag::Int(Some("z".to_string()), block_entity.position.z),

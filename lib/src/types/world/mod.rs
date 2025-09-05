@@ -189,7 +189,7 @@ impl Chunk {
 
     match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
       Type::Chest => self.block_entities.push(
-        BlockEntity { id: "minecraft:chest".to_string(), position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
+        BlockEntity { id: BlockEntityId::Chest, position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
       ),
       Type::TrappedChest => (),
       _ => (),
