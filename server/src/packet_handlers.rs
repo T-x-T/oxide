@@ -1132,7 +1132,7 @@ pub mod play {
       match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
         lib::block::BlockInteractionResult::OpenInventory(window_type) => {
-          let block_entity = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location.convert_to_position_in_chunk());
+          let block_entity = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location);
           player.open_inventory(window_type, block_entity, parsed_packet.location);
           Vec::new()
         },
@@ -1306,7 +1306,7 @@ pub mod play {
     let block_entity = game.world.dimensions
       .get_mut("minecraft:overworld").unwrap()
       .get_chunk_from_position_mut(position).unwrap()
-      .try_get_block_entity_mut(position.convert_to_position_in_chunk()).unwrap();
+      .try_get_block_entity_mut(position).unwrap();
 
     match block_entity.data.as_mut().unwrap() {
       BlockEntityData::Chest(chest_items) => {
@@ -1351,6 +1351,7 @@ pub mod play {
         }
         println!("{chest_items:?}");
       },
+      _ => todo!(),
     }
 
     return Ok(None);

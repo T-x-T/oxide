@@ -191,7 +191,9 @@ impl Chunk {
       Type::Chest => self.block_entities.push(
         BlockEntity { id: BlockEntityId::Chest, position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
       ),
-      Type::TrappedChest => (),
+      Type::TrappedChest => self.block_entities.push(
+        BlockEntity { id: BlockEntityId::TrappedChest, position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
+      ),
       _ => (),
     };
   }

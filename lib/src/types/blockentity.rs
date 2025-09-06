@@ -5,7 +5,7 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct BlockEntity {
   pub id: BlockEntityId,
-  pub position: Position,
+  pub position: Position, //global position, NOT within the chunk
   pub components: Option<Vec<SlotComponent>>, //At least I think so?
   pub data: Option<BlockEntityData>,
 }
@@ -172,9 +172,12 @@ impl TryFrom<&str> for BlockEntityId {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum BlockEntityData {
+  Banner(Vec<(String, String)>), //patterns: <pattern, color>
   Chest(Vec<BlockEntityDataItem>),
+  #[default]
+  NoData, //TODO: remove when everything is implemented
 }
 
 #[derive(Debug, Clone, Default)]
@@ -184,11 +187,35 @@ pub struct BlockEntityDataItem {
   pub components: Vec<SlotComponent>,
 }
 
+impl From<BlockEntity> for NbtTag {
+  fn from(value: BlockEntity) -> Self {
+    println!("{value:?}");
+    let mut items: Vec<NbtTag> = vec![
+      NbtTag::String(Some("id".to_string()), Into::<&str>::into(value.id).to_string()),
+      NbtTag::Int(Some("x".to_string()), value.position.x),
+      NbtTag::Int(Some("y".to_string()), value.position.y as i32),
+      NbtTag::Int(Some("z".to_string()), value.position.z),
+    ];
 
-impl From<BlockEntityData> for NbtTag {
-  fn from(value: BlockEntityData) -> Self {
+    if let Some(block_entity_data) = value.data {
+      match block_entity_data {
+        BlockEntityData::Banner(_items) => (),
+        BlockEntityData::Chest(block_entity_data_items) => items.push(NbtTag::TagCompound(Some("Items".to_string()), block_entity_data_items.iter().map(Into::into).collect())),
+        BlockEntityData::NoData => (),
+      }
+
+    }
+
+    return NbtTag::TagCompound(None, items);
+  }
+}
+
+impl From<&BlockEntityData> for Vec<NbtTag> {
+  fn from(value: &BlockEntityData) -> Self {
     return match value {
-      BlockEntityData::Chest(block_entity_data_items) => NbtTag::TagCompound(None, block_entity_data_items.iter().map(|x| x.into()).collect()),
+      BlockEntityData::Banner(data) => vec![NbtTag::List(Some("patterns".to_string()), data.iter().map(|x| NbtTag::TagCompound(None, vec![NbtTag::String(Some("color".to_string()), x.1.clone()), NbtTag::String(Some("pattern".to_string()), x.0.clone())])).collect())],
+      BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| x.into()).collect(),
+      BlockEntityData::NoData => Vec::new(),
     };
   }
 }

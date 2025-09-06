@@ -341,10 +341,10 @@ impl Player {
 		let block_entities: Vec<lib::packets::clientbound::play::BlockEntity> = chunk.block_entities
 		  .iter()
 		  .map(|x| lib::packets::clientbound::play::BlockEntity {
-        packed_xz: (x.position.x as u8 & 0x0f) << 4 | x.position.z as u8 & 0x0f,
+        packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
         y: x.position.y,
         block_entity_type: 1,
-        data: x.data.clone().map(|x| x.into())
+        data: x.data.as_ref().map(|x| NbtTag::TagCompound(None, x.into()))
       })
 		  .collect();
 
@@ -492,8 +492,9 @@ impl Player {
     let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
-      slot_data: match block_entity.unwrap().data.as_ref().unwrap() {
+      slot_data: match block_entity.cloned().unwrap().data.unwrap_or_default() {
         BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| Slot { item_count: x.count as i32, item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == x.id).unwrap().1.id), components_to_add: x.components.clone(), components_to_remove: Vec::new() }).collect(),
+        _ => Vec::new(),
       },
       carried_item: Slot::default(),
     }.try_into().unwrap());

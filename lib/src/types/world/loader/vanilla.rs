@@ -231,7 +231,7 @@ fn parse_blockentity_nbt(block_entity: NbtTag) -> Result<BlockEntity, Box<dyn Er
   let x = block_entity.get_child("x").unwrap().as_int();
   let y = block_entity.get_child("y").unwrap().as_int() as i16;
   let z = block_entity.get_child("z").unwrap().as_int();
-  let position = Position { x, y, z }.convert_to_position_in_chunk();
+  let position = Position { x, y, z };
 
   match id {
     BlockEntityId::Chest => {
@@ -447,35 +447,13 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
    	];
 
     if !chunk.block_entities.is_empty() {
-      chunk_nbt_tags.push(
-        NbtTag::List(Some("block_entities".to_string()), chunk.block_entities.iter().map(|block_entity| {
-          let extra_tags: Vec<NbtTag> = match &block_entity.data {
-            Some(x) => match x {
-              BlockEntityData::Chest(block_entity_data_items) => {
-                vec![
-                  NbtTag::List(Some("Items".to_string()), block_entity_data_items.iter().enumerate().map(|(i, slot)| {
-                    NbtTag::TagCompound(None, vec![
-                      NbtTag::Byte(Some("Slot".to_string()), i as u8),
-                      NbtTag::Int(Some("count".to_string()), slot.count as i32),
-                      NbtTag::String(Some("id".to_string()), slot.id.clone()),
-                    ])
-                  }).collect())
-                ]
-              },
-            },
-            None => Vec::new(),
-          };
+      let block_entities_nbt = NbtTag::List(Some("block_entities".to_string()), chunk.block_entities.iter().map(|block_entity| {
+        block_entity.clone().into()
+      }).collect());
 
-          let default_tags: Vec<NbtTag> = vec![
-            NbtTag::String(Some("id".to_string()), Into::<&str>::into(block_entity.id).to_string()),
-            NbtTag::Int(Some("x".to_string()), block_entity.position.x),
-            NbtTag::Int(Some("y".to_string()), block_entity.position.y as i32),
-            NbtTag::Int(Some("z".to_string()), block_entity.position.z),
-          ];
+      println!("{block_entities_nbt:?}");
 
-          NbtTag::TagCompound(None, [default_tags, extra_tags].concat())
-        }).collect()
-      ));
+      chunk_nbt_tags.push(block_entities_nbt);
     }
 
   	let chunk_nbt = NbtTag::TagCompound(None, chunk_nbt_tags);
