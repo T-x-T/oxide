@@ -187,6 +187,8 @@ impl Chunk {
     }
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
 
+    self.block_entities.retain(|x| x.position != position_global); //TODO: also drop items of removed Blockentities that have an inventory
+
     if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id) {
       self.block_entities.push(blockentity);
     }
