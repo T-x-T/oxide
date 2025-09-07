@@ -1,5 +1,7 @@
 use std::error::Error;
 
+use data::blocks::Type;
+
 use super::*;
 
 #[derive(Debug, Clone)]
@@ -28,7 +30,6 @@ pub enum BlockEntityId {
   Comperator,
   CommandBlock,
   Conduit,
-  CopperGolemStatue,
   Crafter,
   CreakingHeart,
   DaylightDetector,
@@ -80,7 +81,6 @@ impl From<BlockEntityId> for &str {
       BlockEntityId::Comperator => "minecraft:comperator",
       BlockEntityId::CommandBlock => "minecraft:command_block",
       BlockEntityId::Conduit => "minecraft:conduit",
-      BlockEntityId::CopperGolemStatue => "minecraft:copper_golem_statue",
       BlockEntityId::Crafter => "minecraft:crafter",
       BlockEntityId::CreakingHeart => "minecraft:creaking_heart",
       BlockEntityId::DaylightDetector => "minecraft:daylight_detector",
@@ -136,7 +136,6 @@ impl TryFrom<&str> for BlockEntityId {
        "minecraft:comperator" => Ok(BlockEntityId::Comperator),
        "minecraft:command_block" => Ok(BlockEntityId::CommandBlock),
        "minecraft:conduit" => Ok(BlockEntityId::Conduit),
-       "minecraft:copper_golem_statue" => Ok(BlockEntityId::CopperGolemStatue),
        "minecraft:crafter" => Ok(BlockEntityId::Crafter),
        "minecraft:creaking_heart" => Ok(BlockEntityId::CreakingHeart),
        "minecraft:daylight_detector" => Ok(BlockEntityId::DaylightDetector),
@@ -180,16 +179,21 @@ pub enum BlockEntityData {
   NoData, //TODO: remove when everything is implemented
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct BlockEntityDataItem {
   pub id: String,
   pub count: u8,
   pub components: Vec<SlotComponent>,
 }
 
+impl Default for BlockEntityDataItem {
+  fn default() -> Self {
+    Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
+  }
+}
+
 impl From<BlockEntity> for NbtListTag {
   fn from(value: BlockEntity) -> Self {
-    println!("{value:?}");
     let mut items: Vec<NbtTag> = vec![
       NbtTag::String("id".to_string(), Into::<&str>::into(value.id).to_string()),
       NbtTag::Int("x".to_string(), value.position.x),
@@ -224,4 +228,59 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       BlockEntityData::NoData => Vec::new(),
     };
   }
+}
+
+pub fn get_blockentity_for_placed_block(position_global: Position, block_state_id: u16) -> Option<BlockEntity> {
+  return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
+    Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, position: position_global, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }),
+    Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, position: position_global, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }),
+    Type::Barrel => Some(BlockEntity { id: BlockEntityId::Barrel, position: position_global, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }),
+    Type::Banner => Some(BlockEntity { id: BlockEntityId::Banner, position: position_global, components: None, data: None }),
+    Type::WallBanner => Some(BlockEntity { id: BlockEntityId::Banner, position: position_global, components: None, data: None }),
+    Type::Beacon => Some(BlockEntity { id: BlockEntityId::Beacon, position: position_global, components: None, data: None }),
+    Type::Bed => Some(BlockEntity { id: BlockEntityId::Bed, position: position_global, components: None, data: None }),
+    Type::Beehive => Some(BlockEntity { id: BlockEntityId::Beehive, position: position_global, components: None, data: None }),
+    Type::Bell => Some(BlockEntity { id: BlockEntityId::Bell, position: position_global, components: None, data: None }),
+    Type::BlastFurnace => Some(BlockEntity { id: BlockEntityId::BlastFurnace, position: position_global, components: None, data: None }),
+    Type::BrewingStand => Some(BlockEntity { id: BlockEntityId::BrewingStand, position: position_global, components: None, data: None }),
+    Type::Brushable => Some(BlockEntity { id: BlockEntityId::BrushableBlock, position: position_global, components: None, data: None }),
+    Type::CalibratedSculkSensor => Some(BlockEntity { id: BlockEntityId::CalibratedSculkSensor, position: position_global, components: None, data: None }),
+    Type::Campfire => Some(BlockEntity { id: BlockEntityId::Campfire, position: position_global, components: None, data: None }), //TODO: check via block_state_id if this is a regular or soul campfire
+    Type::ChiseledBookShelf => Some(BlockEntity { id: BlockEntityId::ChiseledBookshelf, position: position_global, components: None, data: None }),
+    Type::Comparator => Some(BlockEntity { id: BlockEntityId::Comperator, position: position_global, components: None, data: None }),
+    Type::Command => Some(BlockEntity { id: BlockEntityId::CommandBlock, position: position_global, components: None, data: None }),
+    Type::Conduit => Some(BlockEntity { id: BlockEntityId::Conduit, position: position_global, components: None, data: None }),
+    Type::Crafter => Some(BlockEntity { id: BlockEntityId::Crafter, position: position_global, components: None, data: None }),
+    Type::CreakingHeart => Some(BlockEntity { id: BlockEntityId::CreakingHeart, position: position_global, components: None, data: None }),
+    Type::DaylightDetector => Some(BlockEntity { id: BlockEntityId::DaylightDetector, position: position_global, components: None, data: None }),
+    Type::DecoratedPot => Some(BlockEntity { id: BlockEntityId::DecoratedPot, position: position_global, components: None, data: None }),
+    Type::Dispenser => Some(BlockEntity { id: BlockEntityId::Dispenser, position: position_global, components: None, data: None }),
+    Type::Dropper => Some(BlockEntity { id: BlockEntityId::Dropper, position: position_global, components: None, data: None }),
+    Type::EnchantmentTable => Some(BlockEntity { id: BlockEntityId::EnchantingTable, position: position_global, components: None, data: None }),
+    Type::EnderChest => Some(BlockEntity { id: BlockEntityId::EnderChest, position: position_global, components: None, data: None }),
+    Type::EndGateway => Some(BlockEntity { id: BlockEntityId::EndGateway, position: position_global, components: None, data: None }),
+    Type::EndPortal => Some(BlockEntity { id: BlockEntityId::EndPortal, position: position_global, components: None, data: None }),
+    Type::Furnace => Some(BlockEntity { id: BlockEntityId::Furnace, position: position_global, components: None, data: None }),
+    Type::WallHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, position: position_global, components: None, data: None }),
+    Type::CeilingHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, position: position_global, components: None, data: None }),
+    Type::Hopper => Some(BlockEntity { id: BlockEntityId::Hopper, position: position_global, components: None, data: None }),
+    Type::Jigsaw => Some(BlockEntity { id: BlockEntityId::Jigsaw, position: position_global, components: None, data: None }),
+    Type::Jukebox => Some(BlockEntity { id: BlockEntityId::Jukebox, position: position_global, components: None, data: None }),
+    Type::Lectern => Some(BlockEntity { id: BlockEntityId::Lectern, position: position_global, components: None, data: None }),
+    Type::Spawner => Some(BlockEntity { id: BlockEntityId::MobSpawner, position: position_global, components: None, data: None }),
+    Type::MovingPiston => Some(BlockEntity { id: BlockEntityId::Piston, position: position_global, components: None, data: None }),
+    Type::ShulkerBox => Some(BlockEntity { id: BlockEntityId::ShulkerBox, position: position_global, components: None, data: None }),
+    Type::WallSign => Some(BlockEntity { id: BlockEntityId::Sign, position: position_global, components: None, data: None }),
+    Type::StandingSign => Some(BlockEntity { id: BlockEntityId::Sign, position: position_global, components: None, data: None }),
+    Type::Skull => Some(BlockEntity { id: BlockEntityId::Skull, position: position_global, components: None, data: None }),
+    Type::WallSkull => Some(BlockEntity { id: BlockEntityId::Skull, position: position_global, components: None, data: None }),
+    Type::SculkCatalyst => Some(BlockEntity { id: BlockEntityId::SculkCatalyst, position: position_global, components: None, data: None }),
+    Type::SculkSensor => Some(BlockEntity { id: BlockEntityId::SculkSensor, position: position_global, components: None, data: None }),
+    Type::SculkShrieker => Some(BlockEntity { id: BlockEntityId::SculkShrieker, position: position_global, components: None, data: None }),
+    Type::Smoker => Some(BlockEntity { id: BlockEntityId::Smoker, position: position_global, components: None, data: None }),
+    Type::Structure => Some(BlockEntity { id: BlockEntityId::StructureBlock, position: position_global, components: None, data: None }),
+    Type::TrialSpawner => Some(BlockEntity { id: BlockEntityId::TrialSpawner, position: position_global, components: None, data: None }),
+    Type::Vault => Some(BlockEntity { id: BlockEntityId::Vault, position: position_global, components: None, data: None }),
+    _ => None,
+  };
 }

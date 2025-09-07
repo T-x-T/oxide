@@ -2,7 +2,6 @@ pub mod loader;
 
 use std::{collections::HashMap, error::Error, fmt::Debug};
 use super::*;
-use data::blocks::Type;
 
 use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 
@@ -122,7 +121,7 @@ impl Dimension {
       return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
     }
 
-    chunk.unwrap().set_block(position.convert_to_position_in_chunk(), block_state_id);
+    chunk.unwrap().set_block(position, block_state_id);
 
     return Ok(());
   }
@@ -178,8 +177,9 @@ impl Chunk {
     };
   }
 
-  pub fn set_block(&mut self, position_in_chunk: Position, block_state_id: u16) {
+  pub fn set_block(&mut self, position_global: Position, block_state_id: u16) {
     self.modified = true;
+    let position_in_chunk = position_global.convert_to_position_in_chunk();
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     if self.sections[section_id as usize].blocks.is_empty() {
@@ -187,15 +187,9 @@ impl Chunk {
     }
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
 
-    match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
-      Type::Chest => self.block_entities.push(
-        BlockEntity { id: BlockEntityId::Chest, position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
-      ),
-      Type::TrappedChest => self.block_entities.push(
-        BlockEntity { id: BlockEntityId::TrappedChest, position: position_in_chunk, components: None, data: Some(BlockEntityData::Chest(vec![BlockEntityDataItem::default();27])) }
-      ),
-      _ => (),
-    };
+    if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id) {
+      self.block_entities.push(blockentity);
+    }
   }
 
   pub fn get_block(&self, position_in_chunk: Position) -> u16 {

@@ -1132,8 +1132,10 @@ pub mod play {
       match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
         lib::block::BlockInteractionResult::OpenInventory(window_type) => {
-          let block_entity = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location);
-          player.open_inventory(window_type, block_entity, parsed_packet.location);
+          let Some(block_entity) = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location) else {
+            return Ok(None);
+          };
+          player.open_inventory(window_type, block_entity);
           Vec::new()
         },
         lib::block::BlockInteractionResult::Nothing => Vec::new(),
