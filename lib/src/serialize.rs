@@ -237,164 +237,206 @@ pub fn prefixed_array(mut data: Vec<u8>, len: i32) -> Vec<u8> {
 }
 
 pub fn nbt_network(input: NbtTag) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
 	match input {
-		NbtTag::TagCompound(_, p) => {
-			return nbt_tag_compound(None, p, true);
+		NbtTag::Root(p) => {
+		  output.push(0x0a);
+
+      p.into_iter().for_each(|x| {
+        match x {
+          NbtTag::Byte(d, p) => output.append(&mut nbt_byte(d, p)),
+          NbtTag::Short(d, p) => output.append(&mut nbt_short(d, p)),
+          NbtTag::Int(d, p) => output.append(&mut nbt_int(d, p)),
+          NbtTag::Long(d, p) => output.append(&mut nbt_long(d, p)),
+          NbtTag::Float(d, p) => output.append(&mut nbt_float(d, p)),
+          NbtTag::Double(d, p) => output.append(&mut nbt_double(d, p)),
+          NbtTag::ByteArray(d, p) => output.append(&mut nbt_byte_array(d, p)),
+          NbtTag::String(d, p) => output.append(&mut nbt_string(d, p)),
+          NbtTag::List(d, p) => output.append(&mut nbt_list(d, p)),
+          NbtTag::TagCompound(d, p) => output.append(&mut nbt_tag_compound(d, p)),
+          NbtTag::Root(_) => panic!("Root tag cannot be in a TagCompound!!"),
+          NbtTag::IntArray(d, p) => output.append(&mut nbt_int_array(d, p)),
+          NbtTag::LongArray(d, p) => output.append(&mut nbt_long_array(d, p)),
+        };
+      });
+
+      output.push(0x00);
 		},
-		_ => panic!("root node must be a tag compound"),
+		_ => panic!("root node must be a root tag"),
 	}
+
+	return output;
 }
 
 pub fn nbt_disk(input: NbtTag) -> Vec<u8> {
 	match input {
-		NbtTag::TagCompound(_, p) => {
-			return nbt_tag_compound(Some("".to_string()), p, true);
+		NbtTag::Root(p) => {
+			return nbt_tag_compound("".to_string(), p);
 		},
 		_ => panic!("root node must be a tag compound"),
 	}
 }
 
-fn nbt_byte(description: Option<String>, payload: u8, include_id: bool) -> Vec<u8> {
+fn nbt_byte(description: String, payload: u8) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
+  output.push(0x01);
+  output.append(&mut nbt_string_list(description));
 
-  if include_id {
-    output.push(0x01);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
-
-    output.push(payload);
+  output.push(payload);
 
   return output;
 }
 
-fn nbt_short(description: Option<String>, payload: i16, include_id: bool) -> Vec<u8> {
+fn nbt_byte_list(payload: u8) -> Vec<u8> {
+  return vec![payload];
+}
+
+fn nbt_short(description: String, payload: i16) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x02);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  output.push(0x02);
+  output.append(&mut nbt_string_list(description));
 
   output.append(&mut payload.to_be_bytes().into());
 
   return output;
 }
 
-fn nbt_int(description: Option<String>, payload: i32, include_id: bool) -> Vec<u8> {
+fn nbt_short_list(payload: i16) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x03);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
 
   output.append(&mut payload.to_be_bytes().into());
 
   return output;
 }
 
-fn nbt_long(description: Option<String>, payload: i64, include_id: bool) -> Vec<u8> {
+fn nbt_int(description: String, payload: i32) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x04);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  output.push(0x03);
+  output.append(&mut nbt_string_list(description));
 
   output.append(&mut payload.to_be_bytes().into());
 
   return output;
 }
 
-fn nbt_float(description: Option<String>, payload: f32, include_id: bool) -> Vec<u8> {
+fn nbt_int_list(payload: i32) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x05);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
 
   output.append(&mut payload.to_be_bytes().into());
 
   return output;
 }
 
-fn nbt_double(description: Option<String>, payload: f64, include_id: bool) -> Vec<u8> {
+fn nbt_long(description: String, payload: i64) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x06);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  output.push(0x04);
+  output.append(&mut nbt_string_list(description));
 
   output.append(&mut payload.to_be_bytes().into());
 
   return output;
 }
 
-fn nbt_byte_array(description: Option<String>, payload: Vec<u8>, include_id: bool) -> Vec<u8> {
+fn nbt_long_list(payload: i64) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  if include_id {
-    output.push(0x07);
-  }
+  output.append(&mut payload.to_be_bytes().into());
 
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  return output;
+}
+
+fn nbt_float(description: String, payload: f32) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x05);
+  output.append(&mut nbt_string_list(description));
+
+  output.append(&mut payload.to_be_bytes().into());
+
+  return output;
+}
+
+fn nbt_float_list(payload: f32) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+
+  output.append(&mut payload.to_be_bytes().into());
+
+  return output;
+}
+
+fn nbt_double(description: String, payload: f64) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x06);
+  output.append(&mut nbt_string_list(description));
+
+  output.append(&mut payload.to_be_bytes().into());
+
+  return output;
+}
+
+fn nbt_double_list(payload: f64) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+
+  output.append(&mut payload.to_be_bytes().into());
+
+  return output;
+}
+
+fn nbt_byte_array(description: String, payload: Vec<u8>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x07);
+  output.append(&mut nbt_string_list(description));
 
   output.append(&mut (payload.len() as i32).to_be_bytes().to_vec());
-
   output.append(&mut payload.to_vec());
 
   return output;
 }
 
-fn nbt_string(description: Option<String>, payload: String, include_id: bool) -> Vec<u8> {
+fn nbt_byte_array_list(payload: Vec<u8>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  if include_id {
-    output.push(0x08);
-  }
+  output.append(&mut (payload.len() as i32).to_be_bytes().to_vec());
+  output.append(&mut payload.to_vec());
 
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  return output;
+}
 
-  output.append(&mut nbt_short(None, payload.len() as i16, false));
+fn nbt_string(description: String, payload: String) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x08);
+  output.append(&mut nbt_string_list(description));
+
+  output.append(&mut nbt_short_list(payload.len() as i16));
   output.append(&mut payload.as_bytes().to_vec());
 
   return output;
 }
 
-fn nbt_list(description: Option<String>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
+fn nbt_string_list(payload: String) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  if include_id {
-    output.push(0x09);
-  }
+  output.append(&mut nbt_short_list(payload.len() as i16));
+  output.append(&mut payload.as_bytes().to_vec());
 
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  return output;
+}
+
+fn nbt_list(description: String, payload: Vec<NbtListTag>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x09);
+  output.append(&mut nbt_string_list(description));
+
+  output.append(&mut actual_nbt_list(payload));
+
+  return output;
+}
+
+fn nbt_list_list(payload: Vec<NbtListTag>) -> Vec<u8> {
+  return actual_nbt_list(payload);
+}
+
+fn actual_nbt_list(payload: Vec<NbtListTag>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
 
   if payload.is_empty() {
   	output.append(&mut vec![0;5]);
@@ -402,138 +444,133 @@ fn nbt_list(description: Option<String>, payload: Vec<NbtTag>, include_id: bool)
   }
 
   let length: i32 = payload.len() as i32;
-
   match payload[0] {
-    NbtTag::Byte(_, _) => {
+    NbtListTag::Byte(_) => {
       output.push(0x01);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_byte(None, match x {
-        NbtTag::Byte(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_byte_list(match x {
+        NbtListTag::Byte(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::Short(_, _) => {
+    NbtListTag::Short(_) => {
       output.push(0x02);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_short(None, match x {
-        NbtTag::Short(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_short_list(match x {
+        NbtListTag::Short(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::Int(_, _) => {
+    NbtListTag::Int(_) => {
       output.push(0x03);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_int(None, match x {
-        NbtTag::Int(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_int_list(match x {
+        NbtListTag::Int(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::Long(_, _) => {
+    NbtListTag::Long(_) => {
       output.push(0x04);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_long(None, match x {
-        NbtTag::Long(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_long_list(match x {
+        NbtListTag::Long(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::Float(_, _) => {
+    NbtListTag::Float(_) => {
       output.push(0x05);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_float(None, match x {
-        NbtTag::Float(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_float_list(match x {
+        NbtListTag::Float(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::Double(_, _) => {
+    NbtListTag::Double(_) => {
       output.push(0x06);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_double(None, match x {
-        NbtTag::Double(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_double_list(match x {
+        NbtListTag::Double(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::ByteArray(_, _) => {
+    NbtListTag::ByteArray(_) => {
       output.push(0x07);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_byte_array(None, match x {
-        NbtTag::ByteArray(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_byte_array_list(match x {
+        NbtListTag::ByteArray(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::String(_, _) => {
+    NbtListTag::String(_) => {
       output.push(0x08);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_string(None, match x {
-        NbtTag::String(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_string_list(match x {
+        NbtListTag::String(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::List(_, _) => {
+    NbtListTag::List(_) => {
       output.push(0x09);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_list(None, match x {
-        NbtTag::List(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_list_list(match x {
+        NbtListTag::List(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::TagCompound(_, _) => {
+    NbtListTag::TagCompound(_) => {
       output.push(0x0a);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_tag_compound(None, match x {
-        NbtTag::TagCompound(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_tag_compound_list(match x {
+        NbtListTag::TagCompound(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::IntArray(_, _) => {
+    NbtListTag::IntArray(_) => {
       output.push(0x0b);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_int_array(None, match x {
-        NbtTag::IntArray(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_int_array_list(match x {
+        NbtListTag::IntArray(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
-    NbtTag::LongArray(_, _) => {
+    NbtListTag::LongArray(_) => {
       output.push(0x0c);
       output.append(&mut length.to_be_bytes().into());
-      payload.into_iter().for_each(|x| output.append(&mut nbt_long_array(None, match x {
-        NbtTag::LongArray(_, x) => x,
+      payload.into_iter().for_each(|x| output.append(&mut nbt_long_array_list(match x {
+        NbtListTag::LongArray(x) => x,
         _ => panic!("impossible to reach"),
-      }, false)));
+      })));
     },
   };
 
   return output;
 }
 
-fn nbt_tag_compound(description: Option<String>, payload: Vec<NbtTag>, include_id: bool) -> Vec<u8> {
+fn nbt_tag_compound(description: String, payload: Vec<NbtTag>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x0a);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  output.push(0x0a);
+  output.append(&mut nbt_string_list(description));
 
   if payload.is_empty() {
+    output.push(0x00);
     return output;
   }
 
   payload.into_iter().for_each(|x| {
     match x {
-      NbtTag::Byte(d, p) => output.append(&mut nbt_byte(d, p, true)),
-      NbtTag::Short(d, p) => output.append(&mut nbt_short(d, p, true)),
-      NbtTag::Int(d, p) => output.append(&mut nbt_int(d, p, true)),
-      NbtTag::Long(d, p) => output.append(&mut nbt_long(d, p, true)),
-      NbtTag::Float(d, p) => output.append(&mut nbt_float(d, p, true)),
-      NbtTag::Double(d, p) => output.append(&mut nbt_double(d, p, true)),
-      NbtTag::ByteArray(d, p) => output.append(&mut nbt_byte_array(d, p, true)),
-      NbtTag::String(d, p) => output.append(&mut nbt_string(d, p, true)),
-      NbtTag::List(d, p) => output.append(&mut nbt_list(d, p, true)),
-      NbtTag::TagCompound(d, p) => output.append(&mut nbt_tag_compound(d, p, true)),
-      NbtTag::IntArray(d, p) => output.append(&mut nbt_int_array(d, p, true)),
-      NbtTag::LongArray(d, p) => output.append(&mut nbt_long_array(d, p, true)),
+      NbtTag::Byte(d, p) => output.append(&mut nbt_byte(d, p)),
+      NbtTag::Short(d, p) => output.append(&mut nbt_short(d, p)),
+      NbtTag::Int(d, p) => output.append(&mut nbt_int(d, p)),
+      NbtTag::Long(d, p) => output.append(&mut nbt_long(d, p)),
+      NbtTag::Float(d, p) => output.append(&mut nbt_float(d, p)),
+      NbtTag::Double(d, p) => output.append(&mut nbt_double(d, p)),
+      NbtTag::ByteArray(d, p) => output.append(&mut nbt_byte_array(d, p)),
+      NbtTag::String(d, p) => output.append(&mut nbt_string(d, p)),
+      NbtTag::List(d, p) => output.append(&mut nbt_list(d, p)),
+      NbtTag::TagCompound(d, p) => output.append(&mut nbt_tag_compound(d, p)),
+      NbtTag::Root(_) => panic!("Root tag cannot be in a TagCompound!!"),
+      NbtTag::IntArray(d, p) => output.append(&mut nbt_int_array(d, p)),
+      NbtTag::LongArray(d, p) => output.append(&mut nbt_long_array(d, p)),
     };
   });
 
@@ -541,40 +578,80 @@ fn nbt_tag_compound(description: Option<String>, payload: Vec<NbtTag>, include_i
   return output;
 }
 
-fn nbt_int_array(description: Option<String>, payload: Vec<i32>, include_id: bool) -> Vec<u8> {
+fn nbt_tag_compound_list(payload: Vec<NbtTag>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  if include_id {
-    output.push(0x0b);
+  if payload.is_empty() {
+    output.push(0x00);
+    return output;
   }
 
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
+  payload.into_iter().for_each(|x| {
+    match x {
+      NbtTag::Byte(d, p) => output.append(&mut nbt_byte(d, p)),
+      NbtTag::Short(d, p) => output.append(&mut nbt_short(d, p)),
+      NbtTag::Int(d, p) => output.append(&mut nbt_int(d, p)),
+      NbtTag::Long(d, p) => output.append(&mut nbt_long(d, p)),
+      NbtTag::Float(d, p) => output.append(&mut nbt_float(d, p)),
+      NbtTag::Double(d, p) => output.append(&mut nbt_double(d, p)),
+      NbtTag::ByteArray(d, p) => output.append(&mut nbt_byte_array(d, p)),
+      NbtTag::String(d, p) => output.append(&mut nbt_string(d, p)),
+      NbtTag::List(d, p) => output.append(&mut nbt_list(d, p)),
+      NbtTag::TagCompound(d, p) => output.append(&mut nbt_tag_compound(d, p)),
+      NbtTag::Root(_) => panic!("Root tag cannot be in a TagCompound!!"),
+      NbtTag::IntArray(d, p) => output.append(&mut nbt_int_array(d, p)),
+      NbtTag::LongArray(d, p) => output.append(&mut nbt_long_array(d, p)),
+    };
+  });
+
+  output.push(0x00);
+  return output;
+}
+
+fn nbt_int_array(description: String, payload: Vec<i32>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x0b);
+  output.append(&mut nbt_string_list(description));
 
   let length: i32 = payload.len() as i32;
   output.append(&mut length.to_be_bytes().into());
 
-  payload.into_iter().for_each(|x| output.append(&mut nbt_int(None, x, false)));
+  payload.into_iter().for_each(|x| output.append(&mut nbt_int_list(x)));
 
   return output;
 }
 
-fn nbt_long_array(description: Option<String>, payload: Vec<i64>, include_id: bool) -> Vec<u8> {
+fn nbt_int_array_list(payload: Vec<i32>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
-
-  if include_id {
-    output.push(0x0c);
-  }
-
-  if let Some(description) = description {
-    output.append(&mut nbt_string(None, description, false));
-  }
 
   let length: i32 = payload.len() as i32;
   output.append(&mut length.to_be_bytes().into());
 
-  payload.into_iter().for_each(|x| output.append(&mut nbt_long(None, x, false)));
+  payload.into_iter().for_each(|x| output.append(&mut nbt_int_list(x)));
+
+  return output;
+}
+
+fn nbt_long_array(description: String, payload: Vec<i64>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+  output.push(0x0c);
+  output.append(&mut nbt_string_list(description));
+
+  let length: i32 = payload.len() as i32;
+  output.append(&mut length.to_be_bytes().into());
+
+  payload.into_iter().for_each(|x| output.append(&mut nbt_long_list(x)));
+
+  return output;
+}
+
+fn nbt_long_array_list(payload: Vec<i64>) -> Vec<u8> {
+  let mut output: Vec<u8> = Vec::new();
+
+  let length: i32 = payload.len() as i32;
+  output.append(&mut length.to_be_bytes().into());
+
+  payload.into_iter().for_each(|x| output.append(&mut nbt_long_list(x)));
 
   return output;
 }

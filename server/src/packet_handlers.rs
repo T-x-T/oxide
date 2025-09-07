@@ -117,11 +117,11 @@ pub mod login {
 
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::ServerLinks::PACKET_ID, lib::packets::clientbound::configuration::ServerLinks {
    		links: vec![
-     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Git repository".to_string())]), "https://git.thetxt.io/thetxt/oxide".to_string()),
-     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Github mirror".to_string())]), "https://github.com/T-x-T/oxide".to_string()),
-     		(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Report bug".to_string())]), "https://git.thetxt.io/thetxt/oxide/issues/new".to_string()),
-       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Suggest feature".to_string())]), "https://git.thetxt.io/thetxt/oxide/issues/new".to_string()),
-       	(NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "Support development of Oxide ♥".to_string())]), "https://coff.ee/thetxt".to_string()),
+     		(NbtTag::Root(vec![NbtTag::String("text".to_string(), "Git repository".to_string())]), "https://git.thetxt.io/thetxt/oxide".to_string()),
+     		(NbtTag::Root(vec![NbtTag::String("text".to_string(), "Github mirror".to_string())]), "https://github.com/T-x-T/oxide".to_string()),
+     		(NbtTag::Root(vec![NbtTag::String("text".to_string(), "Report bug".to_string())]), "https://git.thetxt.io/thetxt/oxide/issues/new".to_string()),
+       	(NbtTag::Root(vec![NbtTag::String("text".to_string(), "Suggest feature".to_string())]), "https://git.thetxt.io/thetxt/oxide/issues/new".to_string()),
+       	(NbtTag::Root(vec![NbtTag::String("text".to_string(), "Support development of Oxide ♥".to_string())]), "https://coff.ee/thetxt".to_string()),
      	]
     }.try_into()?)?;
 
@@ -857,12 +857,12 @@ use super::*;
     }.try_into()?)?;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SetTabListHeaderAndFooter::PACKET_ID, lib::packets::clientbound::play::SetTabListHeaderAndFooter {
-  		header: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
-  		footer: NbtTag::TagCompound(None, vec![
-    		NbtTag::String(Some("type".to_string()), "text".to_string()),
-    		NbtTag::String(Some("text".to_string()), " powered by Oxide ".to_string()),
-    		NbtTag::String(Some("color".to_string()), "gray".to_string()),
-    		NbtTag::Byte(Some("italic".to_string()), 1),
+  		header: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
+  		footer: NbtTag::Root(vec![
+    		NbtTag::String("type".to_string(), "text".to_string()),
+    		NbtTag::String("text".to_string(), " powered by Oxide ".to_string()),
+    		NbtTag::String("color".to_string(), "gray".to_string()),
+    		NbtTag::Byte("italic".to_string(), 1),
     	]),
     }.try_into()?)?;
 
@@ -1198,13 +1198,13 @@ pub mod play {
       filter_type: 0,
       filter_type_bits: Vec::new(),
       chat_type: 1,
-      sender_name: NbtTag::TagCompound(None, vec![
-    		NbtTag::TagCompound(Some("click_event".to_string()), vec![
-     			NbtTag::String(Some("action".to_string()), "suggest_command".to_string()),
-     			NbtTag::String(Some("command".to_string()), format!("/tell {}", player.display_name).to_string()),
+      sender_name: NbtTag::Root(vec![
+    		NbtTag::TagCompound("click_event".to_string(), vec![
+     			NbtTag::String("action".to_string(), "suggest_command".to_string()),
+     			NbtTag::String("command".to_string(), format!("/tell {}", player.display_name).to_string()),
      	]),
-     	NbtTag::String(Some("insertion".to_string()), player.display_name.clone()),
-     	NbtTag::String(Some("text".to_string()), player.display_name.clone()),
+     	NbtTag::String("insertion".to_string(), player.display_name.clone()),
+     	NbtTag::String("text".to_string(), player.display_name.clone()),
       ]),
       target_name: None,
 		};
@@ -1225,9 +1225,9 @@ pub mod play {
 
    	let Some(command) = game.commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
   		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-				  content: NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("type".to_string()), "text".to_string()),
-					NbtTag::String(Some("text".to_string()), "command not found".to_string()),
+				  content: NbtTag::Root(vec![
+					NbtTag::String("type".to_string(), "text".to_string()),
+					NbtTag::String("text".to_string(), "command not found".to_string()),
 				]),
 			  overlay: false,
     	}.try_into()?)?;

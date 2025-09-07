@@ -16,9 +16,9 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, _game: &mut Game, _
 		return Ok(());
 	};
 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-	  content: NbtTag::TagCompound(None, vec![
-			NbtTag::String(Some("type".to_string()), "text".to_string()),
-			NbtTag::String(Some("text".to_string()), "Hi back :)".to_string()),
+	  content: NbtTag::Root(vec![
+			NbtTag::String("type".to_string(), "text".to_string()),
+			NbtTag::String("text".to_string(), "Hi back :)".to_string()),
 		]),
 	  overlay: true,
  	}.try_into()?)?;

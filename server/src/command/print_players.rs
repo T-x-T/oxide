@@ -13,9 +13,9 @@ pub fn init(game: &mut Game) {
 fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
 	if stream.is_some() {
 		lib::utils::send_packet(stream.unwrap(), lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-			  content: NbtTag::TagCompound(None, vec![
-				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), "this command is only intended to be used from the console".to_string()),
+			  content: NbtTag::Root(vec![
+				NbtTag::String("type".to_string(), "text".to_string()),
+				NbtTag::String("text".to_string(), "this command is only intended to be used from the console".to_string()),
 			]),
 		  overlay: false,
 	 	}.try_into()?)?;

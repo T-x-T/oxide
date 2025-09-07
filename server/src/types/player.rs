@@ -151,44 +151,44 @@ impl Player {
 	    .unwrap();
 
 
-	  let player_data = NbtTag::TagCompound(None, vec![
-			NbtTag::List(Some("Pos".to_string()), vec![
-				NbtTag::Double(None, self.x),
-				NbtTag::Double(None, self.y),
-				NbtTag::Double(None, self.z),
+	  let player_data = NbtTag::Root(vec![
+			NbtTag::List("Pos".to_string(), vec![
+				NbtListTag::Double(self.x),
+				NbtListTag::Double(self.y),
+				NbtListTag::Double(self.z),
 			]),
-			NbtTag::List(Some("Rotation".to_string()), vec![
-				NbtTag::Float(None, self.yaw),
-				NbtTag::Float(None, self.pitch),
+			NbtTag::List("Rotation".to_string(), vec![
+				NbtListTag::Float(self.yaw),
+				NbtListTag::Float(self.pitch),
 			]),
-			NbtTag::Int(Some("SelectedItemSlot".to_string()), self.selected_slot as i32),
-			NbtTag::List(Some("Inventory".to_string()), self.inventory.iter().enumerate().filter(|x| x.0 >= 9).filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).map(|x| {
-				NbtTag::TagCompound(None, vec![
-					NbtTag::Byte(Some("Slot".to_string()), x.0 as u8),
-					NbtTag::Int(Some("count".to_string()), x.1.item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(x.1.item_id.unwrap())),
+			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
+			NbtTag::List("Inventory".to_string(), self.inventory.iter().enumerate().filter(|x| x.0 >= 9).filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).map(|x| {
+				NbtListTag::TagCompound(vec![
+					NbtTag::Byte("Slot".to_string(), x.0 as u8),
+					NbtTag::Int("count".to_string(), x.1.item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.item_id.unwrap())),
 				])
 			}).collect()),
-			NbtTag::TagCompound(Some("equipment".to_string()), vec![
-				NbtTag::TagCompound(Some("head".to_string()), vec![
-					NbtTag::Int(Some("count".to_string()), self.inventory[5].item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[5].item_id.unwrap_or(0))),
+			NbtTag::TagCompound("equipment".to_string(), vec![
+				NbtTag::TagCompound("head".to_string(), vec![
+					NbtTag::Int("count".to_string(), self.inventory[5].item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].item_id.unwrap_or(0))),
 				]),
-				NbtTag::TagCompound(Some("chest".to_string()), vec![
-					NbtTag::Int(Some("count".to_string()), self.inventory[6].item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[6].item_id.unwrap_or(0))),
+				NbtTag::TagCompound("chest".to_string(), vec![
+					NbtTag::Int("count".to_string(), self.inventory[6].item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].item_id.unwrap_or(0))),
 				]),
-				NbtTag::TagCompound(Some("legs".to_string()), vec![
-					NbtTag::Int(Some("count".to_string()), self.inventory[7].item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[7].item_id.unwrap_or(0))),
+				NbtTag::TagCompound("legs".to_string(), vec![
+					NbtTag::Int("count".to_string(), self.inventory[7].item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].item_id.unwrap_or(0))),
 				]),
-				NbtTag::TagCompound(Some("feet".to_string()), vec![
-					NbtTag::Int(Some("count".to_string()), self.inventory[8].item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[8].item_id.unwrap_or(0))),
+				NbtTag::TagCompound("feet".to_string(), vec![
+					NbtTag::Int("count".to_string(), self.inventory[8].item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].item_id.unwrap_or(0))),
 				]),
-				NbtTag::TagCompound(Some("offhand".to_string()), vec![
-					NbtTag::Int(Some("count".to_string()), self.inventory[45].item_count),
-					NbtTag::String(Some("id".to_string()), data::items::get_item_name_by_id(self.inventory[45].item_id.unwrap_or(0))),
+				NbtTag::TagCompound("offhand".to_string(), vec![
+					NbtTag::Int("count".to_string(), self.inventory[45].item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[45].item_id.unwrap_or(0))),
 				]),
 			]),
 		]);
@@ -344,7 +344,7 @@ impl Player {
         packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
         y: x.position.y,
         block_entity_type: 1,
-        data: x.data.as_ref().map(|x| NbtTag::TagCompound(None, x.into()))
+        data: x.data.clone().map(|x| NbtTag::Root(x.into()))
       })
 		  .collect();
 
@@ -480,7 +480,7 @@ impl Player {
 	  let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
       window_id: 1,
       window_type: inventory as i32,
-      window_title: NbtTag::TagCompound(None, vec![NbtTag::String(Some("text".to_string()), "".to_string())]),
+      window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
     }.try_into().unwrap());
 
 	  self.opened_container_at = Some(position);

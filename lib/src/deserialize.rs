@@ -366,16 +366,123 @@ pub fn varint(data: &mut Vec<u8>) -> Result<i32, Box<dyn Error>> {
 
 pub fn nbt_network(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
 	data.reverse();
-	let output = nbt_tag_compound(data, false, true);
+	let root_id = data.pop().unwrap();
+	if root_id != 0x0a {
+	  return Err(Box::new(crate::CustomError::InvalidInput(format!("nbt_disk got a wrong id for the root tag: {root_id}"))));
+	}
+
+  let mut tags: Vec<NbtTag> = Vec::new();
+
+  loop {
+    let id = data.pop().unwrap();
+    match id {
+      0x00 => break,
+      0x01 => {
+        tags.push(NbtTag::Byte(nbt_string_value(data)?, data.pop().unwrap()));
+      },
+      0x02 => {
+        tags.push(NbtTag::Short(nbt_string_value(data)?, short_le(data)?));
+      },
+      0x03 => {
+        tags.push(NbtTag::Int(nbt_string_value(data)?, int_le(data)?));
+      },
+      0x04 => {
+        tags.push(NbtTag::Long(nbt_string_value(data)?, long_le(data)?));
+      },
+      0x05 => {
+        tags.push(NbtTag::Float(nbt_string_value(data)?, float_le(data)?));
+      },
+      0x06 => {
+        tags.push(NbtTag::Double(nbt_string_value(data)?, double_le(data)?));
+      },
+      0x07 => {
+        tags.push(NbtTag::ByteArray(nbt_string_value(data)?, nbt_byte_array_value(data)?));
+      },
+      0x08 => {
+        tags.push(NbtTag::String(nbt_string_value(data)?, nbt_string_value(data)?));
+      },
+      0x09 => {
+        tags.push(nbt_list(data)?);
+      },
+      0x0a => {
+        tags.push(nbt_tag_compound(data)?);
+      },
+      0x0b => {
+        tags.push(NbtTag::IntArray(nbt_string_value(data)?, nbt_int_array_value(data)?));
+      },
+      0x0c => {
+        tags.push(NbtTag::LongArray(nbt_string_value(data)?, nbt_long_array_value(data)?));
+      },
+      x => {
+        return Err(Box::new(CustomError::InvalidNbtTag(x)));
+      }
+    };
+  }
+
+  let output = NbtTag::Root(tags);
   data.reverse();
-	return output;
+	return Ok(output);
 }
 
 pub fn nbt_disk(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
 	data.reverse();
-	let output = nbt_tag_compound(data, true, true);
+	let root_id = data.pop().unwrap();
+	if root_id != 0x0a {
+	  return Err(Box::new(crate::CustomError::InvalidInput(format!("nbt_disk got a wrong id for the root tag: {root_id}"))));
+	}
+  let _: String = nbt_string_value(data)?;
+
+  let mut tags: Vec<NbtTag> = Vec::new();
+
+  loop {
+    let id = data.pop().unwrap();
+    match id {
+      0x00 => break,
+      0x01 => {
+        tags.push(NbtTag::Byte(nbt_string_value(data)?, data.pop().unwrap()));
+      },
+      0x02 => {
+        tags.push(NbtTag::Short(nbt_string_value(data)?, short_le(data)?));
+      },
+      0x03 => {
+        tags.push(NbtTag::Int(nbt_string_value(data)?, int_le(data)?));
+      },
+      0x04 => {
+        tags.push(NbtTag::Long(nbt_string_value(data)?, long_le(data)?));
+      },
+      0x05 => {
+        tags.push(NbtTag::Float(nbt_string_value(data)?, float_le(data)?));
+      },
+      0x06 => {
+        tags.push(NbtTag::Double(nbt_string_value(data)?, double_le(data)?));
+      },
+      0x07 => {
+        tags.push(NbtTag::ByteArray(nbt_string_value(data)?, nbt_byte_array_value(data)?));
+      },
+      0x08 => {
+        tags.push(NbtTag::String(nbt_string_value(data)?, nbt_string_value(data)?));
+      },
+      0x09 => {
+        tags.push(nbt_list(data)?);
+      },
+      0x0a => {
+        tags.push(nbt_tag_compound(data)?);
+      },
+      0x0b => {
+        tags.push(NbtTag::IntArray(nbt_string_value(data)?, nbt_int_array_value(data)?));
+      },
+      0x0c => {
+        tags.push(NbtTag::LongArray(nbt_string_value(data)?, nbt_long_array_value(data)?));
+      },
+      x => {
+        return Err(Box::new(CustomError::InvalidNbtTag(x)));
+      }
+    };
+  }
+
+  let output = NbtTag::Root(tags);
 	data.reverse();
-  return output;
+  return Ok(output);
 }
 
 fn nbt_byte_array_value(data: &mut Vec<u8>) -> Result<Vec<u8>, Box<dyn Error>> {
@@ -396,16 +503,8 @@ pub fn nbt_string_value(data: &mut Vec<u8>) -> Result<String, Box<dyn Error>> {
   return Ok(string);
 }
 
-fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-  if has_id {
-    data.pop().unwrap();
-  }
-
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(data)?)
-  } else {
-    None
-  };
+fn nbt_list(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
+  let description: String = nbt_string_value(data)?;
 
   let id = data.pop().unwrap();
   let len = int_le(data)?;
@@ -416,95 +515,95 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
 
   let output: NbtTag = match id {
     0x01 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Byte(None, data.pop().unwrap()));
+        list.push(NbtListTag::Byte(data.pop().unwrap()));
       }
 
       NbtTag::List(description, list)
     },
     0x02 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Short(None, short_le(data)?));
+        list.push(NbtListTag::Short(short_le(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x03 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Int(None, int_le(data)?));
+        list.push(NbtListTag::Int(int_le(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x04 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Long(None, long_le(data)?));
+        list.push(NbtListTag::Long(long_le(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x05 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Float(None, float_le(data)?));
+        list.push(NbtListTag::Float(float_le(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x06 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::Double(None, double_le(data)?));
+        list.push(NbtListTag::Double(double_le(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x07 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::ByteArray(None, nbt_byte_array_value(data)?));
+        list.push(NbtListTag::ByteArray(nbt_byte_array_value(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x08 => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::String(None, nbt_string_value(data)?));
+        list.push(NbtListTag::String(nbt_string_value(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x09 => {
-    	let mut list: Vec<NbtTag> = Vec::new();
+    	let mut list: Vec<NbtListTag> = Vec::new();
 			for _ in 0..len {
-				list.push(nbt_list(data, false, false).unwrap());
+				list.push(nbt_list_list(data).unwrap());
 			}
 			NbtTag::List(description, list)
     },
     0x0a => {
-	    let mut list: Vec<NbtTag> = Vec::new();
+	    let mut list: Vec<NbtListTag> = Vec::new();
 			for _ in 0..len {
-				list.push(nbt_tag_compound(data, false, false).unwrap());
+				list.push(nbt_tag_compound_list(data).unwrap());
 			}
 			NbtTag::List(description, list)
     },
     0x0b => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::IntArray(None, nbt_int_array_value(data)?));
+        list.push(NbtListTag::IntArray(nbt_int_array_value(data)?));
       }
 
       NbtTag::List(description, list)
     },
     0x0c => {
-      let mut list: Vec<NbtTag> = Vec::new();
+      let mut list: Vec<NbtListTag> = Vec::new();
       for _ in 0..len {
-        list.push(NbtTag::LongArray(None, nbt_long_array_value(data)?));
+        list.push(NbtListTag::LongArray(nbt_long_array_value(data)?));
       }
 
       NbtTag::List(description, list)
@@ -517,15 +616,120 @@ fn nbt_list(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<N
   return Ok(output);
 }
 
-fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> Result<NbtTag, Box<dyn Error>> {
-	if has_id {
-    data.pop().unwrap();
+fn nbt_list_list(data: &mut Vec<u8>) -> Result<NbtListTag, Box<dyn Error>> {
+  let id = data.pop().unwrap();
+  let len = int_le(data)?;
+
+  if len == 0 {
+  	return Ok(NbtListTag::List(Vec::new()));
   }
-  let description: Option<String> = if has_description {
-    Some(nbt_string_value(data)?)
-  } else {
-    None
+
+  let output: NbtListTag = match id {
+    0x01 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Byte(data.pop().unwrap()));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x02 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Short(short_le(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x03 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Int(int_le(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x04 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Long(long_le(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x05 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Float(float_le(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x06 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::Double(double_le(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x07 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::ByteArray(nbt_byte_array_value(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x08 => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::String(nbt_string_value(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x09 => {
+    	let mut list: Vec<NbtListTag> = Vec::new();
+			for _ in 0..len {
+				list.push(nbt_list_list(data).unwrap());
+			}
+			NbtListTag::List(list)
+    },
+    0x0a => {
+	    let mut list: Vec<NbtListTag> = Vec::new();
+			for _ in 0..len {
+				list.push(nbt_tag_compound_list(data).unwrap());
+			}
+			NbtListTag::List(list)
+    },
+    0x0b => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::IntArray(nbt_int_array_value(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    0x0c => {
+      let mut list: Vec<NbtListTag> = Vec::new();
+      for _ in 0..len {
+        list.push(NbtListTag::LongArray(nbt_long_array_value(data)?));
+      }
+
+      NbtListTag::List(list)
+    },
+    x => {
+      return Err(Box::new(CustomError::InvalidNbtTag(x)));
+    }
   };
+
+  return Ok(output);
+}
+
+fn nbt_tag_compound(data: &mut Vec<u8>) -> Result<NbtTag, Box<dyn Error>> {
+  let description: String = nbt_string_value(data)?;
+
   let mut tags: Vec<NbtTag> = Vec::new();
 
   loop {
@@ -533,40 +737,40 @@ fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> 
     match id {
       0x00 => break,
       0x01 => {
-        tags.push(NbtTag::Byte(Some(nbt_string_value(data)?), data.pop().unwrap()));
+        tags.push(NbtTag::Byte(nbt_string_value(data)?, data.pop().unwrap()));
       },
       0x02 => {
-        tags.push(NbtTag::Short(Some(nbt_string_value(data)?), short_le(data)?));
+        tags.push(NbtTag::Short(nbt_string_value(data)?, short_le(data)?));
       },
       0x03 => {
-        tags.push(NbtTag::Int(Some(nbt_string_value(data)?), int_le(data)?));
+        tags.push(NbtTag::Int(nbt_string_value(data)?, int_le(data)?));
       },
       0x04 => {
-        tags.push(NbtTag::Long(Some(nbt_string_value(data)?), long_le(data)?));
+        tags.push(NbtTag::Long(nbt_string_value(data)?, long_le(data)?));
       },
       0x05 => {
-        tags.push(NbtTag::Float(Some(nbt_string_value(data)?), float_le(data)?));
+        tags.push(NbtTag::Float(nbt_string_value(data)?, float_le(data)?));
       },
       0x06 => {
-        tags.push(NbtTag::Double(Some(nbt_string_value(data)?), double_le(data)?));
+        tags.push(NbtTag::Double(nbt_string_value(data)?, double_le(data)?));
       },
       0x07 => {
-        tags.push(NbtTag::ByteArray(Some(nbt_string_value(data)?), nbt_byte_array_value(data)?));
+        tags.push(NbtTag::ByteArray(nbt_string_value(data)?, nbt_byte_array_value(data)?));
       },
       0x08 => {
-        tags.push(NbtTag::String(Some(nbt_string_value(data)?), nbt_string_value(data)?));
+        tags.push(NbtTag::String(nbt_string_value(data)?, nbt_string_value(data)?));
       },
       0x09 => {
-        tags.push(nbt_list(data, true, false)?);
+        tags.push(nbt_list(data)?);
       },
       0x0a => {
-        tags.push(nbt_tag_compound(data, true, false)?);
+        tags.push(nbt_tag_compound(data)?);
       },
       0x0b => {
-        tags.push(NbtTag::IntArray(Some(nbt_string_value(data)?), nbt_int_array_value(data)?));
+        tags.push(NbtTag::IntArray(nbt_string_value(data)?, nbt_int_array_value(data)?));
       },
       0x0c => {
-        tags.push(NbtTag::LongArray(Some(nbt_string_value(data)?), nbt_long_array_value(data)?));
+        tags.push(NbtTag::LongArray(nbt_string_value(data)?, nbt_long_array_value(data)?));
       },
       x => {
         return Err(Box::new(CustomError::InvalidNbtTag(x)));
@@ -575,6 +779,59 @@ fn nbt_tag_compound(data: &mut Vec<u8>, has_description: bool, has_id: bool) -> 
   }
 
   let output = NbtTag::TagCompound(description, tags);
+
+  return Ok(output);
+}
+fn nbt_tag_compound_list(data: &mut Vec<u8>) -> Result<NbtListTag, Box<dyn Error>> {
+  let mut tags: Vec<NbtTag> = Vec::new();
+
+  loop {
+    let id = data.pop().unwrap();
+    match id {
+      0x00 => break,
+      0x01 => {
+        tags.push(NbtTag::Byte(nbt_string_value(data)?, data.pop().unwrap()));
+      },
+      0x02 => {
+        tags.push(NbtTag::Short(nbt_string_value(data)?, short_le(data)?));
+      },
+      0x03 => {
+        tags.push(NbtTag::Int(nbt_string_value(data)?, int_le(data)?));
+      },
+      0x04 => {
+        tags.push(NbtTag::Long(nbt_string_value(data)?, long_le(data)?));
+      },
+      0x05 => {
+        tags.push(NbtTag::Float(nbt_string_value(data)?, float_le(data)?));
+      },
+      0x06 => {
+        tags.push(NbtTag::Double(nbt_string_value(data)?, double_le(data)?));
+      },
+      0x07 => {
+        tags.push(NbtTag::ByteArray(nbt_string_value(data)?, nbt_byte_array_value(data)?));
+      },
+      0x08 => {
+        tags.push(NbtTag::String(nbt_string_value(data)?, nbt_string_value(data)?));
+      },
+      0x09 => {
+        tags.push(nbt_list(data)?);
+      },
+      0x0a => {
+        tags.push(nbt_tag_compound(data)?);
+      },
+      0x0b => {
+        tags.push(NbtTag::IntArray(nbt_string_value(data)?, nbt_int_array_value(data)?));
+      },
+      0x0c => {
+        tags.push(NbtTag::LongArray(nbt_string_value(data)?, nbt_long_array_value(data)?));
+      },
+      x => {
+        return Err(Box::new(CustomError::InvalidNbtTag(x)));
+      }
+    };
+  }
+
+  let output = NbtListTag::TagCompound(tags);
 
   return Ok(output);
 }
@@ -650,19 +907,19 @@ mod test {
 
   #[test]
   fn nbt_mobspawner() {
-    let nbt_parsed = NbtTag::TagCompound(None, vec![
-      NbtTag::Short(Some("MaxNearbyEntities".to_string()), 6),
-      NbtTag::Short(Some("RequiredPlayerRange".to_string()), 16),
-      NbtTag::Short(Some("SpawnCount".to_string()), 4),
-      NbtTag::TagCompound(Some("SpawnData".to_string()), vec![
-        NbtTag::TagCompound(Some("entity".to_string()), vec![
-          NbtTag::String(Some("id".to_string()), "minecraft:spider".to_string()),
+    let nbt_parsed = NbtTag::Root(vec![
+      NbtTag::Short("MaxNearbyEntities".to_string(), 6),
+      NbtTag::Short("RequiredPlayerRange".to_string(), 16),
+      NbtTag::Short("SpawnCount".to_string(), 4),
+      NbtTag::TagCompound("SpawnData".to_string(), vec![
+        NbtTag::TagCompound("entity".to_string(), vec![
+          NbtTag::String("id".to_string(), "minecraft:spider".to_string()),
         ]),
       ]),
-      NbtTag::Short(Some("MaxSpawnDelay".to_string()), 800),
-      NbtTag::Short(Some("SpawnRange".to_string()), 4),
-      NbtTag::Short(Some("Delay".to_string()), 20),
-      NbtTag::Short(Some("MinSpawnDelay".to_string()), 200),
+      NbtTag::Short("MaxSpawnDelay".to_string(), 800),
+      NbtTag::Short("SpawnRange".to_string(), 4),
+      NbtTag::Short("Delay".to_string(), 20),
+      NbtTag::Short("MinSpawnDelay".to_string(), 200),
     ]);
 
     let mut nbt_bytes: Vec<u8> = vec![10,2,0,17,77,97,120,78,101,97,114,98,121,69,110,116,105,116,105,101,115,0,6,2,0,19,82,101,113,117,105,114,101,100,80,108,97,121,101,114,82,97,110,103,101,0,16,2,0,10,83,112,97,119,110,67,111,117,110,116,0,4,10,0,9,83,112,97,119,110,68,97,116,97,10,0,6,101,110,116,105,116,121,8,0,2,105,100,0,16,109,105,110,101,99,114,97,102,116,58,115,112,105,100,101,114,0,0,2,0,13,77,97,120,83,112,97,119,110,68,101,108,97,121,3,32,2,0,10,83,112,97,119,110,82,97,110,103,101,0,4,2,0,5,68,101,108,97,121,0,20,2,0,13,77,105,110,83,112,97,119,110,68,101,108,97,121,0,200,0];
@@ -671,17 +928,56 @@ mod test {
   }
 
   #[test]
+  fn nbt_nested_compound_network() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::TagCompound("a".to_string(), vec![
+        NbtTag::TagCompound("b".to_string(), vec![
+          NbtTag::String("c".to_string(), "hi!".to_string()),
+        ]),
+      ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_network(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(nbt_network(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_basic_network() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::String("hi".to_string(), "hello".to_string()),
+      NbtTag::Int("hi2".to_string(), 1234),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_network(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(nbt_network(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_basic_disk() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::String("hi".to_string(), "hello".to_string()),
+      NbtTag::Int("hi2".to_string(), 1234),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
   fn nbt_with_list_of_compounds_network() {
-    let nbt = NbtTag::TagCompound(None, vec![
-	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+    let nbt = NbtTag::Root(vec![
+	    NbtTag::List("this_is_a_list".to_string(), vec![
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
 	    ]),
     ]);
@@ -693,35 +989,121 @@ mod test {
 
   #[test]
   fn nbt_with_list_of_compounds_disk() {
-    let nbt = NbtTag::TagCompound(Some("".to_string()), vec![
-	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+    let nbt = NbtTag::Root(vec![
+	    NbtTag::List("this_is_a_list".to_string(), vec![
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
-				NbtTag::TagCompound(None, vec![
-					NbtTag::String(Some("a".to_string()), "b".to_string()),
+				NbtListTag::TagCompound(vec![
+					NbtTag::String("a".to_string(), "b".to_string()),
 				]),
 	    ]),
     ]);
 
     let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
     println!("nbt_bytes\n{nbt_bytes:?}");
-    assert_eq!(nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
   }
 
   #[test]
   fn nbt_with_empty_list_disk() {
-    let nbt = NbtTag::TagCompound(Some("".to_string()), vec![
-	    NbtTag::List(Some("this_is_a_list".to_string()), vec![
+    let nbt = NbtTag::Root(vec![
+	    NbtTag::List("this_is_a_list".to_string(), vec![
 
 	    ]),
     ]);
 
     let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
     println!("nbt_bytes\n{nbt_bytes:?}");
-    assert_eq!(nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_block_entity() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::List("block_entities".to_string(), vec![
+        NbtListTag::TagCompound(vec![
+          NbtTag::List("Items".to_string(), vec![
+            NbtListTag::TagCompound(vec![
+              NbtTag::Byte("Slot".to_string(), 0),
+              NbtTag::Int("count".to_string(), 1),
+              NbtTag::String("id".to_string(), "minecraft:furnace".to_string()),
+            ]),
+            NbtListTag::TagCompound(vec![
+              NbtTag::Byte("Slot".to_string(), 1),
+              NbtTag::Int("count".to_string(), 12),
+              NbtTag::String("id".to_string(), "minecraft:furnace".to_string()),
+            ]),
+            NbtListTag::TagCompound(vec![
+              NbtTag::Byte("Slot".to_string(), 3),
+              NbtTag::Int("count".to_string(), 1),
+              NbtTag::String("id".to_string(), "minecraft:furnace".to_string()),
+            ]),
+          ]),
+          NbtTag::TagCompound("components".to_string(), vec![
+
+          ]),
+          NbtTag::String("id".to_string(), "minecraft:chest".to_string()),
+          NbtTag::Byte("keepPacked".to_string(), 0),
+          NbtTag::Int("x".to_string(), 22),
+          NbtTag::Int("y".to_string(), 64),
+          NbtTag::Int("z".to_string(), 30),
+        ]),
+        NbtListTag::TagCompound(vec![
+          NbtTag::List("Items".to_string(), vec![
+
+          ]),
+          NbtTag::TagCompound("components".to_string(), vec![
+
+          ]),
+          NbtTag::Short("cooking_time_spent".to_string(), 0),
+          NbtTag::Short("cooking_total_time".to_string(), 200),
+          NbtTag::String("id".to_string(), "minecraft:furnace".to_string()),
+          NbtTag::Byte("keepPacked".to_string(), 0),
+          NbtTag::Short("lit_time_remaining".to_string(), 200),
+          NbtTag::Short("lit_total_time".to_string(), 300),
+          NbtTag::Int("x".to_string(), 22),
+          NbtTag::Int("y".to_string(), 64),
+          NbtTag::Int("z".to_string(), 31),
+        ]),
+      ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_empty_tag_compound() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::TagCompound("abc".to_string(), vec![
+
+      ]),
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
+  }
+
+  #[test]
+  fn nbt_empty_tag_compound_in_list_in_compound() {
+    let nbt = NbtTag::Root(vec![
+      NbtTag::List("abc".to_string(), vec![
+        NbtListTag::TagCompound(vec![
+          NbtTag::TagCompound("def".to_string(), vec![
+
+          ]),
+        ]),
+      ])
+    ]);
+
+    let mut nbt_bytes = crate::serialize::nbt_disk(nbt.clone());
+    println!("nbt_bytes\n{nbt_bytes:?}");
+    assert_eq!(super::nbt_disk(&mut nbt_bytes).unwrap(), nbt);
   }
 }

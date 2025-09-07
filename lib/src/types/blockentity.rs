@@ -187,46 +187,41 @@ pub struct BlockEntityDataItem {
   pub components: Vec<SlotComponent>,
 }
 
-impl From<BlockEntity> for NbtTag {
+impl From<BlockEntity> for NbtListTag {
   fn from(value: BlockEntity) -> Self {
     println!("{value:?}");
     let mut items: Vec<NbtTag> = vec![
-      NbtTag::String(Some("id".to_string()), Into::<&str>::into(value.id).to_string()),
-      NbtTag::Int(Some("x".to_string()), value.position.x),
-      NbtTag::Int(Some("y".to_string()), value.position.y as i32),
-      NbtTag::Int(Some("z".to_string()), value.position.z),
+      NbtTag::String("id".to_string(), Into::<&str>::into(value.id).to_string()),
+      NbtTag::Int("x".to_string(), value.position.x),
+      NbtTag::Int("y".to_string(), value.position.y as i32),
+      NbtTag::Int("z".to_string(), value.position.z),
     ];
 
     if let Some(block_entity_data) = value.data {
-      match block_entity_data {
-        BlockEntityData::Banner(_items) => (),
-        BlockEntityData::Chest(block_entity_data_items) => items.push(NbtTag::TagCompound(Some("Items".to_string()), block_entity_data_items.iter().map(Into::into).collect())),
-        BlockEntityData::NoData => (),
-      }
-
+      items.append(&mut block_entity_data.into());
     }
 
-    return NbtTag::TagCompound(None, items);
+    return NbtListTag::TagCompound(items);
   }
 }
 
-impl From<&BlockEntityData> for Vec<NbtTag> {
-  fn from(value: &BlockEntityData) -> Self {
+impl From<BlockEntityData> for Vec<NbtTag> {
+  fn from(value: BlockEntityData) -> Self {
     return match value {
-      BlockEntityData::Banner(data) => vec![NbtTag::List(Some("patterns".to_string()), data.iter().map(|x| NbtTag::TagCompound(None, vec![NbtTag::String(Some("color".to_string()), x.1.clone()), NbtTag::String(Some("pattern".to_string()), x.0.clone())])).collect())],
-      BlockEntityData::Chest(block_entity_data_items) => block_entity_data_items.iter().map(|x| x.into()).collect(),
+      BlockEntityData::Banner(data) => vec![NbtTag::List("patterns".to_string(), data.iter().map(|x| NbtListTag::TagCompound(vec![NbtTag::String("color".to_string(), x.1.clone()), NbtTag::String("pattern".to_string(), x.0.clone())])).collect())],
+      BlockEntityData::Chest(block_entity_data_items) => {
+        vec![
+          NbtTag::List("Items".to_string(), block_entity_data_items.iter().enumerate().map(|(i, item)| {
+            NbtListTag::TagCompound(vec![
+              NbtTag::Byte("Slot".to_string(), i as u8),
+              NbtTag::String("id".to_string(), item.id.clone()),
+              NbtTag::Int("count".to_string(), item.count as i32),
+              NbtTag::TagCompound("components".to_string(), Vec::new()), //TODO: missing SlotComponent to nbt conversion
+            ])
+          }).collect())
+        ]
+      },
       BlockEntityData::NoData => Vec::new(),
     };
-  }
-}
-
-impl From<&BlockEntityDataItem> for NbtTag {
-  fn from(value: &BlockEntityDataItem) -> Self {
-    return NbtTag::TagCompound(None, vec![
-      //NbtTag::Byte(Some("Slot".to_string()), value.slot), //doesn't seem to do anything so Im not keeping track of it for now, instead I always have the right sized vec and then just take the slot from its index
-      NbtTag::String(Some("id".to_string()), value.id.clone()),
-      NbtTag::Int(Some("count".to_string()), value.count as i32),
-      NbtTag::TagCompound(Some("components".to_string()), Vec::new()), //TODO: missing SlotComponent to nbt conversion
-    ]);
   }
 }

@@ -27,9 +27,9 @@ pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game
 			} else {
 				for stream in connection_streams.iter() {
 					lib::utils::send_packet(stream.1, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-					  content: NbtTag::TagCompound(None, vec![
-							NbtTag::String(Some("type".to_string()), "text".to_string()),
-							NbtTag::String(Some("text".to_string()), input.clone().replace("\n", "")),
+					  content: NbtTag::Root(vec![
+							NbtTag::String("type".to_string(), "text".to_string()),
+							NbtTag::String("text".to_string(), input.clone().replace("\n", "")),
 						]),
 					  overlay: false,
 		    	}.try_into().unwrap()).unwrap();
