@@ -490,16 +490,22 @@ impl Player {
       state_id: 1,
       slot_data: match block_entity.clone().data.unwrap_or_default() {
         BlockEntityData::Chest(block_entity_data_items) => {
-          block_entity_data_items
-            .iter()
-            .map(|x| {
-              Slot {
-                item_count: x.count as i32,
-                item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == x.id).unwrap().1.id),
-                components_to_add: x.components.clone(),
-                components_to_remove: Vec::new() }
-            })
-            .collect()
+          block_entity_data_items.iter().map(Into::into).collect()
+        },
+        BlockEntityData::Furnace(block_entity_data_items) => {
+          block_entity_data_items.iter().map(Into::into).collect()
+        },
+        BlockEntityData::BrewingStand(block_entity_data_items) => {
+          block_entity_data_items.iter().map(Into::into).collect()
+        },
+        BlockEntityData::Crafter(block_entity_data_items) => {
+          block_entity_data_items.iter().map(Into::into).collect()
+        },
+        BlockEntityData::Dispenser(block_entity_data_items) => {
+          block_entity_data_items.iter().map(Into::into).collect()
+        },
+        BlockEntityData::Hopper(block_entity_data_items) => {
+          block_entity_data_items.iter().map(Into::into).collect()
         },
         _ => Vec::new(),
       },

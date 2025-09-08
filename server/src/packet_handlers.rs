@@ -1296,7 +1296,7 @@ pub mod play {
         else {None}
       });
     let Some(player) = game.players.get_mut(player_index.unwrap()) else {
-      println!("got use_item_on packet from invalid player");
+      println!("got click_container packet from invalid player");
       return Ok(None);
     };
 
@@ -1311,51 +1311,85 @@ pub mod play {
       .try_get_block_entity_mut(position).unwrap();
 
     match block_entity.data.as_mut().unwrap() {
-      BlockEntityData::Chest(chest_items) => {
-        assert!(parsed_packet.slot < 63);
-        if parsed_packet.slot < 0 {
-          println!("clicked outside window");
-        } else if parsed_packet.slot < 27 {
-          //Chest inventory
-          if chest_items[parsed_packet.slot as usize].count > 0 {
-            //Slot in chest has items
-            if player.cursor_item.is_some() {
-              println!("still need to implement swapping items, or stacking up in chest");
-            } else {
-              let item = &chest_items[parsed_packet.slot as usize];
-              player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
-              chest_items[parsed_packet.slot as usize] = BlockEntityDataItem { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
-            }
-          } else {
-            //Slot in chest doesnt have items
-            if player.cursor_item.is_some() {
-              chest_items[parsed_packet.slot as usize] = BlockEntityDataItem { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
-              player.cursor_item = None;
-            }
-          }
-        } else { //Player inventory
-          if player.get_inventory()[parsed_packet.slot as usize - 18].item_count > 0 {
-            //Slot in inventory has items
-            if player.cursor_item.is_some() {
-              println!("still need to implement swapping items, or stacking up in player inventory");
-            } else {
-              let item = &player.get_inventory()[parsed_packet.slot as usize - 18];
-              player.cursor_item = Some(item.clone());
-              player.set_inventory_slot(parsed_packet.slot as u8 - 18, Slot::default(), connections, connection_streams);
-            }
-          } else {
-            //Slot in inventory doesn't have items
-            if player.cursor_item.is_some() {
-              player.set_inventory_slot(parsed_packet.slot as u8 - 18, player.cursor_item.clone().unwrap(), connections, connection_streams);
-              player.cursor_item = None;
-            }
-          }
-        }
-        println!("{chest_items:?}");
+      BlockEntityData::Chest(items) => {
+        assert!(items.len() == 27);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+      },
+      BlockEntityData::Furnace(items) => {
+        assert!(items.len() == 3);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+      },
+      BlockEntityData::BrewingStand(items) => {
+        assert!(items.len() == 5);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+      },
+      BlockEntityData::Crafter(items) => {
+        assert!(items.len() == 9);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+      },
+      BlockEntityData::Dispenser(items) => {
+        assert!(items.len() == 9);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+      },
+      BlockEntityData::Hopper(items) => {
+        assert!(items.len() == 5);
+        assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+        handle_container_click(parsed_packet, items, player, connections, connection_streams);
       },
       _ => todo!(),
     }
 
     return Ok(None);
+  }
+}
+
+
+fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [BlockEntityDataItem], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) {
+  if parsed_packet.slot < 0 {
+    println!("clicked outside window");
+  } else if parsed_packet.slot < items.len() as i16 {
+    //Chest inventory
+    if items[parsed_packet.slot as usize].count > 0 {
+      //Slot in chest has items
+      if player.cursor_item.is_some() {
+        println!("still need to implement swapping items, or stacking up in block entity inventory");
+      } else {
+        let item = &items[parsed_packet.slot as usize];
+        player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
+        items[parsed_packet.slot as usize] = BlockEntityDataItem { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
+      }
+    } else {
+      //Slot in chest doesnt have items
+      if player.cursor_item.is_some() {
+        items[parsed_packet.slot as usize] = BlockEntityDataItem { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
+        player.cursor_item = None;
+      }
+    }
+  } else { //Player inventory
+    const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
+    let player_inventory_index = parsed_packet.slot - items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
+    //println!("{player_inventory_index}");
+
+    if player.get_inventory()[player_inventory_index as usize].item_count > 0 {
+      //Slot in inventory has items
+      if player.cursor_item.is_some() {
+        println!("still need to implement swapping items, or stacking up in player inventory");
+      } else {
+        let item = &player.get_inventory()[player_inventory_index as usize];
+        player.cursor_item = Some(item.clone());
+        player.set_inventory_slot(player_inventory_index as u8, Slot::default(), connections, connection_streams);
+      }
+    } else {
+      //Slot in inventory doesn't have items
+      if player.cursor_item.is_some() {
+        player.set_inventory_slot(player_inventory_index as u8, player.cursor_item.clone().unwrap(), connections, connection_streams);
+        player.cursor_item = None;
+      }
+    }
   }
 }

@@ -451,8 +451,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
         block_entity.clone().into()
       }).collect());
 
-      println!("{block_entities_nbt:?}");
-
       chunk_nbt_tags.push(block_entities_nbt);
     }
 
