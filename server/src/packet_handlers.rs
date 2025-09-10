@@ -1349,7 +1349,7 @@ pub mod play {
 }
 
 
-fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [BlockEntityDataItem], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) {
+fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) {
   if parsed_packet.slot < 0 {
     println!("clicked outside window");
   } else if parsed_packet.slot < items.len() as i16 {
@@ -1361,12 +1361,12 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
       } else {
         let item = &items[parsed_packet.slot as usize];
         player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
-        items[parsed_packet.slot as usize] = BlockEntityDataItem { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
+        items[parsed_packet.slot as usize] = Item { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
       }
     } else {
       //Slot in chest doesnt have items
       if player.cursor_item.is_some() {
-        items[parsed_packet.slot as usize] = BlockEntityDataItem { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
+        items[parsed_packet.slot as usize] = Item { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
         player.cursor_item = None;
       }
     }

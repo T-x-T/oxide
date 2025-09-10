@@ -26,6 +26,7 @@ pub enum CustomError {
   ChunkNotFound(Position),
   PositionOutOfBounds(Position),
   InvalidInput(String),
+  TriedParsingUnknown(String),
   NotActuallyAnErrorButPleaseDisconnectMe,
 }
 
@@ -40,6 +41,7 @@ impl Display for CustomError {
       CustomError::ChunkNotFound(x) => write!(f, "couldn't find chunk at position {x:?}"),
       CustomError::PositionOutOfBounds(x) => write!(f, "tried to something at position {x:?}, but that is not within the bounds of possible locations"),
       CustomError::InvalidInput(x) => write!(f, "whatever the input was, was not good. that was the non good input: {x}"),
+      CustomError::TriedParsingUnknown(x) => write!(f, "whatever the input was, we did not know what it was supposed to represent. This is the unknown input: {x}"),
       CustomError::NotActuallyAnErrorButPleaseDisconnectMe => write!(f, "yeah this is just a normal disconnect, that we are somehow treating as an error, because it is cleaner or so i dont know :cry:"),
     }
   }
