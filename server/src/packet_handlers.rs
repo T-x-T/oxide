@@ -1310,7 +1310,7 @@ pub mod play {
       .get_chunk_from_position_mut(position).unwrap()
       .try_get_block_entity_mut(position).unwrap();
 
-    match block_entity.data.as_mut().unwrap() {
+    match &mut block_entity.data {
       BlockEntityData::Chest(items) => {
         assert!(items.len() == 27);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory

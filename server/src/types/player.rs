@@ -344,7 +344,7 @@ impl Player {
         packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
         y: x.position.y,
         block_entity_type: 1,
-        data: x.data.clone().map(|x| NbtTag::Root(x.into()))
+        data: Some(NbtTag::Root(x.data.clone().into())),
       })
 		  .collect();
 
@@ -488,7 +488,7 @@ impl Player {
     let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
-      slot_data: match block_entity.clone().data.unwrap_or_default() {
+      slot_data: match block_entity.clone().data {
         BlockEntityData::Chest(block_entity_data_items) => {
           block_entity_data_items.iter().map(Into::into).collect()
         },
