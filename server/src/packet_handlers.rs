@@ -1288,14 +1288,14 @@ pub mod play {
 
   pub fn click_container(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::ClickContainer::try_from(data.to_vec())?;
-    println!("{parsed_packet:?}");
+    //println!("{parsed_packet:?}");
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
         Some(x.0)}
         else {None}
       });
-    let Some(player) = game.players.get_mut(player_index.unwrap()) else {
+    let Some(player) = game.players.get(player_index.unwrap()) else {
       println!("got click_container packet from invalid player");
       return Ok(None);
     };
@@ -1305,43 +1305,53 @@ pub mod play {
       return Ok(None);
     };
 
+    let streams_with_container_opened = game.players.iter()
+      .filter(|x| x.opened_container_at.is_some_and(|x| x == position))
+      .map(|x| x.connection_stream.try_clone().unwrap())
+      .collect::<Vec<TcpStream>>();
+
     let block_entity = game.world.dimensions
       .get_mut("minecraft:overworld").unwrap()
       .get_chunk_from_position_mut(position).unwrap()
       .try_get_block_entity_mut(position).unwrap();
 
+    let Some(player) = game.players.get_mut(player_index.unwrap()) else {
+      println!("got click_container packet from invalid player");
+      return Ok(None);
+    };
+
     match &mut block_entity.data {
       BlockEntityData::Chest(items) => {
         assert!(items.len() == 27);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       BlockEntityData::Furnace(items) => {
         assert!(items.len() == 3);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       BlockEntityData::BrewingStand(items) => {
         assert!(items.len() == 5);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       BlockEntityData::Crafter(items) => {
         assert!(items.len() == 9);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       BlockEntityData::Dispenser(items) => {
         assert!(items.len() == 9);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       BlockEntityData::Hopper(items) => {
         assert!(items.len() == 5);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-        handle_container_click(parsed_packet, items, player, connections, connection_streams);
+        handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
-      _ => todo!(),
+      x => println!("can't handle click_container packet for entity {x:?}"),
     }
 
     return Ok(None);
@@ -1349,7 +1359,7 @@ pub mod play {
 }
 
 
-fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) {
+fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
   if parsed_packet.slot < 0 {
     println!("clicked outside window");
   } else if parsed_packet.slot < items.len() as i16 {
@@ -1361,12 +1371,31 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
       } else {
         let item = &items[parsed_packet.slot as usize];
         player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
-        items[parsed_packet.slot as usize] = Item { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
+        items[parsed_packet.slot as usize] = Item::default();
+
+        for stream in streams_with_container_opened {
+          lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+            window_id: 1,
+            state_id: 1,
+            slot: parsed_packet.slot,
+            slot_data: Slot::default(),
+          }.try_into().unwrap()).unwrap();
+        }
       }
     } else {
       //Slot in chest doesnt have items
       if player.cursor_item.is_some() {
         items[parsed_packet.slot as usize] = Item { id: data::items::get_item_name_by_id(player.cursor_item.clone().unwrap().item_id.unwrap()), count: player.cursor_item.as_ref().unwrap().item_count as u8, components: player.cursor_item.clone().unwrap().components_to_add };
+
+        for stream in streams_with_container_opened {
+          lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+            window_id: 1,
+            state_id: 1,
+            slot: parsed_packet.slot,
+            slot_data: player.cursor_item.clone().unwrap(),
+          }.try_into().unwrap()).unwrap();
+        }
+
         player.cursor_item = None;
       }
     }
