@@ -1072,7 +1072,15 @@ pub mod play {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec())?;
 
     let old_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
-    game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
+    let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
+    if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+      game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
+      game.players.iter()
+        .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
+        .for_each(|x| send_packet(&x.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
+          window_id: 1,
+        }.try_into().unwrap()).unwrap());
+    }
 
     for stream in connection_streams.iter() {
       send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
@@ -1149,10 +1157,21 @@ pub mod play {
     };
 
     for block_to_place in &blocks_to_place {
-      let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0);
-      if res.is_err() {
-        println!("couldn't place block because {}", res.err().unwrap());
-        return Ok(None);
+      match game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
+        Ok(res) => {
+          if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+            game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
+            game.players.iter()
+              .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
+              .for_each(|x| send_packet(&x.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
+                window_id: 1,
+              }.try_into().unwrap()).unwrap());
+          }
+        },
+        Err(err) => {
+          println!("couldn't place block because {err}");
+          return Ok(None);
+        },
       };
     }
 

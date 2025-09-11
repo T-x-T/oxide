@@ -280,6 +280,43 @@ impl TryFrom<Vec<u8>> for Commands {
 }
 
 //
+// MARK: 0x11 close container
+//
+
+#[derive(Debug, Clone)]
+pub struct CloseContainer {
+	pub window_id: i32,
+}
+
+impl Packet for CloseContainer {
+	const PACKET_ID: u8 = 0x11;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<CloseContainer> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: CloseContainer) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for CloseContainer {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+		  window_id: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x12 set container content
 //
 

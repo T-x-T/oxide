@@ -517,7 +517,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
         BlockEntityData::Chest(data)
       },
       BlockEntityId::Furnace | BlockEntityId::BlastFurnace | BlockEntityId::Smoker => {
-        let mut data = vec![Item::default(); 9];
+        let mut data = vec![Item::default(); 3];
 
         if let Some(items) = value.get_child("Items") {
           for entry in items.as_list() {
