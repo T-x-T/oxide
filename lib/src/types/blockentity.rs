@@ -194,7 +194,7 @@ pub enum BlockEntityData {
   JukeBox(Item, i64), //RecordItem, ticks_since_song_started
   Lectern(Option<Item>, Option<i32>), //Book, Page
   #[default]
-  NoData, //TODO: remove when everything is implemented (NO! Cant remove, because some entities actually don't have any data, but investigate why I wrote that originally?)
+  NoData,
 }
 
 #[derive(Debug, Clone)]
@@ -308,7 +308,7 @@ impl From<BlockEntityData> for Vec<NbtTag> {
             NbtTag::Byte("Slot".to_string(), 0),
             NbtTag::String("id".to_string(), item.id.clone()),
             NbtTag::Int("count".to_string(), item.count as i32),
-            NbtTag::TagCompound("components".to_string(), Vec::new()), //TODO: missing SlotComponent to nbt conversion
+            NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
           ]));
         }
 
@@ -405,7 +405,7 @@ fn items_to_nbt(block_entity_data_items: Vec<Item>) -> NbtTag {
       NbtTag::Byte("Slot".to_string(), i as u8),
       NbtTag::String("id".to_string(), item.id.clone()),
       NbtTag::Int("count".to_string(), item.count as i32),
-      NbtTag::TagCompound("components".to_string(), Vec::new()), //TODO: missing SlotComponent to nbt conversion
+      NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
     ])
   }).collect());
 }
@@ -422,7 +422,7 @@ impl From<&Item> for Slot {
 }
 
 pub fn get_blockentity_for_placed_block(position_global: Position, block_state_id: u16) -> Option<BlockEntity> {
-  return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //TODO: pass the blocks in from somewhere, recomputing this on every placed block is a bit insane
+  return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //maybe pass the blocks in from somewhere at some point, recomputing this on every placed block is not _that_ ideal
     Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::Barrel => Some(BlockEntity { id: BlockEntityId::Barrel, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
@@ -435,8 +435,8 @@ pub fn get_blockentity_for_placed_block(position_global: Position, block_state_i
     Type::BlastFurnace => Some(BlockEntity { id: BlockEntityId::BlastFurnace, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3]) }),
     Type::BrewingStand => Some(BlockEntity { id: BlockEntityId::BrewingStand, position: position_global, components: None, data: BlockEntityData::BrewingStand(vec![Item::default();5]) }),
     Type::Brushable => Some(BlockEntity { id: BlockEntityId::BrushableBlock, position: position_global, components: None, data: BlockEntityData::Brushable(None) }),
-    Type::CalibratedSculkSensor => Some(BlockEntity { id: BlockEntityId::CalibratedSculkSensor, position: position_global, components: None, data: BlockEntityData::NoData }), //TODO: this actually has some data
-    Type::Campfire => Some(BlockEntity { id: BlockEntityId::Campfire, position: position_global, components: None, data: BlockEntityData::Campfire(Vec::new(), Vec::new(), Vec::new()) }), //TODO: check via block_state_id if this is a regular or soul campfire
+    Type::CalibratedSculkSensor => Some(BlockEntity { id: BlockEntityId::CalibratedSculkSensor, position: position_global, components: None, data: BlockEntityData::NoData }),
+    Type::Campfire => Some(BlockEntity { id: BlockEntityId::Campfire, position: position_global, components: None, data: BlockEntityData::Campfire(Vec::new(), Vec::new(), Vec::new()) }), //could technically also be a soulcampfire, but probably doesn't matter
     Type::ChiseledBookShelf => Some(BlockEntity { id: BlockEntityId::ChiseledBookshelf, position: position_global, components: None, data: BlockEntityData::ChiseledBookShelf(Vec::new(), -1) }),
     Type::Comparator => Some(BlockEntity { id: BlockEntityId::Comperator, position: position_global, components: None, data: BlockEntityData::Comparator(0) }),
     Type::Command => Some(BlockEntity { id: BlockEntityId::CommandBlock, position: position_global, components: None, data: BlockEntityData::NoData }),

@@ -48,6 +48,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game, connections, connection_streams),
+      lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1075,11 +1076,9 @@ pub mod play {
     let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
       game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
-      game.players.iter()
+      game.players.iter_mut()
         .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
-        .for_each(|x| send_packet(&x.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
-          window_id: 1,
-        }.try_into().unwrap()).unwrap());
+        .for_each(|x| x.close_inventory().unwrap());
     }
 
     for stream in connection_streams.iter() {
@@ -1161,11 +1160,9 @@ pub mod play {
         Ok(res) => {
           if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
             game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
-            game.players.iter()
+            game.players.iter_mut()
               .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
-              .for_each(|x| send_packet(&x.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
-                window_id: 1,
-              }.try_into().unwrap()).unwrap());
+              .for_each(|x| x.close_inventory().unwrap());
           }
         },
         Err(err) => {
@@ -1371,6 +1368,18 @@ pub mod play {
         handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
       x => println!("can't handle click_container packet for entity {x:?}"),
+    }
+
+    return Ok(None);
+  }
+
+  pub fn close_container(stream: &mut TcpStream, data: &mut [u8], game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::play::CloseContainer::try_from(data.to_vec())?;
+
+    if parsed_packet.window_id != 0 {
+      game.players.iter_mut()
+        .filter(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap())
+        .for_each(|x| x.close_inventory().unwrap());
     }
 
     return Ok(None);

@@ -23,7 +23,7 @@ pub struct Player {
   pub current_teleport_id: i32,
   inventory: Vec<Option<Slot>>,
   selected_slot: u8,
-  pub opened_container_at: Option<Position>, //TODO: should be unset when container is closed again
+  pub opened_container_at: Option<Position>,
   pub cursor_item: Option<Slot>,
 }
 
@@ -42,7 +42,7 @@ impl Player {
 	      connection_stream,
 	      entity_id: game.last_created_entity_id + 1,
 	      waiting_for_confirm_teleportation: false,
-	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
+	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
 	      inventory: vec![None; 46],
 	      selected_slot: 0,
 				opened_container_at: None,
@@ -129,7 +129,7 @@ impl Player {
       connection_stream,
       entity_id: game.last_created_entity_id + 1,
       waiting_for_confirm_teleportation: false,
-      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
+      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
       inventory,
       selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
       opened_container_at: None,
@@ -514,5 +514,15 @@ impl Player {
       },
       carried_item: None,
     }.try_into().unwrap());
+	}
+
+	pub fn close_inventory(&mut self) -> Result<(), Box<dyn Error>> {
+	  self.opened_container_at = None;
+
+		lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
+      window_id: 1,
+    }.try_into()?)?;
+
+		return Ok(());
 	}
 }
