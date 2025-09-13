@@ -1379,61 +1379,34 @@ pub mod play {
 
 
 fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
-  if parsed_packet.slot < 0 {
-    println!("clicked outside window");
-    return;
-  }
-
   const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
   let player_inventory_index = parsed_packet.slot - items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
 
+  let outside_clicked = parsed_packet.slot < 0;
   let chest_inventory_clicked = parsed_packet.slot < items.len() as i16;
-  let orig_inventory_item: Option<Slot> = if chest_inventory_clicked { if items[parsed_packet.slot as usize].count > 0 { Some(items[parsed_packet.slot as usize].clone().into()) } else { None } } else { player.get_inventory()[player_inventory_index as usize].clone() };
+  let orig_inventory_item: Option<Slot> = if outside_clicked {
+    None
+  } else if chest_inventory_clicked {
+    if items[parsed_packet.slot as usize].count > 0 {
+      Some(items[parsed_packet.slot as usize].clone().into())
+    } else {
+      None
+    }
+  } else {
+    player.get_inventory()[player_inventory_index as usize].clone()
+  };
+
   //println!("orig item: {orig_inventory_item:?}");
   let orig_cursor_item: Option<Slot> = player.cursor_item.clone();
   //println!("orig cursor: {orig_cursor_item:?}");
-  let mut new_inventory_item: Option<Slot> = None;
-  let mut new_cursor_item: Option<Slot> = None;
 
-  if let Some(orig_inventory_item) = orig_inventory_item.clone() {
-    //Slot has items
-    if let Some(orig_cursor_item) = orig_cursor_item.clone() {
-      //Swap items or stack up?
-      if orig_cursor_item.item_id == orig_inventory_item.item_id {
-        //stack up
-        let item_count_cursor = orig_cursor_item.item_count;
-        let item_count_chest = orig_inventory_item.item_count;
-        let max_stack_size = data::items::get_items().get(&data::items::get_item_name_by_id(orig_inventory_item.item_id)).unwrap().max_stack_size as i32;
-        let left_over_item_count = if ((item_count_chest + item_count_cursor) - max_stack_size).is_negative() { 0 } else { (item_count_chest + item_count_cursor) - max_stack_size };
-        if left_over_item_count > 0 {
-          new_inventory_item = Some(Slot { item_count: max_stack_size, ..orig_cursor_item.clone() });
-          new_cursor_item = Some(Slot { item_count: left_over_item_count, ..orig_cursor_item.clone() });
-        } else {
-          new_inventory_item = Some(Slot { item_count: orig_inventory_item.item_count + item_count_cursor, ..orig_cursor_item.clone() });
-          new_cursor_item = None;
-        }
-      } else {
-        //swap
-        let temp_item_from_player = orig_cursor_item.clone();
-        new_cursor_item = Some(orig_inventory_item);
-        new_inventory_item = temp_item_from_player.clone().into();
-      }
-    } else {
-      //can just take item from slot
-      new_cursor_item = Some(orig_inventory_item);
-      new_inventory_item = None;
-    }
-  } else {
-    //Slot doesnt have items
-    if orig_cursor_item.is_some() {
-      new_inventory_item = orig_cursor_item.clone();
-      new_cursor_item = None;
-    }
-  }
+  let (new_inventory_item, new_cursor_item) = lib::containerclick::handle(orig_inventory_item.clone(), orig_cursor_item.clone());
 
   //println!("new item: {new_inventory_item:?}");
   if new_inventory_item != orig_inventory_item {
-    if chest_inventory_clicked {
+    if outside_clicked {
+      //nothing to do
+    } else if chest_inventory_clicked {
       //Chest inventory got changed
       items[parsed_packet.slot as usize] = new_inventory_item.clone().into();
       for stream in streams_with_container_opened {
