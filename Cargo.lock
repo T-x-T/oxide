@@ -10,15 +10,15 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "cfg-if"
-version = "1.0.1"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
+checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 
 [[package]]
 name = "crc32fast"
-version = "1.4.2"
+version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a97769d94ddab943e4510d138150169a2758b5ef3eb191a9ee688de3e23ef7b3"
+checksum = "9481c1c90cbf2ac953f07c8d4a58aa3945c425b7185c9154d67a65e4230da511"
 dependencies = [
  "cfg-if",
 ]
@@ -26,6 +26,13 @@ dependencies = [
 [[package]]
 name = "data"
 version = "0.1.0"
+
+[[package]]
+name = "data_generator_tools"
+version = "0.1.0"
+dependencies = [
+ "jzon",
+]
 
 [[package]]
 name = "flate2"
@@ -36,6 +43,12 @@ dependencies = [
  "crc32fast",
  "miniz_oxide",
 ]
+
+[[package]]
+name = "jzon"
+version = "0.12.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17ab85f84ca42c5ec520e6f3c9966ba1fd62909ce260f8837e248857d2560509"
 
 [[package]]
 name = "lib"
@@ -58,5 +71,14 @@ dependencies = [
 name = "proxy"
 version = "0.1.0"
 dependencies = [
+ "lib",
+]
+
+[[package]]
+name = "server"
+version = "0.1.0"
+dependencies = [
+ "data",
+ "flate2",
  "lib",
 ]

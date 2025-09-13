@@ -1,12 +1,10 @@
 [package]
-name = "oxide"
+name = "server"
 version = "0.1.0"
 edition = "2024"
+default-run = "server"
 
 [dependencies]
 lib = {path = "../lib", version = "*"}
 data = {path = "../data", version = "*"}
 flate2 = "1.1.2"
-
-[profile.dev]
-opt-level = 1

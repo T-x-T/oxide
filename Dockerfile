@@ -1,13 +1,13 @@
 FROM git.thetxt.io/thetxt/runner-base:latest AS builder
 
-WORKDIR /server
+WORKDIR /
 
 ADD . .
-RUN cd server && ~/.cargo/bin/cargo build --release
+RUN ~/.cargo/bin/cargo build --bin server --release
 
 FROM alpine
 EXPOSE 25565
 
-COPY --from=builder /server/server/target/release/oxide /app/oxide
+COPY --from=builder /server/target/release/server /app/server
 WORKDIR /app
-CMD ["/app/oxide"]
+CMD ["/app/server"]
