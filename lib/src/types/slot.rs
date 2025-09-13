@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Slot {
   pub item_count: i32,
   pub item_id: i32,
@@ -59,7 +59,7 @@ impl From<Item> for Option<Slot> {
 }
 
 //implement missing SlotComponent variants https://git.thetxt.io/thetxt/oxide/issues/18
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SlotComponent {
   CustomData(NbtTag),
   MaxStackSize(i32),
