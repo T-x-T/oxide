@@ -324,8 +324,8 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 pub struct SetContainerContent {
 	pub window_id: i32,
 	pub state_id: i32,
-	pub slot_data: Vec<Slot>,
-	pub carried_item: Slot,
+	pub slot_data: Vec<Option<Slot>>,
+	pub carried_item: Option<Slot>,
 }
 
 impl Packet for SetContainerContent {
@@ -343,8 +343,8 @@ impl TryFrom<SetContainerContent> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.window_id));
 		output.append(&mut crate::serialize::varint(value.state_id));
 		output.append(&mut crate::serialize::varint(value.slot_data.len() as i32));
-		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x)));
-		output.append(&mut crate::serialize::slot(&value.carried_item));
+		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x.as_ref())));
+		output.append(&mut crate::serialize::slot(value.carried_item.as_ref()));
 
 		return Ok(output);
 	}
@@ -421,7 +421,7 @@ pub struct SetContainerSlot {
 	pub window_id: i32,
 	pub state_id: i32,
 	pub slot: i16,
-	pub slot_data: Slot,
+	pub slot_data: Option<Slot>,
 }
 
 impl Packet for SetContainerSlot {
@@ -439,7 +439,7 @@ impl TryFrom<SetContainerSlot> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.window_id));
 		output.append(&mut crate::serialize::varint(value.state_id));
 		output.append(&mut crate::serialize::short(value.slot));
-		output.append(&mut crate::serialize::slot(&value.slot_data));
+		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
 
 		return Ok(output);
 	}
@@ -2291,7 +2291,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 #[derive(Debug, Clone)]
 pub struct SetEquipment {
 	pub entity_id: i32,
-	pub equipment: Vec<(u8, Slot)>,
+	pub equipment: Vec<(u8, Option<Slot>)>,
 }
 
 impl Packet for SetEquipment {
@@ -2316,7 +2316,7 @@ impl TryFrom<SetEquipment> for Vec<u8> {
        		0b0000_0000
        	};
    			output.push(x.1.0 + mask);
-     		output.append(&mut crate::serialize::slot(&x.1.1));
+     		output.append(&mut crate::serialize::slot(x.1.1.as_ref()));
      	});
 
 		return Ok(output);
@@ -2328,7 +2328,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let entity_id = crate::deserialize::varint(&mut value)?;
-		let mut equipment: Vec<(u8, Slot)> = Vec::new();
+		let mut equipment: Vec<(u8, Option<Slot>)> = Vec::new();
 
 		loop {
 			let slot = value.remove(0);
@@ -2391,7 +2391,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 #[derive(Debug, Clone)]
 pub struct SetPlayerInventorySlot {
 	pub slot: i32,
-	pub slot_data: Slot,
+	pub slot_data: Option<Slot>,
 }
 
 impl Packet for SetPlayerInventorySlot {
@@ -2407,7 +2407,7 @@ impl TryFrom<SetPlayerInventorySlot> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 
 		output.append(&mut crate::serialize::varint(value.slot));
-		output.append(&mut crate::serialize::slot(&value.slot_data));
+		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
 
 		return Ok(output);
 	}

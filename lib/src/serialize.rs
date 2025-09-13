@@ -81,16 +81,21 @@ pub fn position(input: &crate::types::position::Position) -> Vec<u8> {
   return unsigned_long(((input.x as u64 & 0x3FFFFFF) << 38) | ((input.z as u64 & 0x3FFFFFF) << 12) | (input.y as u64 & 0xFFF));
 }
 
-pub fn hashed_slot(input: &Slot) -> Vec<u8> {
+pub fn hashed_slot(input: Option<&Slot>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  if input.item_count == 0 || input.item_id.is_none() {
+  let Some(input) = input else {
+    output.append(&mut boolean(false));
+    return output;
+  };
+
+  if input.item_count == 0 {
     output.append(&mut boolean(false));
     return output;
   }
 
   output.append(&mut varint(input.item_count));
-  output.append(&mut varint(input.item_id.unwrap()));
+  output.append(&mut varint(input.item_id));
   output.append(&mut varint(input.components_to_add.len() as i32));
   for component in &input.components_to_add {
     output.append(&mut varint(component.into()));
@@ -104,16 +109,21 @@ pub fn hashed_slot(input: &Slot) -> Vec<u8> {
   return output;
 }
 
-pub fn slot(input: &Slot) -> Vec<u8> {
+pub fn slot(input: Option<&Slot>) -> Vec<u8> {
   let mut output: Vec<u8> = Vec::new();
 
-  output.append(&mut varint(input.item_count));
+  let Some(input) = input else {
+    output.append(&mut varint(0));
+    return output;
+  };
 
   if input.item_count == 0 {
+    output.append(&mut varint(0));
     return output;
   }
 
-  output.append(&mut varint(input.item_id.unwrap_or(0)));
+  output.append(&mut varint(input.item_count));
+  output.append(&mut varint(input.item_id));
   output.append(&mut varint(input.components_to_add.len() as i32));
   output.append(&mut varint(input.components_to_remove.len() as i32));
   for component_to_add in &input.components_to_add {
@@ -141,7 +151,7 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::IntangibleProjectile(a) => nbt_network(a),
       SlotComponent::Food(a, b, c) => vec![varint(a), float(b), boolean(c)].into_iter().flatten().collect(),
       SlotComponent::Consumable => todo!(),
-      SlotComponent::UseRemainder(a) => slot(&a),
+      SlotComponent::UseRemainder(a) => slot(a.as_ref()),
       SlotComponent::UseCooldown(a, b) => vec![float(a), if b.is_some() {vec![vec![1], string(&b.unwrap())].into_iter().flatten().collect()} else {vec![0]}].into_iter().flatten().collect(),
       SlotComponent::DamageResistant(a) => string(&a),
       SlotComponent::Tool => todo!(),
@@ -159,8 +169,8 @@ pub fn slot(input: &Slot) -> Vec<u8> {
       SlotComponent::MapId(a) => varint(a),
       SlotComponent::MapDecorations(a) => nbt_network(a),
       SlotComponent::MapPostProcessing(a) => vec![a],
-      SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
-      SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| slot(&x)).collect(),
+      SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| slot(x.as_ref())).collect(),
+      SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| slot(x.as_ref())).collect(),
       SlotComponent::PotionContents => todo!(),
       SlotComponent::PotionDurationScale(a) => float(a),
       SlotComponent::SuspiciousStewEffects(a) => a.into_iter().flat_map(|(x, y)| vec![varint(x), varint(y)]).flatten().collect(),

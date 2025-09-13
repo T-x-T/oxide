@@ -414,7 +414,7 @@ impl From<&Item> for Slot {
   fn from(value: &Item) -> Self {
     return Slot {
       item_count: value.count as i32,
-      item_id: Some(data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id),
+      item_id: data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id,
       components_to_add: value.components.clone(),
       components_to_remove: Vec::new()
     };

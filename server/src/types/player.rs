@@ -21,7 +21,7 @@ pub struct Player {
   pub entity_id: i32,
   pub waiting_for_confirm_teleportation: bool,
   pub current_teleport_id: i32,
-  inventory: Vec<Slot>,
+  inventory: Vec<Option<Slot>>,
   selected_slot: u8,
   pub opened_container_at: Option<Position>, //TODO: should be unset when container is closed again
   pub cursor_item: Option<Slot>,
@@ -43,7 +43,7 @@ impl Player {
 	      entity_id: game.last_created_entity_id + 1,
 	      waiting_for_confirm_teleportation: false,
 	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //TODO: use random number instead
-	      inventory: vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46],
+	      inventory: vec![None; 46],
 	      selected_slot: 0,
 				opened_container_at: None,
 				cursor_item: None,
@@ -63,53 +63,57 @@ impl Player {
 
     let player_data = lib::deserialize::nbt_disk(&mut file_content).unwrap();
 
-    let mut inventory = vec![Slot { item_count: 0, item_id: None, components_to_add: Vec::new(), components_to_remove: Vec::new() }; 46];
+    let mut inventory = vec![None; 46];
     player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
     	let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
-   		inventory[slot_index].item_count = x.get_child("count").unwrap().as_int();
-   		inventory[slot_index].item_id = Some(data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id);
+      inventory[slot_index] = Some(Slot {
+        item_count: x.get_child("count").unwrap().as_int(),
+        item_id: data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id,
+        components_to_add: Vec::new(),
+        components_to_remove: Vec::new()
+      });
     });
 
     if let Some(equipment) = player_data.get_child("equipment") {
     	if let Some(head) = equipment.get_child("head") {
-   			inventory[5] = Slot {
+   			inventory[5] = Some(Slot {
     			item_count: head.get_child("count").unwrap().as_int(),
-     			item_id: Some(data::items::get_items().get(head.get_child("id").unwrap().as_string()).unwrap().id),
+     			item_id: data::items::get_items().get(head.get_child("id").unwrap().as_string()).unwrap().id,
 	       	components_to_add: Vec::new(),
 	        components_to_remove: Vec::new(),
-      	}
+      	})
      	}
     	if let Some(chest) = equipment.get_child("chest") {
-   			inventory[6] = Slot {
+   			inventory[6] = Some(Slot {
     			item_count: chest.get_child("count").unwrap().as_int(),
-     			item_id: Some(data::items::get_items().get(chest.get_child("id").unwrap().as_string()).unwrap().id),
+     			item_id: data::items::get_items().get(chest.get_child("id").unwrap().as_string()).unwrap().id,
 	       	components_to_add: Vec::new(),
 	        components_to_remove: Vec::new(),
-      	}
+      	})
      	}
     	if let Some(legs) = equipment.get_child("legs") {
-   			inventory[7] = Slot {
+   			inventory[7] = Some(Slot {
     			item_count: legs.get_child("count").unwrap().as_int(),
-     			item_id: Some(data::items::get_items().get(legs.get_child("id").unwrap().as_string()).unwrap().id),
+     			item_id: data::items::get_items().get(legs.get_child("id").unwrap().as_string()).unwrap().id,
 	       	components_to_add: Vec::new(),
 	        components_to_remove: Vec::new(),
-      	}
+      	})
      	}
     	if let Some(feet) = equipment.get_child("feet") {
-   			inventory[8] = Slot {
+   			inventory[8] = Some(Slot {
     			item_count: feet.get_child("count").unwrap().as_int(),
-     			item_id: Some(data::items::get_items().get(feet.get_child("id").unwrap().as_string()).unwrap().id),
+     			item_id: data::items::get_items().get(feet.get_child("id").unwrap().as_string()).unwrap().id,
 	       	components_to_add: Vec::new(),
 	        components_to_remove: Vec::new(),
-      	}
+      	})
      	}
     	if let Some(offhand) = equipment.get_child("offhand") {
-   			inventory[45] = Slot {
+   			inventory[45] = Some(Slot {
     			item_count: offhand.get_child("count").unwrap().as_int(),
-     			item_id: Some(data::items::get_items().get(offhand.get_child("id").unwrap().as_string()).unwrap().id),
+     			item_id: data::items::get_items().get(offhand.get_child("id").unwrap().as_string()).unwrap().id,
 	       	components_to_add: Vec::new(),
 	        components_to_remove: Vec::new(),
-      	}
+      	})
      	}
     }
 
@@ -150,7 +154,7 @@ impl Player {
 	    .open(Player::get_playerdata_path(self.uuid))
 	    .unwrap();
 
-
+    let empty_slot = Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 	  let player_data = NbtTag::Root(vec![
 			NbtTag::List("Pos".to_string(), vec![
 				NbtListTag::Double(self.x),
@@ -162,33 +166,33 @@ impl Player {
 				NbtListTag::Float(self.pitch),
 			]),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
-			NbtTag::List("Inventory".to_string(), self.inventory.iter().enumerate().filter(|x| x.0 >= 9).filter(|x| x.1.item_count != 0 && x.1.item_id.is_some()).map(|x| {
+			NbtTag::List("Inventory".to_string(), self.inventory.iter().enumerate().filter(|x| x.0 >= 9).filter(|x| x.1.is_some()).map(|x| {
 				NbtListTag::TagCompound(vec![
 					NbtTag::Byte("Slot".to_string(), x.0 as u8),
-					NbtTag::Int("count".to_string(), x.1.item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.item_id.unwrap())),
+					NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().item_id)),
 				])
 			}).collect()),
 			NbtTag::TagCompound("equipment".to_string(), vec![
 				NbtTag::TagCompound("head".to_string(), vec![
-					NbtTag::Int("count".to_string(), self.inventory[5].item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].item_id.unwrap_or(0))),
+					NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).item_count),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id)),
 				]),
 				NbtTag::TagCompound("chest".to_string(), vec![
-					NbtTag::Int("count".to_string(), self.inventory[6].item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].item_id.unwrap_or(0))),
+  				NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).item_count),
+  				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id)),
 				]),
 				NbtTag::TagCompound("legs".to_string(), vec![
-					NbtTag::Int("count".to_string(), self.inventory[7].item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].item_id.unwrap_or(0))),
+  				NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).item_count),
+  				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id)),
 				]),
 				NbtTag::TagCompound("feet".to_string(), vec![
-					NbtTag::Int("count".to_string(), self.inventory[8].item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].item_id.unwrap_or(0))),
+  				NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).item_count),
+  				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id)),
 				]),
 				NbtTag::TagCompound("offhand".to_string(), vec![
-					NbtTag::Int("count".to_string(), self.inventory[45].item_count),
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[45].item_id.unwrap_or(0))),
+  				NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).item_count),
+  				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).item_id)),
 				]),
 			]),
 		]);
@@ -201,11 +205,11 @@ impl Player {
 		file.flush().unwrap();
   }
 
-  pub fn get_held_item(&self, main_hand: bool) -> &Slot {
+  pub fn get_held_item(&self, main_hand: bool) -> Option<&Slot> {
     if main_hand {
-      return self.inventory.get(36 + self.selected_slot as usize).unwrap();
+      return self.inventory.get(36 + self.selected_slot as usize).unwrap().as_ref();
     } else {
-      return self.inventory.get(45).unwrap();
+      return self.inventory.get(45).unwrap().as_ref();
     }
   }
 
@@ -426,15 +430,15 @@ impl Player {
 		);
 	}
 
-	pub fn get_inventory(&self) -> &Vec<Slot> {
+	pub fn get_inventory(&self) -> &Vec<Option<Slot>> {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Slot, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
 		self.set_inventory_slot(self.get_selected_slot() + 36, item, connections, connection_streams);
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Slot, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
 		self.inventory[slot as usize] = item.clone();
 
   	lib::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
@@ -450,7 +454,7 @@ impl Player {
 	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
 	   	.filter(|x| *x.0 != self.peer_socket_address)
 	   	.for_each(|x| {
-				let mut equipment: Vec<(u8, Slot)> = vec![
+				let mut equipment: Vec<(u8, Option<Slot>)> = vec![
 					(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
 				];
 
@@ -475,7 +479,6 @@ impl Player {
 		);
 	}
 
-	//TODO: position can be replaced once we are always passing in a proper block entity, then we can also remove the Option from block_entity
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity) {
 	  let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
       window_id: 1,
@@ -490,26 +493,26 @@ impl Player {
       state_id: 1,
       slot_data: match block_entity.clone().data {
         BlockEntityData::Chest(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::Furnace(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::BrewingStand(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::Crafter(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::Dispenser(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::Hopper(block_entity_data_items) => {
-          block_entity_data_items.iter().map(Into::into).collect()
+          block_entity_data_items.into_iter().map(Into::into).collect()
         },
         _ => Vec::new(),
       },
-      carried_item: Slot::default(),
+      carried_item: None,
     }.try_into().unwrap());
 	}
 }

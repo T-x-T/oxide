@@ -1,13 +1,62 @@
 use super::*;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Slot {
   pub item_count: i32,
-  pub item_id: Option<i32>,
+  pub item_id: i32,
   pub components_to_add: Vec<SlotComponent>,
   pub components_to_remove: Vec<i32>,
 }
 
+impl From<Slot> for Item {
+  fn from(value: Slot) -> Self {
+    return Self {
+      id: data::items::get_item_name_by_id(value.item_id),
+      count: value.item_count as u8,
+      components: value.components_to_add
+    };
+  }
+}
+
+impl From<Option<Slot>> for Item {
+  fn from(value: Option<Slot>) -> Self {
+    let Some(value) = value else {
+      return Self {
+        id: "minecraft:air".to_string(),
+        count: 0,
+        components: Vec::new(),
+      }
+    };
+
+    return Self {
+      id: data::items::get_item_name_by_id(value.item_id),
+      count: value.item_count as u8,
+      components: value.components_to_add
+    };
+  }
+}
+
+impl From<Item> for Slot {
+  fn from(value: Item) -> Self {
+    return Self {
+      item_count: value.count as i32,
+      item_id: data::items::get_items().get(&value.id).unwrap().id,
+      components_to_add: value.components,
+      components_to_remove: Vec::new()
+    };
+  }
+}
+
+impl From<Item> for Option<Slot> {
+  fn from(value: Item) -> Self {
+    return Some(Slot {
+      item_count: value.count as i32,
+      item_id: data::items::get_items().get(&value.id).unwrap().id,
+      components_to_add: value.components,
+      components_to_remove: Vec::new()
+    });
+  }
+}
 
 //implement missing SlotComponent variants https://git.thetxt.io/thetxt/oxide/issues/18
 #[derive(Debug, Clone)]
@@ -34,7 +83,7 @@ pub enum SlotComponent {
   IntangibleProjectile(NbtTag),
   Food(i32, f32, bool),
   Consumable, //Missing consume effects implementation
-  UseRemainder(Slot),
+  UseRemainder(Option<Slot>),
   UseCooldown(f32, Option<String>),
   DamageResistant(String),
   Tool, //missing Rules implementation
@@ -52,8 +101,8 @@ pub enum SlotComponent {
   MapId(i32),
   MapDecorations(NbtTag),
   MapPostProcessing(u8),
-  ChargedProjectiles(Vec<Slot>),
-  BundleContents(Vec<Slot>),
+  ChargedProjectiles(Vec<Option<Slot>>),
+  BundleContents(Vec<Option<Slot>>),
   PotionContents, //wont be doing that rn lol
   PotionDurationScale(f32),
   SuspiciousStewEffects(Vec<(i32, i32)>),

@@ -178,11 +178,11 @@ pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::Position, 
   });
 }
 
-pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
+pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
   let has_item = boolean(data)?;
 
   if !has_item {
-    return Ok(Slot::default());
+    return Ok(None);
   }
 
   let item_id = varint(data)?;
@@ -201,14 +201,14 @@ pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
   }
 
   //might have to do something about the components_to_add but probably not(?)
-  return Ok(Slot { item_count, item_id: Some(item_id), components_to_add: Vec::new(), components_to_remove });
+  return Ok(Some(Slot { item_count, item_id, components_to_add: Vec::new(), components_to_remove }));
 }
 
-pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
+pub fn slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
   let item_count = varint(data)?;
 
   if item_count == 0 {
-    return Ok(Slot::default());
+    return Ok(None);
   }
 
   let item_id = varint(data)?;
@@ -317,7 +317,7 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
       95 => SlotComponent::ShulkerColor(data.remove(0)),
       x => {
         println!("I cant deserialize the SlotComponent with id {x}, because I dont know it");
-        return Ok(Slot::default());
+        return Ok(None);
       },
     });
   }
@@ -326,12 +326,12 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Slot, Box<dyn Error>> {
     components_to_remove.push(varint(data)?);
   }
 
-  return Ok(Slot {
+  return Ok(Some(Slot {
     item_count,
-    item_id: Some(item_id),
+    item_id,
     components_to_add,
     components_to_remove,
-  });
+  }));
 }
 
 const SEGMENT_BITS: u8 = 0b0111_1111;
