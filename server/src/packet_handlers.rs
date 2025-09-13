@@ -1409,7 +1409,7 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
   let orig_cursor_item: Option<Slot> = player.cursor_item.clone();
   //println!("orig cursor: {orig_cursor_item:?}");
 
-  let (new_inventory_item, new_cursor_item) = lib::containerclick::handle(orig_inventory_item.clone(), orig_cursor_item.clone());
+  let (new_inventory_item, new_cursor_item) = lib::containerclick::handle(parsed_packet.mode as u8, parsed_packet.button, orig_inventory_item.clone(), orig_cursor_item.clone());
 
   //println!("new item: {new_inventory_item:?}");
   if new_inventory_item != orig_inventory_item {
