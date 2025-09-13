@@ -1386,8 +1386,46 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
     if items[parsed_packet.slot as usize].count > 0 {
       //Slot in chest has items
       if player.cursor_item.is_some() {
-        println!("still need to implement swapping items, or stacking up in block entity inventory");
+        //Swap items or stack up?
+        if player.cursor_item.as_ref().unwrap().item_id.is_some_and(|x| data::items::get_item_name_by_id(x) == items[parsed_packet.slot as usize].id) {
+          //stack up
+          let item_in_chest = &mut items[parsed_packet.slot as usize];
+          let item_count_cursor = player.cursor_item.as_ref().unwrap().item_count;
+          let item_count_chest = item_in_chest.count as i32;
+          let max_stack_size = data::items::get_items().get(&item_in_chest.id).unwrap().max_stack_size as i32;
+          let left_over_item_count = if (max_stack_size - (item_count_chest + item_count_cursor)).is_negative() { 0 } else { max_stack_size - (item_count_chest + item_count_cursor) };
+          if left_over_item_count > 0 {
+            item_in_chest.count += item_count_cursor as u8;
+            player.cursor_item = None;
+          } else {
+            player.cursor_item.as_mut().unwrap().item_count = left_over_item_count;
+          }
+          for stream in streams_with_container_opened {
+            lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+              window_id: 1,
+              state_id: 1,
+              slot: parsed_packet.slot,
+              slot_data: Slot { item_count: item_in_chest.count as i32, item_id: Some(data::items::get_items().get(&item_in_chest.id).unwrap().id), components_to_add: item_in_chest.components.clone(), components_to_remove: Vec::new() },
+            }.try_into().unwrap()).unwrap();
+          }
+        } else {
+          //swap
+          let item_from_chest = &items[parsed_packet.slot as usize];
+          let temp_item_from_player = player.cursor_item.clone().unwrap();
+          player.cursor_item = Some(Slot { item_count: item_from_chest.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item_from_chest.id).unwrap().1.id), components_to_add: item_from_chest.components.clone(), components_to_remove: Vec::new() });
+          items[parsed_packet.slot as usize] = Item { id: data::items::get_item_name_by_id(temp_item_from_player.item_id.unwrap()), count: temp_item_from_player.item_count as u8, components: temp_item_from_player.clone().components_to_add };
+
+          for stream in streams_with_container_opened {
+            lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+              window_id: 1,
+              state_id: 1,
+              slot: parsed_packet.slot,
+              slot_data: temp_item_from_player.clone(),
+            }.try_into().unwrap()).unwrap();
+          }
+        }
       } else {
+        //can just take item from chest
         let item = &items[parsed_packet.slot as usize];
         player.cursor_item = Some(Slot { item_count: item.count as i32, item_id: Some(data::items::get_items().iter().find(|x| *x.0 == item.id).unwrap().1.id), components_to_add: item.components.clone(), components_to_remove: Vec::new() });
         items[parsed_packet.slot as usize] = Item::default();
@@ -1426,7 +1464,28 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
     if player.get_inventory()[player_inventory_index as usize].item_count > 0 {
       //Slot in inventory has items
       if player.cursor_item.is_some() {
-        println!("still need to implement swapping items, or stacking up in player inventory");
+        //Swap items or stack up?
+        let item_in_inventory = &player.get_inventory()[player_inventory_index as usize];
+        if player.cursor_item.as_ref().unwrap().item_id.is_some_and(|x| x == player.get_inventory()[player_inventory_index as usize].item_id.unwrap()) {
+          //stack up
+          let item_count_cursor = player.cursor_item.as_ref().unwrap().item_count;
+          let item_count_inventory = item_in_inventory.item_count;
+          let max_stack_size = data::items::get_items().get(&data::items::get_item_name_by_id(item_in_inventory.item_id.unwrap())).unwrap().max_stack_size as i32;
+          let left_over_item_count = if (max_stack_size - (item_count_inventory + item_count_cursor)).is_negative() { 0 } else { max_stack_size - (item_count_inventory + item_count_cursor) };
+          if left_over_item_count > 0 {
+            let mut new_item = item_in_inventory.clone();
+            new_item.item_count += item_count_cursor;
+            player.set_inventory_slot(player_inventory_index as u8, new_item, connections, connection_streams);
+            player.cursor_item = None;
+          } else {
+            player.cursor_item.as_mut().unwrap().item_count = left_over_item_count;
+          }
+        } else {
+          //swap
+          let temp_item_from_cursor = player.cursor_item.clone().unwrap();
+          player.cursor_item = Some(item_in_inventory.clone());
+          player.set_inventory_slot(player_inventory_index as u8, temp_item_from_cursor, connections, connection_streams);
+        }
       } else {
         let item = &player.get_inventory()[player_inventory_index as usize];
         player.cursor_item = Some(item.clone());
