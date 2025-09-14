@@ -49,12 +49,16 @@ impl From<Item> for Slot {
 
 impl From<Item> for Option<Slot> {
   fn from(value: Item) -> Self {
-    return Some(Slot {
-      item_count: value.count as i32,
-      item_id: data::items::get_items().get(&value.id).unwrap().id,
-      components_to_add: value.components,
-      components_to_remove: Vec::new()
-    });
+    return if value.count == 0 {
+      None
+    } else {
+      Some(Slot {
+        item_count: value.count as i32,
+        item_id: data::items::get_items().get(&value.id).unwrap().id,
+        components_to_add: value.components,
+        components_to_remove: Vec::new()
+      })
+    }
   }
 }
 

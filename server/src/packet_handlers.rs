@@ -1304,7 +1304,6 @@ pub mod play {
 
   pub fn click_container(data: &mut[u8], stream: &mut TcpStream, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::ClickContainer::try_from(data.to_vec())?;
-    //println!("{parsed_packet:?}");
 
     let player_index = game.players.iter().enumerate().find_map(|x| {
       if x.1.uuid == connections.get(&stream.peer_addr().unwrap()).unwrap().player_uuid.unwrap_or_default() {
@@ -1387,17 +1386,17 @@ pub mod play {
 }
 
 
-fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
+fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickContainer, chest_items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
   const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
-  let player_inventory_index = parsed_packet.slot - items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
+  let player_inventory_index = parsed_packet.slot - chest_items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
 
   let outside_clicked = parsed_packet.slot < 0;
-  let chest_inventory_clicked = parsed_packet.slot < items.len() as i16;
+  let chest_inventory_clicked = parsed_packet.slot < chest_items.len() as i16;
   let orig_inventory_item: Option<Slot> = if outside_clicked {
     None
   } else if chest_inventory_clicked {
-    if items[parsed_packet.slot as usize].count > 0 {
-      Some(items[parsed_packet.slot as usize].clone().into())
+    if chest_items[parsed_packet.slot as usize].count > 0 {
+      Some(chest_items[parsed_packet.slot as usize].clone().into())
     } else {
       None
     }
@@ -1409,31 +1408,56 @@ fn handle_container_click(parsed_packet: lib::packets::serverbound::play::ClickC
   let orig_cursor_item: Option<Slot> = player.cursor_item.clone();
   //println!("orig cursor: {orig_cursor_item:?}");
 
-  let (new_inventory_item, new_cursor_item) = lib::containerclick::handle(parsed_packet.mode as u8, parsed_packet.button, orig_inventory_item.clone(), orig_cursor_item.clone());
+  if parsed_packet.mode == 0 {
+    let (new_inventory_item, new_cursor_item) = lib::containerclick::handle_click(parsed_packet.button == 0, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-  //println!("new item: {new_inventory_item:?}");
-  if new_inventory_item != orig_inventory_item {
-    if outside_clicked {
-      //nothing to do
-    } else if chest_inventory_clicked {
-      //Chest inventory got changed
-      items[parsed_packet.slot as usize] = new_inventory_item.clone().into();
-      for stream in streams_with_container_opened {
-        lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+    //println!("new item: {new_inventory_item:?}");
+    if new_inventory_item != orig_inventory_item {
+      if outside_clicked {
+        //nothing to do
+      } else if chest_inventory_clicked {
+        //Chest inventory got changed
+        chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().into();
+        for stream in streams_with_container_opened {
+          lib::utils::send_packet(&stream, lib::packets::clientbound::play::SetContainerSlot::PACKET_ID, lib::packets::clientbound::play::SetContainerSlot {
+            window_id: 1,
+            state_id: 1,
+            slot: parsed_packet.slot,
+            slot_data: new_inventory_item.clone(),
+          }.try_into().unwrap()).unwrap();
+        }
+      } else {
+        //Player inventory got changed
+        player.set_inventory_slot(player_inventory_index as u8, new_inventory_item, connections, connection_streams);
+      }
+    }
+
+    //println!("new cursor: {new_cursor_item:?}");
+    if new_cursor_item != orig_cursor_item {
+      player.cursor_item = new_cursor_item;
+    }
+  } else if parsed_packet.mode == 1 {
+    let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
+    let orig_player_inventory: Vec<Option<Slot>> = player.get_inventory().clone();
+    let (new_chest_inventory, new_player_inventory) = lib::containerclick::handle_shift_click(orig_chest_inventory.clone(), orig_player_inventory.clone(), parsed_packet.slot);
+
+    if orig_chest_inventory != new_chest_inventory {
+      let new_chest_items: Vec<Item> = new_chest_inventory.into_iter().map(|x| x.into()).collect();
+      assert_eq!(chest_items.len(), new_chest_items.len());
+      chest_items.clone_from_slice(&new_chest_items);
+
+      for connection_stream in connection_streams.iter().clone() {
+        let _ = lib::utils::send_packet(connection_stream.1, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
           window_id: 1,
           state_id: 1,
-          slot: parsed_packet.slot,
-          slot_data: new_inventory_item.clone(),
-        }.try_into().unwrap()).unwrap();
+          slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
+          carried_item: None,
+        }.try_into().unwrap());
       }
-    } else {
-      //Player inventory got changed
-      player.set_inventory_slot(player_inventory_index as u8, new_inventory_item, connections, connection_streams);
     }
-  }
 
-  //println!("new cursor: {new_cursor_item:?}");
-  if new_cursor_item != orig_cursor_item {
-    player.cursor_item = new_cursor_item;
+    if orig_player_inventory != new_player_inventory {
+      player.set_inventory(new_player_inventory, connections, connection_streams);
+    }
   }
 }

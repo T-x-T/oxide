@@ -478,6 +478,36 @@ impl Player {
 			}
 		);
 	}
+	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+		self.inventory = items.clone();
+
+		lib::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+      window_id: 0,
+      state_id: 1,
+      slot_data: self.inventory.clone(),
+      carried_item: None,
+		}.try_into().unwrap()).unwrap();
+
+		connection_streams.iter()
+	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+	   	.filter(|x| *x.0 != self.peer_socket_address)
+	   	.for_each(|x| {
+				let equipment: Vec<(u8, Option<Slot>)> = vec![
+					(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone()),
+					(1, self.inventory[45].clone()),
+					(2, self.inventory[8].clone()),
+					(3, self.inventory[7].clone()),
+					(4, self.inventory[6].clone()),
+					(5, self.inventory[5].clone()),
+				];
+
+		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		 			entity_id: self.entity_id,
+		  		equipment,
+		   	}.try_into().unwrap()).unwrap();
+			}
+		);
+	}
 
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity) {
 	  let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
