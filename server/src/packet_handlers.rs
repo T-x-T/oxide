@@ -1345,6 +1345,7 @@ pub mod play {
         assert!(items.len() == 3);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
         handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
+        block_entity.needs_ticking = true;
       },
       BlockEntityData::BrewingStand(items) => {
         assert!(items.len() == 5);

@@ -143,4 +143,16 @@ fn tick(game: Arc<Mutex<Game>>) {
     println!("run save-all");
     game.lock().unwrap().save_all();
   }
+
+  //let now = std::time::Instant::now();
+  for dimension in &mut game.lock().unwrap().world.dimensions {
+    for chunk in &mut dimension.1.chunks {
+      for blockentity in &mut chunk.block_entities {
+        if blockentity.needs_ticking {
+          blockentity.tick();
+        }
+      }
+    }
+  }
+  //println!("ticked blockentities in {:.2?}", now.elapsed());
 }
