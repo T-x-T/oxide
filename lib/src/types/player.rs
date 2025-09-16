@@ -532,7 +532,7 @@ impl Player {
         BlockEntityData::Chest(block_entity_data_items) => {
           block_entity_data_items.into_iter().map(Into::into).collect()
         },
-        BlockEntityData::Furnace(block_entity_data_items) => {
+        BlockEntityData::Furnace(block_entity_data_items, _, _, _, _) => {
           block_entity_data_items.into_iter().map(Into::into).collect()
         },
         BlockEntityData::BrewingStand(block_entity_data_items) => {

@@ -1341,7 +1341,7 @@ pub mod play {
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
         handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);
       },
-      BlockEntityData::Furnace(items) => {
+      BlockEntityData::Furnace(items, _, _, _, _) => {
         assert!(items.len() == 3);
         assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
         handle_container_click(parsed_packet, items, player, connections, connection_streams, streams_with_container_opened);

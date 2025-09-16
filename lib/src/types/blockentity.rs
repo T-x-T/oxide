@@ -20,9 +20,14 @@ impl BlockEntity {
     match self.id {
       BlockEntityId::Furnace => {
         if self.needs_ticking {
-          if let BlockEntityData::Furnace(data) = &mut self.data {
-            if data[0].count == 0 || data[1].count == 0 {
+          if let BlockEntityData::Furnace(data, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) = &mut self.data {
+            if data[0].count == 0 {
               self.needs_ticking = false;
+
+              *lit_time_remaining = 0;
+              *cooking_time_spent = 0;
+              *cooking_total_time = 0;
+              *lit_total_time = 0;
 
               players.iter()
                 .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
@@ -30,31 +35,53 @@ impl BlockEntity {
                   crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                     window_id: 1,
                     property: 0, //fuel left
-                    value: 0, //ticks of fuel left
+                    value: *lit_time_remaining, //ticks of fuel left
                   }.try_into().unwrap()).unwrap();
 
                   crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                     window_id: 1,
                     property: 2, //progress
-                    value: 0, //progress from 0-200
+                    value: *cooking_time_spent, //progress from 0-200
                   }.try_into().unwrap()).unwrap();
                 });
 
               return;
             }
 
-            if data[1].id != "minecraft:coal" || data[0].id != "minecraft:raw_iron" {
+            if (data[1].id != "minecraft:coal" && *lit_time_remaining == 0) || data[0].id != "minecraft:raw_iron" {
               self.needs_ticking = false;
               return;
             }
 
-            if data[2].id == "minecraft:iron_ingot" {
-              data[2] = Item { count: data[2].count + 1, ..data[2].clone() };
-            } else {
-              data[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
+            let mut can_cook = true;
+            if *lit_time_remaining == 0 {
+              if data[1].count > 0 {
+                data[1] = Item { count: data[1].count - 1, ..data[1].clone() };
+                *lit_time_remaining = 1600;
+              } else {
+                *cooking_time_spent = 0;
+                can_cook = false;
+              }
             }
-            data[1] = Item { count: data[1].count - 1, ..data[1].clone() };
-            data[0] = Item { count: data[0].count - 1, ..data[0].clone() };
+
+            if can_cook {
+              if *cooking_time_spent == 0 {
+                *cooking_time_spent = 1;
+              } else if *cooking_time_spent == 200 {
+                *cooking_time_spent = 0;
+
+                if data[2].id == "minecraft:iron_ingot" {
+                  data[2] = Item { count: data[2].count + 1, ..data[2].clone() };
+                } else {
+                  data[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
+                }
+                data[0] = Item { count: data[0].count - 1, ..data[0].clone() };
+              } else {
+                *cooking_time_spent += 1;
+              }
+
+              *lit_time_remaining -= 1;
+            }
 
             players.iter()
               .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
@@ -69,7 +96,13 @@ impl BlockEntity {
                 crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 0, //fuel left
-                  value: 1000, //ticks of fuel left
+                  value: *lit_time_remaining, //ticks of fuel left
+                }.try_into().unwrap()).unwrap();
+
+                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  window_id: 1,
+                  property: 1, //max fuel burn time
+                  value: 1600, //ticks fuel should burn for
                 }.try_into().unwrap()).unwrap();
 
                 crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
@@ -81,7 +114,7 @@ impl BlockEntity {
                 crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 2, //progress
-                  value: 200, //progress from 0-200
+                  value: *cooking_time_spent, //progress from 0-200
                 }.try_into().unwrap()).unwrap();
               });
           };
@@ -259,7 +292,7 @@ impl TryFrom<&str> for BlockEntityId {
 pub enum BlockEntityData {
   Banner(Vec<(String, String)>), //patterns: <pattern, color>
   Chest(Vec<Item>),
-  Furnace(Vec<Item>), //0: item being smelted 1: fuel 2: result
+  Furnace(Vec<Item>, i16, i16, i16, i16), //0: item being smelted 1: fuel 2: result; lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time
   BrewingStand(Vec<Item>), //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
   Crafter(Vec<Item>), //len 9
   Dispenser(Vec<Item>), //len 9
@@ -335,9 +368,13 @@ impl From<BlockEntityData> for Vec<NbtTag> {
           items_to_nbt(block_entity_data_items),
         ]
       },
-      BlockEntityData::Furnace(block_entity_data_items) => {
+      BlockEntityData::Furnace(block_entity_data_items, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) => {
         vec![
           items_to_nbt(block_entity_data_items),
+          NbtTag::Short("lit_time_remaining".to_string(), lit_time_remaining),
+          NbtTag::Short("cooking_time_spent".to_string(), cooking_time_spent),
+          NbtTag::Short("cooking_total_time".to_string(), cooking_total_time),
+          NbtTag::Short("lit_total_time".to_string(), lit_total_time),
         ]
       },
       BlockEntityData::BrewingStand(block_entity_data_items) => {
@@ -516,7 +553,7 @@ pub fn get_blockentity_for_placed_block(position_global: Position, block_state_i
     Type::Bed => Some(BlockEntity { id: BlockEntityId::Bed, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::Beehive => Some(BlockEntity { id: BlockEntityId::Beehive, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Beehive(Vec::new(), Vec::new()) }),
     Type::Bell => Some(BlockEntity { id: BlockEntityId::Bell, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::BlastFurnace => Some(BlockEntity { id: BlockEntityId::BlastFurnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3]) }),
+    Type::BlastFurnace => Some(BlockEntity { id: BlockEntityId::BlastFurnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
     Type::BrewingStand => Some(BlockEntity { id: BlockEntityId::BrewingStand, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::BrewingStand(vec![Item::default();5]) }),
     Type::Brushable => Some(BlockEntity { id: BlockEntityId::BrushableBlock, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Brushable(None) }),
     Type::CalibratedSculkSensor => Some(BlockEntity { id: BlockEntityId::CalibratedSculkSensor, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
@@ -535,7 +572,7 @@ pub fn get_blockentity_for_placed_block(position_global: Position, block_state_i
     Type::EnderChest => Some(BlockEntity { id: BlockEntityId::EnderChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::EndGateway => Some(BlockEntity { id: BlockEntityId::EndGateway, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::EndGateway(0, 0, vec![0, 100, 0]) }),
     Type::EndPortal => Some(BlockEntity { id: BlockEntityId::EndPortal, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Furnace => Some(BlockEntity { id: BlockEntityId::Furnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3]) }),
+    Type::Furnace => Some(BlockEntity { id: BlockEntityId::Furnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
     Type::WallHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
     Type::CeilingHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
     Type::Hopper => Some(BlockEntity { id: BlockEntityId::Hopper, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Hopper(vec![Item::default();5]) }),
@@ -552,7 +589,7 @@ pub fn get_blockentity_for_placed_block(position_global: Position, block_state_i
     Type::SculkCatalyst => Some(BlockEntity { id: BlockEntityId::SculkCatalyst, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::SculkSensor => Some(BlockEntity { id: BlockEntityId::SculkSensor, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::SculkShrieker => Some(BlockEntity { id: BlockEntityId::SculkShrieker, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Smoker => Some(BlockEntity { id: BlockEntityId::Smoker, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3]) }),
+    Type::Smoker => Some(BlockEntity { id: BlockEntityId::Smoker, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
     Type::Structure => Some(BlockEntity { id: BlockEntityId::StructureBlock, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::TrialSpawner => Some(BlockEntity { id: BlockEntityId::TrialSpawner, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     Type::Vault => Some(BlockEntity { id: BlockEntityId::Vault, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
@@ -613,7 +650,13 @@ impl TryFrom<NbtListTag> for BlockEntity {
           }
         }
 
-        BlockEntityData::Furnace(data)
+        BlockEntityData::Furnace(
+          data,
+          value.get_child("lit_time_remaining").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
+          value.get_child("cooking_time_spent").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
+          value.get_child("cooking_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
+          value.get_child("lit_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
+        )
       },
       BlockEntityId::BrewingStand => {
         let mut data = vec![Item::default(); 5];
