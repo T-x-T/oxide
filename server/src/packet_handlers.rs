@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use lib::packets::Packet;
 use lib::ConnectionState;
-use crate::types::*;
+use lib::types::*;
 
 pub enum Action {
 	DisconnectPlayer,

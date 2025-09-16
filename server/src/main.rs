@@ -6,10 +6,9 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use lib::packets::Packet;
 use lib::ConnectionState;
-use types::*;
+use lib::types::*;
 
 mod packet_handlers;
-mod types;
 mod command;
 mod terminal_input;
 

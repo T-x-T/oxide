@@ -1,5 +1,5 @@
 use super::*;
-use lib::{packets::Packet, ConnectionState};
+use crate::{ConnectionState, packets::*};
 use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
@@ -61,7 +61,7 @@ impl Player {
     let mut decoder: GzDecoder<&[u8]> = GzDecoder::new(compressed_file_content.as_slice());
     decoder.read_to_end(&mut file_content).unwrap();
 
-    let player_data = lib::deserialize::nbt_disk(&mut file_content).unwrap();
+    let player_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
 
     let mut inventory = vec![None; 46];
     player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
@@ -197,7 +197,7 @@ impl Player {
 			]),
 		]);
 
-		let mut uncompressed_data = lib::serialize::nbt_disk(player_data);
+		let mut uncompressed_data = crate::serialize::nbt_disk(player_data);
 		let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
 		encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
 		let new_file_content = encoder.finish().unwrap();
@@ -251,7 +251,7 @@ impl Player {
     let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
     if old_chunk_position != new_chunk_position {
-    	lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetCenterChunk::PACKET_ID, lib::packets::clientbound::play::SetCenterChunk {
+    	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetCenterChunk::PACKET_ID, crate::packets::clientbound::play::SetCenterChunk {
 	   		chunk_x: new_chunk_position.x,
 	     	chunk_z: new_chunk_position.z,
      	}.try_into()?)?;
@@ -308,13 +308,13 @@ impl Player {
 		let all_chunk_sections = &chunk.sections;
 
 	  let all_processed_chunk_sections = all_chunk_sections.iter().map(|section| {
-	    lib::packets::clientbound::play::ChunkSection {
+	    crate::packets::clientbound::play::ChunkSection {
 	      block_count: section.get_non_air_block_count(),
-	      block_states: lib::packets::clientbound::play::BlockStatesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+	      block_states: crate::packets::clientbound::play::BlockStatesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
 	        bits_per_entry: 15,
 	        data_array: if section.blocks.is_empty() { vec![0;4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
 	      }),
-	      biomes: lib::packets::clientbound::play::BiomesPalettedContainer::Direct(lib::packets::clientbound::play::Direct {
+	      biomes: crate::packets::clientbound::play::BiomesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
 	        bits_per_entry: 7,
 	        data_array: section.biomes.iter().map(|x| *x as i32).collect(),
 	      }),
@@ -342,9 +342,9 @@ impl Player {
 	   	block_light_mask <<= 1;
 	  }
 
-		let block_entities: Vec<lib::packets::clientbound::play::BlockEntity> = chunk.block_entities
+		let block_entities: Vec<crate::packets::clientbound::play::BlockEntity> = chunk.block_entities
 		  .iter()
-		  .map(|x| lib::packets::clientbound::play::BlockEntity {
+		  .map(|x| crate::packets::clientbound::play::BlockEntity {
         packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
         y: x.position.y,
         block_entity_type: 1,
@@ -352,7 +352,7 @@ impl Player {
       })
 		  .collect();
 
-	  lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, lib::packets::clientbound::play::ChunkDataAndUpdateLight {
+	  crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, crate::packets::clientbound::play::ChunkDataAndUpdateLight {
 	    chunk_x,
 	    chunk_z,
 	    heightmaps: vec![],
@@ -404,7 +404,7 @@ impl Player {
  	fn get_playerdata_path(uuid: u128) -> PathBuf {
 		let mut path = PathBuf::new();
     	path.push(Path::new("./world/playerdata/"));
-    	path.push(Path::new(&lib::utils::u128_to_uuid_with_dashes(uuid)));
+    	path.push(Path::new(&crate::utils::u128_to_uuid_with_dashes(uuid)));
     	path.set_extension("dat");
      return path;
 	}
@@ -420,7 +420,7 @@ impl Player {
 	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
 	   	.filter(|x| *x.0 != self.peer_socket_address)
 	   	.for_each(|x| {
-		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment: vec![
 						(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
@@ -441,7 +441,7 @@ impl Player {
 	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
 		self.inventory[slot as usize] = item.clone();
 
-  	lib::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, lib::packets::clientbound::play::SetPlayerInventorySlot {
+  	crate::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, crate::packets::clientbound::play::SetPlayerInventorySlot {
    		slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
     	slot: (self.get_selected_slot()) as i32,
     }.try_into().unwrap()).unwrap();
@@ -471,7 +471,7 @@ impl Player {
        		);
 				};
 
-		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
 		   	}.try_into().unwrap()).unwrap();
@@ -481,7 +481,7 @@ impl Player {
 	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
 		self.inventory = items.clone();
 
-		lib::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+		crate::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 0,
       state_id: 1,
       slot_data: self.inventory.clone(),
@@ -501,7 +501,7 @@ impl Player {
 					(5, self.inventory[5].clone()),
 				];
 
-		   	lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
 		   	}.try_into().unwrap()).unwrap();
@@ -510,7 +510,7 @@ impl Player {
 	}
 
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity) {
-	  let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::OpenScreen::PACKET_ID, lib::packets::clientbound::play::OpenScreen {
+	  let _ = crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::OpenScreen::PACKET_ID, crate::packets::clientbound::play::OpenScreen {
       window_id: 1,
       window_type: inventory as i32,
       window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
@@ -518,7 +518,7 @@ impl Player {
 
 	  self.opened_container_at = Some(block_entity.position);
 
-    let _ = lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::SetContainerContent::PACKET_ID, lib::packets::clientbound::play::SetContainerContent {
+    let _ = crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
       slot_data: match block_entity.clone().data {
@@ -549,7 +549,7 @@ impl Player {
 	pub fn close_inventory(&mut self) -> Result<(), Box<dyn Error>> {
 	  self.opened_container_at = None;
 
-		lib::utils::send_packet(&self.connection_stream, lib::packets::clientbound::play::CloseContainer::PACKET_ID, lib::packets::clientbound::play::CloseContainer {
+		crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::CloseContainer::PACKET_ID, crate::packets::clientbound::play::CloseContainer {
       window_id: 1,
     }.try_into()?)?;
 

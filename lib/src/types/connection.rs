@@ -1,4 +1,4 @@
-use lib::ConnectionState;
+use crate::ConnectionState;
 
 #[derive(Debug, Clone, Default)]
 pub struct Connection {

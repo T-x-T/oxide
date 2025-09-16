@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::{SocketAddr, TcpStream}, sync::{Arc, Mutex}};
 use lib::packets::Packet;
-use crate::types::*;
+use lib::types::*;
 
 pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game: Arc<Mutex<Game>>, connections: Arc<Mutex<HashMap<SocketAddr, Connection>>>) {
 	std::thread::spawn(move || {

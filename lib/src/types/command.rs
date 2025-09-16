@@ -1,4 +1,26 @@
+use super::*;
+
 use std::error::Error;
+use std::collections::HashMap;
+use std::net::{SocketAddr, TcpStream};
+
+type CommandExecFn = fn(String, Option<&mut TcpStream>, &mut Game, &mut HashMap<SocketAddr, TcpStream>, &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>>;
+
+#[derive(Debug, Clone)]
+pub struct Command {
+	pub name: String,
+	pub execute: CommandExecFn,
+	pub arguments: Vec<CommandArgument>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CommandArgument {
+	pub name: String,
+	pub properties: ParserProperty,
+	pub next_arguments: Vec<CommandArgument>,
+	pub optional: bool,
+}
+
 
 #[derive(Debug, Clone)]
 pub struct CommandNode {
