@@ -15,11 +15,35 @@ pub struct BlockEntity {
 
 impl BlockEntity {
   pub fn tick(&mut self) {
-    if self.needs_ticking {
-      println!("I need ticking");
-      self.needs_ticking = false;
-    } else {
-      println!("I dont need ticking");
+    match self.id {
+      BlockEntityId::Furnace => {
+        if self.needs_ticking {
+          if let BlockEntityData::Furnace(data) = &mut self.data {
+            if data[0].count == 0 || data[1].count == 0 {
+              self.needs_ticking = false;
+              return;
+            }
+
+            if data[1].id != "minecraft:coal" || data[0].id != "minecraft:raw_iron" {
+              self.needs_ticking = false;
+              return;
+            }
+
+            if data[2].id == "minecraft:iron_ingot" {
+              data[2] = Item { count: data[2].count + 1, ..data[2].clone() };
+            } else {
+              data[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
+            }
+            data[1] = Item { count: data[1].count - 1, ..data[1].clone() };
+            data[0] = Item { count: data[0].count - 1, ..data[0].clone() };
+          };
+        } else {
+          println!("Im a furnace that doesnt need ticking, but got ticked regardless");
+        }
+      },
+      BlockEntityId::BlastFurnace => (),
+      BlockEntityId::Smoker => (),
+      _ => (),
     }
   }
 }
