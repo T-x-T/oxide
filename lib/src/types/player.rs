@@ -27,6 +27,13 @@ pub struct Player {
   pub cursor_item: Option<Slot>,
 }
 
+//Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
+impl Clone for Player {
+  fn clone(&self) -> Self {
+    Self { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch, display_name: self.display_name.clone(), uuid: self.uuid, peer_socket_address: self.peer_socket_address, connection_stream: self.connection_stream.try_clone().unwrap(), entity_id: self.entity_id, waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation, current_teleport_id: self.current_teleport_id, inventory: self.inventory.clone(), selected_slot: self.selected_slot, opened_container_at: self.opened_container_at, cursor_item: self.cursor_item.clone() }
+  }
+}
+
 impl Player {
   pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {

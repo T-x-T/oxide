@@ -1,6 +1,8 @@
-use std::error::Error;
+use std::{error::Error};
 
 use data::blocks::Type;
+
+use crate::packets::Packet;
 
 use super::*;
 
@@ -14,13 +16,30 @@ pub struct BlockEntity {
 }
 
 impl BlockEntity {
-  pub fn tick(&mut self) {
+  pub fn tick(&mut self, players: &[Player]) {
     match self.id {
       BlockEntityId::Furnace => {
         if self.needs_ticking {
           if let BlockEntityData::Furnace(data) = &mut self.data {
             if data[0].count == 0 || data[1].count == 0 {
               self.needs_ticking = false;
+
+              players.iter()
+                .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
+                .for_each(|x| {
+                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                    window_id: 1,
+                    property: 0, //fuel left
+                    value: 0, //ticks of fuel left
+                  }.try_into().unwrap()).unwrap();
+
+                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                    window_id: 1,
+                    property: 2, //progress
+                    value: 0, //progress from 0-200
+                  }.try_into().unwrap()).unwrap();
+                });
+
               return;
             }
 
@@ -36,6 +55,35 @@ impl BlockEntity {
             }
             data[1] = Item { count: data[1].count - 1, ..data[1].clone() };
             data[0] = Item { count: data[0].count - 1, ..data[0].clone() };
+
+            players.iter()
+              .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
+              .for_each(|x| {
+                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+                  window_id: 1,
+                  state_id: 1,
+                  slot_data: data.iter().cloned().map(|x| x.into()).collect(),
+                  carried_item: None,
+                }.try_into().unwrap()).unwrap();
+
+                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  window_id: 1,
+                  property: 0, //fuel left
+                  value: 1000, //ticks of fuel left
+                }.try_into().unwrap()).unwrap();
+
+                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  window_id: 1,
+                  property: 3, //max progress
+                  value: 200, //progress from 0-200
+                }.try_into().unwrap()).unwrap();
+
+                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  window_id: 1,
+                  property: 2, //progress
+                  value: 200, //progress from 0-200
+                }.try_into().unwrap()).unwrap();
+              });
           };
         } else {
           println!("Im a furnace that doesnt need ticking, but got ticked regardless");
