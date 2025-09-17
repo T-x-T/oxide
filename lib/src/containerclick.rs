@@ -77,6 +77,19 @@ pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, 
     if orig_player_inventory != new_player_inventory {
       player.set_inventory(new_player_inventory, connections, connection_streams);
     }
+  } else {
+    crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+      window_id: 1,
+      state_id: 1,
+      slot_data: chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect(),
+      carried_item: orig_cursor_item.clone(),
+    }.try_into().unwrap()).unwrap();
+    crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+      window_id: 0,
+      state_id: 1,
+      slot_data: player.get_inventory().clone(),
+      carried_item: orig_cursor_item,
+    }.try_into().unwrap()).unwrap();
   }
 }
 
