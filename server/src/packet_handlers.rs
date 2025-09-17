@@ -1417,10 +1417,10 @@ pub mod play {
         front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
         front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
         front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
-          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_1)]),
-          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_2)]),
-          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_3)]),
-          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_4)]),
+          NbtListTag::String(parsed_packet.line_1),
+          NbtListTag::String(parsed_packet.line_2),
+          NbtListTag::String(parsed_packet.line_3),
+          NbtListTag::String(parsed_packet.line_4),
         ]));
       }
 

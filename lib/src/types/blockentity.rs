@@ -521,7 +521,7 @@ impl From<BlockEntityData> for Vec<NbtTag> {
 }
 
 fn items_to_nbt(block_entity_data_items: Vec<Item>) -> NbtTag {
-  return NbtTag::List("Items".to_string(), block_entity_data_items.iter().enumerate().map(|(i, item)| {
+  return NbtTag::List("Items".to_string(), block_entity_data_items.iter().enumerate().filter(|(_, item)| item.id != "minecraft:air" && item.count != 0).map(|(i, item)| {
     NbtListTag::TagCompound(vec![
       NbtTag::Byte("Slot".to_string(), i as u8),
       NbtTag::String("id".to_string(), item.id.clone()),

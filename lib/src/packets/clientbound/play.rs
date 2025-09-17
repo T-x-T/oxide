@@ -713,14 +713,9 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 			output.append(&mut crate::serialize::short(x.y));
 			output.append(&mut crate::serialize::varint(x.block_entity_type));
 
-			//temp fix because otherwise the client cant parse our garbage packet; not strictly required for inventories anyways
-			output.push(0x00);
-			// if x.data.is_some() {
-			// 	output.push(0x01);
-			// 	output.append(&mut crate::serialize::nbt_network(x.data.unwrap()));
-			// } else {
-			// 	output.push(0x00);
-			// }
+			if x.data.is_some() {
+				output.append(&mut crate::serialize::nbt_network(x.data.unwrap()));
+			}
 		}
 		output.append(&mut crate::serialize::bitset(&value.sky_light_mask));
 		output.append(&mut crate::serialize::bitset(&value.block_light_mask));

@@ -349,12 +349,13 @@ impl Player {
 	   	block_light_mask <<= 1;
 	  }
 
+		let block_entity_types = data::blockentity::get_block_entity_types();
 		let block_entities: Vec<crate::packets::clientbound::play::BlockEntity> = chunk.block_entities
 		  .iter()
 		  .map(|x| crate::packets::clientbound::play::BlockEntity {
         packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
         y: x.position.y,
-        block_entity_type: 1,
+        block_entity_type: *block_entity_types.get(Into::<&str>::into(x.id)).unwrap() as i32,
         data: Some(NbtTag::Root(x.data.clone().into())),
       })
 		  .collect();
