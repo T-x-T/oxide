@@ -5,6 +5,7 @@ use data::inventory::Inventory;
 pub enum BlockInteractionResult {
   OverwriteBlocks(Vec<(u16, Position)>),
   OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
+  OpenSignEditor,
   Nothing,
 }
 
@@ -96,6 +97,9 @@ pub fn interact_with_block_at(location: Position, block_id_at_location: u16, fac
     Type::Smoker => BlockInteractionResult::OpenInventory(Inventory::Smoker),
     Type::CartographyTable => BlockInteractionResult::OpenInventory(Inventory::CartographyTable),
     Type::Stonecutter => BlockInteractionResult::OpenInventory(Inventory::Stonecutter),
+    Type::WallSign | Type::StandingSign | Type::WallHangingSign | Type::CeilingHangingSign => {
+      BlockInteractionResult::OpenSignEditor
+    }
     _ => BlockInteractionResult::Nothing,
   };
 }

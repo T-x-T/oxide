@@ -659,6 +659,58 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 }
 
 //
+// MARK: 0x3b update sign
+//
+
+#[derive(Debug, Clone)]
+pub struct UpdateSign {
+  pub location: Position,
+  pub is_front_text: bool,
+  pub line_1: String,
+  pub line_2: String,
+  pub line_3: String,
+  pub line_4: String,
+}
+
+impl Packet for UpdateSign {
+	const PACKET_ID: u8 = 0x3b;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<UpdateSign> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UpdateSign) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::position(&value.location));
+		result.append(&mut crate::serialize::boolean(value.is_front_text));
+		result.append(&mut crate::serialize::string(&value.line_1));
+		result.append(&mut crate::serialize::string(&value.line_2));
+		result.append(&mut crate::serialize::string(&value.line_3));
+		result.append(&mut crate::serialize::string(&value.line_4));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UpdateSign {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			is_front_text: crate::deserialize::boolean(&mut value)?,
+			line_1: crate::deserialize::string(&mut value)?,
+			line_2: crate::deserialize::string(&mut value)?,
+			line_3: crate::deserialize::string(&mut value)?,
+			line_4: crate::deserialize::string(&mut value)?,
+		})
+	}
+}
+
+//
 // MARK: 0x3c swing arm
 //
 

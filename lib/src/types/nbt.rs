@@ -197,6 +197,13 @@ impl NbtTag {
 			_ => panic!("wrong type of Tag!"),
 		}
 	}
+	pub fn as_tag_compound_mut(&mut self) -> &mut Vec<NbtTag> {
+		match self {
+			NbtTag::TagCompound(_, p) => return p,
+			NbtTag::Root(p) => return p,
+			_ => panic!("wrong type of Tag!"),
+		}
+	}
 
 	pub fn as_int_array(&self) -> Vec<i32> {
 		match self {

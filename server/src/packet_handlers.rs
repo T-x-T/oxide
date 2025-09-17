@@ -49,6 +49,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game),
+      lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(stream, &mut packet.data, game, connection_streams, connections),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1145,6 +1146,13 @@ pub mod play {
           player.open_inventory(window_type, block_entity);
           Vec::new()
         },
+        lib::block::BlockInteractionResult::OpenSignEditor => {
+          lib::utils::send_packet(stream, lib::packets::clientbound::play::OpenSignEditor::PACKET_ID, lib::packets::clientbound::play::OpenSignEditor {
+            location: parsed_packet.location,
+            is_front_text: true,
+          }.try_into()?)?;
+          Vec::new()
+        },
         lib::block::BlockInteractionResult::Nothing => Vec::new(),
       }
     } else {
@@ -1158,7 +1166,15 @@ pub mod play {
     for block_to_place in &blocks_to_place {
       match game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
         Ok(res) => {
-          if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+          let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &block_states);
+          //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
+          if block.block_type == data::blocks::Type::WallSign || block.block_type == data::blocks::Type::StandingSign || block.block_type == data::blocks::Type::WallHangingSign || block.block_type == data::blocks::Type::CeilingHangingSign {
+            lib::utils::send_packet(stream, lib::packets::clientbound::play::OpenSignEditor::PACKET_ID, lib::packets::clientbound::play::OpenSignEditor {
+              location: block_to_place.1,
+              is_front_text: true,
+            }.try_into()?)?;
+          }
+          if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
             game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
             game.players.iter_mut()
               .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
@@ -1381,6 +1397,34 @@ pub mod play {
         .filter(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap())
         .for_each(|x| x.close_inventory().unwrap());
     }
+
+    return Ok(None);
+  }
+
+  pub fn update_sign(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
+    let parsed_packet = lib::packets::serverbound::play::UpdateSign::try_from(data.to_vec())?;
+
+    let chunk = game.world.dimensions
+      .get_mut("minecraft:overworld").unwrap()
+      .chunks.iter_mut()
+      .find(|x| x.x == parsed_packet.location.convert_to_coordinates_of_chunk().x && x.z == parsed_packet.location.convert_to_coordinates_of_chunk().z).unwrap();
+
+    chunk.modified = true;
+
+    if let BlockEntityData::Sign(_is_waxed, front_text, back_text) = &mut chunk.block_entities.iter_mut()
+      .find(|x| x.position == parsed_packet.location).unwrap()
+      .data {
+        front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
+        front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
+        front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
+          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_1)]),
+          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_2)]),
+          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_3)]),
+          NbtListTag::TagCompound(vec![NbtTag::String("text".to_string(), parsed_packet.line_4)]),
+        ]));
+      }
+
+
 
     return Ok(None);
   }

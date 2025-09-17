@@ -1463,6 +1463,46 @@ impl TryFrom<Vec<u8>> for OpenScreen {
 }
 
 //
+// MARK: 0x35 Open Sign Editor
+//
+
+#[derive(Debug, Clone)]
+pub struct OpenSignEditor {
+	pub location: Position,
+	pub is_front_text: bool,
+}
+
+impl Packet for OpenSignEditor {
+	const PACKET_ID: u8 = 0x35;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<OpenSignEditor> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: OpenSignEditor) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.append(&mut crate::serialize::boolean(value.is_front_text));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for OpenSignEditor {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			is_front_text: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x3a player chat message
 //
 
