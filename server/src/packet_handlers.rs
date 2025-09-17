@@ -49,7 +49,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game),
-      lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(stream, &mut packet.data, game, connection_streams, connections),
+      lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data, game, connection_streams, connections),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1401,7 +1401,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn update_sign(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
+  pub fn update_sign(data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
     let parsed_packet = lib::packets::serverbound::play::UpdateSign::try_from(data.to_vec())?;
 
     let chunk = game.world.dimensions
@@ -1411,9 +1411,9 @@ pub mod play {
 
     chunk.modified = true;
 
-    if let BlockEntityData::Sign(_is_waxed, front_text, back_text) = &mut chunk.block_entities.iter_mut()
-      .find(|x| x.position == parsed_packet.location).unwrap()
-      .data {
+    let blockentity = chunk.block_entities.iter_mut().find(|x| x.position == parsed_packet.location).unwrap();
+
+    if let BlockEntityData::Sign(_is_waxed, front_text, _back_text) = &mut blockentity.data {
         front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
         front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
         front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
@@ -1424,7 +1424,15 @@ pub mod play {
         ]));
       }
 
-
+    connection_streams.iter()
+      .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+      .for_each(|x| {
+        lib::utils::send_packet(x.1, lib::packets::clientbound::play::BlockEntityData::PACKET_ID, lib::packets::clientbound::play::BlockEntityData {
+          location: parsed_packet.location,
+          block_entity_type: *data::blockentity::get_block_entity_types().get(Into::<&str>::into(blockentity.id)).unwrap() as i32,
+          nbt_data: NbtTag::Root(blockentity.data.clone().into()),
+        }.try_into().unwrap()).unwrap();
+      });
 
     return Ok(None);
   }
