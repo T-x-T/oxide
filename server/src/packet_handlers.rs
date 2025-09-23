@@ -1078,7 +1078,7 @@ pub mod play {
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
       game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
       game.players.iter_mut()
-        .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
+        .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
         .for_each(|x| x.close_inventory().unwrap());
     }
 
@@ -1177,7 +1177,7 @@ pub mod play {
           if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
             game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
             game.players.iter_mut()
-              .filter(|x| x.opened_container_at.is_some_and(|y| y == parsed_packet.location))
+              .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
               .for_each(|x| x.close_inventory().unwrap());
           }
         },
@@ -1331,13 +1331,13 @@ pub mod play {
       return Ok(None);
     };
 
-    let Some(position) = player.opened_container_at else {
+    let Some(position) = player.opened_inventory_at else {
       println!("player doesn't seems to have a container opened at the moment");
       return Ok(None);
     };
 
     let streams_with_container_opened = game.players.iter()
-      .filter(|x| x.opened_container_at.is_some_and(|x| x == position))
+      .filter(|x| x.opened_inventory_at.is_some_and(|x| x == position))
       .map(|x| x.connection_stream.try_clone().unwrap())
       .collect::<Vec<TcpStream>>();
 

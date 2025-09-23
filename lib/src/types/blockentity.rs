@@ -30,7 +30,7 @@ impl BlockEntity {
               *lit_total_time = 0;
 
               players.iter()
-                .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
+                .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
                 .for_each(|x| {
                   crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                     window_id: 1,
@@ -84,7 +84,7 @@ impl BlockEntity {
             }
 
             players.iter()
-              .filter(|x| x.opened_container_at.is_some_and(|y| y == self.position))
+              .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
               .for_each(|x| {
                 crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
                   window_id: 1,

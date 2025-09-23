@@ -23,14 +23,14 @@ pub struct Player {
   pub current_teleport_id: i32,
   inventory: Vec<Option<Slot>>,
   selected_slot: u8,
-  pub opened_container_at: Option<Position>,
+  pub opened_inventory_at: Option<Position>,
   pub cursor_item: Option<Slot>,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
 impl Clone for Player {
   fn clone(&self) -> Self {
-    Self { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch, display_name: self.display_name.clone(), uuid: self.uuid, peer_socket_address: self.peer_socket_address, connection_stream: self.connection_stream.try_clone().unwrap(), entity_id: self.entity_id, waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation, current_teleport_id: self.current_teleport_id, inventory: self.inventory.clone(), selected_slot: self.selected_slot, opened_container_at: self.opened_container_at, cursor_item: self.cursor_item.clone() }
+    Self { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch, display_name: self.display_name.clone(), uuid: self.uuid, peer_socket_address: self.peer_socket_address, connection_stream: self.connection_stream.try_clone().unwrap(), entity_id: self.entity_id, waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation, current_teleport_id: self.current_teleport_id, inventory: self.inventory.clone(), selected_slot: self.selected_slot, opened_inventory_at: self.opened_inventory_at, cursor_item: self.cursor_item.clone() }
   }
 }
 
@@ -52,7 +52,7 @@ impl Player {
 	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
 	      inventory: vec![None; 46],
 	      selected_slot: 0,
-				opened_container_at: None,
+				opened_inventory_at: None,
 				cursor_item: None,
 	    };
 
@@ -139,7 +139,7 @@ impl Player {
       current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
       inventory,
       selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
-      opened_container_at: None,
+      opened_inventory_at: None,
       cursor_item: None
     };
 
@@ -524,7 +524,7 @@ impl Player {
       window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
     }.try_into().unwrap());
 
-	  self.opened_container_at = Some(block_entity.position);
+	  self.opened_inventory_at = Some(block_entity.position);
 
     let _ = crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
@@ -555,7 +555,7 @@ impl Player {
 	}
 
 	pub fn close_inventory(&mut self) -> Result<(), Box<dyn Error>> {
-	  self.opened_container_at = None;
+	  self.opened_inventory_at = None;
 
 		crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::CloseContainer::PACKET_ID, crate::packets::clientbound::play::CloseContainer {
       window_id: 1,
