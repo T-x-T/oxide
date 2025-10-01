@@ -15,6 +15,58 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       };
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::RotatedPillarAxis(axis.clone()))).unwrap().id, position));
     },
+    Type::Barrel => { //This should use the orientation the player is looking in, instead of the face that was placed against to match vanilla
+      let axis = match face {
+        0 => BarrelFacing::Down,
+        1 => BarrelFacing::Up,
+        2 => BarrelFacing::North,
+        3 => BarrelFacing::South,
+        4 => BarrelFacing::West,
+        _ => BarrelFacing::East,
+      };
+      output.push((block.states.iter().find(|x|
+        x.properties.contains(&Property::BarrelFacing(axis.clone())) &&
+        x.properties.contains(&Property::BarrelOpen(BarrelOpen::False))
+      ).unwrap().id, position));
+    },
+    Type::Chest => {
+      let facing = match cardinal_direction {
+        CardinalDirection::North => ChestFacing::South,
+        CardinalDirection::East => ChestFacing::West,
+        CardinalDirection::South => ChestFacing::North,
+        CardinalDirection::West => ChestFacing::East,
+      };
+      output.push((block.states.iter().find(|x|
+        x.properties.contains(&Property::ChestFacing(facing.clone())) &&
+        x.properties.contains(&Property::ChestType(ChestType::Single)) &&
+        x.properties.contains(&Property::ChestWaterlogged(ChestWaterlogged::False))
+      ).unwrap().id, position));
+    },
+    Type::TrappedChest => {
+      let facing = match cardinal_direction {
+        CardinalDirection::North => TrappedChestFacing::South,
+        CardinalDirection::East => TrappedChestFacing::West,
+        CardinalDirection::South => TrappedChestFacing::North,
+        CardinalDirection::West => TrappedChestFacing::East,
+      };
+      output.push((block.states.iter().find(|x|
+        x.properties.contains(&Property::TrappedChestFacing(facing.clone())) &&
+        x.properties.contains(&Property::TrappedChestType(TrappedChestType::Single)) &&
+        x.properties.contains(&Property::TrappedChestWaterlogged(TrappedChestWaterlogged::False))
+      ).unwrap().id, position));
+    },
+    Type::EnderChest => {
+      let facing = match cardinal_direction {
+        CardinalDirection::North => EnderChestFacing::South,
+        CardinalDirection::East => EnderChestFacing::West,
+        CardinalDirection::South => EnderChestFacing::North,
+        CardinalDirection::West => EnderChestFacing::East,
+      };
+      output.push((block.states.iter().find(|x|
+        x.properties.contains(&Property::EnderChestFacing(facing.clone())) &&
+        x.properties.contains(&Property::EnderChestWaterlogged(EnderChestWaterlogged::False))
+      ).unwrap().id, position));
+    },
     Type::Door => {
       let facing = match cardinal_direction {
         CardinalDirection::North => DoorFacing::North,

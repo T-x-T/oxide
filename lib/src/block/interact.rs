@@ -77,6 +77,7 @@ pub fn interact_with_block_at(location: Position, block_id_at_location: u16, fac
     },
     Type::CraftingTable => BlockInteractionResult::OpenInventory(Inventory::Crafting),
     Type::Chest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
+    Type::TrappedChest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
     Type::EnderChest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
     Type::Barrel => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
     Type::Dispenser => BlockInteractionResult::OpenInventory(Inventory::Generic3x3),
