@@ -250,12 +250,12 @@ fn main() {
 							},
 							lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::UpdateEntityPosition::try_from(client_packet.data.clone()).unwrap();
-								// println!("parsed packet: {parsed_packet:?}");
+								//println!("parsed packet: {parsed_packet:?}");
 								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::UpdateEntityPositionAndRotation::try_from(client_packet.data.clone()).unwrap();
-								// println!("parsed packet: {parsed_packet:?}");
+								//println!("parsed packet: {parsed_packet:?}");
 								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID => {
@@ -274,9 +274,9 @@ fn main() {
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID => {
-  		        	let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
+  		        	//let parsed_packet = lib::packets::clientbound::play::ChunkDataAndUpdateLight::try_from(client_packet.data.clone()).unwrap();
   		          // println!("parsed packet: {parsed_packet:?}");
-  		          parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+  		          //parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID => {
 								let parsed_packet = lib::packets::clientbound::play::PlayerInfoUpdate::try_from(client_packet.data.clone()).unwrap();
@@ -348,6 +348,9 @@ fn main() {
 		            // let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
 		            // println!("parsed packet: {parsed_packet:?}");
 		            // parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
+							0x5e | 0x4c | 0x6a  => {
+
 							},
            		_ => {
            			//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");

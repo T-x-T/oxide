@@ -582,6 +582,61 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
+// MARK: 0x2A player input
+//
+
+#[derive(Debug, Clone)]
+pub struct PlayerInput {
+  pub forward: bool,
+  pub backward: bool,
+  pub left: bool,
+  pub right: bool,
+  pub jump: bool,
+  pub sneak: bool,
+  pub sprint: bool,
+}
+
+impl Packet for PlayerInput {
+	const PACKET_ID: u8 = 0x2a;
+  fn get_target() -> PacketTarget { PacketTarget::Server }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<PlayerInput> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PlayerInput) -> Result<Self, Box<dyn Error>> {
+		return Ok(vec![
+		  value.forward as u8 |
+			(value.backward as u8) << 1 |
+			(value.left as u8) << 2 |
+			(value.right as u8) << 3 |
+			(value.jump as u8) << 4 |
+			(value.sneak as u8) << 5 |
+			(value.sprint as u8) << 6
+		]);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PlayerInput {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+	  let flags = value.pop().unwrap();
+
+		return Ok(Self {
+			forward: flags & 0x01 == 0x01,
+			backward: flags & 0x02 == 0x02,
+			left: flags & 0x04 == 0x04,
+			right: flags & 0x08 == 0x08,
+			jump: flags & 0x10 == 0x10,
+			sneak: flags & 0x20 == 0x20,
+			sprint: flags & 0x40 == 0x40,
+		})
+	}
+}
+
+//
 // MARK: 0x34 set hand item
 //
 

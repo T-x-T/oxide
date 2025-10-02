@@ -1,5 +1,5 @@
 use super::*;
-use crate::{ConnectionState, packets::*};
+use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}, ConnectionState};
 use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
@@ -25,12 +25,30 @@ pub struct Player {
   selected_slot: u8,
   pub opened_inventory_at: Option<Position>,
   pub cursor_item: Option<Slot>,
+  is_sneaking: bool,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
 impl Clone for Player {
   fn clone(&self) -> Self {
-    Self { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch, display_name: self.display_name.clone(), uuid: self.uuid, peer_socket_address: self.peer_socket_address, connection_stream: self.connection_stream.try_clone().unwrap(), entity_id: self.entity_id, waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation, current_teleport_id: self.current_teleport_id, inventory: self.inventory.clone(), selected_slot: self.selected_slot, opened_inventory_at: self.opened_inventory_at, cursor_item: self.cursor_item.clone() }
+    Self {
+      x: self.x,
+      y: self.y,
+      z: self.z,
+      yaw: self.yaw,
+      pitch: self.pitch,
+      display_name: self.display_name.clone(),
+      uuid: self.uuid, peer_socket_address: self.peer_socket_address,
+      connection_stream: self.connection_stream.try_clone().unwrap(),
+      entity_id: self.entity_id,
+      waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation,
+      current_teleport_id: self.current_teleport_id,
+      inventory: self.inventory.clone(),
+      selected_slot: self.selected_slot,
+      opened_inventory_at: self.opened_inventory_at,
+      cursor_item: self.cursor_item.clone(),
+      is_sneaking: self.is_sneaking,
+    }
   }
 }
 
@@ -54,6 +72,7 @@ impl Player {
 	      selected_slot: 0,
 				opened_inventory_at: None,
 				cursor_item: None,
+				is_sneaking: false,
 	    };
 
 	    game.last_created_entity_id += 1;
@@ -140,7 +159,8 @@ impl Player {
       inventory,
       selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
       opened_inventory_at: None,
-      cursor_item: None
+      cursor_item: None,
+      is_sneaking: false,
     };
 
     game.last_created_entity_id += 1;
@@ -562,5 +582,31 @@ impl Player {
     }.try_into()?)?;
 
 		return Ok(());
+	}
+
+	pub fn is_sneaking(&self) -> bool {
+	  return self.is_sneaking;
+	}
+
+	pub fn set_sneaking(&mut self, is_sneaking: bool, connection_streams: &HashMap<SocketAddr, TcpStream>, connections: &HashMap<SocketAddr, Connection>) {
+	  //No need to do anything if is_sneaking didnt change
+	  if self.is_sneaking == is_sneaking {
+			return;
+		}
+
+	  self.is_sneaking = is_sneaking;
+
+		for stream in connection_streams {
+		  if stream.1.peer_addr().unwrap() == self.connection_stream.peer_addr().unwrap() || connections.get(stream.0).is_some_and(|x| x.state != ConnectionState::Play) {
+				continue;
+			}
+
+			crate::utils::send_packet(stream.1, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, crate::packets::clientbound::play::SetEntityMetadata {
+        entity_id: self.entity_id,
+        metadata: vec![
+          EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }
+        ],
+			}.try_into().unwrap()).unwrap();
+		}
 	}
 }
