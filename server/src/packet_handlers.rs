@@ -41,14 +41,14 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, connection_streams, game, connections),
       lib::packets::serverbound::play::SetCreativeModeSlot::PACKET_ID => play::set_creative_mode_slot(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::SetHandItem::PACKET_ID => play::set_held_item(&mut packet.data, stream, game, connections, connection_streams),
-      lib::packets::serverbound::play::UseItemOn::PACKET_ID => play::use_item_on(&mut packet.data, stream, connection_streams, game),
+      lib::packets::serverbound::play::UseItemOn::PACKET_ID => play::use_item_on(&mut packet.data, stream, connection_streams, game, connections),
       lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => play::set_player_position(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream, connections, connection_streams),
       lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game, connections, connection_streams),
       lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game, connections, connection_streams),
-      lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game),
+      lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::PlayerInput::PACKET_ID => play::player_input(stream, &mut packet.data, game, connection_streams, connections),
       _ => {Ok(None)},
@@ -1069,7 +1069,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.to_vec())?;
 
     let mut new_block_location = parsed_packet.location;
@@ -1098,6 +1098,18 @@ pub mod play {
             return Ok(None);
           };
           player.open_inventory(window_type, block_entity);
+
+          connection_streams.iter()
+           	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+           	.for_each(|x| {
+       	      send_packet(x.1, lib::packets::clientbound::play::BlockAction::PACKET_ID, lib::packets::clientbound::play::BlockAction {
+      	      	location: parsed_packet.location,
+                action_id: 1,
+                action_parameter: 1,
+                block_type: block_id_at_location as i32,
+       	      }.try_into().unwrap()).unwrap();
+            });
+
           Vec::new()
         },
         lib::block::BlockInteractionResult::OpenSignEditor => {
@@ -1316,14 +1328,34 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn close_container(stream: &mut TcpStream, data: &mut [u8], game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn close_container(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::CloseContainer::try_from(data.to_vec())?;
 
     if parsed_packet.window_id != 0 {
+      if let Some(position) = game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().opened_inventory_at {
+        let number_of_players_with_container_opened = game.players.iter()
+          .filter(|x| x.opened_inventory_at.is_some_and(|x| x == position))
+          .count();
+
+        if number_of_players_with_container_opened == 1 { //1, because we havent called close_inventory() on current player yet
+          connection_streams.iter()
+           	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+           	.for_each(|x| {
+       	      send_packet(x.1, lib::packets::clientbound::play::BlockAction::PACKET_ID, lib::packets::clientbound::play::BlockAction {
+      	      	location: position,
+                action_id: 1,
+                action_parameter: 0,
+                block_type: game.world.dimensions.get("minecraft:overworld").unwrap().get_block(position).unwrap() as i32,
+       	      }.try_into().unwrap()).unwrap();
+            });
+        }
+      };
+
       game.players.iter_mut()
         .filter(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap())
         .for_each(|x| x.close_inventory().unwrap());
     }
+
 
     return Ok(None);
   }

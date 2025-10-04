@@ -195,6 +195,52 @@ impl TryFrom<Vec<u8>> for BlockEntityData {
 }
 
 //
+// MARK: 0x07 block action
+//
+
+#[derive(Debug, Clone)]
+pub struct BlockAction {
+	pub location: Position,
+	pub action_id: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Block_actions
+	pub action_parameter: u8,
+	pub block_type: i32,
+}
+
+impl Packet for BlockAction {
+	const PACKET_ID: u8 = 0x07;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<BlockAction> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: BlockAction) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.push(value.action_id);
+		output.push(value.action_parameter);
+		output.append(&mut crate::serialize::varint(value.block_type));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for BlockAction {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			action_id: value.remove(0),
+			action_parameter: value.remove(0),
+			block_type: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x08 block update
 //
 
