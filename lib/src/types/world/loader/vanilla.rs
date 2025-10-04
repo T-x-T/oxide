@@ -145,7 +145,7 @@ impl super::WorldLoader for Loader {
 				 			break;
 				   	}
 				    let entry = (value as u64) << (64 - (blocks_bits_per_entry * (i+1))) >> (64 - blocks_bits_per_entry);
-				    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(None, vec![])).get_children().iter().map(|x| (x.get_description().clone().unwrap(), x.as_string().to_string())).collect());
+				    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(String::new(), vec![])).get_compound_children().iter().map(|x| (x.get_description().to_string(), x.as_string().to_string())).collect());
 				    blocks.push(block_state_id);
 				  }
 				}
@@ -154,14 +154,28 @@ impl super::WorldLoader for Loader {
 	   	sections.push(ChunkSection { blocks, biomes, sky_lights, block_lights });
     }
 
+    let mut block_entities: Vec<BlockEntity> = Vec::new();
+    if chunk_nbt.get_child("block_entities").is_some() {
+      for block_entity in chunk_nbt.get_child("block_entities").unwrap().as_list() {
+        let res = block_entity.try_into();
+        if let Ok(res) = res {
+          block_entities.push(res);
+        } else {
+          println!("tried to load an unkown blockentity from disk, skipping it: {:?}", res.err());
+        }
+      }
+    }
+
+
 	 	return Chunk {
 	    x: chunk_nbt.get_child("xPos").unwrap().as_int(),
 	    z: chunk_nbt.get_child("zPos").unwrap().as_int(),
-			last_update: chunk_nbt.get_child("LastUpdate").unwrap_or(&NbtTag::Long(None, 0)).as_long(),
-			inhabited_time: chunk_nbt.get_child("InhabitedTime").unwrap_or(&NbtTag::Long(None, 0)).as_long(),
-			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(None, 1)).as_byte() == 1,
+			last_update: chunk_nbt.get_child("LastUpdate").unwrap_or(&NbtTag::Long(String::new(), 0)).as_long(),
+			inhabited_time: chunk_nbt.get_child("InhabitedTime").unwrap_or(&NbtTag::Long(String::new(), 0)).as_long(),
+			is_light_on: chunk_nbt.get_child("isLightOn").unwrap_or(&NbtTag::Byte(String::new(), 1)).as_byte() == 1,
 			sections,
 			modified: false,
+			block_entities,
 		};
   }
 
@@ -224,11 +238,11 @@ fn write_level_dat(path: PathBuf, default_spawn_location: Position) {
     .open(level_dat_path)
     .unwrap();
 
-  let level_data = NbtTag::TagCompound(None, vec![
-    NbtTag::TagCompound(Some("Data".to_string()), vec![
-      NbtTag::Int(Some("SpawnX".to_string()), default_spawn_location.x),
-      NbtTag::Int(Some("SpawnY".to_string()), default_spawn_location.y as i32),
-      NbtTag::Int(Some("SpawnZ".to_string()), default_spawn_location.z),
+  let level_data = NbtTag::Root(vec![
+    NbtTag::TagCompound("Data".to_string(), vec![
+      NbtTag::Int("SpawnX".to_string(), default_spawn_location.x),
+      NbtTag::Int("SpawnY".to_string(), default_spawn_location.y as i32),
+      NbtTag::Int("SpawnZ".to_string(), default_spawn_location.z),
     ]),
   ]);
 
@@ -271,58 +285,58 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
   }
 
   for chunk in chunks {
-  	let chunk_nbt = NbtTag::TagCompound(None, vec![
- 			NbtTag::String(Some("Status".to_string()), "minecraft:full".to_string()),
-   		NbtTag::Int(Some("xPos".to_string()), chunk.x),
-   		NbtTag::Int(Some("yPos".to_string()), -4),
-   		NbtTag::Int(Some("zPos".to_string()), chunk.z),
-   		NbtTag::Int(Some("Dataversion".to_string()), 4325),
-      NbtTag::Long(Some("InhabitedTime".to_string()), chunk.inhabited_time),
-      NbtTag::Long(Some("LastUpdate".to_string()), chunk.last_update),
-      NbtTag::Byte(Some("isLightOn".to_string()), chunk.is_light_on as u8),
-      NbtTag::TagCompound(Some("blending_data".to_string()), vec![
-        NbtTag::Int(Some("max_section".to_string()), 20),
-        NbtTag::Int(Some("min_section".to_string()), -4),
+    let mut chunk_nbt_tags = vec![
+ 			NbtTag::String("Status".to_string(), "minecraft:full".to_string()),
+  		NbtTag::Int("xPos".to_string(), chunk.x),
+  		NbtTag::Int("yPos".to_string(), -4),
+  		NbtTag::Int("zPos".to_string(), chunk.z),
+  		NbtTag::Int("Dataversion".to_string(), 4325),
+      NbtTag::Long("InhabitedTime".to_string(), chunk.inhabited_time),
+      NbtTag::Long("LastUpdate".to_string(), chunk.last_update),
+      NbtTag::Byte("isLightOn".to_string(), chunk.is_light_on as u8),
+      NbtTag::TagCompound("blending_data".to_string(), vec![
+        NbtTag::Int("max_section".to_string(), 20),
+        NbtTag::Int("min_section".to_string(), -4),
       ]),
-     	NbtTag::List(Some("sections".to_string()), chunk.sections.iter().enumerate().map(|(i, section)| {
-      	let biome_palette: Vec<u8> = section.biomes.iter().copied().collect::<HashSet<u8>>().into_iter().collect();
-				let biomes_bits_per_entry = match biome_palette.len() {
-				  0..=2 => 1,
-					3..=4 => 2,
-					5..=8 => 3,
-					9..=16 => 4,
-				  17..=32 => 5,
-				  _ => 6,
-				};
+     	NbtTag::List("sections".to_string(), chunk.sections.iter().enumerate().map(|(i, section)| {
+       	let biome_palette: Vec<u8> = section.biomes.iter().copied().collect::<HashSet<u8>>().into_iter().collect();
+  			let biomes_bits_per_entry = match biome_palette.len() {
+  			  0..=2 => 1,
+  				3..=4 => 2,
+  				5..=8 => 3,
+  				9..=16 => 4,
+  			  17..=32 => 5,
+  			  _ => 6,
+  			};
 
-      	let block_palette: Vec<u16> = if section.blocks.is_empty() {
+       	let block_palette: Vec<u16> = if section.blocks.is_empty() {
           vec![0]
         } else {
           section.blocks.iter().copied().collect::<HashSet<u16>>().into_iter().collect()
         };
-				let blocks_bits_per_entry = match block_palette.len() {
-				  0..=16 => 4,
-				  17..=32 => 5,
-				  33..=64 => 6,
-				  65..=128 => 7,
-				  129..=256 => 8,
-				  257..=512 => 9,
-				  513..=1024 => 10,
-				  1025..=2048 => 11,
-				  _ => 12,
-				};
+  			let blocks_bits_per_entry = match block_palette.len() {
+  			  0..=16 => 4,
+  			  17..=32 => 5,
+  			  33..=64 => 6,
+  			  65..=128 => 7,
+  			  129..=256 => 8,
+  			  257..=512 => 9,
+  			  513..=1024 => 10,
+  			  1025..=2048 => 11,
+  			  _ => 12,
+  			};
 
-				let mut biome_data = vec![
-				  NbtTag::List(Some("palette".to_string()), biome_palette.iter().map(|biome| {
-           		NbtTag::String(None, data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0)
-         	}).collect())
-				];
+  			let mut biome_data = vec![
+  			  NbtTag::List("palette".to_string(), biome_palette.iter().map(|biome| {
+        		NbtListTag::String(data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0)
+       	  }).collect())
+  			];
 
-				if biome_palette.len() > 1 {
-		      biome_data.push(
-  					NbtTag::LongArray(Some("data".to_string()), section.biomes.iter().map(|biome| {
+  			if biome_palette.len() > 1 {
+  	      biome_data.push(
+   					NbtTag::LongArray("data".to_string(), section.biomes.iter().map(|biome| {
   						biome_palette.iter().enumerate().find(|x| *x.1 == *biome).unwrap().0 as u8
-  					}).collect::<Vec<u8>>().chunks(64/biomes_bits_per_entry).map(|byte_arr| {
+   					}).collect::<Vec<u8>>().chunks(64/biomes_bits_per_entry).map(|byte_arr| {
      					let mut long = 0u64;
      					for byte in byte_arr {
     						long >>= biomes_bits_per_entry;
@@ -333,64 +347,74 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
      					}
      					long >>= 64 % biomes_bits_per_entry;
      					return long as i64;
-						}).collect())
-				  )
-				}
+  					}).collect())
+  			  )
+  			}
 
-				let mut block_data = vec![
-				  NbtTag::List(Some("palette".to_string()), block_palette.iter().map(|blockstate_id| {
+  			let mut block_data = vec![
+  			  NbtTag::List("palette".to_string(), block_palette.iter().map(|blockstate_id| {
             let block = all_blocks.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap();
             let mut children = vec![
-              NbtTag::String(Some("Name".to_string()), block.0.clone()),
+              NbtTag::String("Name".to_string(), block.0.clone()),
             ];
 
             if block.1.states.len() > 1 {
               children.push(
-                NbtTag::TagCompound(Some("Properties".to_string()), data::blocks::get_raw_properties_from_block_state_id(&all_blocks, *blockstate_id).into_iter().map(|x| {
-                  NbtTag::String(Some(x.0), x.1)
+                NbtTag::TagCompound("Properties".to_string(), data::blocks::get_raw_properties_from_block_state_id(&all_blocks, *blockstate_id).into_iter().map(|x| {
+                  NbtTag::String(x.0, x.1)
                 }).collect())
               );
             }
 
-            NbtTag::TagCompound(None, children)
+            NbtListTag::TagCompound(children)
          	}).collect())
-				];
+  			];
 
-				if block_palette.len() > 1 {
-				  block_data.push(
-						NbtTag::LongArray(Some("data".to_string()), section.blocks.iter().map(|block| {
-							block_palette.iter().enumerate().find(|x| *x.1 == *block).unwrap().0 as u8
-						}).collect::<Vec<u8>>().chunks(64/blocks_bits_per_entry).map(|byte_arr| {
-							let mut long = 0u64;
-							for byte in byte_arr {
-								long >>= blocks_bits_per_entry;
-								long += (*byte as u64) << (64-blocks_bits_per_entry);
-							}
-							if 64/blocks_bits_per_entry > byte_arr.len() {
-							  long >>= (64/blocks_bits_per_entry - byte_arr.len()) * blocks_bits_per_entry;
-							}
-							long >>= 64 % blocks_bits_per_entry;
-							return long as i64;
-						}).collect())
-					);
-				}
+  			if block_palette.len() > 1 {
+  			  block_data.push(
+  					NbtTag::LongArray("data".to_string(), section.blocks.iter().map(|block| {
+  						block_palette.iter().enumerate().find(|x| *x.1 == *block).unwrap().0 as u8
+  					}).collect::<Vec<u8>>().chunks(64/blocks_bits_per_entry).map(|byte_arr| {
+  						let mut long = 0u64;
+  						for byte in byte_arr {
+  							long >>= blocks_bits_per_entry;
+  							long += (*byte as u64) << (64-blocks_bits_per_entry);
+  						}
+  						if 64/blocks_bits_per_entry > byte_arr.len() {
+  						  long >>= (64/blocks_bits_per_entry - byte_arr.len()) * blocks_bits_per_entry;
+  						}
+  						long >>= 64 % blocks_bits_per_entry;
+  						return long as i64;
+  					}).collect())
+  				);
+  			}
 
-				let mut nbt_arr = vec![
-				  NbtTag::Byte(Some("Y".to_string()), (i as i8 - 4) as u8),
-          NbtTag::TagCompound(Some("biomes".to_string()), biome_data),
-          NbtTag::TagCompound(Some("block_states".to_string()), block_data),
-				];
+  			let mut nbt_arr = vec![
+  			  NbtTag::Byte("Y".to_string(), (i as i8 - 4) as u8),
+          NbtTag::TagCompound("biomes".to_string(), biome_data),
+          NbtTag::TagCompound("block_states".to_string(), block_data),
+  			];
 
-				if !section.block_lights.is_empty() {
-		      nbt_arr.push(NbtTag::ByteArray(Some("BlockLight".to_string()), section.block_lights.clone()));
-				}
-				if !section.sky_lights.is_empty() {
-		      nbt_arr.push(NbtTag::ByteArray(Some("SkyLight".to_string()), section.sky_lights.clone()));
-				}
+  			if !section.block_lights.is_empty() {
+  	      nbt_arr.push(NbtTag::ByteArray("BlockLight".to_string(), section.block_lights.clone()));
+  			}
+  			if !section.sky_lights.is_empty() {
+  	      nbt_arr.push(NbtTag::ByteArray("SkyLight".to_string(), section.sky_lights.clone()));
+  			}
 
-      	return NbtTag::TagCompound(None, nbt_arr);
+       	return NbtListTag::TagCompound(nbt_arr);
       }).collect()),
-   	]);
+   	];
+
+    if !chunk.block_entities.is_empty() {
+      let block_entities_nbt = NbtTag::List("block_entities".to_string(), chunk.block_entities.iter().map(|block_entity| {
+        block_entity.clone().into()
+      }).collect());
+
+      chunk_nbt_tags.push(block_entities_nbt);
+    }
+
+  	let chunk_nbt = NbtTag::Root(chunk_nbt_tags);
 
     let mut uncompressed_chunk = crate::serialize::nbt_disk(chunk_nbt);
 		let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());

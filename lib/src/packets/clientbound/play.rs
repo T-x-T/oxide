@@ -152,6 +152,95 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 }
 
 //
+// MARK: 0x06 block entity data
+//
+
+#[derive(Debug, Clone)]
+pub struct BlockEntityData {
+	pub location: Position,
+	pub block_entity_type: i32,
+	pub nbt_data: NbtTag,
+}
+
+impl Packet for BlockEntityData {
+	const PACKET_ID: u8 = 0x06;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<BlockEntityData> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: BlockEntityData) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.append(&mut crate::serialize::varint(value.block_entity_type));
+		output.append(&mut crate::serialize::nbt_network(value.nbt_data));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for BlockEntityData {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			block_entity_type: crate::deserialize::varint(&mut value)?,
+			nbt_data: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x07 block action
+//
+
+#[derive(Debug, Clone)]
+pub struct BlockAction {
+	pub location: Position,
+	pub action_id: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Block_actions
+	pub action_parameter: u8,
+	pub block_type: i32,
+}
+
+impl Packet for BlockAction {
+	const PACKET_ID: u8 = 0x07;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<BlockAction> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: BlockAction) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.push(value.action_id);
+		output.push(value.action_parameter);
+		output.append(&mut crate::serialize::varint(value.block_type));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for BlockAction {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			action_id: value.remove(0),
+			action_parameter: value.remove(0),
+			block_type: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x08 block update
 //
 
@@ -237,15 +326,52 @@ impl TryFrom<Vec<u8>> for Commands {
 }
 
 //
-// MARK: 0x12 commands
+// MARK: 0x11 close container
+//
+
+#[derive(Debug, Clone)]
+pub struct CloseContainer {
+	pub window_id: i32,
+}
+
+impl Packet for CloseContainer {
+	const PACKET_ID: u8 = 0x11;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<CloseContainer> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: CloseContainer) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for CloseContainer {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+		  window_id: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x12 set container content
 //
 
 #[derive(Debug, Clone)]
 pub struct SetContainerContent {
 	pub window_id: i32,
 	pub state_id: i32,
-	pub slot_data: Vec<Slot>,
-	pub carried_item: Slot,
+	pub slot_data: Vec<Option<Slot>>,
+	pub carried_item: Option<Slot>,
 }
 
 impl Packet for SetContainerContent {
@@ -263,8 +389,8 @@ impl TryFrom<SetContainerContent> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.window_id));
 		output.append(&mut crate::serialize::varint(value.state_id));
 		output.append(&mut crate::serialize::varint(value.slot_data.len() as i32));
-		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x)));
-		output.append(&mut crate::serialize::slot(&value.carried_item));
+		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x.as_ref())));
+		output.append(&mut crate::serialize::slot(value.carried_item.as_ref()));
 
 		return Ok(output);
 	}
@@ -285,6 +411,95 @@ impl TryFrom<Vec<u8>> for SetContainerContent {
 			state_id,
 			slot_data,
 			carried_item,
+		});
+	}
+}
+
+//
+// MARK: 0x13 set container property
+//
+
+#[derive(Debug, Clone)]
+pub struct SetContainerProperty {
+	pub window_id: i32,
+	pub property: i16,
+	pub value: i16,
+}
+
+impl Packet for SetContainerProperty {
+	const PACKET_ID: u8 = 0x13;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetContainerProperty> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetContainerProperty) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::short(value.property));
+		output.append(&mut crate::serialize::short(value.value));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetContainerProperty {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			property: crate::deserialize::short(&mut value)?,
+			value: crate::deserialize::short(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x14 set container slot
+//
+
+#[derive(Debug, Clone)]
+pub struct SetContainerSlot {
+	pub window_id: i32,
+	pub state_id: i32,
+	pub slot: i16,
+	pub slot_data: Option<Slot>,
+}
+
+impl Packet for SetContainerSlot {
+	const PACKET_ID: u8 = 0x14;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<SetContainerSlot> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetContainerSlot) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::varint(value.state_id));
+		output.append(&mut crate::serialize::short(value.slot));
+		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetContainerSlot {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			state_id: crate::deserialize::varint(&mut value)?,
+			slot: crate::deserialize::short(&mut value)?,
+			slot_data: crate::deserialize::slot(&mut value)?,
 		});
 	}
 }
@@ -543,10 +758,9 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 			output.push(x.packed_xz);
 			output.append(&mut crate::serialize::short(x.y));
 			output.append(&mut crate::serialize::varint(x.block_entity_type));
+
 			if x.data.is_some() {
 				output.append(&mut crate::serialize::nbt_network(x.data.unwrap()));
-			} else {
-				output.push(0x00);
 			}
 		}
 		output.append(&mut crate::serialize::bitset(&value.sky_light_mask));
@@ -1247,6 +1461,89 @@ impl TryFrom<Vec<u8>> for UpdateEntityRotation {
 }
 
 //
+// MARK: 0x34 Open Screen
+//
+
+#[derive(Debug, Clone)]
+pub struct OpenScreen {
+	pub window_id: i32,
+	pub window_type: i32,
+	pub window_title: NbtTag,
+}
+
+impl Packet for OpenScreen {
+	const PACKET_ID: u8 = 0x34;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<OpenScreen> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: OpenScreen) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.window_id));
+		output.append(&mut crate::serialize::varint(value.window_type));
+		output.append(&mut crate::serialize::nbt_network(value.window_title));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for OpenScreen {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			window_id: crate::deserialize::varint(&mut value)?,
+			window_type: crate::deserialize::varint(&mut value)?,
+			window_title: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x35 Open Sign Editor
+//
+
+#[derive(Debug, Clone)]
+pub struct OpenSignEditor {
+	pub location: Position,
+	pub is_front_text: bool,
+}
+
+impl Packet for OpenSignEditor {
+	const PACKET_ID: u8 = 0x35;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<OpenSignEditor> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: OpenSignEditor) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::position(&value.location));
+		output.append(&mut crate::serialize::boolean(value.is_front_text));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for OpenSignEditor {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			is_front_text: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x3a player chat message
 //
 
@@ -1447,7 +1744,7 @@ impl Packet for PlayerInfoUpdate {
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
 
-//TODO: proper types
+//proper types missing https://git.thetxt.io/thetxt/oxide/issues/17
 #[derive(Debug, Clone)]
 pub enum PlayerAction {
 	AddPlayer(String, Vec<(String, String, Option<String>)>), //Name, Property<Name, Value, Signature>
@@ -2075,7 +2372,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 #[derive(Debug, Clone)]
 pub struct SetEquipment {
 	pub entity_id: i32,
-	pub equipment: Vec<(u8, Slot)>,
+	pub equipment: Vec<(u8, Option<Slot>)>,
 }
 
 impl Packet for SetEquipment {
@@ -2100,7 +2397,7 @@ impl TryFrom<SetEquipment> for Vec<u8> {
        		0b0000_0000
        	};
    			output.push(x.1.0 + mask);
-     		output.append(&mut crate::serialize::slot(&x.1.1));
+     		output.append(&mut crate::serialize::slot(x.1.1.as_ref()));
      	});
 
 		return Ok(output);
@@ -2112,7 +2409,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let entity_id = crate::deserialize::varint(&mut value)?;
-		let mut equipment: Vec<(u8, Slot)> = Vec::new();
+		let mut equipment: Vec<(u8, Option<Slot>)> = Vec::new();
 
 		loop {
 			let slot = value.remove(0);
@@ -2175,7 +2472,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 #[derive(Debug, Clone)]
 pub struct SetPlayerInventorySlot {
 	pub slot: i32,
-	pub slot_data: Slot,
+	pub slot_data: Option<Slot>,
 }
 
 impl Packet for SetPlayerInventorySlot {
@@ -2191,7 +2488,7 @@ impl TryFrom<SetPlayerInventorySlot> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 
 		output.append(&mut crate::serialize::varint(value.slot));
-		output.append(&mut crate::serialize::slot(&value.slot_data));
+		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
 
 		return Ok(output);
 	}
@@ -2294,7 +2591,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 
 #[derive(Debug, Clone)]
 pub struct ServerLinks {
-	pub links: Vec<(NbtTag, String)>, //TODO: proper type, also handle Text Component instead of varint enum
+	pub links: Vec<(NbtTag, String)>, //proper type, also handle Text Component instead of varint enum https://git.thetxt.io/thetxt/oxide/issues/15
 }
 
 impl Packet for ServerLinks {

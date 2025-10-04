@@ -20,10 +20,10 @@ This list is non-exhaustive, but covers the most important parts.
 - Placing and breaking blocks (very few block state rules implemented)
 - Loading and saving vanilla worlds
 - Creative mode
+- Block entities (chests, furnaces (only smelting raw iron with coal) and signs for now)
 
 ## Missing
 These will be implemented in the nearish future
-- Block entities
 - Entities with basic AI
 - More commands
 - Survival mode
@@ -35,7 +35,7 @@ These will be implemented in the nearish future
 
 # Running
 ## For testing
-You can run the server by just executing `cargo run` in the server subdirectory. For better performance, I advise you to run in release mode: `cargo run --release`.
+You can run the server by just executing `cargo run` in the server subdirectory.
 
 ## For "production"
 Remember, this is very alpha software that _will_ at some point delete your worlds or damage them otherwise!

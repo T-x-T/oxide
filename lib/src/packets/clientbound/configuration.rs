@@ -230,7 +230,7 @@ impl TryFrom<Vec<u8>> for UpdateTags {
 
 #[derive(Debug, Clone)]
 pub struct ServerLinks {
-	pub links: Vec<(NbtTag, String)>, //TODO: proper type, also handle Text Component AND varint enum
+	pub links: Vec<(NbtTag, String)>,
 }
 
 impl Packet for ServerLinks {

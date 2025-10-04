@@ -1,6 +1,7 @@
 pub mod loader;
 
 use std::{collections::HashMap, error::Error, fmt::Debug};
+use super::*;
 
 use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 
@@ -25,6 +26,7 @@ pub struct Chunk {
   pub last_update: i64,
   pub is_light_on: bool,
   pub modified: bool,
+  pub block_entities: Vec<BlockEntity>,
 }
 
 #[derive(Debug, Clone)]
@@ -35,6 +37,10 @@ pub struct ChunkSection {
   pub block_lights: Vec<u8>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BlockOverwriteOutcome {
+  DestroyBlockentity,
+}
 
 impl World {
   #[allow(clippy::new_without_default)]
@@ -111,7 +117,7 @@ impl Dimension {
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn overwrite_block(&mut self, position: Position, block_state_id: u16) -> Result<(), Box<dyn Error>> {
+  pub fn overwrite_block(&mut self, position: Position, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position_mut(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -120,9 +126,7 @@ impl Dimension {
       return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
     }
 
-    chunk.unwrap().set_block(position.convert_to_position_in_chunk(), block_state_id);
-
-    return Ok(());
+    return Ok(chunk.unwrap().set_block(position, block_state_id));
   }
 
   pub fn get_block(&self, position: Position) -> Result<u16, Box<dyn Error>> {
@@ -172,20 +176,46 @@ impl Chunk {
       inhabited_time: 0,
       is_light_on: true,
       modified: true,
+      block_entities: Vec::new(),
     };
   }
 
-  pub fn set_block(&mut self, position_in_chunk: Position, block_state_id: u16) {
+  fn set_block(&mut self, position_global: Position, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
     self.modified = true;
+    let position_in_chunk = position_global.convert_to_position_in_chunk();
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+    if self.sections[section_id as usize].blocks.is_empty() {
+      self.sections[section_id as usize].blocks = [0; 4096].to_vec();
+    }
     self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
+
+    let destroy_blockentity = if self.try_get_block_entity(position_global).is_some() {
+      Some(BlockOverwriteOutcome::DestroyBlockentity)
+    } else {
+      None
+    };
+
+    if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id) {
+      self.block_entities.push(blockentity);
+    }
+
+    return destroy_blockentity;
   }
 
-  pub fn get_block(&self, position_in_chunk: Position) -> u16 {
+  fn get_block(&self, position_in_chunk: Position) -> u16 {
     let section_id = (position_in_chunk.y + 64) / 16;
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     return self.sections[section_id as usize].blocks[block_id as usize];
+  }
+
+  pub fn try_get_block_entity(&self, position_in_chunk: Position) -> Option<&BlockEntity> {
+    return self.block_entities.iter().find(|x| x.position == position_in_chunk);
+  }
+
+  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: Position) -> Option<&mut BlockEntity> {
+    self.modified = true; //cant know what caller will do with the &mut so better be safe
+    return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
   }
 }
 

@@ -1,0 +1,6 @@
+[workspace]
+resolver = "3"
+members = ["data", "data_generator_tools", "lib", "proxy", "server"]
+
+[profile.dev]
+opt-level = 1

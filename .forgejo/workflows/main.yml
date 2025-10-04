@@ -25,7 +25,7 @@ jobs:
           name: server_image
           path: server_image.tar
 
-  server_test:
+  test:
     runs-on: vm
     container:
       image: git.thetxt.io/thetxt/runner-base:latest
@@ -33,20 +33,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Test server
-        working-directory: server
-        run: cargo test
-  lib_test:
-    runs-on: vm
-    container:
-      image: git.thetxt.io/thetxt/runner-base:latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Test lib
-        working-directory: lib
         run: cargo test
 
-  server_clippy:
+  clippy:
     runs-on: vm
     container:
       image: git.thetxt.io/thetxt/runner-base:latest
@@ -54,19 +43,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Run clippy on server
-        working-directory: server
-        run: |
-          rustup component add --toolchain nightly clippy
-          cargo clippy
-  lib_clippy:
-    runs-on: vm
-    container:
-      image: git.thetxt.io/thetxt/runner-base:latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Run clippy on lib
-        working-directory: lib
         run: |
           rustup component add --toolchain nightly clippy
           cargo clippy
@@ -81,10 +57,8 @@ jobs:
       image: git.thetxt.io/thetxt/runner-base:latest
     needs:
       - build_server_docker_image
-      - server_test
-      - lib_test
-      - server_clippy
-      - lib_clippy
+      - test
+      - clippy
     steps:
       - name: Login to forgejo registry
         uses: docker/login-action@v3

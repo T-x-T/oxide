@@ -12,7 +12,8 @@ fn main() {
   //do_block_types();
   //do_properties();
   //do_get_block_state_id_from_raw();
-  do_get_raw_properties_from_block_state_id();
+  //do_get_raw_properties_from_block_state_id();
+  do_blockentity_types();
 }
 
 fn do_items() {
@@ -34,6 +35,22 @@ fn do_items() {
     //("minecraft:stone", Item { max_stack_size: 64, rarity: ItemRarity::Common, repair_cost: 0, id: 1 }),
     println!("(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id} }}),");
   }
+}
+
+fn do_blockentity_types() {
+  let registries_file = std::fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
+  let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
+  let registry = registries_json.as_object().unwrap()["minecraft:block_entity_type"]["entries"].as_object().unwrap();
+
+  println!("pub fn get_block_entity_types() -> HashMap<String, u8> {{");
+  println!("\tlet mut output: HashMap<String, u8> = HashMap::new();\n");
+
+  for entry in registry.iter() {
+    println!("\toutput.insert(\"{}\".to_string(), {});", entry.0, entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap());
+  }
+
+  println!("\n\treturn output;");
+  println!("}}");
 }
 
 fn do_blocks() {

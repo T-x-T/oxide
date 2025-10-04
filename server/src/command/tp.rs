@@ -34,9 +34,9 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	let arg_string = command.replace("tp ", "");
 	if arg_string.is_empty() {
 		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-			  content: NbtTag::TagCompound(None, vec![
-				NbtTag::String(Some("type".to_string()), "text".to_string()),
-				NbtTag::String(Some("text".to_string()), "missing a destination to teleport to".to_string()),
+			  content: NbtTag::Root(vec![
+				NbtTag::String("type".to_string(), "text".to_string()),
+				NbtTag::String("text".to_string(), "missing a destination to teleport to".to_string()),
 			]),
 		  overlay: false,
 	 	}.try_into()?)?;
@@ -51,7 +51,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();
-		let x: i32 = str::parse(x).unwrap_or_default(); //TODO: parsing needs proper bounds checking
+		let x: i32 = str::parse(x).unwrap_or_default(); //parsing needs proper bounds checking https://git.thetxt.io/thetxt/oxide/issues/19
 		let y = arg_iter.next().unwrap_or_default();
 		let y: i32 = str::parse(y).unwrap_or_default();
 		let z = arg_iter.next().unwrap_or_default();

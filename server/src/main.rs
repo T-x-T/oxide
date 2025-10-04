@@ -6,10 +6,9 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use lib::packets::Packet;
 use lib::ConnectionState;
-use types::*;
+use lib::types::*;
 
 mod packet_handlers;
-mod types;
 mod command;
 mod terminal_input;
 
@@ -143,4 +142,19 @@ fn tick(game: Arc<Mutex<Game>>) {
     println!("run save-all");
     game.lock().unwrap().save_all();
   }
+
+  //let now = std::time::Instant::now();
+  let mut game = game.lock().unwrap();
+  let players = game.players.clone();
+  for dimension in &mut game.world.dimensions {
+    for chunk in &mut dimension.1.chunks {
+      for blockentity in &mut chunk.block_entities {
+        if blockentity.needs_ticking {
+          blockentity.tick(&players);
+        }
+      }
+    }
+  }
+  drop(game);
+  //println!("ticked blockentities in {:.2?}", now.elapsed());
 }
