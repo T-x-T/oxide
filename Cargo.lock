@@ -25,11 +25,11 @@ dependencies = [
 
 [[package]]
 name = "data"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "data_generator_tools"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "jzon",
 ]
@@ -52,7 +52,7 @@ checksum = "17ab85f84ca42c5ec520e6f3c9966ba1fd62909ce260f8837e248857d2560509"
 
 [[package]]
 name = "lib"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "data",
  "flate2",
@@ -69,14 +69,14 @@ dependencies = [
 
 [[package]]
 name = "proxy"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "lib",
 ]
 
 [[package]]
 name = "server"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "data",
  "flate2",
