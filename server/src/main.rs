@@ -24,7 +24,7 @@ fn initialize_server() {
   let block_states = data::blocks::get_blocks();
 
   let world_loader = lib::world::loader::vanilla::Loader {
-    path: Path::new("./world").to_owned(),
+    path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
     block_states,
   };
 
@@ -138,7 +138,15 @@ fn main_loop(game: Arc<Mutex<Game>>) {
 }
 
 fn tick(game: Arc<Mutex<Game>>) {
-  if std::time::Instant::now() > game.lock().unwrap().last_save_all_timestamp + std::time::Duration::from_secs(60) {
+  // TODO: Make a better way to handle configuration to avoid repeated and complex code
+  // all this just to get the number to a u64
+  // also shouldn't be run every tick but just once in initialize_server()
+  let save_interval: u64 = std::env::var("OXIDE_SAVE_SECONDS")
+  .unwrap_or("60".to_string())
+  .parse::<u64>()
+  .unwrap_or(60);
+
+  if std::time::Instant::now() > game.lock().unwrap().last_save_all_timestamp + std::time::Duration::from_secs(save_interval) {
     println!("run save-all");
     game.lock().unwrap().save_all();
   }

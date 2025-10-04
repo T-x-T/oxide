@@ -43,8 +43,14 @@ Remember, this is very alpha software that _will_ at some point delete your worl
 I recommend running through docker using the provided `docker-compose.yml` file. There is also a `docker-compose.build.yaml` file that builds a fresh image locally, instead of using the pre-built image from the gibthub container registry.
 
 # Configuration
-Configuration is handled through environment variables. At the moment there only is `OXIDE_LISTEN_ON` which configures the ip and port the server should listen on. The default value is `0.0.0.0:25565`.
 
+Configuration is handled through environment variables.
+| Key | Default value | Format | Notes |
+| ------------------- | ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| OXIDE_LISTEN_ON | 0.0.0.0:25565 | [ip]:[port] | |
+| OXIDE_WORLD_PATH    | ./world       | any path      | ./ must be explicitly stated                                                                                            |
+| OXIDE_SAVE_SECONDS | 60            | Whole seconds |                                                                                                                         |
+| OXIDE_MOTD          | Hello oxide!  | String        | Quick and dirty hack, Freaks out on windows if string is contained in quotes or includes spaces and i don't know why... |
 # Repository contents
 ## server
 This is the actual Minecraft server.

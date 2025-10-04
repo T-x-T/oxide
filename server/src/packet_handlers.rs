@@ -74,7 +74,7 @@ pub mod status {
 
   pub fn status_request(stream: &mut TcpStream, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::status::StatusResponse::PACKET_ID, lib::packets::clientbound::status::StatusResponse {
-      status: format!("{{\"version\": {{\"name\": \"Oxide {}\",\"protocol\": {}}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"Hello oxide!\"}},\"enforcesSecureChat\": false}}", lib::packets::get_version_string(), lib::packets::get_protocol_version(), game.players.len()).to_string(),
+      status: format!("{{\"version\": {{\"name\": \"Oxide {}\",\"protocol\": {}}},\"players\": {{\"max\": -1,\"online\": {},\"sample\": []}},\"description\": {{\"text\": \"{}\"}},\"enforcesSecureChat\": false}}", lib::packets::get_version_string(), lib::packets::get_protocol_version(), game.players.len(), &std::env::var("OXIDE_MOTD").unwrap_or("Hello oxide!".to_string())).to_string(),
     }.try_into()?)?;
 
     return Ok(None);
