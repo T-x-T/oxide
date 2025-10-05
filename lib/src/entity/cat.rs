@@ -21,14 +21,14 @@ impl SaveableEntity for Cat {
   fn to_nbt(&self) -> NbtListTag {
     return NbtListTag::TagCompound(vec![
       NbtTag::String("id".to_string(), "minecraft:cat".to_string()),
-      NbtTag::TagCompound("Pos".to_string(), vec![
-        NbtTag::Double("X".to_string(), self.x),
-        NbtTag::Double("Y".to_string(), self.y),
-        NbtTag::Double("Z".to_string(), self.z),
+      NbtTag::List("Pos".to_string(), vec![
+        NbtListTag::Double(self.x),
+        NbtListTag::Double(self.y),
+        NbtListTag::Double(self.z),
       ]),
-      NbtTag::TagCompound("Rotation".to_string(), vec![
-        NbtTag::Float("0".to_string(), self.yaw),
-        NbtTag::Float("1".to_string(), self.pitch),
+      NbtTag::List("Rotation".to_string(), vec![
+        NbtListTag::Float(self.yaw),
+        NbtListTag::Float(self.pitch),
       ]),
       NbtTag::IntArray("UUID".to_string(), vec![
         (self.uuid >> 96) as i32,
@@ -85,11 +85,11 @@ impl Entity for Cat {
 impl Cat {
   pub fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Self {
     return Self {
-      x: value.get_child("Pos").unwrap().get_child("X").unwrap().as_double(),
-      y: value.get_child("Pos").unwrap().get_child("Y").unwrap().as_double(),
-      z: value.get_child("Pos").unwrap().get_child("Z").unwrap().as_double(),
-      yaw: value.get_child("Rotation").unwrap().get_child("0").unwrap().as_float(),
-      pitch: value.get_child("Rotation").unwrap().get_child("1").unwrap().as_float(),
+      x: value.get_child("Pos").unwrap().as_list()[0].as_double(),
+      y: value.get_child("Pos").unwrap().as_list()[1].as_double(),
+      z: value.get_child("Pos").unwrap().as_list()[2].as_double(),
+      yaw: value.get_child("Rotation").unwrap().as_list()[0].as_float(),
+      pitch: value.get_child("Rotation").unwrap().as_list()[1].as_float(),
       uuid: value.get_child("UUID").unwrap().as_int_array()
         .into_iter()
         .enumerate()

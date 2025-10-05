@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Debug, Clone)]
-pub struct Creeper {
+pub struct Sheep {
   pub x: f64,
   pub y: f64,
   pub z: f64,
@@ -11,16 +11,16 @@ pub struct Creeper {
   pub entity_id: i32,
 }
 
-impl CreatableEntity for Creeper {
+impl CreatableEntity for Sheep {
   fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self {
     return Self { x, y, z, yaw, pitch, uuid, entity_id };
   }
 }
 
-impl SaveableEntity for Creeper {
+impl SaveableEntity for Sheep {
   fn to_nbt(&self) -> NbtListTag {
     return NbtListTag::TagCompound(vec![
-      NbtTag::String("id".to_string(), "minecraft:creeper".to_string()),
+      NbtTag::String("id".to_string(), "minecraft:sheep".to_string()),
       NbtTag::List("Pos".to_string(), vec![
         NbtListTag::Double(self.x),
         NbtListTag::Double(self.y),
@@ -40,9 +40,9 @@ impl SaveableEntity for Creeper {
   }
 }
 
-impl Entity for Creeper {
+impl Entity for Sheep {
   fn get_type(&self) -> i32 {
-    return data::entities::get_id_from_name("minecraft:creeper");
+    return data::entities::get_id_from_name("minecraft:sheep");
   }
 
   fn get_x(&self) -> f64 {
@@ -82,7 +82,7 @@ impl Entity for Creeper {
   }
 }
 
-impl Creeper {
+impl Sheep {
   pub fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Self {
     return Self {
       x: value.get_child("Pos").unwrap().as_list()[0].as_double(),

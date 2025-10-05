@@ -1,4 +1,4 @@
-use lib::{entity::*, ConnectionState};
+use lib::ConnectionState;
 
 use super::*;
 

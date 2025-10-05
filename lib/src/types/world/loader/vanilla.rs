@@ -243,8 +243,15 @@ impl super::WorldLoader for Loader {
       let entity_type = entity_type.as_string();
 
       match entity_type {
-        "minecraft:creeper" => output.push(Box::new(crate::entity::Creeper::from_nbt(entity, *next_entity_id))),
+        "minecraft:armadillo" => output.push(Box::new(crate::entity::Armadillo::from_nbt(entity, *next_entity_id))),
         "minecraft:cat" => output.push(Box::new(crate::entity::Cat::from_nbt(entity, *next_entity_id))),
+        "minecraft:chicken" => output.push(Box::new(crate::entity::Chicken::from_nbt(entity, *next_entity_id))),
+        "minecraft:cow" => output.push(Box::new(crate::entity::Cow::from_nbt(entity, *next_entity_id))),
+        "minecraft:creeper" => output.push(Box::new(crate::entity::Creeper::from_nbt(entity, *next_entity_id))),
+        "minecraft:horse" => output.push(Box::new(crate::entity::Horse::from_nbt(entity, *next_entity_id))),
+        "minecraft:item" => output.push(Box::new(crate::entity::ItemEntity::from_nbt(entity, *next_entity_id))),
+        "minecraft:rabbit" => output.push(Box::new(crate::entity::Rabbit::from_nbt(entity, *next_entity_id))),
+        "minecraft:sheep" => output.push(Box::new(crate::entity::Sheep::from_nbt(entity, *next_entity_id))),
         _ => println!("tried loading unknown entity {entity_type} from disk"),
       };
 

@@ -38,8 +38,15 @@ pub trait SaveableEntity: Entity + Send {
 
 pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Option<Box<dyn SaveableEntity + Send>> {
   return match entity_type {
-    "minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id))),
+	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(x, y, z, yaw, pitch, uuid, entity_id))),
 	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:chicken" => Some(Box::new(Chicken::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:cow" => Some(Box::new(Cow::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:horse" => Some(Box::new(Horse::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:item" => Some(Box::new(ItemEntity::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:rabbit" => Some(Box::new(Rabbit::new(x, y, z, yaw, pitch, uuid, entity_id))),
+    "minecraft:sheep" => Some(Box::new(Sheep::new(x, y, z, yaw, pitch, uuid, entity_id))),
 			_ => None,
   };
 }
