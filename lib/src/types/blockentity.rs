@@ -733,7 +733,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
               ticks_in_hive: x.get_child("ticks_in_hive").unwrap().as_int(),
             }
           }).collect(),
-          value.get_child("flower_pos").unwrap().as_int_array()
+          value.get_child("flower_pos").unwrap_or(&NbtTag::IntArray(String::new(), vec![])).as_int_array()
         )
       },
       BlockEntityId::BrushableBlock => {
@@ -795,11 +795,19 @@ impl TryFrom<NbtListTag> for BlockEntity {
       },
       BlockEntityId::DecoratedPot => {
         BlockEntityData::DecoratedPot(
-          value.get_child("sherds").unwrap().as_list().iter().map(|x| x.as_string().to_string()).collect(),
-          Item {
-            id: value.get_child("item").unwrap().get_child("id").unwrap().as_string().to_string(),
-            count: value.get_child("item").unwrap().get_child("count").unwrap().as_int() as u8,
-            components: Vec::new(),
+          value.get_child("sherds").unwrap_or(&NbtTag::List(String::new(), Vec::new())).as_list().iter().map(|x| x.as_string().to_string()).collect(),
+          if value.get_child("item").is_some() {
+            Item {
+              id: value.get_child("item").unwrap().get_child("id").unwrap().as_string().to_string(),
+              count: value.get_child("item").unwrap().get_child("count").unwrap().as_int() as u8,
+              components: Vec::new(),
+            }
+          } else {
+           Item {
+             id: "minecraft:air".to_string(),
+             count: 0,
+             components: Vec::new(),
+           }
           }
         )
       },
