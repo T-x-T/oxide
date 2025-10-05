@@ -1,4 +1,4 @@
-use crate::{Entity, Position};
+use super::*;
 
 #[derive(Debug, Clone)]
 pub struct Creeper {
@@ -9,6 +9,29 @@ pub struct Creeper {
   pub pitch: f32,
   pub uuid: u128,
   pub entity_id: i32,
+}
+
+impl SaveableEntity for Creeper {
+  fn to_nbt(&self) -> NbtListTag {
+    return NbtListTag::TagCompound(vec![
+      NbtTag::String("Id".to_string(), "minecraft:creeper".to_string()),
+      NbtTag::TagCompound("Pos".to_string(), vec![
+        NbtTag::Double("X".to_string(), self.x),
+        NbtTag::Double("Y".to_string(), self.y),
+        NbtTag::Double("Z".to_string(), self.z),
+      ]),
+      NbtTag::TagCompound("Rotation".to_string(), vec![
+        NbtTag::Float("0".to_string(), self.yaw),
+        NbtTag::Float("1".to_string(), self.pitch),
+      ]),
+      NbtTag::IntArray("UUID".to_string(), vec![
+        (self.uuid >> 96) as i32,
+        (self.uuid << 32 >> 96) as i32,
+        (self.uuid << 64 >> 96) as i32,
+        (self.uuid << 96 >> 96) as i32,
+      ]),
+    ]);
+  }
 }
 
 impl Entity for Creeper {

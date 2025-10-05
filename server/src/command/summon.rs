@@ -35,8 +35,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	game.world.dimensions
 	  .get_mut("minecraft:overworld").unwrap()
-    .entities
-    .push(Box::new(new_entity.clone()));
+    .add_entity(new_entity.clone());
 
 	let packet = lib::packets::clientbound::play::SpawnEntity {
     entity_id: new_entity.entity_id,

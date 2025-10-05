@@ -185,7 +185,7 @@ impl super::WorldLoader for Loader {
   	return std::fs::exists(level_dat_path).unwrap();
   }
 
-  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: Position) {
+  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: Position, dimension: &Dimension) {
  		println!("start saving world with {} chunks to disk", chunks.len());
   	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
    	for chunk in chunks {
@@ -198,6 +198,7 @@ impl super::WorldLoader for Loader {
     for region in regions {
     	let now = std::time::Instant::now();
    		save_region_to_disk(region.0, region.1.as_slice(), self.path.clone());
+      save_entity_region_to_disk(region.0, region.1.as_slice(), dimension, self.path.clone());
      	println!("saved region {:?} in {:.2?}", region.0, now.elapsed());
     }
     write_level_dat(self.path.clone(), default_spawn_location);
@@ -252,6 +253,113 @@ fn write_level_dat(path: PathBuf, default_spawn_location: Position) {
 	let compressed_data = encoder.finish().unwrap();
 	file.write_all(&compressed_data).unwrap();
 	file.flush().unwrap();
+}
+
+fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: &Dimension, path: PathBuf) {
+  let mut locations_table = [(0u32, 0u8);1024];
+	let mut timestamps_table = [0u32;1024];
+	const EMPTY_CHUNK_DATA: Option<Vec<u8>> = None;
+	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA;1024];
+
+	let mut region_file_path = path;
+ 	region_file_path.push(PathBuf::from_str("entities").unwrap());
+ 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
+
+  if fs::exists(&region_file_path).unwrap() {
+		let mut region_file = File::open(&region_file_path).unwrap();
+
+		let mut read_file_bytes: Vec<u8> = Vec::new();
+   	region_file.read_to_end(&mut read_file_bytes).unwrap();
+
+    for i in 0..1024 {
+  		locations_table[i] = (u32::from_be_bytes([0, read_file_bytes[i*4], read_file_bytes[(i*4)+1], read_file_bytes[(i*4)+2]]), read_file_bytes[(i*4)+3]);
+   	  timestamps_table[i] = u32::from_be_bytes([read_file_bytes[(i*4) + 1024], read_file_bytes[(i*4) + 1025], read_file_bytes[(i*4) + 1026], read_file_bytes[(i*4) + 1027]]);
+    }
+
+    locations_table.iter()
+      .enumerate()
+      .filter(|(_i, (offset, length))| *offset != 0 && *length != 0)
+      .for_each(|(i, (offset, length))| {
+       	chunk_data[i] = Some(read_file_bytes[(*offset as usize * 4096)..(*offset as usize * 4096 + *length as usize * 4096)].to_vec())
+      });
+  }
+
+  for chunk in chunks {
+    let entities_in_chunk = dimension.get_entities_in_chunk(chunk.x, chunk.z);
+    let chunk_nbt_tags: Vec<NbtTag> = vec![
+      NbtTag::Int("DataVersion".to_string(), 4440),
+      NbtTag::IntArray("Position".to_string(), vec![chunk.x, chunk.z]),
+      NbtTag::List("Entities".to_string(), entities_in_chunk.iter().map(|x| x.to_nbt()).collect()),
+    ];
+
+    let chunk_nbt = NbtTag::Root(chunk_nbt_tags);
+
+    let mut uncompressed_chunk = crate::serialize::nbt_disk(chunk_nbt);
+    let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+    encoder.write_all(uncompressed_chunk.as_mut_slice()).unwrap();
+    let mut compressed_chunk = encoder.finish().unwrap();
+    let length = (compressed_chunk.len() + 1) as i32;
+
+    let mut chunk_bytes: Vec<u8> = length.to_be_bytes().to_vec();
+    chunk_bytes.push(2);
+    chunk_bytes.append(&mut compressed_chunk);
+
+    let rounded_chunk_len = ((chunk_bytes.len()-1) / 4096) + 1;
+    let mut padding: Vec<u8> = (0..(rounded_chunk_len*4096)-chunk_bytes.len()).map(|_| 0).collect();
+    chunk_bytes.append(&mut padding);
+
+    assert!(rounded_chunk_len <= 255);
+    assert_eq!(chunk_bytes.len() % 4096, 0);
+
+    let chunk_index = (chunk.x & 31) + (chunk.z & 31) * 32;
+    locations_table[chunk_index as usize].1 = rounded_chunk_len as u8;
+    chunk_data[chunk_index as usize] = Some(chunk_bytes);
+  }
+
+  let mut first_chunk = true;
+  let mut last_chunk_offset = 0;
+  let mut last_chunk_len = 0;
+
+  #[allow(clippy::needless_range_loop)] //tried to implement this but it broke so idk man
+  for i in 0..locations_table.len() {
+    if locations_table[i].1 == 0 {
+      locations_table[i] = (0, 0);
+      continue;
+    }
+
+    if first_chunk {
+      locations_table[i].0 = 2;
+      first_chunk = false;
+    } else {
+      locations_table[i].0 = last_chunk_offset + last_chunk_len as u32;
+    }
+
+    last_chunk_offset = locations_table[i].0;
+    last_chunk_len = locations_table[i].1;
+  }
+
+  let mut file = OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(region_file_path)
+    .unwrap();
+
+  let mut output: Vec<u8> = Vec::new();
+  for location in locations_table {
+    output.push(location.0.to_be_bytes()[1]);
+    output.push(location.0.to_be_bytes()[2]);
+    output.push(location.0.to_be_bytes()[3]);
+    output.push(location.1);
+  }
+  for timestamp in timestamps_table {
+    output.append(&mut timestamp.to_be_bytes().to_vec());
+  }
+  chunk_data.into_iter().flatten().for_each(|mut x| output.append(&mut x));
+
+  file.write_all(&output).unwrap();
+  file.flush().unwrap();
 }
 
 fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {

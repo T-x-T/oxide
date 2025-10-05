@@ -1,6 +1,6 @@
-use crate::Position;
+use crate::types::*;
 
-pub trait Entity {
+pub trait Entity: std::fmt::Debug {
   fn get_type(&self) -> i32;
   fn get_x(&self) -> f64;
   fn get_y(&self) -> f64;
@@ -25,4 +25,8 @@ pub trait Entity {
      	((self.get_pitch() / 90.0) * 64.0) as u8
     };
   }
+}
+
+pub trait SaveableEntity: Entity + Send {
+  fn to_nbt(&self) -> NbtListTag;
 }
