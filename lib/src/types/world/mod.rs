@@ -163,9 +163,9 @@ impl Dimension {
       .collect();
   }
 
-  pub fn add_entity(&mut self, entity: impl SaveableEntity + 'static) {
+  pub fn add_entity(&mut self, entity: Box<dyn SaveableEntity + Send>) {
     self.get_chunk_from_position_mut(entity.get_position()).unwrap().modified = true;
-    self.entities.push(Box::new(entity));
+    self.entities.push(entity);
   }
 }
 

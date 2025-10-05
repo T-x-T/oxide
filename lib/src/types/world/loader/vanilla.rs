@@ -243,7 +243,8 @@ impl super::WorldLoader for Loader {
       let entity_type = entity_type.as_string();
 
       match entity_type {
-        "minecraft:creeper" => output.push(Box::new(crate::entity::creeper::Creeper::from_nbt(entity, *next_entity_id))),
+        "minecraft:creeper" => output.push(Box::new(crate::entity::Creeper::from_nbt(entity, *next_entity_id))),
+        "minecraft:cat" => output.push(Box::new(crate::entity::Cat::from_nbt(entity, *next_entity_id))),
         _ => println!("tried loading unknown entity {entity_type} from disk"),
       };
 

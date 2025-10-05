@@ -1,7 +1,7 @@
 use super::*;
 
 #[derive(Debug, Clone)]
-pub struct Creeper {
+pub struct Cat {
   pub x: f64,
   pub y: f64,
   pub z: f64,
@@ -11,10 +11,10 @@ pub struct Creeper {
   pub entity_id: i32,
 }
 
-impl SaveableEntity for Creeper {
+impl SaveableEntity for Cat {
   fn to_nbt(&self) -> NbtListTag {
     return NbtListTag::TagCompound(vec![
-      NbtTag::String("id".to_string(), "minecraft:creeper".to_string()),
+      NbtTag::String("id".to_string(), "minecraft:cat".to_string()),
       NbtTag::TagCompound("Pos".to_string(), vec![
         NbtTag::Double("X".to_string(), self.x),
         NbtTag::Double("Y".to_string(), self.y),
@@ -34,9 +34,9 @@ impl SaveableEntity for Creeper {
   }
 }
 
-impl Entity for Creeper {
+impl Entity for Cat {
   fn get_type(&self) -> i32 {
-    return data::entities::get_id_from_name("minecraft:creeper");
+    return data::entities::get_id_from_name("minecraft:cat");
   }
 
   fn get_x(&self) -> f64 {
@@ -76,7 +76,7 @@ impl Entity for Creeper {
   }
 }
 
-impl Creeper {
+impl Cat {
   pub fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Self {
     return Self {
       x: value.get_child("Pos").unwrap().get_child("X").unwrap().as_double(),

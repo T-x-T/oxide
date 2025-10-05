@@ -1,4 +1,4 @@
-use lib::{entity::creeper::Creeper, ConnectionState};
+use lib::{entity::*, ConnectionState};
 
 use super::*;
 
@@ -6,7 +6,14 @@ pub fn init(game: &mut Game) {
 	game.commands.push(Command {
 		name: "summon".to_string(),
 		execute,
-		arguments: Vec::new(),
+		arguments: vec![
+      CommandArgument {
+        name: "entity type".to_string(),
+        properties: ParserProperty::ResourceKey("minecraft:entity_type".to_string()),
+        next_arguments: Vec::new(),
+        optional: false
+      }
+		],
 	});
 }
 
@@ -23,27 +30,45 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	game.last_created_entity_id += 1;
 
-	let new_entity = Creeper {
-	  x: position.x as f64,
-		y: position.y as f64,
-		z: position.z as f64,
-		pitch: 0.0,
-		yaw: 0.0,
-    uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-    entity_id: game.last_created_entity_id,
+	let new_entity: Box<dyn SaveableEntity + Send> = match command.replace("summon ", "").as_str() {
+	  "minecraft:creeper" => Box::new(Creeper {
+  	  x: position.x as f64,
+  		y: position.y as f64,
+  		z: position.z as f64,
+  		pitch: 0.0,
+  		yaw: 0.0,
+      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+      entity_id: game.last_created_entity_id,
+		}),
+		"minecraft:cat" => Box::new(Cat {
+  	  x: position.x as f64,
+  		y: position.y as f64,
+  		z: position.z as f64,
+  		pitch: 0.0,
+  		yaw: 0.0,
+      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+      entity_id: game.last_created_entity_id,
+		}),
+		x => {
+  		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+     	  content: NbtTag::Root(vec![
+     			NbtTag::String("type".to_string(), "text".to_string()),
+     			NbtTag::String("text".to_string(), format!("cant summon unknown entity {x}")),
+        ]),
+     	  overlay: false,
+   	  }.try_into()?)?;
+		  println!("cant summon unknown entity {x}");
+			return Ok(());
+		},
 	};
 
-	game.world.dimensions
-	  .get_mut("minecraft:overworld").unwrap()
-    .add_entity(new_entity.clone());
-
 	let packet = lib::packets::clientbound::play::SpawnEntity {
-    entity_id: new_entity.entity_id,
-    entity_uuid: new_entity.uuid,
+    entity_id: new_entity.get_id(),
+    entity_uuid: new_entity.get_uuid(),
     entity_type: new_entity.get_type(),
-    x: new_entity.x,
-    y: new_entity.y,
-    z: new_entity.z,
+    x: new_entity.get_x(),
+    y: new_entity.get_y(),
+    z: new_entity.get_z(),
     pitch: new_entity.get_pitch_u8(),
     yaw: new_entity.get_yaw_u8(),
     head_yaw: 0,
@@ -52,6 +77,10 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     velocity_y: 0,
     velocity_z: 0,
 	};
+
+	game.world.dimensions
+	  .get_mut("minecraft:overworld").unwrap()
+    .add_entity(new_entity);
 
 	connection_streams.iter()
     .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)

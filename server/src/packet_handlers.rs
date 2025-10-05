@@ -723,7 +723,7 @@ use super::*;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
-        entity_type: 149, //Player
+        entity_type: data::entities::get_id_from_name("minecraft:player"),
         x: player.get_x(),
         y: player.get_y(),
         z: player.get_z(),
@@ -784,7 +784,7 @@ use super::*;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: new_player_entity_id,
         entity_uuid: new_player_uuid,
-        entity_type: 149, //Player
+        entity_type: data::entities::get_id_from_name("minecraft:player"),
         x: new_player_x,
         y: new_player_y,
         z: new_player_z,

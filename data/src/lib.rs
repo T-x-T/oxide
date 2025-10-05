@@ -5,3 +5,4 @@ pub mod items;
 pub mod biomes;
 pub mod inventory;
 pub mod blockentity;
+pub mod entities;
