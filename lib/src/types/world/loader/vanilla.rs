@@ -74,6 +74,11 @@ impl super::WorldLoader for Loader {
 
     let mut sections: Vec<super::ChunkSection> = Vec::new();
     for x in chunk_nbt.get_child("sections").unwrap().as_list() {
+      //My test world has one chunk like that, idk if thats a normal occurence
+      if x.get_child("Y").unwrap().as_byte() as i8 == -5 {
+        continue;
+      }
+
     	let block_light_nbt = x.get_child("BlockLight");
      	let mut block_lights: Vec<u8> = Vec::new();
      	if let Some(block_light_nbt) = block_light_nbt {

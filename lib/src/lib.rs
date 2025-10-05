@@ -16,7 +16,7 @@ pub mod types;
 pub mod containerclick;
 pub mod entity;
 
-pub const SPAWN_CHUNK_RADIUS: i8 = 10;
+pub const SPAWN_CHUNK_RADIUS: i8 = 100;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
