@@ -673,7 +673,8 @@ use super::*;
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
-     		new_player.send_chunk(&mut game.world, x, z)?;
+     		game.last_created_entity_id += 1;
+        new_player.send_chunk(&mut game.world, x, z, &mut game.last_created_entity_id)?;
       }
     }
 
@@ -904,7 +905,8 @@ pub mod play {
     let old_y = player.get_y();
     let old_z = player.get_z();
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world)?;
+    game.last_created_entity_id += 1;
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world, &mut game.last_created_entity_id)?;
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
@@ -930,7 +932,8 @@ pub mod play {
     let old_y = player.get_y();
     let old_z = player.get_z();
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world)?;
+    game.last_created_entity_id += 1;
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world, &mut game.last_created_entity_id)?;
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {

@@ -308,7 +308,7 @@ impl Player {
   }
 
   //chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player https://git.thetxt.io/thetxt/oxide/issues/24
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -344,17 +344,17 @@ impl Player {
       }).collect();
 
       for chunk_coords in chunk_coords_to_send {
-      	self.send_chunk(world, chunk_coords.0, chunk_coords.1)?;
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, next_entity_id)?;
       }
     }
 
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
     self.yaw = yaw;
     self.pitch = pitch;
- 		self.new_position(x, y, z, world)?;
+ 		self.new_position(x, y, z, world, next_entity_id)?;
 
     return Ok(());
   }
@@ -364,7 +364,7 @@ impl Player {
     self.pitch = pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) -> Result<(), Box<dyn Error>> {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {
@@ -372,6 +372,10 @@ impl Player {
 		} else {
 			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z);
 			dimension.chunks.push(new_chunk);
+
+			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, next_entity_id);
+			dimension.entities.append(&mut new_entities);
+
 			dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap()
 		};
 		let all_chunk_sections = &chunk.sections;

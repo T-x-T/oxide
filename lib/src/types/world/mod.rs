@@ -43,14 +43,14 @@ pub enum BlockOverwriteOutcome {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new(loader: impl WorldLoader + 'static) -> Self {
+  pub fn new(loader: impl WorldLoader + 'static, next_entity_id: &mut i32) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
     let default_spawn_location: Position;
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
       default_spawn_location = loader.get_default_spawn_location();
-   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader));
+   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, next_entity_id));
     	println!("finished loading existing world in {:.2?}", now.elapsed());
    	} else {
 	    println!("create new world");
@@ -83,18 +83,20 @@ impl Dimension {
     };
   }
 
-  pub fn new_from_loader(loader: &impl loader::WorldLoader) -> Self {
+  pub fn new_from_loader(loader: &impl loader::WorldLoader, next_entity_id: &mut i32) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
+    let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 
    	for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
     	for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
      		chunks.push(loader.load_chunk(x as i32, z as i32));
+        entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, next_entity_id));
       }
     }
 
     return Self {
    		chunks,
-      entities: Vec::new(),
+      entities,
     }
 	}
 

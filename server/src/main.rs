@@ -29,14 +29,16 @@ fn initialize_server() {
   };
 
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
+  let next_entity_id: &mut i32 = &mut 0;
   let mut game = Game {
     players: Vec::new(),
-    world: World::new(world_loader),
+    world: World::new(world_loader, next_entity_id),
     last_created_entity_id: 0,
     chat_message_index: 0,
     commands: Vec::new(),
     last_save_all_timestamp: std::time::Instant::now(),
   };
+  game.last_created_entity_id = *next_entity_id;
   command::init(&mut game);
 
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));

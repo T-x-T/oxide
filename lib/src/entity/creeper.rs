@@ -14,7 +14,7 @@ pub struct Creeper {
 impl SaveableEntity for Creeper {
   fn to_nbt(&self) -> NbtListTag {
     return NbtListTag::TagCompound(vec![
-      NbtTag::String("Id".to_string(), "minecraft:creeper".to_string()),
+      NbtTag::String("id".to_string(), "minecraft:creeper".to_string()),
       NbtTag::TagCompound("Pos".to_string(), vec![
         NbtTag::Double("X".to_string(), self.x),
         NbtTag::Double("Y".to_string(), self.y),
@@ -73,5 +73,24 @@ impl Entity for Creeper {
 
   fn get_id(&self) -> i32 {
     return self.entity_id;
+  }
+}
+
+impl Creeper {
+  pub fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Self {
+    return Self {
+      x: value.get_child("Pos").unwrap().get_child("X").unwrap().as_double(),
+      y: value.get_child("Pos").unwrap().get_child("Y").unwrap().as_double(),
+      z: value.get_child("Pos").unwrap().get_child("Z").unwrap().as_double(),
+      yaw: value.get_child("Rotation").unwrap().get_child("0").unwrap().as_float(),
+      pitch: value.get_child("Rotation").unwrap().get_child("1").unwrap().as_float(),
+      uuid: value.get_child("UUID").unwrap().as_int_array()
+        .into_iter()
+        .enumerate()
+        .map(|x| (x.1 as u128) << (32 * (3 - x.0)))
+        .reduce(|a, b| a | b)
+        .unwrap(),
+      entity_id: next_entity_id,
+    };
   }
 }
