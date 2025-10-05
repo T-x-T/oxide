@@ -1,4 +1,9 @@
 use crate::types::*;
+use crate::entity::*;
+
+pub trait CreatableEntity {
+  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self;
+}
 
 pub trait Entity: std::fmt::Debug {
   fn get_type(&self) -> i32;
@@ -29,4 +34,12 @@ pub trait Entity: std::fmt::Debug {
 
 pub trait SaveableEntity: Entity + Send {
   fn to_nbt(&self) -> NbtListTag;
+}
+
+pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Option<Box<dyn SaveableEntity + Send>> {
+  return match entity_type {
+    "minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id))),
+	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id))),
+			_ => None,
+  };
 }

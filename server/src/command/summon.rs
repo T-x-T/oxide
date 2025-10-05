@@ -30,36 +30,27 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	game.last_created_entity_id += 1;
 
-	let new_entity: Box<dyn SaveableEntity + Send> = match command.replace("summon ", "").as_str() {
-	  "minecraft:creeper" => Box::new(Creeper {
-  	  x: position.x as f64,
-  		y: position.y as f64,
-  		z: position.z as f64,
-  		pitch: 0.0,
-  		yaw: 0.0,
-      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-      entity_id: game.last_created_entity_id,
-		}),
-		"minecraft:cat" => Box::new(Cat {
-  	  x: position.x as f64,
-  		y: position.y as f64,
-  		z: position.z as f64,
-  		pitch: 0.0,
-  		yaw: 0.0,
-      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-      entity_id: game.last_created_entity_id,
-		}),
-		x => {
-  		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
-     	  content: NbtTag::Root(vec![
-     			NbtTag::String("type".to_string(), "text".to_string()),
-     			NbtTag::String("text".to_string(), format!("cant summon unknown entity {x}")),
-        ]),
-     	  overlay: false,
-   	  }.try_into()?)?;
-		  println!("cant summon unknown entity {x}");
-			return Ok(());
-		},
+	let new_entity = entity::new(
+	  command.replace("summon ", "").as_str(),
+		position.x as f64,
+		position.y as f64,
+		position.z as f64,
+		0.0,
+		0.0,
+		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+		game.last_created_entity_id
+	);
+
+	let Some(new_entity) = new_entity else {
+	  lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+   	  content: NbtTag::Root(vec![
+   			NbtTag::String("type".to_string(), "text".to_string()),
+   			NbtTag::String("text".to_string(), format!("cant summon unknown entity {}", command.replace("summon ", "").as_str())),
+      ]),
+   	  overlay: false,
+ 	  }.try_into()?)?;
+		println!("cant summon unknown entity {}", command.replace("summon ", "").as_str());
+		return Ok(());
 	};
 
 	let packet = lib::packets::clientbound::play::SpawnEntity {

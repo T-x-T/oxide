@@ -11,6 +11,12 @@ pub struct Cat {
   pub entity_id: i32,
 }
 
+impl CreatableEntity for Cat {
+  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self {
+    return Self { x, y, z, yaw, pitch, uuid, entity_id };
+  }
+}
+
 impl SaveableEntity for Cat {
   fn to_nbt(&self) -> NbtListTag {
     return NbtListTag::TagCompound(vec![
