@@ -1,6 +1,5 @@
 use super::*;
 
-#[derive(Debug)]
 pub struct Game {
   pub players: Vec<Player>,
   pub world: World,

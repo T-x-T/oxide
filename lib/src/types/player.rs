@@ -52,6 +52,48 @@ impl Clone for Player {
   }
 }
 
+impl Entity for Player {
+  fn get_type(&self) -> i32 {
+    return 149;
+  }
+
+  fn get_x(&self) -> f64 {
+  	return self.x;
+  }
+
+  fn get_y(&self) -> f64 {
+  	return self.y;
+  }
+
+  fn get_z(&self) -> f64 {
+  	return self.z;
+  }
+
+  fn get_yaw(&self) -> f32 {
+  	return self.yaw;
+  }
+
+  fn get_pitch(&self) -> f32 {
+  	return self.pitch;
+  }
+
+  fn get_position(&self) -> Position {
+	 	return Position {
+		  x: self.get_x() as i32,
+			y: self.get_y() as i16,
+			z: self.get_z() as i32,
+	  };
+  }
+
+  fn get_uuid(&self) -> u128 {
+    return self.uuid;
+  }
+
+  fn get_id(&self) -> i32 {
+    return self.entity_id;
+  }
+}
+
 impl Player {
   pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
@@ -399,34 +441,6 @@ impl Player {
 
   pub fn get_position_and_rotation_float(&self) -> (f64, f64, f64, f32, f32) {
   	return (self.x, self.y, self.z, self.yaw, self.pitch);
-  }
-
-  pub fn get_x(&self) -> f64 {
-  	return self.x;
-  }
-
-  pub fn get_y(&self) -> f64 {
-  	return self.y;
-  }
-
-  pub fn get_z(&self) -> f64 {
-  	return self.z;
-  }
-
-  pub fn get_yaw(&self) -> f32 {
-  	return self.yaw;
-  }
-
-  pub fn get_pitch(&self) -> f32 {
-  	return self.pitch;
-  }
-
-  pub fn get_position(&self) -> Position {
-	 	return Position {
-		  x: self.get_x() as i32,
-			y: self.get_y() as i16,
-			z: self.get_z() as i32,
-	  };
   }
 
  	fn get_playerdata_path(uuid: u128) -> PathBuf {

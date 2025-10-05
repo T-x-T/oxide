@@ -5,16 +5,15 @@ use super::*;
 
 use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
 
-#[derive(Debug)]
 pub struct World {
   pub dimensions: HashMap<String, Dimension>,
   pub loader: Box<dyn WorldLoader>,
   pub default_spawn_location: Position,
 }
 
-#[derive(Debug, Clone)]
 pub struct Dimension {
   pub chunks: Vec<Chunk>,
+  pub entities: Vec<Box<dyn Entity + Send>>,
 }
 
 #[derive(Debug, Clone)]
@@ -80,6 +79,7 @@ impl Dimension {
 
     return Self {
       chunks,
+      entities: Vec::new(),
     };
   }
 
@@ -94,6 +94,7 @@ impl Dimension {
 
     return Self {
    		chunks,
+      entities: Vec::new(),
     }
 	}
 

@@ -761,25 +761,15 @@ use super::*;
 				],
 	   	}.try_into()?)?;
 
-      let yaw: u8 = if player.get_yaw() < 0.0 {
-     		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-      	((player.get_yaw() / 90.0) * 64.0) as u8
-      };
-      let pitch: u8 = if player.get_pitch() < 0.0 {
-     		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-      	((player.get_pitch() / 90.0) * 64.0) as u8
-      };
       lib::utils::send_packet(stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
         on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-        yaw,
-        pitch,
+        yaw: player.get_yaw_u8(),
+        pitch: player.get_pitch_u8(),
       }.try_into()?)?;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
     }
 
@@ -832,26 +822,37 @@ use super::*;
 				],
 	   	}.try_into()?)?;
 
-	    let yaw: u8 = if player.get_yaw() < 0.0 {
-    		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-       	((player.get_yaw() / 90.0) * 64.0) as u8
-      };
-	    let pitch: u8 = if player.get_pitch() < 0.0 {
-    		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-       	((player.get_pitch() / 90.0) * 64.0) as u8
-      };
 			lib::utils::send_packet(player_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
         on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-        yaw,
-        pitch,
+        yaw: player.get_yaw_u8(),
+        pitch: player.get_pitch_u8(),
       }.try_into()?)?;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
         entity_id: player.entity_id,
-  			head_yaw: yaw,
+  			head_yaw: player.get_yaw_u8(),
       }.try_into()?)?;
+    }
+
+
+    for entity in &game.world.dimensions.get("minecraft:overworld").unwrap().entities {
+     	let packet = lib::packets::clientbound::play::SpawnEntity {
+        entity_id: entity.get_id(),
+        entity_uuid: entity.get_uuid(),
+        entity_type: entity.get_type(),
+        x: entity.get_x(),
+        y: entity.get_y(),
+        z: entity.get_z(),
+        pitch: entity.get_pitch_u8(),
+        yaw: entity.get_yaw_u8(),
+        head_yaw: 0,
+        data: 0,
+        velocity_x: 0,
+        velocity_y: 0,
+        velocity_z: 0,
+   	  };
+
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.try_into()?)?;
     }
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {
@@ -931,18 +932,6 @@ pub mod play {
 
     player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world)?;
 
-    let pitch: u8 = if parsed_packet.pitch < 0.0 {
-   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((parsed_packet.pitch / 90.0) * 64.0) as u8
-    };
-
-    let yaw: u8 = if player.get_yaw() < 0.0 {
-   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((player.get_yaw() / 90.0) * 64.0) as u8
-    };
-
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
@@ -952,13 +941,13 @@ pub mod play {
 	        delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
 	        delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
 	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw,
-	        pitch,
+	        yaw: player.get_yaw_u8(),
+	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;
 
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
       }
     }
@@ -972,31 +961,19 @@ pub mod play {
 
     player.new_rotation(parsed_packet.yaw % 360.0, parsed_packet.pitch);
 
-    let pitch: u8 = if parsed_packet.pitch < 0.0 {
-   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((parsed_packet.pitch / 90.0) * 64.0) as u8
-    };
-
-    let yaw: u8 = if player.get_yaw() < 0.0 {
-   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((player.get_yaw() / 90.0) * 64.0) as u8
-    };
-
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
 	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw,
-	        pitch,
+	        yaw: player.get_yaw_u8(),
+	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;
 
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
       }
     }
