@@ -15,6 +15,7 @@ pub struct Player {
   z: f64,
   yaw: f32,
   pitch: f32,
+  velocity: EntityPosition,
   pub display_name: String,
   pub uuid: u128,
   pub peer_socket_address: SocketAddr,
@@ -38,6 +39,7 @@ impl Clone for Player {
       z: self.z,
       yaw: self.yaw,
       pitch: self.pitch,
+      velocity: EntityPosition::default(),
       display_name: self.display_name.clone(),
       uuid: self.uuid, peer_socket_address: self.peer_socket_address,
       connection_stream: self.connection_stream.try_clone().unwrap(),
@@ -92,6 +94,14 @@ impl Entity for Player {
     self.pitch = position.pitch;
     self.yaw = position.yaw;
   }
+
+  fn get_velocity(&self) -> EntityPosition {
+    return self.velocity;
+  }
+
+  fn set_velocity(&mut self, velocity: EntityPosition) {
+    self.velocity = velocity;
+  }
 }
 
 impl Player {
@@ -103,6 +113,7 @@ impl Player {
 	      z: game.world.default_spawn_location.z as f64,
 	      yaw: 0.0,
 	      pitch: 0.0,
+				velocity: EntityPosition::default(),
 	      display_name,
 	      uuid,
 	      peer_socket_address,
@@ -191,6 +202,7 @@ impl Player {
       z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
       yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
       pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+      velocity: EntityPosition::default(),
       display_name,
       uuid,
       peer_socket_address,

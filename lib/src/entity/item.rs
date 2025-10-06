@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct ItemEntity {
   pub position: EntityPosition,
+  pub velocity: EntityPosition,
   pub uuid: u128,
   pub entity_id: i32,
   pub age: i16,
@@ -14,9 +15,9 @@ pub struct ItemEntity {
 }
 
 impl CreatableEntity for ItemEntity {
-  fn new(position: EntityPosition, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self {
+  fn new(position: EntityPosition, velocity: EntityPosition, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self {
     return Self {
-      position, uuid, entity_id,
+      position, velocity, uuid, entity_id,
       age: extra_nbt.get_child("Age").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short(),
       health: extra_nbt.get_child("Health").unwrap_or(&NbtTag::Short(String::new(), 5)).as_short(),
       item: Item {
@@ -101,5 +102,13 @@ impl Entity for ItemEntity {
 
   fn set_position(&mut self, position: EntityPosition) {
     self.position = position;
+  }
+
+  fn get_velocity(&self) -> EntityPosition {
+    return self.velocity;
+  }
+
+  fn set_velocity(&mut self, velocity: EntityPosition) {
+    self.velocity = velocity;
   }
 }

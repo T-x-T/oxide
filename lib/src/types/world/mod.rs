@@ -222,7 +222,15 @@ impl Chunk {
   }
 
   pub fn get_block(&self, position_in_chunk: BlockPosition) -> u16 {
+    if position_in_chunk.y < -64 {
+      return 0;
+    }
+
     let section_id = (position_in_chunk.y + 64) / 16;
+
+    if section_id as usize >= self.sections.len() {
+      return 0;
+    }
 
     if self.sections[section_id as usize].blocks.is_empty() {
       return 0;

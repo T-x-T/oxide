@@ -31,6 +31,7 @@ pub use sheep::*;
 
 pub struct CommonEntity {
   pub position: EntityPosition,
+  pub velocity: EntityPosition,
   pub uuid: u128,
   pub entity_id: i32,
 }

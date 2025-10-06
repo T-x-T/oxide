@@ -33,6 +33,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	let new_entity = ItemEntity {
 	  position,
+		velocity: EntityPosition::default(),
     uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
     entity_id: game.last_created_entity_id,
     age: 0,

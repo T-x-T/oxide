@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct BlockPosition {
   pub x: i32,
   pub y: i16,
@@ -22,7 +22,7 @@ impl BlockPosition {
   }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct EntityPosition {
   pub x: f64,
   pub y: f64,

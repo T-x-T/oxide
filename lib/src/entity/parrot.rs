@@ -3,13 +3,14 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct Parrot {
   pub position: EntityPosition,
+  pub velocity: EntityPosition,
   pub uuid: u128,
   pub entity_id: i32,
 }
 
 impl CreatableEntity for Parrot {
-  fn new(position: EntityPosition, uuid: u128, entity_id: i32, _extra_nbt: NbtListTag) -> Self {
-    return Self { position, uuid, entity_id };
+  fn new(position: EntityPosition, velocity: EntityPosition, uuid: u128, entity_id: i32, _extra_nbt: NbtListTag) -> Self {
+    return Self { position, velocity, uuid, entity_id };
   }
 }
 
@@ -42,5 +43,13 @@ impl Entity for Parrot {
 
   fn set_position(&mut self, position: EntityPosition) {
     self.position = position;
+  }
+
+  fn get_velocity(&self) -> EntityPosition {
+    return self.velocity;
+  }
+
+  fn set_velocity(&mut self, velocity: EntityPosition) {
+    self.velocity = velocity;
   }
 }
