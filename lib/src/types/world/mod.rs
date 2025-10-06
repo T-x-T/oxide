@@ -157,14 +157,14 @@ impl Dimension {
   pub fn get_entities_in_chunk(&self, x: i32, z: i32) -> Vec<&Box<dyn SaveableEntity + Send>> {
     return self.entities.iter()
       .filter(|e| {
-        let chunk_coords_of_entity = e.get_position().convert_to_coordinates_of_chunk();
+        let chunk_coords_of_entity = BlockPosition::from(e.get_position()).convert_to_coordinates_of_chunk();
         return chunk_coords_of_entity.x == x && chunk_coords_of_entity.z == z;
       })
       .collect();
   }
 
   pub fn add_entity(&mut self, entity: Box<dyn SaveableEntity + Send>) {
-    self.get_chunk_from_position_mut(entity.get_position()).unwrap().modified = true;
+    self.get_chunk_from_position_mut(entity.get_position().into()).unwrap().modified = true;
     self.entities.push(entity);
   }
 }

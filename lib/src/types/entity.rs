@@ -3,7 +3,7 @@ use crate::types::*;
 use crate::entity::*;
 
 pub trait CreatableEntity: Entity + Send {
-  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self;
+  fn new(position: EntityPosition, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self;
   fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + Send> {
     let entity_type = value.get_child("id").unwrap().as_string();
     let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
@@ -18,45 +18,40 @@ pub trait CreatableEntity: Entity + Send {
       .reduce(|a, b| a | b)
       .unwrap();
 
-    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id, value.clone()).unwrap();
+    let position = EntityPosition { x, y, z, yaw, pitch };
+
+    return self::new(entity_type, position, uuid, next_entity_id, value.clone()).unwrap();
   }
 }
 
 pub trait Entity: std::fmt::Debug {
   fn get_type(&self) -> i32;
-  fn get_x(&self) -> f64;
-  fn get_y(&self) -> f64;
-  fn get_z(&self) -> f64;
-  fn get_yaw(&self) -> f32;
-  fn get_pitch(&self) -> f32;
-  fn get_position(&self) -> BlockPosition;
-  fn set_yaw(&mut self, yaw: f32);
-  fn set_pitch(&mut self, pitch: f32);
-  fn set_position(&mut self, position: BlockPosition);
+  fn get_position(&self) -> EntityPosition;
+  fn set_position(&mut self, position: EntityPosition);
   fn get_uuid(&self) -> u128;
   fn get_id(&self) -> i32;
   fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
   fn get_yaw_u8(&self) -> u8 {
-    return if self.get_yaw() < 0.0 {
-      (((self.get_yaw() / 90.0) * 64.0) + 256.0) as u8
+    return if self.get_position().yaw < 0.0 {
+      (((self.get_position().yaw / 90.0) * 64.0) + 256.0) as u8
     } else {
-     	((self.get_yaw() / 90.0) * 64.0) as u8
+     	((self.get_position().yaw / 90.0) * 64.0) as u8
     };
   }
 
   fn get_pitch_u8(&self) -> u8 {
-    return if self.get_pitch() < 0.0 {
-      (((self.get_pitch() / 90.0) * 64.0) + 256.0) as u8
+    return if self.get_position().pitch < 0.0 {
+      (((self.get_position().pitch / 90.0) * 64.0) + 256.0) as u8
     } else {
-     	((self.get_pitch() / 90.0) * 64.0) as u8
+     	((self.get_position().pitch / 90.0) * 64.0) as u8
     };
   }
 
   fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>) {
     if !self.is_on_ground(chunk) {
       let old_position = self.get_position();
-      let old_z = self.get_z();
-      self.set_position(BlockPosition { y: old_position.y - 1, ..old_position });
+      let old_z = self.get_position().z;
+      self.set_position(EntityPosition { y: old_position.y - 1.0, ..old_position });
 
       for player in players {
         // crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, crate::packets::clientbound::play::UpdateEntityPosition {
@@ -69,9 +64,9 @@ pub trait Entity: std::fmt::Debug {
         crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::TeleportEntity::PACKET_ID, crate::packets::clientbound::play::TeleportEntity {
           entity_id: self.get_id(),
           on_ground: self.is_on_ground(chunk),
-          x: self.get_x(),
-          y: self.get_y(),
-          z: self.get_z(),
+          x: self.get_position().x,
+          y: self.get_position().y,
+          z: self.get_position().z,
           velocity_x: 0.0,
           velocity_y: 0.0,
           velocity_z: 0.0,
@@ -83,7 +78,7 @@ pub trait Entity: std::fmt::Debug {
   }
 
   fn is_on_ground(&self, chunk: &Chunk) -> bool {
-    let position = self.get_position().convert_to_position_in_chunk();
+    let position = BlockPosition::from(self.get_position()).convert_to_position_in_chunk();
     let block_at_location = chunk.get_block(BlockPosition {y: position.y - 1, ..position });
     return block_at_location != 0;
   }
@@ -95,13 +90,13 @@ pub trait SaveableEntity: Entity + Send {
     let default_tags = vec![
       NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
       NbtTag::List("Pos".to_string(), vec![
-        NbtListTag::Double(self.get_x()),
-        NbtListTag::Double(self.get_y()),
-        NbtListTag::Double(self.get_z()),
+        NbtListTag::Double(self.get_position().x),
+        NbtListTag::Double(self.get_position().y),
+        NbtListTag::Double(self.get_position().z),
       ]),
       NbtTag::List("Rotation".to_string(), vec![
-        NbtListTag::Float(self.get_yaw()),
-        NbtListTag::Float(self.get_pitch()),
+        NbtListTag::Float(self.get_position().yaw),
+        NbtListTag::Float(self.get_position().pitch),
       ]),
       NbtTag::IntArray("UUID".to_string(), vec![
         (self.get_uuid() >> 96) as i32,
@@ -114,21 +109,21 @@ pub trait SaveableEntity: Entity + Send {
   }
 }
 
-pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Option<Box<dyn SaveableEntity + Send>> {
+pub fn new(entity_type: &str, position: EntityPosition, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Option<Box<dyn SaveableEntity + Send>> {
   return match entity_type {
-	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-	  "minecraft:chest_minecart" => Some(Box::new(ChestMinecart::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:chicken" => Some(Box::new(Chicken::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:cow" => Some(Box::new(Cow::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:donkey" => Some(Box::new(Donkey::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:horse" => Some(Box::new(Horse::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:item" => Some(Box::new(ItemEntity::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:parrot" => Some(Box::new(Parrot::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:pig" => Some(Box::new(Pig::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:rabbit" => Some(Box::new(Rabbit::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			"minecraft:sheep" => Some(Box::new(Sheep::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
-			_ => None,
+	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(position, uuid, entity_id, extra_nbt))),
+	  "minecraft:cat" => Some(Box::new(Cat::new(position, uuid, entity_id, extra_nbt))),
+	  "minecraft:chest_minecart" => Some(Box::new(ChestMinecart::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:chicken" => Some(Box::new(Chicken::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:cow" => Some(Box::new(Cow::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:creeper" => Some(Box::new(Creeper::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:donkey" => Some(Box::new(Donkey::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:horse" => Some(Box::new(Horse::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:item" => Some(Box::new(ItemEntity::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:parrot" => Some(Box::new(Parrot::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:pig" => Some(Box::new(Pig::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:rabbit" => Some(Box::new(Rabbit::new(position, uuid, entity_id, extra_nbt))),
+			"minecraft:sheep" => Some(Box::new(Sheep::new(position, uuid, entity_id, extra_nbt))),
+		_ => None,
   };
 }

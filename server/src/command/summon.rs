@@ -32,11 +32,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	let new_entity = entity::new(
 	  command.replace("summon ", "").as_str(),
-		position.x as f64,
-		position.y as f64,
-		position.z as f64,
-		0.0,
-		0.0,
+		position,
 		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 		game.last_created_entity_id,
 		NbtListTag::TagCompound(Vec::new()),
@@ -58,9 +54,9 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     entity_id: new_entity.get_id(),
     entity_uuid: new_entity.get_uuid(),
     entity_type: new_entity.get_type(),
-    x: new_entity.get_x(),
-    y: new_entity.get_y(),
-    z: new_entity.get_z(),
+    x: position.x,
+    y: position.y,
+    z: position.z,
     pitch: new_entity.get_pitch_u8(),
     yaw: new_entity.get_yaw_u8(),
     head_yaw: 0,

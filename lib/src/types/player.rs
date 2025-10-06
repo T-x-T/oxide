@@ -7,6 +7,7 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 
+//TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
   x: f64,
@@ -57,32 +58,8 @@ impl Entity for Player {
     return 149;
   }
 
-  fn get_x(&self) -> f64 {
-  	return self.x;
-  }
-
-  fn get_y(&self) -> f64 {
-  	return self.y;
-  }
-
-  fn get_z(&self) -> f64 {
-  	return self.z;
-  }
-
-  fn get_yaw(&self) -> f32 {
-  	return self.yaw;
-  }
-
-  fn get_pitch(&self) -> f32 {
-  	return self.pitch;
-  }
-
-  fn get_position(&self) -> BlockPosition {
-	 	return BlockPosition {
-		  x: self.get_x() as i32,
-			y: self.get_y() as i16,
-			z: self.get_z() as i32,
-	  };
+  fn get_position(&self) -> EntityPosition {
+	 	return EntityPosition { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch };
   }
 
   fn get_uuid(&self) -> u128 {
@@ -106,18 +83,14 @@ impl Entity for Player {
     ];
   }
 
-  fn set_yaw(&mut self, yaw: f32) {
-    self.yaw = yaw;
-  }
 
-  fn set_pitch(&mut self, pitch: f32) {
-    self.pitch = pitch;
-  }
-
-  fn set_position(&mut self, position: BlockPosition) {
-    self.x = position.x as f64;
-    self.y = position.y as f64;
-    self.z = position.z as f64;
+//TODO: actually use this function maybe? (prolly difficult atm because the other one needs acces to Game)
+  fn set_position(&mut self, position: EntityPosition) {
+    self.x = position.x;
+    self.y = position.y;
+    self.z = position.z;
+    self.pitch = position.pitch;
+    self.yaw = position.yaw;
   }
 }
 
@@ -468,10 +441,6 @@ impl Player {
 	  }.try_into()?)?;
 
 		return Ok(());
-  }
-
-  pub fn get_position_and_rotation_float(&self) -> (f64, f64, f64, f32, f32) {
-  	return (self.x, self.y, self.z, self.yaw, self.pitch);
   }
 
  	fn get_playerdata_path(uuid: u128) -> PathBuf {

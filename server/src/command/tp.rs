@@ -46,8 +46,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 		.iter()
 		.find(|x| x.display_name == arg_string.split(" ").next().unwrap_or_default());
 
-	let target_coordinates: (f64, f64, f64, f32, f32) = if target_player.as_ref().is_some() {
-		target_player.unwrap().get_position_and_rotation_float()
+	let target_coordinates: EntityPosition = if target_player.as_ref().is_some() {
+		target_player.unwrap().get_position()
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();
@@ -56,7 +56,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 		let y: i32 = str::parse(y).unwrap_or_default();
 		let z = arg_iter.next().unwrap_or_default();
 		let z: i32 = str::parse(z).unwrap_or_default();
-		(x as f64, y as f64, z as f64, 0.0, 0.0)
+		EntityPosition {
+      x: x as f64,
+      y: y as f64,
+      z: z as f64,
+      yaw: 0.0,
+      pitch: 0.0,
+		}
 	};
 
 	let sending_player_index = game.players
@@ -67,19 +73,19 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	let sending_player = game.players.get_mut(sending_player_index).unwrap();
 	game.last_created_entity_id += 1;
-	sending_player.new_position(target_coordinates.0, target_coordinates.1, target_coordinates.2, &mut game.world, &mut game.last_created_entity_id)?;
+	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, &mut game.world, &mut game.last_created_entity_id)?;
 
 	sending_player.current_teleport_id += 1;
 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
     teleport_id: sending_player.current_teleport_id,
-    x: target_coordinates.0,
-    y: target_coordinates.1,
-    z: target_coordinates.2,
+    x: target_coordinates.x,
+    y: target_coordinates.y,
+    z: target_coordinates.z,
     velocity_x: 0.0,
     velocity_y: 0.0,
     velocity_z: 0.0,
-    yaw: target_coordinates.3,
-    pitch: target_coordinates.4,
+    yaw: target_coordinates.yaw,
+    pitch: target_coordinates.pitch,
     flags: 0,
 	}.try_into()?)?;
 
@@ -88,14 +94,14 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
       if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
 	      	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::PACKET_ID, lib::packets::clientbound::play::TeleportEntity {
             entity_id: sending_player.entity_id,
-            x: target_coordinates.0,
-            y: target_coordinates.1,
-            z: target_coordinates.2,
+            x: target_coordinates.x,
+            y: target_coordinates.y,
+            z: target_coordinates.z,
             velocity_x: 0.0,
             velocity_y: 0.0,
             velocity_z: 0.0,
-            yaw: target_coordinates.3,
-            pitch: target_coordinates.4,
+            yaw: target_coordinates.yaw,
+            pitch: target_coordinates.pitch,
             on_ground: true,
         }.try_into().unwrap())?;
       }

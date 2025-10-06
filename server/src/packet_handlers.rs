@@ -646,14 +646,14 @@ use super::*;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
       teleport_id: new_player.current_teleport_id,
-      x: new_player.get_x(),
-      y: new_player.get_y(),
-      z: new_player.get_z(),
+      x: new_player.get_position().x,
+      y: new_player.get_position().y,
+      z: new_player.get_position().z,
       velocity_x: 0.0,
       velocity_y: 0.0,
       velocity_z: 0.0,
-      yaw: new_player.get_yaw(),
-      pitch: new_player.get_pitch(),
+      yaw: new_player.get_position().yaw,
+      pitch: new_player.get_position().pitch,
       flags: 0,
     }.try_into()?)?;
 
@@ -669,7 +669,7 @@ use super::*;
 	    carried_item: None,
     }.try_into()?)?;
 
-    let current_chunk_coords = new_player.get_position().convert_to_coordinates_of_chunk();
+    let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
@@ -684,9 +684,9 @@ use super::*;
 
     let new_player_uuid = new_player.uuid;
     let new_player_entity_id = new_player.entity_id;
-    let new_player_x = new_player.get_x();
-    let new_player_y = new_player.get_y();
-    let new_player_z = new_player.get_z();
+    let new_player_x = new_player.get_position().x;
+    let new_player_y = new_player.get_position().y;
+    let new_player_z = new_player.get_position().z;
     let new_player_inventory = new_player.get_inventory().clone();
     let new_player_selected_slot = new_player.get_selected_slot();
     let new_player_entity_metadata = new_player.get_metadata();
@@ -725,12 +725,12 @@ use super::*;
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
         entity_type: data::entities::get_id_from_name("minecraft:player"),
-        x: player.get_x(),
-        y: player.get_y(),
-        z: player.get_z(),
-        pitch: 0,
-        yaw: 0,
-        head_yaw: 0,
+        x: player.get_position().x,
+        y: player.get_position().y,
+        z: player.get_position().z,
+        pitch: player.get_pitch_u8(),
+        yaw: player.get_yaw_u8(),
+        head_yaw: player.get_yaw_u8(),
         data: 0,
         velocity_x: 0,
         velocity_y: 0,
@@ -756,7 +756,7 @@ use super::*;
 
       lib::utils::send_packet(stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         yaw: player.get_yaw_u8(),
         pitch: player.get_pitch_u8(),
       }.try_into()?)?;
@@ -808,7 +808,7 @@ use super::*;
 
 			lib::utils::send_packet(player_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         yaw: player.get_yaw_u8(),
         pitch: player.get_pitch_u8(),
       }.try_into()?)?;
@@ -824,12 +824,12 @@ use super::*;
         entity_id: entity.get_id(),
         entity_uuid: entity.get_uuid(),
         entity_type: entity.get_type(),
-        x: entity.get_x(),
-        y: entity.get_y(),
-        z: entity.get_z(),
+        x: entity.get_position().x,
+        y: entity.get_position().y,
+        z: entity.get_position().z,
         pitch: entity.get_pitch_u8(),
         yaw: entity.get_yaw_u8(),
-        head_yaw: 0,
+        head_yaw: entity.get_yaw_u8(),
         data: 0,
         velocity_x: 0,
         velocity_y: 0,
@@ -887,9 +887,9 @@ pub mod play {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
     let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
-    let old_x = player.get_x();
-    let old_y = player.get_y();
-    let old_z = player.get_z();
+    let old_x = player.get_position().x;
+    let old_y = player.get_position().y;
+    let old_z = player.get_position().z;
 
     game.last_created_entity_id += 1;
     player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world, &mut game.last_created_entity_id)?;
@@ -899,10 +899,10 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
-          delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
-          delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
-          delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+          delta_x: ((player.get_position().x * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.get_position().y * 4096.0) - (old_y * 4096.0)) as i16,
+          delta_z: ((player.get_position().z * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         }.try_into()?)?;
       }
     }
@@ -914,9 +914,9 @@ pub mod play {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
     let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
-    let old_x = player.get_x();
-    let old_y = player.get_y();
-    let old_z = player.get_z();
+    let old_x = player.get_position().x;
+    let old_y = player.get_position().y;
+    let old_z = player.get_position().z;
 
     game.last_created_entity_id += 1;
     player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world, &mut game.last_created_entity_id)?;
@@ -926,10 +926,10 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
 	        entity_id: player.entity_id,
-	        delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
-	        delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
-	        delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+					delta_x: ((player.get_position().x * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.get_position().y * 4096.0) - (old_y * 4096.0)) as i16,
+          delta_z: ((player.get_position().z * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
 	        yaw: player.get_yaw_u8(),
 	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;
@@ -955,7 +955,7 @@ pub mod play {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
-	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+	        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
 	        yaw: player.get_yaw_u8(),
 	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;

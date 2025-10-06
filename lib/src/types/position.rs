@@ -27,8 +27,8 @@ pub struct EntityPosition {
   pub x: f64,
   pub y: f64,
   pub z: f64,
-  pub pitch: f32,
   pub yaw: f32,
+  pub pitch: f32,
 }
 
 impl From<BlockPosition> for EntityPosition {
@@ -37,8 +37,8 @@ impl From<BlockPosition> for EntityPosition {
       x: value.x as f64,
       y: value.y as f64,
       z: value.z as f64,
-      pitch: 0.0,
       yaw: 0.0,
+      pitch: 0.0,
     }
   }
 }
