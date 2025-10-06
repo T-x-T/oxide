@@ -92,6 +92,19 @@ impl Entity for Player {
   fn get_id(&self) -> i32 {
     return self.entity_id;
   }
+
+  fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
+    return vec![
+      crate::packets::clientbound::play::EntityMetadata {
+        index: 9,
+        value: crate::packets::clientbound::play::EntityMetadataValue::Float(20.0),
+      },
+      crate::packets::clientbound::play::EntityMetadata {
+        index: 17,
+        value: crate::packets::clientbound::play::EntityMetadataValue::Byte(127),
+      },
+    ];
+  }
 }
 
 impl Player {

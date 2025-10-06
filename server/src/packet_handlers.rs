@@ -689,6 +689,7 @@ use super::*;
     let new_player_z = new_player.get_z();
     let new_player_inventory = new_player.get_inventory().clone();
     let new_player_selected_slot = new_player.get_selected_slot();
+    let new_player_entity_metadata = new_player.get_metadata();
     game.players.push(new_player);
 
     connection_streams.iter()
@@ -738,16 +739,7 @@ use super::*;
 
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
         entity_id: player.entity_id,
-        metadata: vec![
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 9,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-          },
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 17,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-          },
-        ],
+        metadata: new_player_entity_metadata.clone(),
       }.try_into()?)?;
 
  	   	lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
@@ -799,16 +791,7 @@ use super::*;
 
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
         entity_id: new_player_entity_id,
-        metadata: vec![
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 9,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-          },
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 17,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-          },
-        ],
+        metadata: new_player_entity_metadata.clone(),
       }.try_into()?)?;
 
 	   	lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
@@ -837,7 +820,7 @@ use super::*;
 
 
     for entity in &game.world.dimensions.get("minecraft:overworld").unwrap().entities {
-     	let packet = lib::packets::clientbound::play::SpawnEntity {
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: entity.get_id(),
         entity_uuid: entity.get_uuid(),
         entity_type: entity.get_type(),
@@ -851,9 +834,12 @@ use super::*;
         velocity_x: 0,
         velocity_y: 0,
         velocity_z: 0,
-   	  };
+   	  }.try_into()?)?;
 
-      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.try_into()?)?;
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
+        entity_id: entity.get_id(),
+        metadata: entity.get_metadata(),
+      }.try_into()?)?;
     }
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::Commands::PACKET_ID, lib::packets::clientbound::play::Commands {

@@ -2218,7 +2218,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 						}
 					}
 				},
-				EntityMetadataValue::Slot(_) => output.append(&mut vec![0; 6]),
+				EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
 				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
 				EntityMetadataValue::Rotations(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
@@ -2320,7 +2320,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					};
 					EntityMetadataValue::OptionalTextComponent(nbt)
 				},
-				7 => break,
+				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap()),
 				8 => EntityMetadataValue::Boolean(crate::deserialize::boolean(&mut value)?),
 				9 => EntityMetadataValue::Rotations(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
 				10 => EntityMetadataValue::Position(crate::deserialize::long(&mut value)?),

@@ -1,4 +1,5 @@
 use crate::types::*;
+use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 
 pub mod armadillo;
 pub mod cat;

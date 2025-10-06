@@ -2,7 +2,7 @@ use crate::types::*;
 use crate::entity::*;
 
 pub trait CreatableEntity: Entity + Send {
-  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: Vec<NbtTag>) -> Self;
+  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self;
   fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + std::marker::Send> {
     let entity_type = value.get_child("id").unwrap().as_string();
     let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
@@ -17,7 +17,7 @@ pub trait CreatableEntity: Entity + Send {
       .reduce(|a, b| a | b)
       .unwrap();
 
-    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id, value.as_tag_compound()).unwrap();
+    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id, value.clone()).unwrap();
   }
 }
 
@@ -31,6 +31,7 @@ pub trait Entity: std::fmt::Debug {
   fn get_position(&self) -> Position;
   fn get_uuid(&self) -> u128;
   fn get_id(&self) -> i32;
+  fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
   fn get_yaw_u8(&self) -> u8 {
     return if self.get_yaw() < 0.0 {
       (((self.get_yaw() / 90.0) * 64.0) + 256.0) as u8
@@ -73,7 +74,7 @@ pub trait SaveableEntity: Entity + Send {
   }
 }
 
-pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: Vec<NbtTag>) -> Option<Box<dyn SaveableEntity + Send>> {
+pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Option<Box<dyn SaveableEntity + Send>> {
   return match entity_type {
 	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
 	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
