@@ -1,9 +1,10 @@
+use crate::packets::Packet;
 use crate::types::*;
 use crate::entity::*;
 
 pub trait CreatableEntity: Entity + Send {
   fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self;
-  fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + std::marker::Send> {
+  fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + Send> {
     let entity_type = value.get_child("id").unwrap().as_string();
     let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
     let y = value.get_child("Pos").unwrap().as_list()[1].as_double();
@@ -29,6 +30,9 @@ pub trait Entity: std::fmt::Debug {
   fn get_yaw(&self) -> f32;
   fn get_pitch(&self) -> f32;
   fn get_position(&self) -> Position;
+  fn set_yaw(&mut self, yaw: f32);
+  fn set_pitch(&mut self, pitch: f32);
+  fn set_position(&mut self, position: Position);
   fn get_uuid(&self) -> u128;
   fn get_id(&self) -> i32;
   fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
@@ -46,6 +50,42 @@ pub trait Entity: std::fmt::Debug {
     } else {
      	((self.get_pitch() / 90.0) * 64.0) as u8
     };
+  }
+
+  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>) {
+    if !self.is_on_ground(chunk) {
+      let old_position = self.get_position();
+      let old_z = self.get_z();
+      self.set_position(Position { y: old_position.y - 1, ..old_position });
+
+      for player in players {
+        // crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, crate::packets::clientbound::play::UpdateEntityPosition {
+        //   entity_id: self.get_id(),
+        //   delta_x: 0,
+        //   delta_y: ((self.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
+        //   delta_z: 0,
+        //   on_ground: self.is_on_ground(chunk),
+        // }.try_into().unwrap()).unwrap();
+        crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::TeleportEntity::PACKET_ID, crate::packets::clientbound::play::TeleportEntity {
+          entity_id: self.get_id(),
+          on_ground: self.is_on_ground(chunk),
+          x: self.get_x(),
+          y: self.get_y(),
+          z: self.get_z(),
+          velocity_x: 0.0,
+          velocity_y: 0.0,
+          velocity_z: 0.0,
+          yaw: 0.0,
+          pitch: 0.0,
+        }.try_into().unwrap()).unwrap();
+      }
+    }
+  }
+
+  fn is_on_ground(&self, chunk: &Chunk) -> bool {
+    let position = self.get_position().convert_to_position_in_chunk();
+    let block_at_location = chunk.get_block(Position {y: position.y - 1, ..position });
+    return block_at_location != 0;
   }
 }
 

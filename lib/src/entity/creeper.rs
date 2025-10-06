@@ -67,4 +67,18 @@ impl Entity for Creeper {
   fn get_metadata(&self) -> Vec<EntityMetadata> {
     return Vec::new();
   }
+
+  fn set_yaw(&mut self, yaw: f32) {
+    self.yaw = yaw;
+  }
+
+  fn set_pitch(&mut self, pitch: f32) {
+    self.pitch = pitch;
+  }
+
+  fn set_position(&mut self, position: Position) {
+    self.x = position.x as f64;
+    self.y = position.y as f64;
+    self.z = position.z as f64;
+  }
 }

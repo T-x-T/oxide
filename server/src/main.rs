@@ -153,7 +153,6 @@ fn tick(game: Arc<Mutex<Game>>) {
     game.lock().unwrap().save_all();
   }
 
-  //let now = std::time::Instant::now();
   let mut game = game.lock().unwrap();
   let players = game.players.clone();
   for dimension in &mut game.world.dimensions {
@@ -164,7 +163,12 @@ fn tick(game: Arc<Mutex<Game>>) {
         }
       }
     }
+
+    let mut entities = std::mem::take(&mut dimension.1.entities);
+    for entity in &mut entities {
+      entity.tick(dimension.1.get_chunk_from_position(entity.get_position()).unwrap(), &players);
+    }
+    dimension.1.entities = entities;
   }
   drop(game);
-  //println!("ticked blockentities in {:.2?}", now.elapsed());
 }
