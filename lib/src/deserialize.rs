@@ -169,9 +169,9 @@ pub fn bitset(data: &mut Vec<u8>) -> Result<Vec<u64>, Box<dyn Error>> {
   return Ok(output);
 }
 
-pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::Position, Box<dyn Error>> {
+pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::BlockPosition, Box<dyn Error>> {
   let raw = long(data)?;
-  return Ok(crate::types::position::Position {
+  return Ok(crate::types::position::BlockPosition {
     x: (raw >> 38) as i32,
     y: (raw << 52 >> 52) as i16,
     z: (raw << 26 >> 38) as i32,

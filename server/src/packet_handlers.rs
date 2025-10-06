@@ -1055,7 +1055,7 @@ pub mod play {
     let block_states = data::blocks::get_blocks();
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
-    let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
+    let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
       //Don't place block, because player right clicked something that does something when right clicked
       match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,

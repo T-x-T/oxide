@@ -9,7 +9,7 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct BlockEntity {
   pub id: BlockEntityId,
-  pub position: Position, //global position, NOT within the chunk
+  pub position: BlockPosition, //global position, NOT within the chunk
   pub components: Option<Vec<SlotComponent>>, //At least I think so?
   pub data: BlockEntityData,
   pub needs_ticking: bool,
@@ -542,7 +542,7 @@ impl From<&Item> for Slot {
   }
 }
 
-pub fn get_blockentity_for_placed_block(position_global: Position, block_state_id: u16) -> Option<BlockEntity> {
+pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_state_id: u16) -> Option<BlockEntity> {
   return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //maybe pass the blocks in from somewhere at some point, recomputing this on every placed block is not _that_ ideal
     Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
@@ -605,7 +605,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
     let x = value.get_child("x").unwrap().as_int();
     let y = value.get_child("y").unwrap().as_int() as i16;
     let z = value.get_child("z").unwrap().as_int();
-    let position = Position { x, y, z };
+    let position = BlockPosition { x, y, z };
 
     let data: BlockEntityData = match id {
       BlockEntityId::Banner => {

@@ -276,7 +276,7 @@ impl super::WorldLoader for Loader {
   	return std::fs::exists(level_dat_path).unwrap();
   }
 
-  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: Position, dimension: &Dimension) {
+  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: BlockPosition, dimension: &Dimension) {
  		println!("start saving world with {} chunks to disk", chunks.len());
   	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
    	for chunk in chunks {
@@ -295,7 +295,7 @@ impl super::WorldLoader for Loader {
     write_level_dat(self.path.clone(), default_spawn_location);
   }
 
-  fn get_default_spawn_location(&self) -> Position {
+  fn get_default_spawn_location(&self) -> BlockPosition {
     let mut level_dat_path = self.path.clone();
    	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
 
@@ -310,7 +310,7 @@ impl super::WorldLoader for Loader {
 
     let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
 
-    return Position {
+    return BlockPosition {
       x: level_data.get_child("Data").unwrap().get_child("SpawnX").unwrap().as_int(),
       y: level_data.get_child("Data").unwrap().get_child("SpawnY").unwrap().as_int() as i16,
       z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
@@ -318,7 +318,7 @@ impl super::WorldLoader for Loader {
   }
 }
 
-fn write_level_dat(path: PathBuf, default_spawn_location: Position) {
+fn write_level_dat(path: PathBuf, default_spawn_location: BlockPosition) {
   let mut level_dat_path = path;
  	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
 

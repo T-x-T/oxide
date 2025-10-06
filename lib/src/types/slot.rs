@@ -123,7 +123,7 @@ pub enum SlotComponent {
   JukeboxPlayable, //still missing some stuffs
   ProvidesBannerPatterns(String),
   Recipes(NbtTag),
-  LodestoneTracker(bool, String, crate::Position, bool),
+  LodestoneTracker(bool, String, crate::BlockPosition, bool),
   FireworkExplosion, //Missing firework explosion implementation
   Fireworks, //Missing firework explosion implementation
   Profile(Option<String>, Option<u128>, Vec<(String, String, Option<String>)>),

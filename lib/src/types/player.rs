@@ -23,7 +23,7 @@ pub struct Player {
   pub current_teleport_id: i32,
   inventory: Vec<Option<Slot>>,
   selected_slot: u8,
-  pub opened_inventory_at: Option<Position>,
+  pub opened_inventory_at: Option<BlockPosition>,
   pub cursor_item: Option<Slot>,
   is_sneaking: bool,
 }
@@ -77,8 +77,8 @@ impl Entity for Player {
   	return self.pitch;
   }
 
-  fn get_position(&self) -> Position {
-	 	return Position {
+  fn get_position(&self) -> BlockPosition {
+	 	return BlockPosition {
 		  x: self.get_x() as i32,
 			y: self.get_y() as i16,
 			z: self.get_z() as i32,
@@ -114,7 +114,7 @@ impl Entity for Player {
     self.pitch = pitch;
   }
 
-  fn set_position(&mut self, position: Position) {
+  fn set_position(&mut self, position: BlockPosition) {
     self.x = position.x as f64;
     self.y = position.y as f64;
     self.z = position.z as f64;
@@ -343,8 +343,8 @@ impl Player {
    	self.y = y;
     self.z = z;
 
-    let old_chunk_position = Position {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
-    let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
+    let old_chunk_position = BlockPosition {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
+    let new_chunk_position = BlockPosition {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
     if old_chunk_position != new_chunk_position {
     	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetCenterChunk::PACKET_ID, crate::packets::clientbound::play::SetCenterChunk {
@@ -393,7 +393,7 @@ impl Player {
 
   pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
-	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
+	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
@@ -403,7 +403,7 @@ impl Player {
 			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, next_entity_id);
 			dimension.entities.append(&mut new_entities);
 
-			dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap()
+			dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z }).unwrap()
 		};
 		let all_chunk_sections = &chunk.sections;
 

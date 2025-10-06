@@ -501,7 +501,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 
 #[derive(Debug, Clone)]
 pub struct PickItemFromBlock {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub include_data: bool,
 }
 
@@ -542,7 +542,7 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
   pub status: i32,
-  pub location: crate::Position,
+  pub location: crate::BlockPosition,
   pub face: u8,
   pub sequence: i32,
 }
@@ -719,7 +719,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 
 #[derive(Debug, Clone)]
 pub struct UpdateSign {
-  pub location: Position,
+  pub location: BlockPosition,
   pub is_front_text: bool,
   pub line_1: String,
   pub line_2: String,
@@ -809,7 +809,7 @@ impl TryFrom<Vec<u8>> for SwingArm {
 #[derive(Debug, Clone)]
 pub struct UseItemOn {
   pub hand: i32,
-  pub location: crate::Position,
+  pub location: crate::BlockPosition,
   pub face: u8,
   pub cursor_position_x: f32,
   pub cursor_position_y: f32,

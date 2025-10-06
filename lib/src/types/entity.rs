@@ -29,10 +29,10 @@ pub trait Entity: std::fmt::Debug {
   fn get_z(&self) -> f64;
   fn get_yaw(&self) -> f32;
   fn get_pitch(&self) -> f32;
-  fn get_position(&self) -> Position;
+  fn get_position(&self) -> BlockPosition;
   fn set_yaw(&mut self, yaw: f32);
   fn set_pitch(&mut self, pitch: f32);
-  fn set_position(&mut self, position: Position);
+  fn set_position(&mut self, position: BlockPosition);
   fn get_uuid(&self) -> u128;
   fn get_id(&self) -> i32;
   fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
@@ -56,7 +56,7 @@ pub trait Entity: std::fmt::Debug {
     if !self.is_on_ground(chunk) {
       let old_position = self.get_position();
       let old_z = self.get_z();
-      self.set_position(Position { y: old_position.y - 1, ..old_position });
+      self.set_position(BlockPosition { y: old_position.y - 1, ..old_position });
 
       for player in players {
         // crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, crate::packets::clientbound::play::UpdateEntityPosition {
@@ -84,7 +84,7 @@ pub trait Entity: std::fmt::Debug {
 
   fn is_on_ground(&self, chunk: &Chunk) -> bool {
     let position = self.get_position().convert_to_position_in_chunk();
-    let block_at_location = chunk.get_block(Position {y: position.y - 1, ..position });
+    let block_at_location = chunk.get_block(BlockPosition {y: position.y - 1, ..position });
     return block_at_location != 0;
   }
 }

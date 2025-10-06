@@ -3,12 +3,12 @@ pub mod loader;
 use std::{collections::HashMap, error::Error, fmt::Debug};
 use super::*;
 
-use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
+use crate::{loader::WorldLoader, types::position::BlockPosition, SPAWN_CHUNK_RADIUS};
 
 pub struct World {
   pub dimensions: HashMap<String, Dimension>,
   pub loader: Box<dyn WorldLoader>,
-  pub default_spawn_location: Position,
+  pub default_spawn_location: BlockPosition,
 }
 
 pub struct Dimension {
@@ -45,7 +45,7 @@ impl World {
   #[allow(clippy::new_without_default)]
   pub fn new(loader: impl WorldLoader + 'static, next_entity_id: &mut i32) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
-    let default_spawn_location: Position;
+    let default_spawn_location: BlockPosition;
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
@@ -55,7 +55,7 @@ impl World {
    	} else {
 	    println!("create new world");
 	    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
-			default_spawn_location = Position {x: 0, y: -48, z: 0};
+			default_spawn_location = BlockPosition {x: 0, y: -48, z: 0};
 	    println!("creation of new world finished");
     }
     return Self { dimensions, loader: Box::new(loader), default_spawn_location };
@@ -100,27 +100,27 @@ impl Dimension {
     }
 	}
 
-  pub fn get_chunk_from_position_mut(&mut self, position: Position) -> Option<&mut Chunk> {
+  pub fn get_chunk_from_position_mut(&mut self, position: BlockPosition) -> Option<&mut Chunk> {
     let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
     return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_position(&self, position: Position) -> Option<&Chunk> {
+  pub fn get_chunk_from_position(&self, position: BlockPosition) -> Option<&Chunk> {
     let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_chunk_position_mut(&mut self, chunk_coordinates: Position) -> Option<&mut Chunk> {
+  pub fn get_chunk_from_chunk_position_mut(&mut self, chunk_coordinates: BlockPosition) -> Option<&mut Chunk> {
     return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_chunk_position(&self, chunk_coordinates: Position) -> Option<&Chunk> {
+  pub fn get_chunk_from_chunk_position(&self, chunk_coordinates: BlockPosition) -> Option<&Chunk> {
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn overwrite_block(&mut self, position: Position, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
+  pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position_mut(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -132,7 +132,7 @@ impl Dimension {
     return Ok(chunk.unwrap().set_block(position, block_state_id));
   }
 
-  pub fn get_block(&self, position: Position) -> Result<u16, Box<dyn Error>> {
+  pub fn get_block(&self, position: BlockPosition) -> Result<u16, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -144,7 +144,7 @@ impl Dimension {
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
   }
 
-  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: Position) {
+  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: BlockPosition) {
  		{
       loader.save_to_disk(&self.chunks, default_spawn_location, self);
     }
@@ -198,7 +198,7 @@ impl Chunk {
     };
   }
 
-  fn set_block(&mut self, position_global: Position, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
+  fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
     self.modified = true;
     let position_in_chunk = position_global.convert_to_position_in_chunk();
     let section_id = (position_in_chunk.y + 64) / 16;
@@ -221,7 +221,7 @@ impl Chunk {
     return destroy_blockentity;
   }
 
-  pub fn get_block(&self, position_in_chunk: Position) -> u16 {
+  pub fn get_block(&self, position_in_chunk: BlockPosition) -> u16 {
     let section_id = (position_in_chunk.y + 64) / 16;
 
     if self.sections[section_id as usize].blocks.is_empty() {
@@ -232,11 +232,11 @@ impl Chunk {
     return self.sections[section_id as usize].blocks[block_id as usize];
   }
 
-  pub fn try_get_block_entity(&self, position_in_chunk: Position) -> Option<&BlockEntity> {
+  pub fn try_get_block_entity(&self, position_in_chunk: BlockPosition) -> Option<&BlockEntity> {
     return self.block_entities.iter().find(|x| x.position == position_in_chunk);
   }
 
-  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: Position) -> Option<&mut BlockEntity> {
+  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: BlockPosition) -> Option<&mut BlockEntity> {
     self.modified = true; //cant know what caller will do with the &mut so better be safe
     return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
   }

@@ -97,8 +97,8 @@ impl Entity for ItemEntity {
   	return self.pitch;
   }
 
-  fn get_position(&self) -> Position {
-	 	return Position {
+  fn get_position(&self) -> BlockPosition {
+	 	return BlockPosition {
 		  x: self.get_x() as i32,
 			y: self.get_y() as i16,
 			z: self.get_z() as i32,
@@ -135,7 +135,7 @@ impl Entity for ItemEntity {
     self.pitch = pitch;
   }
 
-  fn set_position(&mut self, position: Position) {
+  fn set_position(&mut self, position: BlockPosition) {
     self.x = position.x as f64;
     self.y = position.y as f64;
     self.z = position.z as f64;

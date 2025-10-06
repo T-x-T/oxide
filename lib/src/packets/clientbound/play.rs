@@ -157,7 +157,7 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 
 #[derive(Debug, Clone)]
 pub struct BlockEntityData {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub block_entity_type: i32,
 	pub nbt_data: NbtTag,
 }
@@ -200,7 +200,7 @@ impl TryFrom<Vec<u8>> for BlockEntityData {
 
 #[derive(Debug, Clone)]
 pub struct BlockAction {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub action_id: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Block_actions
 	pub action_parameter: u8,
 	pub block_type: i32,
@@ -246,7 +246,7 @@ impl TryFrom<Vec<u8>> for BlockAction {
 
 #[derive(Debug, Clone)]
 pub struct BlockUpdate {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub block_id: i32,
 }
 
@@ -1122,7 +1122,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 #[derive(Debug, Clone)]
 pub struct WorldEvent {
 	pub event: i32,
-	pub location: Position,
+	pub location: BlockPosition,
 	pub data: i32,
 }
 
@@ -1509,7 +1509,7 @@ impl TryFrom<Vec<u8>> for OpenScreen {
 
 #[derive(Debug, Clone)]
 pub struct OpenSignEditor {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub is_front_text: bool,
 }
 
