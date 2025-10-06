@@ -2,7 +2,7 @@ use crate::types::*;
 use crate::entity::*;
 
 pub trait CreatableEntity: Entity + Send {
-  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self;
+  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: Vec<NbtTag>) -> Self;
   fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + std::marker::Send> {
     let entity_type = value.get_child("id").unwrap().as_string();
     let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
@@ -17,7 +17,7 @@ pub trait CreatableEntity: Entity + Send {
       .reduce(|a, b| a | b)
       .unwrap();
 
-    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id).unwrap();
+    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id, value.as_tag_compound()).unwrap();
   }
 }
 
@@ -49,8 +49,9 @@ pub trait Entity: std::fmt::Debug {
 }
 
 pub trait SaveableEntity: Entity + Send {
+  fn to_nbt_extras(&self) -> Vec<NbtTag>;
   fn to_nbt(&self) -> NbtListTag {
-    return NbtListTag::TagCompound(vec![
+    let default_tags = vec![
       NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
       NbtTag::List("Pos".to_string(), vec![
         NbtListTag::Double(self.get_x()),
@@ -66,26 +67,27 @@ pub trait SaveableEntity: Entity + Send {
         (self.get_uuid() << 32 >> 96) as i32,
         (self.get_uuid() << 64 >> 96) as i32,
         (self.get_uuid() << 96 >> 96) as i32,
-      ]),
-    ]);
+      ])];
+
+    return NbtListTag::TagCompound(vec![default_tags, self.to_nbt_extras()].into_iter().flatten().collect());
   }
 }
 
-pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Option<Box<dyn SaveableEntity + Send>> {
+pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, extra_nbt: Vec<NbtTag>) -> Option<Box<dyn SaveableEntity + Send>> {
   return match entity_type {
-	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(x, y, z, yaw, pitch, uuid, entity_id))),
-	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id))),
-	  "minecraft:chest_minecart" => Some(Box::new(ChestMinecart::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:chicken" => Some(Box::new(Chicken::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:cow" => Some(Box::new(Cow::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:donkey" => Some(Box::new(Donkey::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:horse" => Some(Box::new(Horse::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:item" => Some(Box::new(ItemEntity::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:parrot" => Some(Box::new(Parrot::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:pig" => Some(Box::new(Pig::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:rabbit" => Some(Box::new(Rabbit::new(x, y, z, yaw, pitch, uuid, entity_id))),
-    "minecraft:sheep" => Some(Box::new(Sheep::new(x, y, z, yaw, pitch, uuid, entity_id))),
+	  "minecraft:armadillo" => Some(Box::new(Armadillo::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+	  "minecraft:cat" => Some(Box::new(Cat::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+	  "minecraft:chest_minecart" => Some(Box::new(ChestMinecart::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:chicken" => Some(Box::new(Chicken::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:cow" => Some(Box::new(Cow::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:creeper" => Some(Box::new(Creeper::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:donkey" => Some(Box::new(Donkey::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:horse" => Some(Box::new(Horse::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:item" => Some(Box::new(ItemEntity::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:parrot" => Some(Box::new(Parrot::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:pig" => Some(Box::new(Pig::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:rabbit" => Some(Box::new(Rabbit::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
+			"minecraft:sheep" => Some(Box::new(Sheep::new(x, y, z, yaw, pitch, uuid, entity_id, extra_nbt))),
 			_ => None,
   };
 }

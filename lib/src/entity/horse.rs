@@ -12,12 +12,16 @@ pub struct Horse {
 }
 
 impl CreatableEntity for Horse {
-  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self {
+  fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32, _extra_nbt: Vec<NbtTag>) -> Self {
     return Self { x, y, z, yaw, pitch, uuid, entity_id };
   }
 }
 
-impl SaveableEntity for Horse {}
+impl SaveableEntity for Horse {
+  fn to_nbt_extras(&self) -> Vec<NbtTag> {
+    return vec![];
+  }
+}
 
 impl Entity for Horse {
   fn get_type(&self) -> i32 {
