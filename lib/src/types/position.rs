@@ -22,6 +22,37 @@ impl BlockPosition {
   }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct EntityPosition {
+  pub x: f64,
+  pub y: f64,
+  pub z: f64,
+  pub pitch: f32,
+  pub yaw: f32,
+}
+
+impl From<BlockPosition> for EntityPosition {
+  fn from(value: BlockPosition) -> Self {
+    return Self {
+      x: value.x as f64,
+      y: value.y as f64,
+      z: value.z as f64,
+      pitch: 0.0,
+      yaw: 0.0,
+    }
+  }
+}
+
+impl From<EntityPosition> for BlockPosition {
+  fn from(value: EntityPosition) -> Self {
+    return Self {
+      x: value.x as i32,
+      y: value.y as i16,
+      z: value.z as i32,
+    }
+  }
+}
+
 
 #[cfg(test)]
 mod test {
