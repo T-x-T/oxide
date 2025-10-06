@@ -17,28 +17,7 @@ impl CreatableEntity for ChestMinecart {
   }
 }
 
-impl SaveableEntity for ChestMinecart {
-  fn to_nbt(&self) -> NbtListTag {
-    return NbtListTag::TagCompound(vec![
-      NbtTag::String("id".to_string(), "minecraft:chest_minecart".to_string()),
-      NbtTag::List("Pos".to_string(), vec![
-        NbtListTag::Double(self.x),
-        NbtListTag::Double(self.y),
-        NbtListTag::Double(self.z),
-      ]),
-      NbtTag::List("Rotation".to_string(), vec![
-        NbtListTag::Float(self.yaw),
-        NbtListTag::Float(self.pitch),
-      ]),
-      NbtTag::IntArray("UUID".to_string(), vec![
-        (self.uuid >> 96) as i32,
-        (self.uuid << 32 >> 96) as i32,
-        (self.uuid << 64 >> 96) as i32,
-        (self.uuid << 96 >> 96) as i32,
-      ]),
-    ]);
-  }
-}
+impl SaveableEntity for ChestMinecart {}
 
 impl Entity for ChestMinecart {
   fn get_type(&self) -> i32 {
@@ -79,24 +58,5 @@ impl Entity for ChestMinecart {
 
   fn get_id(&self) -> i32 {
     return self.entity_id;
-  }
-}
-
-impl ChestMinecart {
-  pub fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Self {
-    return Self {
-      x: value.get_child("Pos").unwrap().as_list()[0].as_double(),
-      y: value.get_child("Pos").unwrap().as_list()[1].as_double(),
-      z: value.get_child("Pos").unwrap().as_list()[2].as_double(),
-      yaw: value.get_child("Rotation").unwrap().as_list()[0].as_float(),
-      pitch: value.get_child("Rotation").unwrap().as_list()[1].as_float(),
-      uuid: value.get_child("UUID").unwrap().as_int_array()
-        .into_iter()
-        .enumerate()
-        .map(|x| (x.1 as u128) << (32 * (3 - x.0)))
-        .reduce(|a, b| a | b)
-        .unwrap(),
-      entity_id: next_entity_id,
-    };
   }
 }

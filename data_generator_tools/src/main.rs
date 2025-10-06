@@ -69,6 +69,17 @@ fn do_entities() {
   println!("\t\t_ => panic!(\"get_id_from_name encountered entity with name {{name}} that doesnt exist\"),");
   println!("\t}};");
   println!("}}");
+  println!("\n");
+  println!("pub fn get_name_from_id(id: i32) -> String {{");
+  println!("\treturn match id {{");
+
+  for entry in registry.iter() {
+    println!("\t\t{} => \"{}\".to_string(),", entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap(), entry.0);
+  }
+
+  println!("\t\t_ => panic!(\"get_name_from_id encountered entity with id {{id}} that doesnt exist\"),");
+  println!("\t}};");
+  println!("}}");
 }
 
 fn do_blocks() {

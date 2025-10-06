@@ -1,8 +1,24 @@
 use crate::types::*;
 use crate::entity::*;
 
-pub trait CreatableEntity {
+pub trait CreatableEntity: Entity + Send {
   fn new(x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Self;
+  fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + std::marker::Send> {
+    let entity_type = value.get_child("id").unwrap().as_string();
+    let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
+    let y = value.get_child("Pos").unwrap().as_list()[1].as_double();
+    let z = value.get_child("Pos").unwrap().as_list()[2].as_double();
+    let yaw = value.get_child("Rotation").unwrap().as_list()[0].as_float();
+    let pitch = value.get_child("Rotation").unwrap().as_list()[1].as_float();
+    let uuid = value.get_child("UUID").unwrap().as_int_array()
+      .into_iter()
+      .enumerate()
+      .map(|x| (x.1 as u128) << (32 * (3 - x.0)))
+      .reduce(|a, b| a | b)
+      .unwrap();
+
+    return self::new(entity_type, x, y, z, yaw, pitch, uuid, next_entity_id).unwrap();
+  }
 }
 
 pub trait Entity: std::fmt::Debug {
@@ -33,7 +49,26 @@ pub trait Entity: std::fmt::Debug {
 }
 
 pub trait SaveableEntity: Entity + Send {
-  fn to_nbt(&self) -> NbtListTag;
+  fn to_nbt(&self) -> NbtListTag {
+    return NbtListTag::TagCompound(vec![
+      NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
+      NbtTag::List("Pos".to_string(), vec![
+        NbtListTag::Double(self.get_x()),
+        NbtListTag::Double(self.get_y()),
+        NbtListTag::Double(self.get_z()),
+      ]),
+      NbtTag::List("Rotation".to_string(), vec![
+        NbtListTag::Float(self.get_yaw()),
+        NbtListTag::Float(self.get_pitch()),
+      ]),
+      NbtTag::IntArray("UUID".to_string(), vec![
+        (self.get_uuid() >> 96) as i32,
+        (self.get_uuid() << 32 >> 96) as i32,
+        (self.get_uuid() << 64 >> 96) as i32,
+        (self.get_uuid() << 96 >> 96) as i32,
+      ]),
+    ]);
+  }
 }
 
 pub fn new(entity_type: &str, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, uuid: u128, entity_id: i32) -> Option<Box<dyn SaveableEntity + Send>> {
