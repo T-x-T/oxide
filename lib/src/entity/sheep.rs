@@ -1,16 +1,13 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Sheep {
-  pub position: EntityPosition,
-  pub velocity: EntityPosition,
-  pub uuid: u128,
-  pub entity_id: i32,
+  pub common: CommonEntity,
 }
 
 impl CreatableEntity for Sheep {
-  fn new(position: EntityPosition, velocity: EntityPosition, uuid: u128, entity_id: i32, _extra_nbt: NbtListTag) -> Self {
-    return Self { position, velocity, uuid, entity_id };
+  fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
+    return Self { common: data };
   }
 }
 
@@ -25,31 +22,19 @@ impl Entity for Sheep {
     return data::entities::get_id_from_name("minecraft:sheep");
   }
 
-  fn get_position(&self) -> EntityPosition {
-	 	return self.position;
-  }
-
-  fn get_uuid(&self) -> u128 {
-    return self.uuid;
-  }
-
-  fn get_id(&self) -> i32 {
-    return self.entity_id;
-  }
-
   fn get_metadata(&self) -> Vec<EntityMetadata> {
     return Vec::new();
   }
 
-  fn set_position(&mut self, position: EntityPosition) {
-    self.position = position;
+  fn get_common_entity_data(&self) -> &CommonEntity {
+    return &self.common;
   }
 
-  fn get_velocity(&self) -> EntityPosition {
-    return self.velocity;
+  fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+    return &mut self.common;
   }
 
-  fn set_velocity(&mut self, velocity: EntityPosition) {
-    self.velocity = velocity;
+  fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
+    self.common = common_entity_data;
   }
 }

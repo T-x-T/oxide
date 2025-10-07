@@ -1,4 +1,4 @@
-use lib::ConnectionState;
+use lib::{entity::CommonEntity, ConnectionState};
 
 use super::*;
 
@@ -32,10 +32,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	let new_entity = entity::new(
 	  command.replace("summon ", "").as_str(),
-		position,
-		EntityPosition::default(),
-		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-		game.last_created_entity_id,
+		CommonEntity {
+  		position,
+  		velocity: EntityPosition::default(),
+  		uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+  		entity_id: game.last_created_entity_id,
+      ..Default::default()
+		},
 		NbtListTag::TagCompound(Vec::new()),
 	);
 
@@ -52,8 +55,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	};
 
 	let packet = lib::packets::clientbound::play::SpawnEntity {
-    entity_id: new_entity.get_id(),
-    entity_uuid: new_entity.get_uuid(),
+    entity_id: new_entity.get_common_entity_data().entity_id,
+    entity_uuid: new_entity.get_common_entity_data().uuid,
     entity_type: new_entity.get_type(),
     x: position.x,
     y: position.y,

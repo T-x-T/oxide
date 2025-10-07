@@ -166,7 +166,7 @@ fn tick(game: Arc<Mutex<Game>>) {
 
     let mut entities = std::mem::take(&mut dimension.1.entities);
     for entity in &mut entities {
-      entity.tick(dimension.1.get_chunk_from_position(entity.get_position().into()).unwrap(), &players);
+      entity.tick(dimension.1.get_chunk_from_position(entity.get_common_entity_data().position.into()).unwrap(), &players);
     }
     dimension.1.entities = entities;
   }

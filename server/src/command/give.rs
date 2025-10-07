@@ -1,4 +1,4 @@
-use lib::{entity::ItemEntity, ConnectionState};
+use lib::{entity::{CommonEntity, ItemEntity}, ConnectionState};
 
 use super::*;
 
@@ -32,10 +32,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	game.last_created_entity_id += 1;
 
 	let new_entity = ItemEntity {
-	  position,
-		velocity: EntityPosition::default(),
-    uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-    entity_id: game.last_created_entity_id,
+    common: CommonEntity {
+      position,
+  		velocity: EntityPosition::default(),
+      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+      entity_id: game.last_created_entity_id,
+      ..Default::default()
+    },
     age: 0,
     health: 5,
     item: Item { id: command.replace("give ", ""), count: 1, components: Vec::new() },
@@ -45,8 +48,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	};
 
 	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
-    entity_id: new_entity.get_id(),
-    entity_uuid: new_entity.get_uuid(),
+    entity_id: new_entity.get_common_entity_data().entity_id,
+    entity_uuid: new_entity.get_common_entity_data().uuid,
     entity_type: new_entity.get_type(),
     x: position.x,
     y: position.y,
@@ -61,7 +64,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	};
 
 	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-    entity_id: new_entity.get_id(),
+    entity_id: new_entity.get_common_entity_data().entity_id,
     metadata: new_entity.get_metadata(),
 	};
 

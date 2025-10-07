@@ -1,11 +1,8 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ItemEntity {
-  pub position: EntityPosition,
-  pub velocity: EntityPosition,
-  pub uuid: u128,
-  pub entity_id: i32,
+  pub common: CommonEntity,
   pub age: i16,
   pub health: i16,
   pub item: Item,
@@ -15,9 +12,9 @@ pub struct ItemEntity {
 }
 
 impl CreatableEntity for ItemEntity {
-  fn new(position: EntityPosition, velocity: EntityPosition, uuid: u128, entity_id: i32, extra_nbt: NbtListTag) -> Self {
+  fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
     return Self {
-      position, velocity, uuid, entity_id,
+      common: data,
       age: extra_nbt.get_child("Age").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short(),
       health: extra_nbt.get_child("Health").unwrap_or(&NbtTag::Short(String::new(), 5)).as_short(),
       item: Item {
@@ -53,17 +50,17 @@ impl SaveableEntity for ItemEntity {
         NbtTag::TagCompound("components".to_string(), Vec::new()),
       ]),
       NbtTag::IntArray("Owner".to_string(), vec![
-        (self.get_uuid() >> 96) as i32,
-        (self.get_uuid() << 32 >> 96) as i32,
-        (self.get_uuid() << 64 >> 96) as i32,
-        (self.get_uuid() << 96 >> 96) as i32,
+        (self.owner >> 96) as i32,
+        (self.owner << 32 >> 96) as i32,
+        (self.owner << 64 >> 96) as i32,
+        (self.owner << 96 >> 96) as i32,
       ]),
       NbtTag::Short("PickupDelay".to_string(), self.pickup_delay),
       NbtTag::IntArray("Thrower".to_string(), vec![
-        (self.get_uuid() >> 96) as i32,
-        (self.get_uuid() << 32 >> 96) as i32,
-        (self.get_uuid() << 64 >> 96) as i32,
-        (self.get_uuid() << 96 >> 96) as i32,
+        (self.thrower >> 96) as i32,
+        (self.thrower << 32 >> 96) as i32,
+        (self.thrower << 64 >> 96) as i32,
+        (self.thrower << 96 >> 96) as i32,
       ]),
     ];
   }
@@ -72,18 +69,6 @@ impl SaveableEntity for ItemEntity {
 impl Entity for ItemEntity {
   fn get_type(&self) -> i32 {
     return data::entities::get_id_from_name("minecraft:item");
-  }
-
-  fn get_position(&self) -> EntityPosition {
-	 	return self.position;
-  }
-
-  fn get_uuid(&self) -> u128 {
-    return self.uuid;
-  }
-
-  fn get_id(&self) -> i32 {
-    return self.entity_id;
   }
 
   fn get_metadata(&self) -> Vec<EntityMetadata> {
@@ -100,15 +85,15 @@ impl Entity for ItemEntity {
     ];
   }
 
-  fn set_position(&mut self, position: EntityPosition) {
-    self.position = position;
+  fn get_common_entity_data(&self) -> &CommonEntity {
+    return &self.common;
   }
 
-  fn get_velocity(&self) -> EntityPosition {
-    return self.velocity;
+  fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+    return &mut self.common;
   }
 
-  fn set_velocity(&mut self, velocity: EntityPosition) {
-    self.velocity = velocity;
+  fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
+    self.common = common_entity_data;
   }
 }

@@ -1,5 +1,6 @@
 use super::*;
 use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}, ConnectionState};
+use crate::entity::CommonEntity;
 use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
@@ -15,7 +16,7 @@ pub struct Player {
   z: f64,
   yaw: f32,
   pitch: f32,
-  velocity: EntityPosition,
+  pub velocity: EntityPosition,
   pub display_name: String,
   pub uuid: u128,
   pub peer_socket_address: SocketAddr,
@@ -60,18 +61,6 @@ impl Entity for Player {
     return 149;
   }
 
-  fn get_position(&self) -> EntityPosition {
-	 	return EntityPosition { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch };
-  }
-
-  fn get_uuid(&self) -> u128 {
-    return self.uuid;
-  }
-
-  fn get_id(&self) -> i32 {
-    return self.entity_id;
-  }
-
   fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
     return vec![
       crate::packets::clientbound::play::EntityMetadata {
@@ -85,22 +74,16 @@ impl Entity for Player {
     ];
   }
 
-
-//TODO: actually use this function maybe? (prolly difficult atm because the other one needs acces to Game)
-  fn set_position(&mut self, position: EntityPosition) {
-    self.x = position.x;
-    self.y = position.y;
-    self.z = position.z;
-    self.pitch = position.pitch;
-    self.yaw = position.yaw;
+  fn get_common_entity_data(&self) -> &CommonEntity {
+    todo!();
   }
 
-  fn get_velocity(&self) -> EntityPosition {
-    return self.velocity;
+  fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+    todo!();
   }
 
-  fn set_velocity(&mut self, velocity: EntityPosition) {
-    self.velocity = velocity;
+  fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
+    todo!();
   }
 }
 
@@ -633,6 +616,16 @@ impl Player {
           EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }
         ],
 			}.try_into().unwrap()).unwrap();
+		}
+	}
+
+	pub fn get_position(&self) -> EntityPosition {
+	  return EntityPosition {
+      x: self.x,
+      y: self.y,
+      z: self.z,
+      yaw: self.yaw,
+      pitch: self.pitch,
 		}
 	}
 }

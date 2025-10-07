@@ -821,12 +821,12 @@ use super::*;
 
     for entity in &game.world.dimensions.get("minecraft:overworld").unwrap().entities {
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
-        entity_id: entity.get_id(),
-        entity_uuid: entity.get_uuid(),
+        entity_id: entity.get_common_entity_data().entity_id,
+        entity_uuid: entity.get_common_entity_data().uuid,
         entity_type: entity.get_type(),
-        x: entity.get_position().x,
-        y: entity.get_position().y,
-        z: entity.get_position().z,
+        x: entity.get_common_entity_data().position.x,
+        y: entity.get_common_entity_data().position.y,
+        z: entity.get_common_entity_data().position.z,
         pitch: entity.get_pitch_u8(),
         yaw: entity.get_yaw_u8(),
         head_yaw: entity.get_yaw_u8(),
@@ -837,7 +837,7 @@ use super::*;
    	  }.try_into()?)?;
 
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
-        entity_id: entity.get_id(),
+        entity_id: entity.get_common_entity_data().entity_id,
         metadata: entity.get_metadata(),
       }.try_into()?)?;
     }
