@@ -123,19 +123,49 @@ pub trait Entity: std::fmt::Debug {
     let mut y_to_check = current_tick_y;
     let mut encountered_block = false;
     while y_to_check >= next_tick_y {
-      let position_to_check = BlockPosition {
-        y: y_to_check,
-        ..self.get_position().into()
-      };
-      let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
-      if block_at_location != 0 {
-        encountered_block = true;
+      let positions_to_check = vec![
+        BlockPosition {
+          y: y_to_check,
+          ..next_entity_position.into()
+        },
+        BlockPosition {
+          x: (next_entity_position.x - (self.get_hitbox().1 * 0.5)).floor() as i32,
+          y: y_to_check,
+          z: (next_entity_position.z - (self.get_hitbox().1 * 0.5)).floor() as i32,
+        },
+        BlockPosition {
+          x: (next_entity_position.x - (self.get_hitbox().1 * 0.5)).floor() as i32,
+          y: y_to_check,
+          z: (next_entity_position.z + (self.get_hitbox().1 * 0.5)).floor() as i32,
+        },
+        BlockPosition {
+          x: (next_entity_position.x + (self.get_hitbox().1 * 0.5)).floor() as i32,
+          y: y_to_check,
+          z: (next_entity_position.z - (self.get_hitbox().1 * 0.5)).floor() as i32,
+        },
+        BlockPosition {
+          x: (next_entity_position.x + (self.get_hitbox().1 * 0.5)).floor() as i32,
+          y: y_to_check,
+          z: (next_entity_position.z + (self.get_hitbox().1 * 0.5)).floor() as i32,
+        },
+      ];
+
+      for position_to_check in positions_to_check {
+        let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
+        if block_at_location != 0 {
+          encountered_block = true;
+        }
       }
 
       y_to_check -= 1;
     }
 
     return encountered_block;
+  }
+
+  //(height, width) https://minecraft.wiki/w/Hitbox
+  fn get_hitbox(&self) -> (f64, f64) {
+    return (1.7, 0.6);
   }
 }
 
