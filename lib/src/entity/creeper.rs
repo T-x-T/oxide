@@ -3,17 +3,20 @@ use super::*;
 #[derive(Debug)]
 pub struct Creeper {
   pub common: CommonEntity,
+  pub mob: CommonMob,
 }
 
 impl CreatableEntity for Creeper {
-  fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
-    return Self { common: data };
+  fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
+    let mob = CommonMob::from_nbt(extra_nbt);
+
+    return Self { common: data, mob };
   }
 }
 
 impl SaveableEntity for Creeper {
   fn to_nbt_extras(&self) -> Vec<NbtTag> {
-    return vec![];
+    return self.mob.to_nbt();
   }
 }
 

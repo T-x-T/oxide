@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::types::*;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 
@@ -51,4 +53,33 @@ pub struct CommonEntity {
   pub is_silent: bool,
   pub scoreboard_tags: Vec<NbtListTag>,
   pub ticks_frozen: i32,
+}
+
+#[derive(Debug, Default)]
+pub struct CommonMob {
+  pub absorption_amount: f32,
+  pub active_effects: Vec<NbtListTag>,
+  pub attributes: Vec<NbtListTag>,
+  pub brain: NbtTag,
+  pub can_pick_up_loot: bool,
+  pub death_loot_table: Option<String>,
+  pub death_loot_table_seed: Option<i64>,
+  pub death_time: i16,
+  pub drop_chances: NbtTag,
+  pub equipment: HashMap<String, Item>,
+  pub fall_flying: u8,
+  pub health: f32,
+  pub home_location: (i32, i32, i32),
+  pub home_radius: i32,
+  pub hurt_by_timestamp: i32,
+  pub hurt_time: i16,
+  pub leashed_block: Option<(i32, i32, i32)>,
+  pub leashed_entity: Option<u128>,
+  pub is_left_handed: bool,
+  pub locator_bar_icon_color: Option<i32>,
+  pub locator_bar_icon_style: Option<String>,
+  pub has_no_ai: bool,
+  pub is_persistance_required: bool,
+  pub sleeping_location: Option<(i32, i32, i32)>,
+  pub team: Option<String>,
 }

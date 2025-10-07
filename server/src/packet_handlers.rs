@@ -51,6 +51,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::PlayerInput::PACKET_ID => play::player_input(stream, &mut packet.data, game, connection_streams, connections),
+      lib::packets::serverbound::play::Interact::PACKET_ID => play::interact(stream, &mut packet.data, game, connection_streams, connections),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -1373,6 +1374,16 @@ pub mod play {
     } else {
       player.set_sneaking(false, connection_streams, connections);
     }
+
+    return Ok(None);
+  }
+
+  pub fn interact(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
+    let parsed_packet = lib::packets::serverbound::play::Interact::try_from(data.to_vec())?;
+
+    let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+
+
 
     return Ok(None);
   }

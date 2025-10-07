@@ -315,19 +315,6 @@ pub enum BlockEntityData {
 }
 
 #[derive(Debug, Clone)]
-pub struct Item {
-  pub id: String,
-  pub count: u8,
-  pub components: Vec<SlotComponent>,
-}
-
-impl Default for Item {
-  fn default() -> Self {
-    Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
-  }
-}
-
-#[derive(Debug, Clone)]
 pub struct Bee {
   entity_data: Vec<NbtTag>,
   min_ticks_in_hive: i32,
@@ -365,12 +352,12 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       ],
       BlockEntityData::Chest(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Furnace(block_entity_data_items, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
           NbtTag::Short("lit_time_remaining".to_string(), lit_time_remaining),
           NbtTag::Short("cooking_time_spent".to_string(), cooking_time_spent),
           NbtTag::Short("cooking_total_time".to_string(), cooking_total_time),
@@ -379,22 +366,22 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       },
       BlockEntityData::BrewingStand(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Crafter(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Dispenser(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Hopper(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Beacon(primary_effect, secondary_effect) => {
@@ -437,14 +424,14 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       },
       BlockEntityData::Campfire(cooking_times, cooking_total_times, items) => {
         vec![
-          items_to_nbt(items),
+          items.into(),
           NbtTag::IntArray("CookingTimes".to_string(), cooking_times),
           NbtTag::IntArray("CookingTotalTimes".to_string(), cooking_total_times),
         ]
       },
       BlockEntityData::ChiseledBookShelf(items, last_interacted_slot) => {
         vec![
-          items_to_nbt(items),
+          items.into(),
           NbtTag::Int("last_interacted_slot".to_string(), last_interacted_slot),
         ]
       },
@@ -516,28 +503,6 @@ impl From<BlockEntityData> for Vec<NbtTag> {
         output
       },
       BlockEntityData::NoData => Vec::new(),
-    };
-  }
-}
-
-fn items_to_nbt(block_entity_data_items: Vec<Item>) -> NbtTag {
-  return NbtTag::List("Items".to_string(), block_entity_data_items.iter().enumerate().filter(|(_, item)| item.id != "minecraft:air" && item.count != 0).map(|(i, item)| {
-    NbtListTag::TagCompound(vec![
-      NbtTag::Byte("Slot".to_string(), i as u8),
-      NbtTag::String("id".to_string(), item.id.clone()),
-      NbtTag::Int("count".to_string(), item.count as i32),
-      NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
-    ])
-  }).collect());
-}
-
-impl From<&Item> for Slot {
-  fn from(value: &Item) -> Self {
-    return Slot {
-      item_count: value.count as i32,
-      item_id: data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id,
-      components_to_add: value.components.clone(),
-      components_to_remove: Vec::new()
     };
   }
 }

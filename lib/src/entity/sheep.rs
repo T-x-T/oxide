@@ -3,11 +3,14 @@ use super::*;
 #[derive(Debug)]
 pub struct Sheep {
   pub common: CommonEntity,
+  pub mob: CommonMob,
 }
 
 impl CreatableEntity for Sheep {
-  fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
-    return Self { common: data };
+  fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
+    let mob = CommonMob::from_nbt(extra_nbt);
+
+    return Self { common: data, mob };
   }
 }
 

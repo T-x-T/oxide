@@ -85,6 +85,22 @@ impl Entity for Player {
   fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
     todo!();
   }
+
+  fn get_yaw_u8(&self) -> u8 {
+    return if self.yaw < 0.0 {
+      (((self.yaw / 90.0) * 64.0) + 256.0) as u8
+    } else {
+     	((self.yaw / 90.0) * 64.0) as u8
+    };
+  }
+
+  fn get_pitch_u8(&self) -> u8 {
+    return if self.pitch < 0.0 {
+      (((self.pitch / 90.0) * 64.0) + 256.0) as u8
+    } else {
+     	((self.pitch / 90.0) * 64.0) as u8
+    };
+  }
 }
 
 impl Player {
