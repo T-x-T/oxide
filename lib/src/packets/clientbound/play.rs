@@ -504,6 +504,46 @@ impl TryFrom<Vec<u8>> for SetContainerSlot {
 	}
 }
 
+//
+// MARK: 0x1e entity event
+//
+
+#[derive(Debug, Clone)]
+pub struct EntityEvent {
+	pub entity_id: i32,
+	pub entity_status: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Entity_statuses
+}
+
+impl Packet for EntityEvent {
+	const PACKET_ID: u8 = 0x1e;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<EntityEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: EntityEvent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::int(value.entity_id));
+		output.push(value.entity_status);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for EntityEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::int(&mut value)?,
+			entity_status: value.remove(0),
+		});
+	}
+}
+
 
 //
 // MARK: 0x1f teleport entity
@@ -605,6 +645,46 @@ impl TryFrom<Vec<u8>> for GameEvent {
 		return Ok(Self {
 			event: value.remove(0),
 			value: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x24 Hurt Animation
+//
+
+#[derive(Debug, Clone)]
+pub struct HurtAnimation {
+	pub entity_id: i32,
+	pub yaw: f32,
+}
+
+impl Packet for HurtAnimation {
+	const PACKET_ID: u8 = 0x24;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<HurtAnimation> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: HurtAnimation) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::float(value.yaw));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for HurtAnimation {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
 		});
 	}
 }

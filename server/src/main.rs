@@ -165,10 +165,40 @@ fn tick(game: Arc<Mutex<Game>>) {
     }
 
     let mut entities = std::mem::take(&mut dimension.1.entities);
+    let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
     for entity in &mut entities {
-      entity.tick(dimension.1.get_chunk_from_position(entity.get_common_entity_data().position.into()).unwrap(), &players);
+      let outcome = entity.tick(dimension.1.get_chunk_from_position(entity.get_common_entity_data().position.into()).unwrap(), &players);
+      if outcome != EntityTickOutcome::None {
+        entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
+      }
     }
     dimension.1.entities = entities;
+    for outcome in entity_tick_outcomes {
+      match outcome.1 {
+        EntityTickOutcome::SelfDied => {
+          let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
+            entity_id: outcome.0,
+            entity_status: 3,
+          };
+
+          for player in &players {
+            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::EntityEvent::PACKET_ID, entity_event_packet.clone().try_into().unwrap()).unwrap();
+          }
+        },
+        EntityTickOutcome::RemoveSelf => {
+          let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
+            entity_ids: vec![outcome.0],
+          };
+
+          for player in &players {
+            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap()).unwrap();
+          }
+
+          dimension.1.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
+        }
+        EntityTickOutcome::None => (),
+      }
+    }
   }
   drop(game);
 }

@@ -20,6 +20,18 @@ impl SaveableEntity for Armadillo {
   }
 }
 
+impl Default for Armadillo {
+  fn default() -> Self {
+    Self {
+      common: Default::default(),
+      mob: CommonMob {
+        health: 20.0,
+        ..Default::default()
+      }
+    }
+  }
+}
+
 impl Entity for Armadillo {
   fn get_type(&self) -> i32 {
     return data::entities::get_id_from_name("minecraft:armadillo");
@@ -39,5 +51,21 @@ impl Entity for Armadillo {
 
   fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
     self.common = common_entity_data;
+  }
+
+  fn is_mob(&self) -> bool {
+    return true;
+  }
+
+  fn get_mob_data(&self) -> &CommonMob {
+    return &self.mob;
+  }
+
+  fn get_mob_data_mut(&mut self) -> &mut CommonMob {
+    return &mut self.mob;
+  }
+
+  fn set_mob_data(&mut self, common_mob_data: CommonMob) {
+    self.mob = common_mob_data;
   }
 }

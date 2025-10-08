@@ -82,4 +82,5 @@ pub struct CommonMob {
   pub is_persistance_required: bool,
   pub sleeping_location: Option<(i32, i32, i32)>,
   pub team: Option<String>,
+  pub alive_for_ticks: i32,
 }

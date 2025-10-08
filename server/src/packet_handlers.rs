@@ -881,7 +881,7 @@ use super::*;
 }
 
 pub mod play {
-  use lib::{nbt::NbtTag, packets::Packet, utils::send_packet};
+  use lib::{nbt::NbtTag, packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, Packet}, utils::send_packet};
   use super::*;
 
   pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
@@ -1381,9 +1381,48 @@ pub mod play {
   pub fn interact(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
     let parsed_packet = lib::packets::serverbound::play::Interact::try_from(data.to_vec())?;
 
-    let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let player = game.players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let held_item = player.get_held_item(true);
+    let damage = if held_item.is_some() {
+      10.0
+    } else {
+      1.0
+    };
 
+    let Some(entity) = game.world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
+      return Ok(None);
+    };
+    let entity_id = entity.get_common_entity_data().entity_id;
 
+    if entity.is_mob() {
+      let mob_data = entity.get_mob_data_mut();
+
+      mob_data.health -= damage;
+      mob_data.hurt_time = 40;
+      mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
+
+      let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+        entity_id,
+        metadata: vec![
+          EntityMetadata {
+            index: 9,
+            value: EntityMetadataValue::Float(mob_data.health)
+          },
+        ],
+      };
+
+      let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
+        entity_id,
+        yaw: 0.0,
+      };
+
+      connection_streams.iter()
+        .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+        .for_each(|x| {
+          lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, entity_metadata_packet.clone().try_into().unwrap()).unwrap();
+          lib::utils::send_packet(x.1, lib::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet.clone().try_into().unwrap()).unwrap();
+        });
+    }
 
     return Ok(None);
   }

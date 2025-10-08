@@ -1,9 +1,15 @@
 use std::collections::HashMap;
-use std::hash::Hash;
 
 use crate::packets::Packet;
 use crate::types::*;
 use crate::entity::*;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum EntityTickOutcome {
+  SelfDied,
+  RemoveSelf,
+  None,
+}
 
 pub trait CreatableEntity: Entity + Send {
   fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
@@ -115,6 +121,19 @@ pub trait Entity: std::fmt::Debug {
   fn get_type(&self) -> i32;
   fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
 
+  fn is_mob(&self) -> bool {
+    return false;
+  }
+  fn get_mob_data(&self) -> &CommonMob {
+    panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
+  }
+  fn get_mob_data_mut(&mut self) -> &mut CommonMob {
+    panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
+  }
+  fn set_mob_data(&mut self, _common_mob_data: CommonMob) {
+    panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
+  }
+
   fn get_yaw_u8(&self) -> u8 {
     return if self.get_common_entity_data().position.yaw < 0.0 {
       (((self.get_common_entity_data().position.yaw / 90.0) * 64.0) + 256.0) as u8
@@ -131,7 +150,32 @@ pub trait Entity: std::fmt::Debug {
     };
   }
 
-  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>) {
+  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>) -> EntityTickOutcome {
+    if self.is_mob() {
+      let mob_data = self.get_mob_data_mut();
+
+      if mob_data.death_time == 20 {
+        return EntityTickOutcome::RemoveSelf;
+      }
+
+      if mob_data.death_time > 0 {
+        mob_data.death_time += 1;
+        return EntityTickOutcome::None;
+      }
+
+      mob_data.alive_for_ticks += 1;
+
+      if mob_data.hurt_time > 0 {
+        mob_data.hurt_time -= 1;
+      }
+
+      if mob_data.health <= 0.0 {
+        mob_data.death_time = 1;
+        return EntityTickOutcome::SelfDied;
+      }
+    }
+
+
     let old_position = self.get_common_entity_data().position;
 
     if !self.is_on_ground(chunk) {
@@ -170,6 +214,8 @@ pub trait Entity: std::fmt::Debug {
         crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, packet.clone().try_into().unwrap()).unwrap();
       }
     }
+
+    return EntityTickOutcome::None;
   }
 
   fn is_on_ground(&self, chunk: &Chunk) -> bool {
@@ -305,7 +351,7 @@ impl CommonMob {
       if let Some(x) = value.get_child("saddle") { equipment.insert("saddle".to_string(), x.clone().into()); }
     }
     if let Some(value) = data.get_child("fall_flying") { output.fall_flying = value.as_byte(); }
-    if let Some(value) = data.get_child("health") { output.health = value.as_float(); }
+    if let Some(value) = data.get_child("health") { output.health = value.as_float(); } else { output.health = 20.0 }
     if let Some(value) = data.get_child("home_pos") { output.home_location = ( value.as_int_array()[0], value.as_int_array()[1], value.as_int_array()[2] ); }
     if let Some(value) = data.get_child("home_radius") { output.home_radius = value.as_int(); }
     if let Some(value) = data.get_child("HurtByTimestamp") { output.hurt_by_timestamp = value.as_int(); }
