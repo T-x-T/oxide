@@ -150,7 +150,7 @@ pub trait Entity: std::fmt::Debug {
     };
   }
 
-  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>) -> EntityTickOutcome {
+  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>) -> EntityTickOutcome {
     if self.is_mob() {
       let mob_data = self.get_mob_data_mut();
 
@@ -179,7 +179,7 @@ pub trait Entity: std::fmt::Debug {
     let old_position = self.get_common_entity_data().position;
 
     if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
-      if self.is_on_ground(chunk) {
+      if self.is_on_ground(chunk, block_state_data) {
           self.get_common_entity_data_mut().velocity.x = 0.0;
           self.get_common_entity_data_mut().velocity.y = 0.0;
           self.get_common_entity_data_mut().velocity.z = 0.0;
@@ -211,7 +211,7 @@ pub trait Entity: std::fmt::Debug {
         delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
         delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
         delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-        on_ground: self.is_on_ground(chunk),
+        on_ground: self.is_on_ground(chunk, block_state_data),
       };
 
       for player in players {
@@ -222,7 +222,7 @@ pub trait Entity: std::fmt::Debug {
     return EntityTickOutcome::None;
   }
 
-  fn is_on_ground(&self, chunk: &Chunk) -> bool {
+  fn is_on_ground(&self, chunk: &Chunk, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
     let position = self.get_common_entity_data().position;
     let velocity = self.get_common_entity_data().velocity;
     let next_entity_position = EntityPosition {
@@ -267,7 +267,8 @@ pub trait Entity: std::fmt::Debug {
 
       for position_to_check in positions_to_check {
         let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
-        if block_at_location != 0 {
+        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data); //TODO pass the blocks in from somewhere!!
+        if block_type_at_location.is_solid() {
           encountered_block = true;
         }
       }

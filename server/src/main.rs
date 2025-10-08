@@ -37,6 +37,7 @@ fn initialize_server() {
     chat_message_index: 0,
     commands: Vec::new(),
     last_save_all_timestamp: std::time::Instant::now(),
+    block_state_data: data::blocks::get_blocks(),
   };
   game.last_created_entity_id = *next_entity_id;
   command::init(&mut game);
@@ -154,6 +155,9 @@ fn tick(game: Arc<Mutex<Game>>) {
   }
 
   let mut game = game.lock().unwrap();
+
+  let block_state_data = std::mem::take(&mut game.block_state_data);
+
   let players = game.players.clone();
   for dimension in &mut game.world.dimensions {
     for chunk in &mut dimension.1.chunks {
@@ -169,7 +173,9 @@ fn tick(game: Arc<Mutex<Game>>) {
     for entity in &mut entities {
       let chunk = dimension.1.get_chunk_from_position(entity.get_common_entity_data().position.into());
       if let Some(chunk) = chunk {
-        let outcome = entity.tick(chunk, &players);
+        let now = std::time::Instant::now();
+        let outcome = entity.tick(chunk, &players, &block_state_data);
+        println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
         if outcome != EntityTickOutcome::None {
           entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
         }
@@ -203,5 +209,8 @@ fn tick(game: Arc<Mutex<Game>>) {
       }
     }
   }
+
+  game.block_state_data = block_state_data;
+
   drop(game);
 }
