@@ -429,7 +429,7 @@ fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: 
     last_chunk_len = locations_table[i].1;
   }
 
-  if !region_file_path.exists() {
+  if !region_file_path.parent().unwrap().exists() {
     std::fs::create_dir(region_file_path.clone().parent().unwrap()).unwrap();
   }
 

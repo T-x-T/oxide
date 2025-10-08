@@ -1397,8 +1397,12 @@ pub mod play {
     if entity.is_mob() {
       let mob_data = entity.get_mob_data_mut();
 
+      if mob_data.hurt_time > 0 {
+        return Ok(None);
+      }
+
       mob_data.health -= damage;
-      mob_data.hurt_time = 40;
+      mob_data.hurt_time = 5;
       mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
 
       let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
@@ -1414,6 +1418,16 @@ pub mod play {
       let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
         entity_id,
         yaw: 0.0,
+      };
+
+      let entity_data = entity.get_common_entity_data_mut();
+      entity_data.velocity.y += 0.05;
+
+      match player.get_looking_cardinal_direction() {
+        CardinalDirection::North => entity_data.velocity.z -= 0.1,
+        CardinalDirection::East => entity_data.velocity.x += 0.1,
+        CardinalDirection::South => entity_data.velocity.z += 0.1,
+        CardinalDirection::West => entity_data.velocity.x -= 0.1,
       };
 
       connection_streams.iter()

@@ -178,10 +178,14 @@ pub trait Entity: std::fmt::Debug {
 
     let old_position = self.get_common_entity_data().position;
 
-    if !self.is_on_ground(chunk) {
-      self.get_common_entity_data_mut().velocity.y -= 0.08;
-    } else {
-      self.get_common_entity_data_mut().velocity.y = 0.0;
+    if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
+      if self.is_on_ground(chunk) {
+          self.get_common_entity_data_mut().velocity.x = 0.0;
+          self.get_common_entity_data_mut().velocity.y = 0.0;
+          self.get_common_entity_data_mut().velocity.z = 0.0;
+      } else {
+        self.get_common_entity_data_mut().velocity.y -= 0.08;
+      }
     }
 
     //the order in which these are applied differs between different entities, see https://minecraft.wiki/w/Entity#Motion
@@ -204,9 +208,9 @@ pub trait Entity: std::fmt::Debug {
     if old_position != self.get_common_entity_data().position {
       let packet = crate::packets::clientbound::play::UpdateEntityPosition {
         entity_id: self.get_common_entity_data().entity_id,
-        delta_x: 0,
+        delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
         delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-        delta_z: 0,
+        delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
         on_ground: self.is_on_ground(chunk),
       };
 
@@ -351,7 +355,7 @@ impl CommonMob {
       if let Some(x) = value.get_child("saddle") { equipment.insert("saddle".to_string(), x.clone().into()); }
     }
     if let Some(value) = data.get_child("fall_flying") { output.fall_flying = value.as_byte(); }
-    if let Some(value) = data.get_child("health") { output.health = value.as_float(); } else { output.health = 20.0 }
+    if let Some(value) = data.get_child("health") { output.health = value.as_float(); } else { output.health = 20.0 } //TODO: find a proper way to assign default values like health
     if let Some(value) = data.get_child("home_pos") { output.home_location = ( value.as_int_array()[0], value.as_int_array()[1], value.as_int_array()[2] ); }
     if let Some(value) = data.get_child("home_radius") { output.home_radius = value.as_int(); }
     if let Some(value) = data.get_child("HurtByTimestamp") { output.hurt_by_timestamp = value.as_int(); }

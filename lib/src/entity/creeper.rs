@@ -20,18 +20,6 @@ impl SaveableEntity for Creeper {
   }
 }
 
-impl Default for Creeper {
-  fn default() -> Self {
-    Self {
-      common: Default::default(),
-      mob: CommonMob {
-        health: 20.0,
-        ..Default::default()
-      }
-    }
-  }
-}
-
 impl Entity for Creeper {
   fn get_type(&self) -> i32 {
     return data::entities::get_id_from_name("minecraft:creeper");
