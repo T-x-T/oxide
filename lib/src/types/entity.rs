@@ -183,6 +183,7 @@ pub trait Entity: std::fmt::Debug {
           self.get_common_entity_data_mut().velocity.x = 0.0;
           self.get_common_entity_data_mut().velocity.y = 0.0;
           self.get_common_entity_data_mut().velocity.z = 0.0;
+          self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
       } else {
         self.get_common_entity_data_mut().velocity.y -= 0.08;
       }
@@ -262,35 +263,20 @@ pub trait Entity: std::fmt::Debug {
   }
 
   fn is_on_ground(&self, chunk: &Chunk, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
-    let position = self.get_common_entity_data().position;
-    let velocity = self.get_common_entity_data().velocity;
-    let next_entity_position = EntityPosition {
-      x: position.x + velocity.x,
-      y: position.y + velocity.y,
-      z: position.z + velocity.z,
-      yaw: position.yaw + velocity.yaw,
-      pitch: position.pitch + velocity.pitch,
-    };
-    let current_tick_y = BlockPosition::from(position).y;
-    let next_tick_y = BlockPosition::from(next_entity_position).y;
+    let mut position_to_check = self.get_common_entity_data().position;
+    position_to_check.y -= 0.001;
 
-    let mut y_to_check = current_tick_y;
-    let mut encountered_block = false;
-    while y_to_check >= next_tick_y {
-      let positions_to_check = self.get_occupied_block_positions_at_entity_position(EntityPosition {y: y_to_check as f64, ..next_entity_position});
+    let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
 
-      for position_to_check in positions_to_check {
-        let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
-        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
-        if block_type_at_location.is_solid() {
-          encountered_block = true;
-        }
+    for position_to_check in positions_to_check {
+      let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
+      let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
+      if block_type_at_location.is_solid() {
+        return true;
       }
-
-      y_to_check -= 1;
     }
 
-    return encountered_block;
+    return false;
   }
 
   //(height, width) https://minecraft.wiki/w/Hitbox

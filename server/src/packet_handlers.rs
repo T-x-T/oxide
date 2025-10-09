@@ -1444,7 +1444,7 @@ pub mod play {
       }
 
       mob_data.health -= damage;
-      mob_data.hurt_time = 5;
+      mob_data.hurt_time = 10;
       mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
 
       let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
