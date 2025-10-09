@@ -11,6 +11,18 @@ pub enum EntityTickOutcome {
   None,
 }
 
+#[derive(Debug)]
+pub enum AiBehavior {
+  Idle,
+  MoveTowardsPlayer,
+}
+
+#[derive(Debug)]
+pub enum AiExecutionResult {
+  DoNothing,
+  ApplyVelocity(EntityPosition),
+}
+
 pub trait CreatableEntity: Entity + Send {
   fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
   fn from_nbt(value: NbtListTag, next_entity_id: i32) -> Box<dyn SaveableEntity + Send> {
@@ -180,9 +192,6 @@ pub trait Entity: std::fmt::Debug {
 
     if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
       if self.is_on_ground(chunk, block_state_data) {
-          self.get_common_entity_data_mut().velocity.x = 0.0;
-          self.get_common_entity_data_mut().velocity.y = 0.0;
-          self.get_common_entity_data_mut().velocity.z = 0.0;
           self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
       } else {
         self.get_common_entity_data_mut().velocity.y -= 0.08;
@@ -198,7 +207,17 @@ pub trait Entity: std::fmt::Debug {
       ..velocity
     };
 
-    let velocity = self.get_common_entity_data().velocity;
+
+    let mut velocity_from_ai = EntityPosition::default();
+    match self.execute_ai(players) {
+      AiExecutionResult::DoNothing => (),
+      AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
+    };
+
+
+
+    let mut velocity = self.get_common_entity_data().velocity;
+    velocity = velocity + velocity_from_ai;
     let next_position = EntityPosition {
       x: old_position.x + velocity.x,
       y: old_position.y + velocity.y,
@@ -310,6 +329,40 @@ pub trait Entity: std::fmt::Debug {
     }
 
     return output;
+  }
+
+  fn execute_ai(&self, players: &[Player]) -> AiExecutionResult {
+    let behavior = AiBehavior::MoveTowardsPlayer; //Determine this somehow
+
+    return match behavior {
+      AiBehavior::Idle => AiExecutionResult::DoNothing,
+      AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players),
+    };
+  }
+
+  fn execute_ai_move_towards_player(&self, players: &[Player]) -> AiExecutionResult {
+    let mut player_distances = players.iter()
+      .map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
+      .filter(|x| x.1 < 25.0)
+      .collect::<Vec<(&Player, f64)>>();
+
+    player_distances.sort_by(|a, b| a.1.total_cmp(&b.1));
+    let closest_player = player_distances.first();
+
+    if let Some(closest_player) = closest_player {
+      let velocity_towards_player = closest_player.0.get_position() - self.get_common_entity_data().position;
+      let distance_towards_plater = self.get_common_entity_data().position.distance_to(closest_player.0.get_position());
+      let speed = 0.1;
+      return AiExecutionResult::ApplyVelocity(EntityPosition {
+        x: (velocity_towards_player.x / distance_towards_plater) * speed,
+        y: (velocity_towards_player.y / distance_towards_plater) * speed,
+        z: (velocity_towards_player.z / distance_towards_plater) * speed,
+        yaw: 0.0,
+        pitch: 0.0,
+      });
+    } else {
+      return AiExecutionResult::DoNothing;
+    }
   }
 }
 

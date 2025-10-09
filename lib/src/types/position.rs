@@ -53,10 +53,107 @@ impl From<EntityPosition> for BlockPosition {
   }
 }
 
+impl EntityPosition {
+  pub fn distance_to(&self, other: EntityPosition) -> f64 {
+    return ((other.x - self.x).abs().powi(2) + (other.y - self.y).abs().powi(2) + (other.z - self.z).abs().powi(2)).powf(0.5);
+  }
+}
+
+impl std::ops::Sub for EntityPosition {
+  type Output = EntityPosition;
+
+  fn sub(self, rhs: Self) -> Self::Output {
+    return Self {
+      x: self.x - rhs.x,
+      y: self.y - rhs.y,
+      z: self.z - rhs.z,
+      yaw: self.yaw - rhs.yaw,
+      pitch: self.pitch - rhs.pitch,
+    }
+  }
+}
+
+impl std::ops::Add for EntityPosition {
+  type Output = EntityPosition;
+
+  fn add(self, rhs: Self) -> Self::Output {
+    return Self {
+      x: self.x + rhs.x,
+      y: self.y + rhs.y,
+      z: self.z + rhs.z,
+      yaw: self.yaw + rhs.yaw,
+      pitch: self.pitch + rhs.pitch,
+    }
+  }
+}
+
+impl std::ops::Mul for EntityPosition {
+  type Output = EntityPosition;
+
+  fn mul(self, rhs: Self) -> Self::Output {
+    return Self {
+      x: self.x * rhs.x,
+      y: self.y * rhs.y,
+      z: self.z * rhs.z,
+      yaw: self.yaw * rhs.yaw,
+      pitch: self.pitch * rhs.pitch,
+    }
+  }
+}
+
+impl std::ops::Div for EntityPosition {
+  type Output = EntityPosition;
+
+  fn div(self, rhs: Self) -> Self::Output {
+    return Self {
+      x: self.x / rhs.x,
+      y: self.y / rhs.y,
+      z: self.z / rhs.z,
+      yaw: self.yaw / if rhs.yaw == 0.0 { 1.0 } else { rhs.yaw },
+      pitch: self.pitch / if rhs.pitch == 0.0 { 1.0 } else { rhs.pitch },
+    }
+  }
+}
+
 
 #[cfg(test)]
 mod test {
   use super::*;
+
+  mod entity_position_distance_to {
+    use super::*;
+
+    #[test]
+    fn basic() {
+      let a = EntityPosition { x: 1.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
+      let b = EntityPosition { x: 11.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
+
+      let res = a.distance_to(b);
+
+      assert_eq!(res, 10.0);
+    }
+
+    #[test]
+    fn complex() {
+      let a = EntityPosition { x: 15.0, y: -6.0, z: 3.0, yaw: 0.0, pitch: 0.0 };
+      let b = EntityPosition { x: 122.0, y: -125.0, z: -1.0, yaw: 0.0, pitch: 0.0 };
+
+      let res = a.distance_to(b);
+
+      assert!((res - 160.0) < 0.1);
+    }
+
+    #[test]
+    fn basic_across_zero() {
+      let a = EntityPosition { x: 1.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
+      let b = EntityPosition { x: -3.0, y: 0.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
+
+      let res = a.distance_to(b);
+
+      assert_eq!(res, 4.0);
+    }
+  }
+
   mod convert_to_chunk_position {
     use super::*;
 
