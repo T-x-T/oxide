@@ -173,9 +173,9 @@ fn tick(game: Arc<Mutex<Game>>) {
     for entity in &mut entities {
       let chunk = dimension.1.get_chunk_from_position(entity.get_common_entity_data().position.into());
       if let Some(chunk) = chunk {
-        let now = std::time::Instant::now();
+        //let now = std::time::Instant::now();
         let outcome = entity.tick(chunk, &players, &block_state_data);
-        println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
+        //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
         if outcome != EntityTickOutcome::None {
           entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
         }

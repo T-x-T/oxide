@@ -1093,6 +1093,48 @@ pub mod play {
       let used_item_id = player.get_held_item(true).unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).item_id;
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
 
+      if used_item_name.ends_with("spawn_egg") {
+        let entity_type = used_item_name.replace("_spawn_egg", "");
+
+        let new_entity = entity::new(
+          &entity_type,
+          lib::entity::CommonEntity {
+            position: new_block_location.into(),
+            velocity: EntityPosition::default(),
+            uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+            entity_id: game.last_created_entity_id,
+            ..Default::default()
+          },
+          NbtListTag::TagCompound(Vec::new()),
+        );
+
+        if let Some(new_entity) = new_entity {
+         	let packet = lib::packets::clientbound::play::SpawnEntity {
+            entity_id: new_entity.get_common_entity_data().entity_id,
+            entity_uuid: new_entity.get_common_entity_data().uuid,
+            entity_type: new_entity.get_type(),
+            x: new_block_location.x as f64 + 0.5,
+            y: new_block_location.y as f64,
+            z: new_block_location.z as f64 + 0.5,
+            pitch: new_entity.get_pitch_u8(),
+            yaw: new_entity.get_yaw_u8(),
+            head_yaw: 0,
+            data: 0,
+            velocity_x: 0,
+            velocity_y: 0,
+            velocity_z: 0,
+          };
+
+          game.world.dimensions
+            .get_mut("minecraft:overworld").unwrap()
+            .add_entity(new_entity);
+
+          connection_streams.iter()
+            .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+            .for_each(|x| lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+        };
+      }
+
       lib::block::get_block_state_id(parsed_packet.face, player.get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
     };
 
