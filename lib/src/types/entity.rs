@@ -198,12 +198,51 @@ pub trait Entity: std::fmt::Debug {
     };
 
     let velocity = self.get_common_entity_data().velocity;
-    self.get_common_entity_data_mut().position = EntityPosition {
+    let next_position = EntityPosition {
       x: old_position.x + velocity.x,
       y: old_position.y + velocity.y,
       z: old_position.z + velocity.z,
       ..old_position
     };
+
+    let mut collided_along_way = false;
+    let number_of_positions_to_check = velocity.x.abs().max(velocity.y.abs().max(velocity.z).abs()).ceil() as u16;
+    'outer: for i in 1..=number_of_positions_to_check {
+      let velocity_to_check = EntityPosition {
+        x: (velocity.x / number_of_positions_to_check as f64) * i as f64,
+        y: (velocity.y / number_of_positions_to_check as f64) * i as f64,
+        z: (velocity.z / number_of_positions_to_check as f64) * i as f64,
+        ..Default::default()
+      };
+
+      let entity_position_to_check = EntityPosition {
+        x: old_position.x + velocity_to_check.x,
+        y: old_position.y + velocity_to_check.y,
+        z: old_position.z + velocity_to_check.z,
+        ..old_position
+      };
+
+      let positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
+
+      for position_to_check in positions_to_check {
+        let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
+        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
+        if block_type_at_location.is_solid() {
+          self.get_common_entity_data_mut().position = EntityPosition {
+            x: old_position.x + (velocity.x / number_of_positions_to_check as f64) * (i - 1) as f64,
+            y: old_position.y + (velocity.y / number_of_positions_to_check as f64) * (i - 1) as f64,
+            z: old_position.z + (velocity.z / number_of_positions_to_check as f64) * (i - 1) as f64,
+            ..old_position
+          };
+          collided_along_way = true;
+          break 'outer;
+        }
+      }
+    }
+
+    if !collided_along_way {
+      self.get_common_entity_data_mut().position = next_position;
+    }
 
     if old_position != self.get_common_entity_data().position {
       let packet = crate::packets::clientbound::play::UpdateEntityPosition {
@@ -238,36 +277,11 @@ pub trait Entity: std::fmt::Debug {
     let mut y_to_check = current_tick_y;
     let mut encountered_block = false;
     while y_to_check >= next_tick_y {
-      let positions_to_check = vec![
-        BlockPosition {
-          y: y_to_check,
-          ..next_entity_position.into()
-        },
-        BlockPosition {
-          x: (next_entity_position.x - (self.get_hitbox().1 * 0.5)).floor() as i32,
-          y: y_to_check,
-          z: (next_entity_position.z - (self.get_hitbox().1 * 0.5)).floor() as i32,
-        },
-        BlockPosition {
-          x: (next_entity_position.x - (self.get_hitbox().1 * 0.5)).floor() as i32,
-          y: y_to_check,
-          z: (next_entity_position.z + (self.get_hitbox().1 * 0.5)).floor() as i32,
-        },
-        BlockPosition {
-          x: (next_entity_position.x + (self.get_hitbox().1 * 0.5)).floor() as i32,
-          y: y_to_check,
-          z: (next_entity_position.z - (self.get_hitbox().1 * 0.5)).floor() as i32,
-        },
-        BlockPosition {
-          x: (next_entity_position.x + (self.get_hitbox().1 * 0.5)).floor() as i32,
-          y: y_to_check,
-          z: (next_entity_position.z + (self.get_hitbox().1 * 0.5)).floor() as i32,
-        },
-      ];
+      let positions_to_check = self.get_occupied_block_positions_at_entity_position(EntityPosition {y: y_to_check as f64, ..next_entity_position});
 
       for position_to_check in positions_to_check {
         let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
-        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data); //TODO pass the blocks in from somewhere!!
+        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
         if block_type_at_location.is_solid() {
           encountered_block = true;
         }
@@ -282,6 +296,34 @@ pub trait Entity: std::fmt::Debug {
   //(height, width) https://minecraft.wiki/w/Hitbox
   fn get_hitbox(&self) -> (f64, f64) {
     return (1.7, 0.6);
+  }
+
+  fn get_occupied_block_positions(&self) -> Vec<BlockPosition> {
+    return self.get_occupied_block_positions_at_entity_position(self.get_common_entity_data().position);
+  }
+
+  fn get_occupied_block_positions_at_entity_position(&self, position_to_check: EntityPosition) -> Vec<BlockPosition> {
+    let mut output: Vec<BlockPosition> = Vec::new();
+
+    let x_min = position_to_check.x - self.get_hitbox().1 * 0.5;
+    let x_max = position_to_check.x + self.get_hitbox().1 * 0.5;
+    let x_range = (x_min.floor() as i32)..=(x_max.floor() as i32);
+    let y_min = position_to_check.y;
+    let y_max = position_to_check.y + self.get_hitbox().0 - 0.01;
+    let y_range = (y_min.floor() as i16)..=(y_max.floor() as i16);
+    let z_min = position_to_check.z - self.get_hitbox().1 * 0.5;
+    let z_max = position_to_check.z + self.get_hitbox().1 * 0.5;
+    let z_range = (z_min.floor() as i32)..=(z_max.floor() as i32);
+
+    for x in x_range.clone() {
+      for y in y_range.clone() {
+        for z in z_range.clone() {
+          output.push(BlockPosition { x, y, z });
+        }
+      }
+    }
+
+    return output;
   }
 }
 
@@ -457,4 +499,285 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
     "minecraft:sheep" => Some(Box::new(Sheep::new(common_data, extra_nbt))),
 		_ => None,
   };
+}
+
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[derive(Debug, Default)]
+  struct DefaultMob {
+    common: CommonEntity,
+    mob: CommonMob,
+  }
+
+  impl Entity for DefaultMob {
+    fn get_type(&self) -> i32 {
+      return data::entities::get_id_from_name("minecraft:creeper");
+    }
+
+    fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
+      return Vec::new();
+    }
+
+    fn get_common_entity_data(&self) -> &CommonEntity {
+      return &self.common;
+    }
+
+    fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+      return &mut self.common;
+    }
+
+    fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
+      self.common = common_entity_data;
+    }
+
+    fn is_mob(&self) -> bool {
+      return true;
+    }
+
+    fn get_mob_data(&self) -> &CommonMob {
+      return &self.mob;
+    }
+
+    fn get_mob_data_mut(&mut self) -> &mut CommonMob {
+      return &mut self.mob;
+    }
+
+    fn set_mob_data(&mut self, common_mob_data: CommonMob) {
+      self.mob = common_mob_data;
+    }
+  }
+
+  #[derive(Debug, Default)]
+  struct BigMob {
+    common: CommonEntity,
+    mob: CommonMob,
+  }
+
+  impl Entity for BigMob {
+    fn get_type(&self) -> i32 {
+      return data::entities::get_id_from_name("minecraft:creeper");
+    }
+
+    fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
+      return Vec::new();
+    }
+
+    fn get_common_entity_data(&self) -> &CommonEntity {
+      return &self.common;
+    }
+
+    fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+      return &mut self.common;
+    }
+
+    fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
+      self.common = common_entity_data;
+    }
+
+    fn is_mob(&self) -> bool {
+      return true;
+    }
+
+    fn get_mob_data(&self) -> &CommonMob {
+      return &self.mob;
+    }
+
+    fn get_mob_data_mut(&mut self) -> &mut CommonMob {
+      return &mut self.mob;
+    }
+
+    fn set_mob_data(&mut self, common_mob_data: CommonMob) {
+      self.mob = common_mob_data;
+    }
+
+    fn get_hitbox(&self) -> (f64, f64) {
+      (4.0, 4.0)
+    }
+  }
+
+  mod get_occupied_block_positions_at_entity_position {
+    use super::*;
+
+    #[test]
+    fn integer_position() {
+      let entity = DefaultMob::default();
+      let entity_position = EntityPosition {
+        x: 10.0,
+        y: 10.0,
+        z: 10.0,
+        yaw: 0.0,
+        pitch: 0.0,
+      };
+
+      let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
+
+      let mut expected: Vec<BlockPosition> = vec![
+        BlockPosition { x: 9, y: 10, z: 9 },
+        BlockPosition { x: 9, y: 10, z: 10 },
+        BlockPosition { x: 9, y: 11, z: 9 },
+        BlockPosition { x: 9, y: 11, z: 10 },
+        BlockPosition { x: 10, y: 10, z: 9 },
+        BlockPosition { x: 10, y: 10, z: 10 },
+        BlockPosition { x: 10, y: 11, z: 9 },
+        BlockPosition { x: 10, y: 11, z: 10 },
+      ];
+
+      res.sort();
+      expected.sort();
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn block_center_pos() {
+      let entity = DefaultMob::default();
+      let entity_position = EntityPosition {
+        x: 10.5,
+        y: 10.5,
+        z: 10.5,
+        yaw: 0.0,
+        pitch: 0.0,
+      };
+
+      let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
+
+      let mut expected: Vec<BlockPosition> = vec![
+        BlockPosition { x: 10, y: 10, z: 10 },
+        BlockPosition { x: 10, y: 11, z: 10 },
+        BlockPosition { x: 10, y: 12, z: 10 },
+
+      ];
+
+      res.sort();
+      expected.sort();
+
+      assert_eq!(res, expected);
+    }
+
+
+    #[test]
+    fn integer_position_big_mob() {
+      let entity = BigMob::default();
+      let entity_position = EntityPosition {
+        x: 10.5,
+        y: 10.0,
+        z: 10.5,
+        yaw: 0.0,
+        pitch: 0.0,
+      };
+
+      let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
+
+      let mut expected: Vec<BlockPosition> = vec![
+        BlockPosition { x: 8, y: 10, z: 8 },
+        BlockPosition { x: 9, y: 10, z: 8 },
+        BlockPosition { x: 10, y: 10, z: 8 },
+        BlockPosition { x: 11, y: 10, z: 8 },
+        BlockPosition { x: 12, y: 10, z: 8 },
+        BlockPosition { x: 8, y: 11, z: 8 },
+        BlockPosition { x: 9, y: 11, z: 8 },
+        BlockPosition { x: 10, y: 11, z: 8 },
+        BlockPosition { x: 11, y: 11, z: 8 },
+        BlockPosition { x: 12, y: 11, z: 8 },
+        BlockPosition { x: 8, y: 12, z: 8 },
+        BlockPosition { x: 9, y: 12, z: 8 },
+        BlockPosition { x: 10, y: 12, z: 8 },
+        BlockPosition { x: 11, y: 12, z: 8 },
+        BlockPosition { x: 12, y: 12, z: 8 },
+        BlockPosition { x: 8, y: 13, z: 8 },
+        BlockPosition { x: 9, y: 13, z: 8 },
+        BlockPosition { x: 10, y: 13, z: 8 },
+        BlockPosition { x: 11, y: 13, z: 8 },
+        BlockPosition { x: 12, y: 13, z: 8 },
+        BlockPosition { x: 8, y: 10, z: 9 },
+        BlockPosition { x: 9, y: 10, z: 9 },
+        BlockPosition { x: 10, y: 10, z: 9 },
+        BlockPosition { x: 11, y: 10, z: 9 },
+        BlockPosition { x: 12, y: 10, z: 9 },
+        BlockPosition { x: 8, y: 11, z: 9 },
+        BlockPosition { x: 9, y: 11, z: 9 },
+        BlockPosition { x: 10, y: 11, z: 9 },
+        BlockPosition { x: 11, y: 11, z: 9 },
+        BlockPosition { x: 12, y: 11, z: 9 },
+        BlockPosition { x: 8, y: 12, z: 9 },
+        BlockPosition { x: 9, y: 12, z: 9 },
+        BlockPosition { x: 10, y: 12, z: 9 },
+        BlockPosition { x: 11, y: 12, z: 9 },
+        BlockPosition { x: 12, y: 12, z: 9 },
+        BlockPosition { x: 8, y: 13, z: 9 },
+        BlockPosition { x: 9, y: 13, z: 9 },
+        BlockPosition { x: 10, y: 13, z: 9 },
+        BlockPosition { x: 11, y: 13, z: 9 },
+        BlockPosition { x: 12, y: 13, z: 9 },
+        BlockPosition { x: 8, y: 10, z: 10 },
+        BlockPosition { x: 9, y: 10, z: 10 },
+        BlockPosition { x: 10, y: 10, z: 10 },
+        BlockPosition { x: 11, y: 10, z: 10 },
+        BlockPosition { x: 12, y: 10, z: 10 },
+        BlockPosition { x: 8, y: 11, z: 10 },
+        BlockPosition { x: 9, y: 11, z: 10 },
+        BlockPosition { x: 10, y: 11, z: 10 },
+        BlockPosition { x: 11, y: 11, z: 10 },
+        BlockPosition { x: 12, y: 11, z: 10 },
+        BlockPosition { x: 8, y: 12, z: 10 },
+        BlockPosition { x: 9, y: 12, z: 10 },
+        BlockPosition { x: 10, y: 12, z: 10 },
+        BlockPosition { x: 11, y: 12, z: 10 },
+        BlockPosition { x: 12, y: 12, z: 10 },
+        BlockPosition { x: 8, y: 13, z: 10 },
+        BlockPosition { x: 9, y: 13, z: 10 },
+        BlockPosition { x: 10, y: 13, z: 10 },
+        BlockPosition { x: 11, y: 13, z: 10 },
+        BlockPosition { x: 12, y: 13, z: 10 },
+        BlockPosition { x: 8, y: 10, z: 11 },
+        BlockPosition { x: 9, y: 10, z: 11 },
+        BlockPosition { x: 10, y: 10, z: 11 },
+        BlockPosition { x: 11, y: 10, z: 11 },
+        BlockPosition { x: 12, y: 10, z: 11 },
+        BlockPosition { x: 8, y: 11, z: 11 },
+        BlockPosition { x: 9, y: 11, z: 11 },
+        BlockPosition { x: 10, y: 11, z: 11 },
+        BlockPosition { x: 11, y: 11, z: 11 },
+        BlockPosition { x: 12, y: 11, z: 11 },
+        BlockPosition { x: 8, y: 12, z: 11 },
+        BlockPosition { x: 9, y: 12, z: 11 },
+        BlockPosition { x: 10, y: 12, z: 11 },
+        BlockPosition { x: 11, y: 12, z: 11 },
+        BlockPosition { x: 12, y: 12, z: 11 },
+        BlockPosition { x: 8, y: 13, z: 11 },
+        BlockPosition { x: 9, y: 13, z: 11 },
+        BlockPosition { x: 10, y: 13, z: 11 },
+        BlockPosition { x: 11, y: 13, z: 11 },
+        BlockPosition { x: 12, y: 13, z: 11 },
+        BlockPosition { x: 8, y: 10, z: 12 },
+        BlockPosition { x: 9, y: 10, z: 12 },
+        BlockPosition { x: 10, y: 10, z: 12 },
+        BlockPosition { x: 11, y: 10, z: 12 },
+        BlockPosition { x: 12, y: 10, z: 12 },
+        BlockPosition { x: 8, y: 11, z: 12 },
+        BlockPosition { x: 9, y: 11, z: 12 },
+        BlockPosition { x: 10, y: 11, z: 12 },
+        BlockPosition { x: 11, y: 11, z: 12 },
+        BlockPosition { x: 12, y: 11, z: 12 },
+        BlockPosition { x: 8, y: 12, z: 12 },
+        BlockPosition { x: 9, y: 12, z: 12 },
+        BlockPosition { x: 10, y: 12, z: 12 },
+        BlockPosition { x: 11, y: 12, z: 12 },
+        BlockPosition { x: 12, y: 12, z: 12 },
+        BlockPosition { x: 8, y: 13, z: 12 },
+        BlockPosition { x: 9, y: 13, z: 12 },
+        BlockPosition { x: 10, y: 13, z: 12 },
+        BlockPosition { x: 11, y: 13, z: 12 },
+        BlockPosition { x: 12, y: 13, z: 12 },
+      ];
+
+      res.sort();
+      expected.sort();
+
+      assert_eq!(res, expected);
+    }
+  }
 }

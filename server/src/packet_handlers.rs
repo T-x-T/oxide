@@ -1465,11 +1465,12 @@ pub mod play {
       let entity_data = entity.get_common_entity_data_mut();
       entity_data.velocity.y += 0.05;
 
+      let horizontal_velocity = 0.05;
       match player.get_looking_cardinal_direction() {
-        CardinalDirection::North => entity_data.velocity.z -= 0.1,
-        CardinalDirection::East => entity_data.velocity.x += 0.1,
-        CardinalDirection::South => entity_data.velocity.z += 0.1,
-        CardinalDirection::West => entity_data.velocity.x -= 0.1,
+        CardinalDirection::North => entity_data.velocity.z -= horizontal_velocity,
+        CardinalDirection::East => entity_data.velocity.x += horizontal_velocity,
+        CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
+        CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
       };
 
       connection_streams.iter()
