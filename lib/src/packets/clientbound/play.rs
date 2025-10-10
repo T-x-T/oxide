@@ -610,6 +610,83 @@ impl TryFrom<Vec<u8>> for TeleportEntity {
 }
 
 //
+// MARK: 0x20 Explosion
+//
+
+#[derive(Debug, Clone)]
+pub struct Explosion {
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub player_delta_velocity: Option<(f64, f64, f64)>,
+	pub particle_id: i32,
+	pub particle_data: (), //see https://minecraft.wiki/w/Java_Edition_protocol/Particles
+	pub sound: i32,
+}
+
+impl Packet for Explosion {
+	const PACKET_ID: u8 = 0x20;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<Explosion> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Explosion) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		if value.player_delta_velocity.is_some() {
+      output.push(1);
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().1));
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().2));
+		} else {
+      output.push(0);
+		}
+		output.append(&mut crate::serialize::varint(value.particle_id));
+		output.append(&mut crate::serialize::varint(value.sound));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Explosion {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+	  let x = crate::deserialize::double(&mut value)?;
+	  let y = crate::deserialize::double(&mut value)?;
+	  let z = crate::deserialize::double(&mut value)?;
+		let player_delta_velocity: Option<(f64, f64, f64)> = if crate::deserialize::boolean(&mut value)? {
+      Some((
+        crate::deserialize::double(&mut value)?,
+        crate::deserialize::double(&mut value)?,
+        crate::deserialize::double(&mut value)?
+      ))
+		} else {
+		  None
+		};
+
+		let particle_id = crate::deserialize::varint(&mut value)?;
+		let sound = crate::deserialize::varint(&mut value)?;
+
+		return Ok(Self {
+      x,
+      y,
+      z,
+      player_delta_velocity,
+      particle_id,
+      particle_data: (),
+      sound,
+		});
+	}
+}
+
+//
 // MARK: 0x22 Game event
 //
 

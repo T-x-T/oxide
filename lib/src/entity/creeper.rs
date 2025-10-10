@@ -4,19 +4,39 @@ use super::*;
 pub struct Creeper {
   pub common: CommonEntity,
   pub mob: CommonMob,
+  pub explosion_radius: u8,
+  pub fuse: i16,
+  pub is_ignited: bool,
+  pub is_powered: bool,
 }
 
 impl CreatableEntity for Creeper {
   fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
-    let mob = CommonMob::from_nbt(extra_nbt);
+    let mob = CommonMob::from_nbt(extra_nbt.clone());
 
-    return Self { common: data, mob };
+    return Self {
+      common: data,
+      mob,
+      explosion_radius: extra_nbt.get_child("ExplosionRadius").unwrap_or(&NbtTag::Byte(String::new(), 3)).as_byte(),
+      fuse: extra_nbt.get_child("Fuse").unwrap_or(&NbtTag::Short(String::new(), 30)).as_short(),
+      is_ignited: extra_nbt.get_child("Ignited").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1,
+      is_powered: extra_nbt.get_child("powered").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1,
+    };
   }
 }
 
 impl SaveableEntity for Creeper {
   fn to_nbt_extras(&self) -> Vec<NbtTag> {
-    return self.mob.to_nbt();
+    let mut output: Vec<NbtTag> = vec![
+      NbtTag::Byte("ExplosionRadius".to_string(), self.explosion_radius),
+      NbtTag::Short("Fuse".to_string(), self.fuse),
+      NbtTag::Byte("Ignited".to_string(), if self.is_ignited { 1 } else { 0 }),
+      NbtTag::Byte("powered".to_string(), if self.is_powered { 1 } else { 0 }),
+    ];
+
+    output.append(&mut self.mob.to_nbt());
+
+    return output;
   }
 }
 

@@ -293,15 +293,11 @@ impl TryFrom<Interact> for Vec<u8> {
 		result.append(&mut crate::serialize::varint(value.entity_id));
 		result.append(&mut crate::serialize::varint(value.interact_type));
 		if value.interact_type == 2 {
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_x.unwrap()));
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_y.unwrap()));
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_z.unwrap()));
 		}
 		if value.interact_type == 0 || value.interact_type == 2 {
-      result.push(1);
       result.append(&mut crate::serialize::varint(value.hand.unwrap()));
 		}
 		result.append(&mut crate::serialize::boolean(value.sneak_key_pressed));
@@ -317,25 +313,21 @@ impl TryFrom<Vec<u8>> for Interact {
 	  let entity_id: i32 = crate::deserialize::varint(&mut value)?;
 	  let interact_type: i32 = crate::deserialize::varint(&mut value)?;
 		let target_x: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let target_y: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let target_z: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::varint(&mut value)?)
 		} else {
 		  None

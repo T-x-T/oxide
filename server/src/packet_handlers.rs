@@ -1425,61 +1425,118 @@ pub mod play {
 
     let player = game.players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     let held_item = player.get_held_item(true);
-    let damage = if held_item.is_some() {
-      10.0
-    } else {
-      1.0
-    };
 
     let Some(entity) = game.world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
       return Ok(None);
     };
     let entity_id = entity.get_common_entity_data().entity_id;
 
-    if entity.is_mob() {
-      let mob_data = entity.get_mob_data_mut();
 
-      if mob_data.hurt_time > 0 {
-        return Ok(None);
+    if parsed_packet.interact_type == 1 {
+      //Attack
+      let damage = if held_item.is_some() {
+        10.0
+      } else {
+        1.0
+      };
+
+      if entity.is_mob() {
+        let mob_data = entity.get_mob_data_mut();
+
+        if mob_data.hurt_time > 0 {
+          return Ok(None);
+        }
+
+        mob_data.health -= damage;
+        mob_data.hurt_time = 10;
+        mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
+
+        let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+          entity_id,
+          metadata: vec![
+            EntityMetadata {
+              index: 9,
+              value: EntityMetadataValue::Float(mob_data.health)
+            },
+          ],
+        };
+
+        let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
+          entity_id,
+          yaw: 0.0,
+        };
+
+        let entity_data = entity.get_common_entity_data_mut();
+        entity_data.velocity.y += 0.05;
+
+        let horizontal_velocity = 0.05;
+        match player.get_looking_cardinal_direction() {
+          CardinalDirection::North => entity_data.velocity.z -= horizontal_velocity,
+          CardinalDirection::East => entity_data.velocity.x += horizontal_velocity,
+          CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
+          CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
+        };
+
+        connection_streams.iter()
+          .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+          .for_each(|x| {
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, entity_metadata_packet.clone().try_into().unwrap()).unwrap();
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet.clone().try_into().unwrap()).unwrap();
+          });
+      }
+    } else if parsed_packet.interact_type == 0 {
+      //interact
+      if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper" && held_item.is_some() && held_item.unwrap().item_id == data::items::get_items().get("minecraft:flint_and_steel").unwrap().id {
+        //right clicked a creeper with flint and steel -> explode!
+        println!("boom!");
+        entity.get_mob_data_mut().health = 0.0;
+
+        let explosion_packet = lib::packets::clientbound::play::Explosion {
+          x: entity.get_common_entity_data().position.x,
+          y: entity.get_common_entity_data().position.y,
+          z: entity.get_common_entity_data().position.z,
+          player_delta_velocity: None,
+          particle_id: 21,
+          particle_data: (),
+          sound: 616,
+        };
+
+        let creeper_position = BlockPosition::from(entity.get_common_entity_data().position);
+        for x in (creeper_position.x-2)..creeper_position.x+2 {
+          for y in (creeper_position.y-2)..creeper_position.y+2 {
+            for z in (creeper_position.z-2)..creeper_position.z+2 {
+              let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
+              if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+                game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(BlockPosition {x,y,z}).unwrap().block_entities.retain(|be| be.position != BlockPosition {x,y,z});
+                game.players.iter_mut()
+                  .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == BlockPosition {x,y,z}))
+                  .for_each(|x| x.close_inventory().unwrap());
+              }
+
+              for stream in connection_streams.iter() {
+                send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                  location: BlockPosition {x,y,z},
+                  block_id: 0,
+                }.try_into()?)?;
+              }
+            }
+          }
+        }
+
+
+
+        connection_streams.iter()
+          .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+          .for_each(|x| {
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::Explosion::PACKET_ID, explosion_packet.clone().try_into().unwrap()).unwrap();
+          });
       }
 
-      mob_data.health -= damage;
-      mob_data.hurt_time = 10;
-      mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
-
-      let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-        entity_id,
-        metadata: vec![
-          EntityMetadata {
-            index: 9,
-            value: EntityMetadataValue::Float(mob_data.health)
-          },
-        ],
-      };
-
-      let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
-        entity_id,
-        yaw: 0.0,
-      };
-
-      let entity_data = entity.get_common_entity_data_mut();
-      entity_data.velocity.y += 0.05;
-
-      let horizontal_velocity = 0.05;
-      match player.get_looking_cardinal_direction() {
-        CardinalDirection::North => entity_data.velocity.z -= horizontal_velocity,
-        CardinalDirection::East => entity_data.velocity.x += horizontal_velocity,
-        CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
-        CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
-      };
-
-      connection_streams.iter()
-        .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
-        .for_each(|x| {
-          lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, entity_metadata_packet.clone().try_into().unwrap()).unwrap();
-          lib::utils::send_packet(x.1, lib::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet.clone().try_into().unwrap()).unwrap();
-        });
+    } else {
+      //interact at
     }
+
+
 
     return Ok(None);
   }
