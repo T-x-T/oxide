@@ -1488,7 +1488,6 @@ pub mod play {
       //interact
       if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper" && held_item.is_some() && held_item.unwrap().item_id == data::items::get_items().get("minecraft:flint_and_steel").unwrap().id {
         //right clicked a creeper with flint and steel -> explode!
-        println!("boom!");
         entity.get_mob_data_mut().health = 0.0;
 
         let explosion_packet = lib::packets::clientbound::play::Explosion {
