@@ -162,7 +162,7 @@ pub trait Entity: std::fmt::Debug {
     };
   }
 
-  fn tick(&mut self, chunk: &Chunk, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>) -> EntityTickOutcome {
+  fn tick(&mut self, dimension: &Dimension, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>) -> EntityTickOutcome {
     if self.is_mob() {
       let mob_data = self.get_mob_data_mut();
 
@@ -191,7 +191,7 @@ pub trait Entity: std::fmt::Debug {
     let old_position = self.get_common_entity_data().position;
 
     if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
-      if self.is_on_ground(chunk, block_state_data) {
+      if self.is_on_ground(dimension, block_state_data) {
         self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
       } else {
         self.get_common_entity_data_mut().velocity.y -= 0.08;
@@ -243,7 +243,7 @@ pub trait Entity: std::fmt::Debug {
       let positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
 
       for position_to_check in positions_to_check {
-        let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
+        let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
         let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
         if block_type_at_location.is_solid() {
           self.get_common_entity_data_mut().position = EntityPosition {
@@ -268,7 +268,7 @@ pub trait Entity: std::fmt::Debug {
         delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
         delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
         delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-        on_ground: self.is_on_ground(chunk, block_state_data),
+        on_ground: self.is_on_ground(dimension, block_state_data),
       };
 
       for player in players {
@@ -279,14 +279,17 @@ pub trait Entity: std::fmt::Debug {
     return EntityTickOutcome::None;
   }
 
-  fn is_on_ground(&self, chunk: &Chunk, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
-    let mut position_to_check = self.get_common_entity_data().position;
+  fn is_on_ground(&self, dimension: &Dimension, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
+    return self.is_on_ground_at(dimension, block_state_data, self.get_common_entity_data().position);
+  }
+
+  fn is_on_ground_at(&self, dimension: &Dimension, block_state_data: &HashMap<String, data::blocks::Block>, mut position_to_check: EntityPosition) -> bool {
     position_to_check.y -= 0.1;
 
     let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
 
     for position_to_check in positions_to_check {
-      let block_at_location = chunk.get_block(position_to_check.convert_to_position_in_chunk());
+      let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
       let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
       if block_type_at_location.is_solid() {
         return true;
