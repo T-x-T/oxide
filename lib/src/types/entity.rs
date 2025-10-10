@@ -192,7 +192,7 @@ pub trait Entity: std::fmt::Debug {
 
     if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
       if self.is_on_ground(chunk, block_state_data) {
-          self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
+        self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
       } else {
         self.get_common_entity_data_mut().velocity.y -= 0.08;
       }
@@ -213,8 +213,6 @@ pub trait Entity: std::fmt::Debug {
       AiExecutionResult::DoNothing => (),
       AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
     };
-
-
 
     let mut velocity = self.get_common_entity_data().velocity;
     velocity = velocity + velocity_from_ai;
@@ -283,7 +281,7 @@ pub trait Entity: std::fmt::Debug {
 
   fn is_on_ground(&self, chunk: &Chunk, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
     let mut position_to_check = self.get_common_entity_data().position;
-    position_to_check.y -= 0.001;
+    position_to_check.y -= 0.1;
 
     let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
 
@@ -310,15 +308,19 @@ pub trait Entity: std::fmt::Debug {
   fn get_occupied_block_positions_at_entity_position(&self, position_to_check: EntityPosition) -> Vec<BlockPosition> {
     let mut output: Vec<BlockPosition> = Vec::new();
 
-    let x_min = position_to_check.x - self.get_hitbox().1 * 0.5;
-    let x_max = position_to_check.x + self.get_hitbox().1 * 0.5;
-    let x_range = (x_min.floor() as i32)..=(x_max.floor() as i32);
+    //seems like the center off the hitbox is offset by half a block from the entity position
+    let x_offset = if position_to_check.x.abs() < 1.0 { 0.0 } else if position_to_check.x.is_sign_positive() { 0.5 } else { -0.5 };
+    let z_offset = if position_to_check.z.abs() < 1.0 { 0.0 } else if position_to_check.z.is_sign_positive() { 0.5 } else { -0.5 };
+
+    let x_min = position_to_check.x + x_offset - (self.get_hitbox().1 * 0.5);
+    let x_max = position_to_check.x + x_offset + (self.get_hitbox().1 * 0.5);
+    let x_range = (if x_min.is_sign_positive() {x_min.floor()} else {x_min.ceil()} as i32)..=(if x_max.is_sign_positive() {x_max.floor()} else {x_max.ceil()} as i32);
     let y_min = position_to_check.y;
     let y_max = position_to_check.y + self.get_hitbox().0 - 0.01;
-    let y_range = (y_min.floor() as i16)..=(y_max.floor() as i16);
-    let z_min = position_to_check.z - self.get_hitbox().1 * 0.5;
-    let z_max = position_to_check.z + self.get_hitbox().1 * 0.5;
-    let z_range = (z_min.floor() as i32)..=(z_max.floor() as i32);
+    let y_range = (if y_min.is_sign_positive() {y_min.floor()} else {y_min.ceil()} as i16)..=(if y_max.is_sign_positive() {y_max.floor()} else {y_max.ceil()} as i16);
+    let z_min = position_to_check.z + z_offset - (self.get_hitbox().1 * 0.5);
+    let z_max = position_to_check.z + z_offset + (self.get_hitbox().1 * 0.5);
+    let z_range = (if z_min.is_sign_positive() {z_min.floor()} else {z_min.ceil()} as i32)..=(if z_max.is_sign_positive() {z_max.floor()} else {z_max.ceil()} as i32);
 
     for x in x_range.clone() {
       for y in y_range.clone() {
@@ -355,7 +357,7 @@ pub trait Entity: std::fmt::Debug {
       let speed = 0.1;
       return AiExecutionResult::ApplyVelocity(EntityPosition {
         x: (velocity_towards_player.x / distance_towards_plater) * speed,
-        y: (velocity_towards_player.y / distance_towards_plater) * speed,
+        y: 0.0,
         z: (velocity_towards_player.z / distance_towards_plater) * speed,
         yaw: 0.0,
         pitch: 0.0,
