@@ -1005,6 +1005,69 @@ pub mod play {
     let old_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
     let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+      let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+      let items = match &block_entity.data {
+        BlockEntityData::Chest(items) => items,
+        BlockEntityData::Furnace(items, _, _, _, _) => items,
+        BlockEntityData::BrewingStand(items) => items,
+        BlockEntityData::Crafter(items) => items,
+        BlockEntityData::Dispenser(items) => items,
+        BlockEntityData::Hopper(items) => items,
+        _ => &Vec::new(),
+      };
+
+      for item in items.clone() {
+        game.last_created_entity_id += 1;
+
+        let new_entity = lib::entity::ItemEntity {
+          common: lib::entity::CommonEntity {
+            position: parsed_packet.location.into(),
+         		velocity: EntityPosition::default(),
+            uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+            entity_id: game.last_created_entity_id,
+            ..Default::default()
+          },
+          age: 0,
+          health: 5,
+          item,
+          owner: 0,
+          pickup_delay: 0,
+          thrower: 0,
+        };
+
+       	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+          entity_id: new_entity.get_common_entity_data().entity_id,
+          entity_uuid: new_entity.get_common_entity_data().uuid,
+          entity_type: new_entity.get_type(),
+          x: parsed_packet.location.x as f64,
+          y: parsed_packet.location.y as f64,
+          z: parsed_packet.location.z as f64,
+          pitch: new_entity.get_pitch_u8(),
+          yaw: new_entity.get_yaw_u8(),
+          head_yaw: 0,
+          data: 0,
+          velocity_x: 0,
+          velocity_y: 0,
+          velocity_z: 0,
+       	};
+
+       	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+          entity_id: new_entity.get_common_entity_data().entity_id,
+          metadata: new_entity.get_metadata(),
+       	};
+
+       	game.world.dimensions
+          .get_mut("minecraft:overworld").unwrap()
+          .add_entity(Box::new(new_entity));
+
+          connection_streams.iter()
+            .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+            .for_each(|x| {
+              lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+              lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+            });
+      }
+
       game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
       game.players.iter_mut()
         .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
@@ -1150,6 +1213,69 @@ pub mod play {
             }.try_into()?)?;
           }
           if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
+            let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+            let items = match &block_entity.data {
+              BlockEntityData::Chest(items) => items,
+              BlockEntityData::Furnace(items, _, _, _, _) => items,
+              BlockEntityData::BrewingStand(items) => items,
+              BlockEntityData::Crafter(items) => items,
+              BlockEntityData::Dispenser(items) => items,
+              BlockEntityData::Hopper(items) => items,
+              _ => &Vec::new(),
+            };
+
+            for item in items.clone() {
+              game.last_created_entity_id += 1;
+
+              let new_entity = lib::entity::ItemEntity {
+                common: lib::entity::CommonEntity {
+                  position: parsed_packet.location.into(),
+               		velocity: EntityPosition::default(),
+                  uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+                  entity_id: game.last_created_entity_id,
+                  ..Default::default()
+                },
+                age: 0,
+                health: 5,
+                item,
+                owner: 0,
+                pickup_delay: 0,
+                thrower: 0,
+              };
+
+             	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+                entity_id: new_entity.get_common_entity_data().entity_id,
+                entity_uuid: new_entity.get_common_entity_data().uuid,
+                entity_type: new_entity.get_type(),
+                x: parsed_packet.location.x as f64,
+                y: parsed_packet.location.y as f64,
+                z: parsed_packet.location.z as f64,
+                pitch: new_entity.get_pitch_u8(),
+                yaw: new_entity.get_yaw_u8(),
+                head_yaw: 0,
+                data: 0,
+                velocity_x: 0,
+                velocity_y: 0,
+                velocity_z: 0,
+             	};
+
+             	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+                entity_id: new_entity.get_common_entity_data().entity_id,
+                metadata: new_entity.get_metadata(),
+             	};
+
+             	game.world.dimensions
+                .get_mut("minecraft:overworld").unwrap()
+                .add_entity(Box::new(new_entity));
+
+                connection_streams.iter()
+                  .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+                  .for_each(|x| {
+                    lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+                    lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+                  });
+            }
+
             game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
             game.players.iter_mut()
               .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
@@ -1506,6 +1632,69 @@ pub mod play {
             for z in (creeper_position.z-2)..creeper_position.z+2 {
               let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
               if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+                let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
+                let items = match &block_entity.data {
+                  BlockEntityData::Chest(items) => items,
+                  BlockEntityData::Furnace(items, _, _, _, _) => items,
+                  BlockEntityData::BrewingStand(items) => items,
+                  BlockEntityData::Crafter(items) => items,
+                  BlockEntityData::Dispenser(items) => items,
+                  BlockEntityData::Hopper(items) => items,
+                  _ => &Vec::new(),
+                };
+
+                for item in items.clone() {
+                  game.last_created_entity_id += 1;
+
+                  let new_entity = lib::entity::ItemEntity {
+                    common: lib::entity::CommonEntity {
+                      position: BlockPosition {x,y,z}.into(),
+                   		velocity: EntityPosition::default(),
+                      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+                      entity_id: game.last_created_entity_id,
+                      ..Default::default()
+                    },
+                    age: 0,
+                    health: 5,
+                    item,
+                    owner: 0,
+                    pickup_delay: 0,
+                    thrower: 0,
+                  };
+
+                 	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+                    entity_id: new_entity.get_common_entity_data().entity_id,
+                    entity_uuid: new_entity.get_common_entity_data().uuid,
+                    entity_type: new_entity.get_type(),
+                    x: x as f64,
+                    y: y as f64,
+                    z: z as f64,
+                    pitch: new_entity.get_pitch_u8(),
+                    yaw: new_entity.get_yaw_u8(),
+                    head_yaw: 0,
+                    data: 0,
+                    velocity_x: 0,
+                    velocity_y: 0,
+                    velocity_z: 0,
+                 	};
+
+                 	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+                    entity_id: new_entity.get_common_entity_data().entity_id,
+                    metadata: new_entity.get_metadata(),
+                 	};
+
+                 	game.world.dimensions
+                    .get_mut("minecraft:overworld").unwrap()
+                    .add_entity(Box::new(new_entity));
+
+                    connection_streams.iter()
+                      .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+                      .for_each(|x| {
+                        lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+                        lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+                      });
+                }
+
                 game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(BlockPosition {x,y,z}).unwrap().block_entities.retain(|be| be.position != BlockPosition {x,y,z});
                 game.players.iter_mut()
                   .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == BlockPosition {x,y,z}))
