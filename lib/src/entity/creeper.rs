@@ -76,4 +76,9 @@ impl Entity for Creeper {
   fn set_mob_data(&mut self, common_mob_data: CommonMob) {
     self.mob = common_mob_data;
   }
+
+  //(height, width) https://minecraft.wiki/w/Hitbox
+  fn get_hitbox(&self) -> (f64, f64) {
+    return (1.7, 0.6);
+  }
 }

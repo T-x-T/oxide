@@ -37,4 +37,9 @@ impl Entity for ChestMinecart {
   fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
     self.common = common_entity_data;
   }
+
+  //(height, width) https://minecraft.wiki/w/Hitbox
+  fn get_hitbox(&self) -> (f64, f64) {
+    return (0.7, 0.98);
+  }
 }
