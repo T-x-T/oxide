@@ -83,4 +83,6 @@ pub struct CommonMob {
   pub sleeping_location: Option<(i32, i32, i32)>,
   pub team: Option<String>,
   pub alive_for_ticks: i32,
+  pub wander_to: Option<BlockPosition>,
+  pub wandered_for: u16,
 }

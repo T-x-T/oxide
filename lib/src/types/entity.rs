@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use rand::Rng;
+
 use crate::packets::Packet;
 use crate::types::*;
 use crate::entity::*;
@@ -8,6 +10,7 @@ use crate::entity::*;
 pub enum EntityTickOutcome {
   SelfDied,
   RemoveSelf,
+  Updated,
   None,
 }
 
@@ -15,6 +18,7 @@ pub enum EntityTickOutcome {
 pub enum AiBehavior {
   Idle,
   MoveTowardsPlayer,
+  Wander,
 }
 
 #[derive(Debug)]
@@ -270,8 +274,10 @@ pub trait Entity: std::fmt::Debug {
       };
 
       for player in players {
-        crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, packet.clone().try_into().unwrap()).unwrap();
+        let _ = crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, packet.clone().try_into().unwrap());
       }
+
+      return EntityTickOutcome::Updated;
     }
 
     return EntityTickOutcome::None;
@@ -348,13 +354,54 @@ pub trait Entity: std::fmt::Debug {
     return output;
   }
 
-  fn execute_ai(&self, players: &[Player]) -> AiExecutionResult {
-    let behavior = AiBehavior::MoveTowardsPlayer; //Determine this somehow
+  fn execute_ai(&mut self, players: &[Player]) -> AiExecutionResult {
+    let entity_type = data::entities::get_name_from_id(self.get_type());
+    let behavior = if entity_type.as_str() == "minecraft:creeper" {
+      AiBehavior::MoveTowardsPlayer
+    } else if self.is_mob() {
+      AiBehavior::Wander
+    } else {
+      AiBehavior::Idle
+    };
 
     return match behavior {
       AiBehavior::Idle => AiExecutionResult::DoNothing,
       AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players),
+      AiBehavior::Wander => self.execute_ai_wander(),
     };
+  }
+
+  fn execute_ai_wander(&mut self) -> AiExecutionResult {
+    if self.get_mob_data().wander_to.is_none() || self.get_mob_data().wandered_for > 200 {
+      let mut rng = rand::rng();
+      let block_pos_of_entity = BlockPosition::from(self.get_common_entity_data().position);
+
+      self.get_mob_data_mut().wander_to = Some(BlockPosition {
+        x: block_pos_of_entity.x + rng.random_range(-10..10),
+        y: block_pos_of_entity.y,
+        z: block_pos_of_entity.z + rng.random_range(-10..10),
+      });
+
+      self.get_mob_data_mut().wandered_for = 0;
+    }
+
+    self.get_mob_data_mut().wandered_for += 1;
+
+    let velocity_towards_goal = EntityPosition::from(self.get_mob_data().wander_to.unwrap()) - self.get_common_entity_data().position;
+    let distance_towards_goal = self.get_common_entity_data().position.distance_to(self.get_mob_data().wander_to.unwrap().into());
+    if distance_towards_goal < 1.0 {
+      self.get_mob_data_mut().wander_to = None;
+      return AiExecutionResult::DoNothing;
+    } else {
+      let speed = 0.02;
+      return AiExecutionResult::ApplyVelocity(EntityPosition {
+        x: (velocity_towards_goal.x / (distance_towards_goal + 1.0)) * speed,
+        y: 0.0,
+        z: (velocity_towards_goal.z / (distance_towards_goal + 1.0)) * speed,
+        yaw: 0.0,
+        pitch: 0.0,
+      });
+    }
   }
 
   fn execute_ai_move_towards_player(&self, players: &[Player]) -> AiExecutionResult {

@@ -210,7 +210,18 @@ fn tick(game: Arc<Mutex<Game>>) {
           ).unwrap()
           .modified = true;
           dimension.1.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
-        }
+        },
+        EntityTickOutcome::Updated => {
+          dimension.1.get_chunk_from_position_mut(
+            dimension.1.entities
+              .iter()
+              .find(|x| x.get_common_entity_data().entity_id == outcome.0)
+              .unwrap()
+              .get_common_entity_data()
+              .position.into()
+          ).unwrap()
+          .modified = true;
+        },
         EntityTickOutcome::None => (),
       }
     }
