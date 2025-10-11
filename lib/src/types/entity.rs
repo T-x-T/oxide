@@ -216,20 +216,14 @@ pub trait Entity: std::fmt::Debug {
 
     let mut velocity = self.get_common_entity_data().velocity;
     velocity = velocity + velocity_from_ai;
-    let next_position = EntityPosition {
-      x: old_position.x + velocity.x,
-      y: old_position.y + velocity.y,
-      z: old_position.z + velocity.z,
-      ..old_position
-    };
 
-    let mut collided_along_way = false;
-    let number_of_positions_to_check = velocity.x.abs().max(velocity.y.abs().max(velocity.z).abs()).ceil() as u16;
-    'outer: for i in 1..=number_of_positions_to_check {
+    let number_of_positions_to_check = velocity.x.abs().max(velocity.y.abs().max(velocity.z).abs()).ceil() as u16 * 16;
+    let mut last_velocity = EntityPosition::default();
+    for i in 0..=number_of_positions_to_check {
       let velocity_to_check = EntityPosition {
-        x: (velocity.x / number_of_positions_to_check as f64) * i as f64,
-        y: (velocity.y / number_of_positions_to_check as f64) * i as f64,
-        z: (velocity.z / number_of_positions_to_check as f64) * i as f64,
+        x: (velocity.x / (number_of_positions_to_check + 1) as f64) * i as f64,
+        y: (velocity.y / (number_of_positions_to_check + 1) as f64) * i as f64,
+        z: (velocity.z / (number_of_positions_to_check + 1) as f64) * i as f64,
         ..Default::default()
       };
 
@@ -240,27 +234,31 @@ pub trait Entity: std::fmt::Debug {
         ..old_position
       };
 
-      let positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
+      if self.collides_with_blocks_at(dimension, block_state_data, entity_position_to_check) {
+        velocity = last_velocity;
 
-      for position_to_check in positions_to_check {
-        let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
-        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
-        if block_type_at_location.is_solid() {
-          self.get_common_entity_data_mut().position = EntityPosition {
-            x: old_position.x + (velocity.x / number_of_positions_to_check as f64) * (i - 1) as f64,
-            y: old_position.y + (velocity.y / number_of_positions_to_check as f64) * (i - 1) as f64,
-            z: old_position.z + (velocity.z / number_of_positions_to_check as f64) * (i - 1) as f64,
-            ..old_position
+        //Check if jumping would help
+        if self.is_on_ground(dimension, block_state_data) && !self.collides_with_blocks_at(dimension, block_state_data, EntityPosition { y: entity_position_to_check.y + 1.0, ..entity_position_to_check }) {
+            self.get_common_entity_data_mut().velocity.y += 0.025;
           };
-          collided_along_way = true;
-          break 'outer;
-        }
+        break;
       }
+
+      last_velocity = velocity_to_check;
     }
 
-    if !collided_along_way {
-      self.get_common_entity_data_mut().position = next_position;
+
+    let mut next_position = EntityPosition {
+      x: old_position.x + velocity.x,
+      y: old_position.y + velocity.y,
+      z: old_position.z + velocity.z,
+      ..old_position
+    };
+    if self.is_on_ground_at(dimension, block_state_data, next_position) {
+      next_position.y = next_position.y.round();
     }
+
+    self.get_common_entity_data_mut().position = next_position;
 
     if old_position != self.get_common_entity_data().position {
       let packet = crate::packets::clientbound::play::UpdateEntityPosition {
@@ -277,6 +275,20 @@ pub trait Entity: std::fmt::Debug {
     }
 
     return EntityTickOutcome::None;
+  }
+
+  fn collides_with_blocks_at(&self, dimension: &Dimension, block_state_data: &HashMap<String, data::blocks::Block>, position_to_check: EntityPosition) -> bool {
+    let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
+
+    for position_to_check in positions_to_check {
+      let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
+      let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location, block_state_data);
+      if block_type_at_location.is_solid() {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   fn is_on_ground(&self, dimension: &Dimension, block_state_data: &HashMap<String, data::blocks::Block>) -> bool {
@@ -356,12 +368,12 @@ pub trait Entity: std::fmt::Debug {
 
     if let Some(closest_player) = closest_player {
       let velocity_towards_player = closest_player.0.get_position() - self.get_common_entity_data().position;
-      let distance_towards_plater = self.get_common_entity_data().position.distance_to(closest_player.0.get_position());
+      let distance_towards_player = self.get_common_entity_data().position.distance_to(closest_player.0.get_position());
       let speed = 0.1;
       return AiExecutionResult::ApplyVelocity(EntityPosition {
-        x: (velocity_towards_player.x / distance_towards_plater) * speed,
+        x: (velocity_towards_player.x / (distance_towards_player + 1.0)) * speed,
         y: 0.0,
-        z: (velocity_towards_player.z / distance_towards_plater) * speed,
+        z: (velocity_towards_player.z / (distance_towards_player + 1.0)) * speed,
         yaw: 0.0,
         pitch: 0.0,
       });
