@@ -248,19 +248,19 @@ impl super::WorldLoader for Loader {
       let entity_type = entity_type.as_string();
 
       match entity_type {
-        "minecraft:armadillo" => output.push(crate::entity::Armadillo::from_nbt(entity, *next_entity_id)),
-        "minecraft:cat" => output.push(crate::entity::Cat::from_nbt(entity, *next_entity_id)),
-        "minecraft:chest_minecart" => output.push(crate::entity::ChestMinecart::from_nbt(entity, *next_entity_id)),
-        "minecraft:chicken" => output.push(crate::entity::Chicken::from_nbt(entity, *next_entity_id)),
-        "minecraft:cow" => output.push(crate::entity::Cow::from_nbt(entity, *next_entity_id)),
-        "minecraft:creeper" => output.push(crate::entity::Creeper::from_nbt(entity, *next_entity_id)),
-        "minecraft:donkey" => output.push(crate::entity::Donkey::from_nbt(entity, *next_entity_id)),
-        "minecraft:horse" => output.push(crate::entity::Horse::from_nbt(entity, *next_entity_id)),
-        "minecraft:item" => output.push(crate::entity::ItemEntity::from_nbt(entity, *next_entity_id)),
-        "minecraft:parrot" => output.push(crate::entity::Parrot::from_nbt(entity, *next_entity_id)),
-        "minecraft:pig" => output.push(crate::entity::Pig::from_nbt(entity, *next_entity_id)),
-        "minecraft:rabbit" => output.push(crate::entity::Rabbit::from_nbt(entity, *next_entity_id)),
-        "minecraft:sheep" => output.push(crate::entity::Sheep::from_nbt(entity, *next_entity_id)),
+        "minecraft:armadillo" => output.push(crate::entity::Armadillo::from_nbt(entity, next_entity_id)),
+        "minecraft:cat" => output.push(crate::entity::Cat::from_nbt(entity, next_entity_id)),
+        "minecraft:chest_minecart" => output.push(crate::entity::ChestMinecart::from_nbt(entity, next_entity_id)),
+        "minecraft:chicken" => output.push(crate::entity::Chicken::from_nbt(entity, next_entity_id)),
+        "minecraft:cow" => output.push(crate::entity::Cow::from_nbt(entity, next_entity_id)),
+        "minecraft:creeper" => output.push(crate::entity::Creeper::from_nbt(entity, next_entity_id)),
+        "minecraft:donkey" => output.push(crate::entity::Donkey::from_nbt(entity, next_entity_id)),
+        "minecraft:horse" => output.push(crate::entity::Horse::from_nbt(entity, next_entity_id)),
+        "minecraft:item" => output.push(crate::entity::ItemEntity::from_nbt(entity, next_entity_id)),
+        "minecraft:parrot" => output.push(crate::entity::Parrot::from_nbt(entity, next_entity_id)),
+        "minecraft:pig" => output.push(crate::entity::Pig::from_nbt(entity, next_entity_id)),
+        "minecraft:rabbit" => output.push(crate::entity::Rabbit::from_nbt(entity, next_entity_id)),
+        "minecraft:sheep" => output.push(crate::entity::Sheep::from_nbt(entity, next_entity_id)),
         _ => println!("tried loading unknown entity {entity_type} from disk"),
       };
 
