@@ -1182,7 +1182,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1200,7 +1200,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
   			}
@@ -1241,7 +1241,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1259,7 +1259,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}

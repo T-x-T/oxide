@@ -441,9 +441,9 @@ impl From<BlockEntityData> for Vec<NbtTag> {
         ]
       },
       BlockEntityData::Conduit(mob) => {
-        if mob.is_some() {
+        if let Some(mob) = mob {
           vec![
-            NbtTag::IntArray("Target".to_string(), mob.unwrap())
+            NbtTag::IntArray("Target".to_string(), mob)
           ]
         } else {
           Vec::new()
