@@ -336,25 +336,17 @@ impl Player {
 	     	chunk_z: new_chunk_position.z,
      	}.try_into()?)?;
 
-     	let temp_chunk_coords_to_send: (Vec<i32>, Vec<i32>) = if new_chunk_position.x > old_chunk_position.x {
-      	let new_x = new_chunk_position.x + 10;
-      	(vec![new_x;21], ((new_chunk_position.z - 10)..=(new_chunk_position.z + 10)).collect())
-      } else if new_chunk_position.x < old_chunk_position.x {
-      	let new_x = new_chunk_position.x - 10;
-      	(vec![new_x;21], ((new_chunk_position.z - 10)..=(new_chunk_position.z + 10)).collect())
-      } else if new_chunk_position.z > old_chunk_position.z {
-	      let new_z = new_chunk_position.z + 10;
-	     	(((new_chunk_position.x - 10)..=(new_chunk_position.x + 10)).collect(), vec![new_z;21])
-      } else {
-      	let new_z = new_chunk_position.z - 10;
-	     	(((new_chunk_position.x - 10)..=(new_chunk_position.x + 10)).collect(), vec![new_z;21])
-      };
-
-      let chunk_coords_to_send: Vec<(i32, i32)> = temp_chunk_coords_to_send.0.iter().enumerate().map(|x| {
-      	(temp_chunk_coords_to_send.0[x.0], temp_chunk_coords_to_send.1[x.0])
+      let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
+        (old_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
       }).collect();
 
-      for chunk_coords in chunk_coords_to_send {
+      let new_chunk_coords: Vec<(i32, i32)> = (new_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
+        (new_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
+      }).collect();
+
+      let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
+
+      for chunk_coords in chunks_missing {
       	self.send_chunk(world, chunk_coords.0, chunk_coords.1, next_entity_id)?;
       }
     }
