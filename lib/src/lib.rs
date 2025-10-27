@@ -14,6 +14,7 @@ pub mod packets;
 pub mod block;
 pub mod types;
 pub mod containerclick;
+pub mod entity;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 
@@ -24,8 +25,8 @@ pub enum CustomError {
   InputEmpty,
   InvalidNbtTag(u8),
   InvalidNextHandshakeState(u8),
-  ChunkNotFound(Position),
-  PositionOutOfBounds(Position),
+  ChunkNotFound(BlockPosition),
+  PositionOutOfBounds(BlockPosition),
   InvalidInput(String),
   TriedParsingUnknown(String),
   NotActuallyAnErrorButPleaseDisconnectMe,

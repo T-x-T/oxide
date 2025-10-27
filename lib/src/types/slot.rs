@@ -8,6 +8,63 @@ pub struct Slot {
   pub components_to_remove: Vec<i32>,
 }
 
+#[derive(Debug, Clone)]
+pub struct Item {
+  pub id: String,
+  pub count: u8,
+  pub components: Vec<SlotComponent>,
+}
+
+impl Default for Item {
+  fn default() -> Self {
+    Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
+  }
+}
+
+impl From<Vec<Item>> for NbtTag {
+  fn from(value: Vec<Item>) -> Self {
+    return NbtTag::List("Items".to_string(), value.iter().enumerate().filter(|(_, item)| item.id != "minecraft:air" && item.count != 0).map(|(i, item)| {
+      NbtListTag::TagCompound(vec![
+        NbtTag::Byte("Slot".to_string(), i as u8),
+        NbtTag::String("id".to_string(), item.id.clone()),
+        NbtTag::Int("count".to_string(), item.count as i32),
+        NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
+      ])
+    }).collect());
+  }
+}
+
+impl From<Item> for Vec<NbtTag> {
+  fn from(value: Item) -> Self {
+    return vec![
+      NbtTag::String("id".to_string(), value.id.clone()),
+      NbtTag::Int("count".to_string(), value.count as i32),
+      NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
+    ];
+  }
+}
+
+impl From<NbtTag> for Item {
+  fn from(value: NbtTag) -> Self {
+    return Self {
+      id: value.get_child("id").unwrap_or(&NbtTag::String("".to_string(), "minecraft:air".to_string())).as_string().to_string(),
+      count: value.get_child("count").unwrap_or(&NbtTag::Int("".to_string(), 0)).as_int() as u8,
+      components: Vec::new(), //missing nbt to SlotComponent conversion
+    }
+  }
+}
+
+impl From<&Item> for Slot {
+  fn from(value: &Item) -> Self {
+    return Slot {
+      item_count: value.count as i32,
+      item_id: data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id,
+      components_to_add: value.components.clone(),
+      components_to_remove: Vec::new()
+    };
+  }
+}
+
 impl From<Slot> for Item {
   fn from(value: Slot) -> Self {
     return Self {
@@ -123,7 +180,7 @@ pub enum SlotComponent {
   JukeboxPlayable, //still missing some stuffs
   ProvidesBannerPatterns(String),
   Recipes(NbtTag),
-  LodestoneTracker(bool, String, crate::Position, bool),
+  LodestoneTracker(bool, String, crate::BlockPosition, bool),
   FireworkExplosion, //Missing firework explosion implementation
   Fireworks, //Missing firework explosion implementation
   Profile(Option<String>, Option<u128>, Vec<(String, String, Option<String>)>),

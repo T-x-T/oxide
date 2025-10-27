@@ -13,7 +13,8 @@ fn main() {
   //do_properties();
   //do_get_block_state_id_from_raw();
   //do_get_raw_properties_from_block_state_id();
-  do_blockentity_types();
+  //do_blockentity_types();
+  do_entities();
 }
 
 fn do_items() {
@@ -50,6 +51,34 @@ fn do_blockentity_types() {
   }
 
   println!("\n\treturn output;");
+  println!("}}");
+}
+
+fn do_entities() {
+  let registries_file = std::fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
+  let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
+  let registry = registries_json.as_object().unwrap()["minecraft:entity_type"]["entries"].as_object().unwrap();
+
+  println!("pub fn get_id_from_name(name: &str) -> i32 {{");
+  println!("\treturn match name {{");
+
+  for entry in registry.iter() {
+    println!("\t\t\"{}\" => {},", entry.0, entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap());
+  }
+
+  println!("\t\t_ => panic!(\"get_id_from_name encountered entity with name {{name}} that doesnt exist\"),");
+  println!("\t}};");
+  println!("}}");
+  println!("\n");
+  println!("pub fn get_name_from_id(id: i32) -> String {{");
+  println!("\treturn match id {{");
+
+  for entry in registry.iter() {
+    println!("\t\t{} => \"{}\".to_string(),", entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap(), entry.0);
+  }
+
+  println!("\t\t_ => panic!(\"get_name_from_id encountered entity with id {{id}} that doesnt exist\"),");
+  println!("\t}};");
   println!("}}");
 }
 

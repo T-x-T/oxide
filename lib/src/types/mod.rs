@@ -7,6 +7,7 @@ pub mod blockentity;
 pub mod player;
 pub mod game;
 pub mod connection;
+pub mod entity;
 
 pub use world::*;
 pub use position::*;
@@ -17,6 +18,7 @@ pub use blockentity::*;
 pub use player::*;
 pub use game::*;
 pub use connection::*;
+pub use entity::*;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CardinalDirection {

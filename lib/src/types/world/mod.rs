@@ -3,18 +3,17 @@ pub mod loader;
 use std::{collections::HashMap, error::Error, fmt::Debug};
 use super::*;
 
-use crate::{loader::WorldLoader, types::position::Position, SPAWN_CHUNK_RADIUS};
+use crate::{loader::WorldLoader, types::position::BlockPosition, SPAWN_CHUNK_RADIUS};
 
-#[derive(Debug)]
 pub struct World {
   pub dimensions: HashMap<String, Dimension>,
   pub loader: Box<dyn WorldLoader>,
-  pub default_spawn_location: Position,
+  pub default_spawn_location: BlockPosition,
 }
 
-#[derive(Debug, Clone)]
 pub struct Dimension {
   pub chunks: Vec<Chunk>,
+  pub entities: Vec<Box<dyn SaveableEntity + Send>>,
 }
 
 #[derive(Debug, Clone)]
@@ -44,19 +43,19 @@ pub enum BlockOverwriteOutcome {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new(loader: impl WorldLoader + 'static) -> Self {
+  pub fn new(loader: impl WorldLoader + 'static, next_entity_id: &mut i32) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
-    let default_spawn_location: Position;
+    let default_spawn_location: BlockPosition;
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
       default_spawn_location = loader.get_default_spawn_location();
-   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader));
+   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, next_entity_id));
     	println!("finished loading existing world in {:.2?}", now.elapsed());
    	} else {
 	    println!("create new world");
 	    dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
-			default_spawn_location = Position {x: 0, y: -48, z: 0};
+			default_spawn_location = BlockPosition {x: 0, y: -48, z: 0};
 	    println!("creation of new world finished");
     }
     return Self { dimensions, loader: Box::new(loader), default_spawn_location };
@@ -80,44 +79,48 @@ impl Dimension {
 
     return Self {
       chunks,
+      entities: Vec::new(),
     };
   }
 
-  pub fn new_from_loader(loader: &impl loader::WorldLoader) -> Self {
+  pub fn new_from_loader(loader: &impl loader::WorldLoader, next_entity_id: &mut i32) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
+    let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 
    	for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
     	for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
      		chunks.push(loader.load_chunk(x as i32, z as i32));
+        entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, next_entity_id));
       }
     }
 
     return Self {
    		chunks,
+      entities,
     }
 	}
 
-  pub fn get_chunk_from_position_mut(&mut self, position: Position) -> Option<&mut Chunk> {
+  pub fn get_chunk_from_position_mut(&mut self, position: BlockPosition) -> Option<&mut Chunk> {
     let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
     return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_position(&self, position: Position) -> Option<&Chunk> {
+  pub fn get_chunk_from_position(&self, position: BlockPosition) -> Option<&Chunk> {
     let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_chunk_position_mut(&mut self, chunk_coordinates: Position) -> Option<&mut Chunk> {
+  pub fn get_chunk_from_chunk_position_mut(&mut self, chunk_coordinates: BlockPosition) -> Option<&mut Chunk> {
     return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn get_chunk_from_chunk_position(&self, chunk_coordinates: Position) -> Option<&Chunk> {
+  pub fn get_chunk_from_chunk_position(&self, chunk_coordinates: BlockPosition) -> Option<&Chunk> {
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn overwrite_block(&mut self, position: Position, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
+  pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position_mut(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -129,7 +132,7 @@ impl Dimension {
     return Ok(chunk.unwrap().set_block(position, block_state_id));
   }
 
-  pub fn get_block(&self, position: Position) -> Result<u16, Box<dyn Error>> {
+  pub fn get_block(&self, position: BlockPosition) -> Result<u16, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -141,13 +144,28 @@ impl Dimension {
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
   }
 
-  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: Position) {
+  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: BlockPosition) {
  		{
-      loader.save_to_disk(&self.chunks, default_spawn_location);
+      loader.save_to_disk(&self.chunks, default_spawn_location, self);
     }
     for chunk in &mut self.chunks {
       chunk.modified = false;
     }
+  }
+
+  #[allow(clippy::borrowed_box)]
+  pub fn get_entities_in_chunk(&self, x: i32, z: i32) -> Vec<&Box<dyn SaveableEntity + Send>> {
+    return self.entities.iter()
+      .filter(|e| {
+        let chunk_coords_of_entity = BlockPosition::from(e.get_common_entity_data().position).convert_to_coordinates_of_chunk();
+        return chunk_coords_of_entity.x == x && chunk_coords_of_entity.z == z;
+      })
+      .collect();
+  }
+
+  pub fn add_entity(&mut self, entity: Box<dyn SaveableEntity + Send>) {
+    self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
+    self.entities.push(entity);
   }
 }
 
@@ -180,7 +198,7 @@ impl Chunk {
     };
   }
 
-  fn set_block(&mut self, position_global: Position, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
+  fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
     self.modified = true;
     let position_in_chunk = position_global.convert_to_position_in_chunk();
     let section_id = (position_in_chunk.y + 64) / 16;
@@ -203,17 +221,30 @@ impl Chunk {
     return destroy_blockentity;
   }
 
-  fn get_block(&self, position_in_chunk: Position) -> u16 {
+  pub fn get_block(&self, position_in_chunk: BlockPosition) -> u16 {
+    if position_in_chunk.y < -64 {
+      return 0;
+    }
+
     let section_id = (position_in_chunk.y + 64) / 16;
+
+    if section_id as usize >= self.sections.len() {
+      return 0;
+    }
+
+    if self.sections[section_id as usize].blocks.is_empty() {
+      return 0;
+    }
+
     let block_id = position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
     return self.sections[section_id as usize].blocks[block_id as usize];
   }
 
-  pub fn try_get_block_entity(&self, position_in_chunk: Position) -> Option<&BlockEntity> {
+  pub fn try_get_block_entity(&self, position_in_chunk: BlockPosition) -> Option<&BlockEntity> {
     return self.block_entities.iter().find(|x| x.position == position_in_chunk);
   }
 
-  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: Position) -> Option<&mut BlockEntity> {
+  pub fn try_get_block_entity_mut(&mut self, position_in_chunk: BlockPosition) -> Option<&mut BlockEntity> {
     self.modified = true; //cant know what caller will do with the &mut so better be safe
     return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
   }

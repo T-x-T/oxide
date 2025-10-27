@@ -9,7 +9,7 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct BlockEntity {
   pub id: BlockEntityId,
-  pub position: Position, //global position, NOT within the chunk
+  pub position: BlockPosition, //global position, NOT within the chunk
   pub components: Option<Vec<SlotComponent>>, //At least I think so?
   pub data: BlockEntityData,
   pub needs_ticking: bool,
@@ -315,19 +315,6 @@ pub enum BlockEntityData {
 }
 
 #[derive(Debug, Clone)]
-pub struct Item {
-  pub id: String,
-  pub count: u8,
-  pub components: Vec<SlotComponent>,
-}
-
-impl Default for Item {
-  fn default() -> Self {
-    Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
-  }
-}
-
-#[derive(Debug, Clone)]
 pub struct Bee {
   entity_data: Vec<NbtTag>,
   min_ticks_in_hive: i32,
@@ -365,12 +352,12 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       ],
       BlockEntityData::Chest(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Furnace(block_entity_data_items, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
           NbtTag::Short("lit_time_remaining".to_string(), lit_time_remaining),
           NbtTag::Short("cooking_time_spent".to_string(), cooking_time_spent),
           NbtTag::Short("cooking_total_time".to_string(), cooking_total_time),
@@ -379,22 +366,22 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       },
       BlockEntityData::BrewingStand(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Crafter(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Dispenser(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Hopper(block_entity_data_items) => {
         vec![
-          items_to_nbt(block_entity_data_items),
+          block_entity_data_items.into(),
         ]
       },
       BlockEntityData::Beacon(primary_effect, secondary_effect) => {
@@ -437,14 +424,14 @@ impl From<BlockEntityData> for Vec<NbtTag> {
       },
       BlockEntityData::Campfire(cooking_times, cooking_total_times, items) => {
         vec![
-          items_to_nbt(items),
+          items.into(),
           NbtTag::IntArray("CookingTimes".to_string(), cooking_times),
           NbtTag::IntArray("CookingTotalTimes".to_string(), cooking_total_times),
         ]
       },
       BlockEntityData::ChiseledBookShelf(items, last_interacted_slot) => {
         vec![
-          items_to_nbt(items),
+          items.into(),
           NbtTag::Int("last_interacted_slot".to_string(), last_interacted_slot),
         ]
       },
@@ -454,9 +441,9 @@ impl From<BlockEntityData> for Vec<NbtTag> {
         ]
       },
       BlockEntityData::Conduit(mob) => {
-        if mob.is_some() {
+        if let Some(mob) = mob {
           vec![
-            NbtTag::IntArray("Target".to_string(), mob.unwrap())
+            NbtTag::IntArray("Target".to_string(), mob)
           ]
         } else {
           Vec::new()
@@ -520,29 +507,7 @@ impl From<BlockEntityData> for Vec<NbtTag> {
   }
 }
 
-fn items_to_nbt(block_entity_data_items: Vec<Item>) -> NbtTag {
-  return NbtTag::List("Items".to_string(), block_entity_data_items.iter().enumerate().filter(|(_, item)| item.id != "minecraft:air" && item.count != 0).map(|(i, item)| {
-    NbtListTag::TagCompound(vec![
-      NbtTag::Byte("Slot".to_string(), i as u8),
-      NbtTag::String("id".to_string(), item.id.clone()),
-      NbtTag::Int("count".to_string(), item.count as i32),
-      NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
-    ])
-  }).collect());
-}
-
-impl From<&Item> for Slot {
-  fn from(value: &Item) -> Self {
-    return Slot {
-      item_count: value.count as i32,
-      item_id: data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id,
-      components_to_add: value.components.clone(),
-      components_to_remove: Vec::new()
-    };
-  }
-}
-
-pub fn get_blockentity_for_placed_block(position_global: Position, block_state_id: u16) -> Option<BlockEntity> {
+pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_state_id: u16) -> Option<BlockEntity> {
   return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //maybe pass the blocks in from somewhere at some point, recomputing this on every placed block is not _that_ ideal
     Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
@@ -605,7 +570,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
     let x = value.get_child("x").unwrap().as_int();
     let y = value.get_child("y").unwrap().as_int() as i16;
     let z = value.get_child("z").unwrap().as_int();
-    let position = Position { x, y, z };
+    let position = BlockPosition { x, y, z };
 
     let data: BlockEntityData = match id {
       BlockEntityId::Banner => {

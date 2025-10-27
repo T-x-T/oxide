@@ -29,14 +29,17 @@ fn initialize_server() {
   };
 
   let connections: Arc<Mutex<HashMap<SocketAddr, Connection>>> = Arc::new(Mutex::new(HashMap::new()));
+  let next_entity_id: &mut i32 = &mut 0;
   let mut game = Game {
     players: Vec::new(),
-    world: World::new(world_loader),
+    world: World::new(world_loader, next_entity_id),
     last_created_entity_id: 0,
     chat_message_index: 0,
     commands: Vec::new(),
     last_save_all_timestamp: std::time::Instant::now(),
+    block_state_data: data::blocks::get_blocks(),
   };
+  game.last_created_entity_id = *next_entity_id;
   command::init(&mut game);
 
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));
@@ -151,8 +154,10 @@ fn tick(game: Arc<Mutex<Game>>) {
     game.lock().unwrap().save_all();
   }
 
-  //let now = std::time::Instant::now();
   let mut game = game.lock().unwrap();
+
+  let block_state_data = std::mem::take(&mut game.block_state_data);
+
   let players = game.players.clone();
   for dimension in &mut game.world.dimensions {
     for chunk in &mut dimension.1.chunks {
@@ -162,7 +167,67 @@ fn tick(game: Arc<Mutex<Game>>) {
         }
       }
     }
+
+    let mut entities = std::mem::take(&mut dimension.1.entities);
+    let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
+    for entity in &mut entities {
+      //let now = std::time::Instant::now();
+      let outcome = entity.tick(dimension.1, &players, &block_state_data);
+      //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
+      if outcome != EntityTickOutcome::None {
+        entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
+      }
+    }
+    dimension.1.entities = entities;
+    for outcome in entity_tick_outcomes {
+      match outcome.1 {
+        EntityTickOutcome::SelfDied => {
+          let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
+            entity_id: outcome.0,
+            entity_status: 3,
+          };
+
+          for player in &players {
+            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::EntityEvent::PACKET_ID, entity_event_packet.clone().try_into().unwrap()).unwrap();
+          }
+        },
+        EntityTickOutcome::RemoveSelf => {
+          let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
+            entity_ids: vec![outcome.0],
+          };
+
+          for player in &players {
+            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap()).unwrap();
+          }
+
+          dimension.1.get_chunk_from_position_mut(
+            dimension.1.entities
+              .iter()
+              .find(|x| x.get_common_entity_data().entity_id == outcome.0)
+              .unwrap()
+              .get_common_entity_data()
+              .position.into()
+          ).unwrap()
+          .modified = true;
+          dimension.1.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
+        },
+        EntityTickOutcome::Updated => {
+          dimension.1.get_chunk_from_position_mut(
+            dimension.1.entities
+              .iter()
+              .find(|x| x.get_common_entity_data().entity_id == outcome.0)
+              .unwrap()
+              .get_common_entity_data()
+              .position.into()
+          ).unwrap()
+          .modified = true;
+        },
+        EntityTickOutcome::None => (),
+      }
+    }
   }
+
+  game.block_state_data = block_state_data;
+
   drop(game);
-  //println!("ticked blockentities in {:.2?}", now.elapsed());
 }

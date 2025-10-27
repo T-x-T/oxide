@@ -1,10 +1,10 @@
 use data::blocks::{self, *};
 
-use crate::{CardinalDirection, Dimension, Position};
+use crate::{CardinalDirection, Dimension, BlockPosition};
 
-pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: Position, used_item_name: String, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32) -> Vec<(u16, Position)> {
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: String, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32) -> Vec<(u16, BlockPosition)> {
   let block = data::blocks::get_block_from_name(used_item_name.clone());
-  let mut output: Vec<(u16, Position)> = Vec::new();
+  let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
   match block.block_type {
     Type::RotatedPillar => {
@@ -86,10 +86,10 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       };
 
       let position_to_check = match cardinal_direction {
-        CardinalDirection::North => if hinge_side == DoorHinge::Left { Position { x: position.x - 1, ..position } } else { Position { x: position.x + 1, ..position } },
-        CardinalDirection::East => if hinge_side == DoorHinge::Left { Position { z: position.z - 1, ..position } } else { Position { z: position.z + 1, ..position } },
-        CardinalDirection::South => if hinge_side == DoorHinge::Left { Position { x: position.x + 1, ..position } } else { Position { x: position.x - 1, ..position } },
-        CardinalDirection::West => if hinge_side == DoorHinge::Left { Position { z: position.z + 1, ..position } } else { Position { z: position.z - 1, ..position } },
+        CardinalDirection::North => if hinge_side == DoorHinge::Left { BlockPosition { x: position.x - 1, ..position } } else { BlockPosition { x: position.x + 1, ..position } },
+        CardinalDirection::East => if hinge_side == DoorHinge::Left { BlockPosition { z: position.z - 1, ..position } } else { BlockPosition { z: position.z + 1, ..position } },
+        CardinalDirection::South => if hinge_side == DoorHinge::Left { BlockPosition { x: position.x + 1, ..position } } else { BlockPosition { x: position.x - 1, ..position } },
+        CardinalDirection::West => if hinge_side == DoorHinge::Left { BlockPosition { z: position.z + 1, ..position } } else { BlockPosition { z: position.z - 1, ..position } },
       };
       let block_id_next_to_door = dimension.get_block(position_to_check).unwrap_or(0);
       let block_id_of_valid_door = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id;
@@ -97,13 +97,13 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let hinge = if we_must_go_double_door_mode { if hinge_side == DoorHinge::Right { DoorHinge::Left } else { DoorHinge::Right } } else { hinge_side };
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, position));
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, Position { x: position.x, y: position.y + 1, z: position.z }));
+      output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, BlockPosition { x: position.x, y: position.y + 1, z: position.z }));
     },
     Type::Slab => {
       let position_to_check = if face == 0 {
-        Position { y: position.y + 1, ..position }
+        BlockPosition { y: position.y + 1, ..position }
       } else if face == 1 {
-        Position { y: position.y - 1, ..position }
+        BlockPosition { y: position.y - 1, ..position }
       } else {
         position
       };
@@ -146,10 +146,10 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let all_blocks = blocks::get_blocks();
       let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
-      let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { IronBarsNorth::True } else { IronBarsNorth::False };
-      let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { IronBarsSouth::True } else { IronBarsSouth::False };
-      let east = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x + 1, ..position }).unwrap_or(0)) { IronBarsEast::True } else { IronBarsEast::False };
-      let west = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x - 1, ..position }).unwrap_or(0)) { IronBarsWest::True } else { IronBarsWest::False };
+      let north = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or(0)) { IronBarsNorth::True } else { IronBarsNorth::False };
+      let south = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or(0)) { IronBarsSouth::True } else { IronBarsSouth::False };
+      let east = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or(0)) { IronBarsEast::True } else { IronBarsEast::False };
+      let west = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or(0)) { IronBarsWest::True } else { IronBarsWest::False };
       let water_logged = IronBarsWaterlogged::False;
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(north.clone())) && x.properties.contains(&Property::IronBarsSouth(south.clone())) && x.properties.contains(&Property::IronBarsEast(east.clone())) && x.properties.contains(&Property::IronBarsWest(west.clone())) && x.properties.contains(&Property::IronBarsWaterlogged(water_logged.clone()))).unwrap().id, position));
@@ -158,10 +158,10 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       let all_blocks = blocks::get_blocks();
       let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
-      let north = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z - 1, ..position }).unwrap_or(0)) { StainedGlassPaneNorth::True } else { StainedGlassPaneNorth::False };
-      let south = if block_ids_to_check.contains(&dimension.get_block(Position { z: position.z + 1, ..position }).unwrap_or(0)) { StainedGlassPaneSouth::True } else { StainedGlassPaneSouth::False };
-      let east = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x + 1, ..position }).unwrap_or(0)) { StainedGlassPaneEast::True } else { StainedGlassPaneEast::False };
-      let west = if block_ids_to_check.contains(&dimension.get_block(Position { x: position.x - 1, ..position }).unwrap_or(0)) { StainedGlassPaneWest::True } else { StainedGlassPaneWest::False };
+      let north = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or(0)) { StainedGlassPaneNorth::True } else { StainedGlassPaneNorth::False };
+      let south = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or(0)) { StainedGlassPaneSouth::True } else { StainedGlassPaneSouth::False };
+      let east = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or(0)) { StainedGlassPaneEast::True } else { StainedGlassPaneEast::False };
+      let west = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or(0)) { StainedGlassPaneWest::True } else { StainedGlassPaneWest::False };
       let water_logged = StainedGlassPaneWaterlogged::False;
 
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(north.clone())) && x.properties.contains(&Property::StainedGlassPaneSouth(south.clone())) && x.properties.contains(&Property::StainedGlassPaneEast(east.clone())) && x.properties.contains(&Property::StainedGlassPaneWest(west.clone())) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(water_logged.clone()))).unwrap().id, position));

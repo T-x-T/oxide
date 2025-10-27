@@ -5,6 +5,8 @@ mod tell;
 mod panic;
 mod print_players;
 mod saveall;
+mod summon;
+mod give;
 
 use lib::packets::Packet;
 use lib::types::*;
@@ -20,6 +22,8 @@ pub fn init(game: &mut Game) {
 	panic::init(game);
 	print_players::init(game);
 	saveall::init(game);
+	summon::init(game);
+	give::init(game);
 }
 
 

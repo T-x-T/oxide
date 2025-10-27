@@ -1,5 +1,6 @@
 use super::*;
 use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}, ConnectionState};
+use crate::entity::CommonEntity;
 use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
@@ -7,6 +8,7 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use flate2::Compression;
 
+//TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
   x: f64,
@@ -14,6 +16,7 @@ pub struct Player {
   z: f64,
   yaw: f32,
   pitch: f32,
+  pub velocity: EntityPosition,
   pub display_name: String,
   pub uuid: u128,
   pub peer_socket_address: SocketAddr,
@@ -23,7 +26,7 @@ pub struct Player {
   pub current_teleport_id: i32,
   inventory: Vec<Option<Slot>>,
   selected_slot: u8,
-  pub opened_inventory_at: Option<Position>,
+  pub opened_inventory_at: Option<BlockPosition>,
   pub cursor_item: Option<Slot>,
   is_sneaking: bool,
 }
@@ -37,6 +40,7 @@ impl Clone for Player {
       z: self.z,
       yaw: self.yaw,
       pitch: self.pitch,
+      velocity: EntityPosition::default(),
       display_name: self.display_name.clone(),
       uuid: self.uuid, peer_socket_address: self.peer_socket_address,
       connection_stream: self.connection_stream.try_clone().unwrap(),
@@ -52,6 +56,53 @@ impl Clone for Player {
   }
 }
 
+impl Entity for Player {
+  fn get_type(&self) -> i32 {
+    return 149;
+  }
+
+  fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
+    return vec![
+      crate::packets::clientbound::play::EntityMetadata {
+        index: 9,
+        value: crate::packets::clientbound::play::EntityMetadataValue::Float(20.0),
+      },
+      crate::packets::clientbound::play::EntityMetadata {
+        index: 17,
+        value: crate::packets::clientbound::play::EntityMetadataValue::Byte(127),
+      },
+    ];
+  }
+
+  fn get_common_entity_data(&self) -> &CommonEntity {
+    todo!();
+  }
+
+  fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+    todo!();
+  }
+
+  fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
+    todo!();
+  }
+
+  fn get_yaw_u8(&self) -> u8 {
+    return if self.yaw < 0.0 {
+      (((self.yaw / 90.0) * 64.0) + 256.0) as u8
+    } else {
+     	((self.yaw / 90.0) * 64.0) as u8
+    };
+  }
+
+  fn get_pitch_u8(&self) -> u8 {
+    return if self.pitch < 0.0 {
+      (((self.pitch / 90.0) * 64.0) + 256.0) as u8
+    } else {
+     	((self.pitch / 90.0) * 64.0) as u8
+    };
+  }
+}
+
 impl Player {
   pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
@@ -61,6 +112,7 @@ impl Player {
 	      z: game.world.default_spawn_location.z as f64,
 	      yaw: 0.0,
 	      pitch: 0.0,
+				velocity: EntityPosition::default(),
 	      display_name,
 	      uuid,
 	      peer_socket_address,
@@ -149,6 +201,7 @@ impl Player {
       z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
       yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
       pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+      velocity: EntityPosition::default(),
       display_name,
       uuid,
       peer_socket_address,
@@ -266,7 +319,7 @@ impl Player {
   }
 
   //chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player https://git.thetxt.io/thetxt/oxide/issues/24
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -274,8 +327,8 @@ impl Player {
    	self.y = y;
     self.z = z;
 
-    let old_chunk_position = Position {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
-    let new_chunk_position = Position {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
+    let old_chunk_position = BlockPosition {x: old_x as i32, y: 0, z: old_z as i32}.convert_to_coordinates_of_chunk();
+    let new_chunk_position = BlockPosition {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
     if old_chunk_position != new_chunk_position {
     	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetCenterChunk::PACKET_ID, crate::packets::clientbound::play::SetCenterChunk {
@@ -283,36 +336,28 @@ impl Player {
 	     	chunk_z: new_chunk_position.z,
      	}.try_into()?)?;
 
-     	let temp_chunk_coords_to_send: (Vec<i32>, Vec<i32>) = if new_chunk_position.x > old_chunk_position.x {
-      	let new_x = new_chunk_position.x + 10;
-      	(vec![new_x;21], ((new_chunk_position.z - 10)..=(new_chunk_position.z + 10)).collect())
-      } else if new_chunk_position.x < old_chunk_position.x {
-      	let new_x = new_chunk_position.x - 10;
-      	(vec![new_x;21], ((new_chunk_position.z - 10)..=(new_chunk_position.z + 10)).collect())
-      } else if new_chunk_position.z > old_chunk_position.z {
-	      let new_z = new_chunk_position.z + 10;
-	     	(((new_chunk_position.x - 10)..=(new_chunk_position.x + 10)).collect(), vec![new_z;21])
-      } else {
-      	let new_z = new_chunk_position.z - 10;
-	     	(((new_chunk_position.x - 10)..=(new_chunk_position.x + 10)).collect(), vec![new_z;21])
-      };
-
-      let chunk_coords_to_send: Vec<(i32, i32)> = temp_chunk_coords_to_send.0.iter().enumerate().map(|x| {
-      	(temp_chunk_coords_to_send.0[x.0], temp_chunk_coords_to_send.1[x.0])
+      let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
+        (old_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
       }).collect();
 
-      for chunk_coords in chunk_coords_to_send {
-      	self.send_chunk(world, chunk_coords.0, chunk_coords.1)?;
+      let new_chunk_coords: Vec<(i32, i32)> = (new_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
+        (new_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
+      }).collect();
+
+      let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
+
+      for chunk_coords in chunks_missing {
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, next_entity_id)?;
       }
     }
 
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
     self.yaw = yaw;
     self.pitch = pitch;
- 		self.new_position(x, y, z, world)?;
+ 		self.new_position(x, y, z, world, next_entity_id)?;
 
     return Ok(());
   }
@@ -322,15 +367,19 @@ impl Player {
     self.pitch = pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32) -> Result<(), Box<dyn Error>> {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
-	 	let chunk = dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z });
+	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
 			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z);
 			dimension.chunks.push(new_chunk);
-			dimension.get_chunk_from_chunk_position(Position { x: chunk_x, y: 0, z: chunk_z }).unwrap()
+
+			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, next_entity_id);
+			dimension.entities.append(&mut new_entities);
+
+			dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z }).unwrap()
 		};
 		let all_chunk_sections = &chunk.sections;
 
@@ -395,38 +444,6 @@ impl Player {
 	  }.try_into()?)?;
 
 		return Ok(());
-  }
-
-  pub fn get_position_and_rotation_float(&self) -> (f64, f64, f64, f32, f32) {
-  	return (self.x, self.y, self.z, self.yaw, self.pitch);
-  }
-
-  pub fn get_x(&self) -> f64 {
-  	return self.x;
-  }
-
-  pub fn get_y(&self) -> f64 {
-  	return self.y;
-  }
-
-  pub fn get_z(&self) -> f64 {
-  	return self.z;
-  }
-
-  pub fn get_yaw(&self) -> f32 {
-  	return self.yaw;
-  }
-
-  pub fn get_pitch(&self) -> f32 {
-  	return self.pitch;
-  }
-
-  pub fn get_position(&self) -> Position {
-	 	return Position {
-		  x: self.get_x() as i32,
-			y: self.get_y() as i16,
-			z: self.get_z() as i32,
-	  };
   }
 
  	fn get_playerdata_path(uuid: u128) -> PathBuf {
@@ -607,6 +624,16 @@ impl Player {
           EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }
         ],
 			}.try_into().unwrap()).unwrap();
+		}
+	}
+
+	pub fn get_position(&self) -> EntityPosition {
+	  return EntityPosition {
+      x: self.x,
+      y: self.y,
+      z: self.z,
+      yaw: self.yaw,
+      pitch: self.pitch,
 		}
 	}
 }

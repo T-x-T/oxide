@@ -1,15 +1,15 @@
-use crate::Position;
+use crate::BlockPosition;
 use data::blocks::Type;
 use data::inventory::Inventory;
 
 pub enum BlockInteractionResult {
-  OverwriteBlocks(Vec<(u16, Position)>),
+  OverwriteBlocks(Vec<(u16, BlockPosition)>),
   OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
   OpenSignEditor,
   Nothing,
 }
 
-pub fn interact_with_block_at(location: Position, block_id_at_location: u16, face: u8) -> BlockInteractionResult {
+pub fn interact_with_block_at(location: BlockPosition, block_id_at_location: u16, face: u8) -> BlockInteractionResult {
   let block_states = data::blocks::get_blocks();
   let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
@@ -25,15 +25,15 @@ pub fn interact_with_block_at(location: Position, block_id_at_location: u16, fac
 
       let is_upper = block_properties.iter().find(|x| x.0 == "half").unwrap().1 == "upper";
       block_properties.retain(|x| x.0 != "half");
-      let other_half: (u16, Position) = if is_upper {
+      let other_half: (u16, BlockPosition) = if is_upper {
         block_properties.push(("half".to_string(), "lower".to_string()));
         let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-        let other_half_location = Position { y: location.y - 1, ..location};
+        let other_half_location = BlockPosition { y: location.y - 1, ..location};
         (other_half_id, other_half_location)
       } else {
         block_properties.push(("half".to_string(), "upper".to_string()));
         let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-        let other_half_location = Position { y: location.y + 1, ..location};
+        let other_half_location = BlockPosition { y: location.y + 1, ..location};
         (other_half_id, other_half_location)
       };
 

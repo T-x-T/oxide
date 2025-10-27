@@ -51,6 +51,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, connection
       lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data, game, connection_streams, connections),
       lib::packets::serverbound::play::PlayerInput::PACKET_ID => play::player_input(stream, &mut packet.data, game, connection_streams, connections),
+      lib::packets::serverbound::play::Interact::PACKET_ID => play::interact(stream, &mut packet.data, game, connection_streams, connections),
       _ => {Ok(None)},
 		},
     ConnectionState::Transfer => todo!(),
@@ -646,14 +647,14 @@ use super::*;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {
       teleport_id: new_player.current_teleport_id,
-      x: new_player.get_x(),
-      y: new_player.get_y(),
-      z: new_player.get_z(),
+      x: new_player.get_position().x,
+      y: new_player.get_position().y,
+      z: new_player.get_position().z,
       velocity_x: 0.0,
       velocity_y: 0.0,
       velocity_z: 0.0,
-      yaw: new_player.get_yaw(),
-      pitch: new_player.get_pitch(),
+      yaw: new_player.get_position().yaw,
+      pitch: new_player.get_position().pitch,
       flags: 0,
     }.try_into()?)?;
 
@@ -669,11 +670,12 @@ use super::*;
 	    carried_item: None,
     }.try_into()?)?;
 
-    let current_chunk_coords = new_player.get_position().convert_to_coordinates_of_chunk();
+    let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
-     		new_player.send_chunk(&mut game.world, x, z)?;
+     		game.last_created_entity_id += 1;
+        new_player.send_chunk(&mut game.world, x, z, &mut game.last_created_entity_id)?;
       }
     }
 
@@ -683,11 +685,12 @@ use super::*;
 
     let new_player_uuid = new_player.uuid;
     let new_player_entity_id = new_player.entity_id;
-    let new_player_x = new_player.get_x();
-    let new_player_y = new_player.get_y();
-    let new_player_z = new_player.get_z();
+    let new_player_x = new_player.get_position().x;
+    let new_player_y = new_player.get_position().y;
+    let new_player_z = new_player.get_position().z;
     let new_player_inventory = new_player.get_inventory().clone();
     let new_player_selected_slot = new_player.get_selected_slot();
+    let new_player_entity_metadata = new_player.get_metadata();
     game.players.push(new_player);
 
     connection_streams.iter()
@@ -722,13 +725,13 @@ use super::*;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: player.entity_id,
         entity_uuid: player.uuid,
-        entity_type: 149, //Player
-        x: player.get_x(),
-        y: player.get_y(),
-        z: player.get_z(),
-        pitch: 0,
-        yaw: 0,
-        head_yaw: 0,
+        entity_type: data::entities::get_id_from_name("minecraft:player"),
+        x: player.get_position().x,
+        y: player.get_position().y,
+        z: player.get_position().z,
+        pitch: player.get_pitch_u8(),
+        yaw: player.get_yaw_u8(),
+        head_yaw: player.get_yaw_u8(),
         data: 0,
         velocity_x: 0,
         velocity_y: 0,
@@ -737,16 +740,7 @@ use super::*;
 
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
         entity_id: player.entity_id,
-        metadata: vec![
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 9,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-          },
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 17,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-          },
-        ],
+        metadata: new_player_entity_metadata.clone(),
       }.try_into()?)?;
 
  	   	lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
@@ -761,25 +755,15 @@ use super::*;
 				],
 	   	}.try_into()?)?;
 
-      let yaw: u8 = if player.get_yaw() < 0.0 {
-     		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-      	((player.get_yaw() / 90.0) * 64.0) as u8
-      };
-      let pitch: u8 = if player.get_pitch() < 0.0 {
-     		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-      	((player.get_pitch() / 90.0) * 64.0) as u8
-      };
       lib::utils::send_packet(stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-        yaw,
-        pitch,
+        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+        yaw: player.get_yaw_u8(),
+        pitch: player.get_pitch_u8(),
       }.try_into()?)?;
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
     }
 
@@ -793,7 +777,7 @@ use super::*;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: new_player_entity_id,
         entity_uuid: new_player_uuid,
-        entity_type: 149, //Player
+        entity_type: data::entities::get_id_from_name("minecraft:player"),
         x: new_player_x,
         y: new_player_y,
         z: new_player_z,
@@ -808,16 +792,7 @@ use super::*;
 
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
         entity_id: new_player_entity_id,
-        metadata: vec![
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 9,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Float(20.0),
-          },
-          lib::packets::clientbound::play::EntityMetadata {
-            index: 17,
-            value: lib::packets::clientbound::play::EntityMetadataValue::Byte(127),
-          },
-        ],
+        metadata: new_player_entity_metadata.clone(),
       }.try_into()?)?;
 
 	   	lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetEquipment::PACKET_ID, lib::packets::clientbound::play::SetEquipment {
@@ -832,25 +807,39 @@ use super::*;
 				],
 	   	}.try_into()?)?;
 
-	    let yaw: u8 = if player.get_yaw() < 0.0 {
-    		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-       	((player.get_yaw() / 90.0) * 64.0) as u8
-      };
-	    let pitch: u8 = if player.get_pitch() < 0.0 {
-    		(((player.get_pitch() / 90.0) * 64.0) + 256.0) as u8
-      } else {
-       	((player.get_pitch() / 90.0) * 64.0) as u8
-      };
 			lib::utils::send_packet(player_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
         entity_id: player.entity_id,
-        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-        yaw,
-        pitch,
+        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+        yaw: player.get_yaw_u8(),
+        pitch: player.get_pitch_u8(),
       }.try_into()?)?;
       lib::utils::send_packet(player_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
         entity_id: player.entity_id,
-  			head_yaw: yaw,
+  			head_yaw: player.get_yaw_u8(),
+      }.try_into()?)?;
+    }
+
+
+    for entity in &game.world.dimensions.get("minecraft:overworld").unwrap().entities {
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
+        entity_id: entity.get_common_entity_data().entity_id,
+        entity_uuid: entity.get_common_entity_data().uuid,
+        entity_type: entity.get_type(),
+        x: entity.get_common_entity_data().position.x,
+        y: entity.get_common_entity_data().position.y,
+        z: entity.get_common_entity_data().position.z,
+        pitch: entity.get_pitch_u8(),
+        yaw: entity.get_yaw_u8(),
+        head_yaw: entity.get_yaw_u8(),
+        data: 0,
+        velocity_x: 0,
+        velocity_y: 0,
+        velocity_z: 0,
+   	  }.try_into()?)?;
+
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
+        entity_id: entity.get_common_entity_data().entity_id,
+        metadata: entity.get_metadata(),
       }.try_into()?)?;
     }
 
@@ -892,28 +881,28 @@ use super::*;
 }
 
 pub mod play {
-  use lib::{nbt::NbtTag, packets::Packet, utils::send_packet};
+  use lib::{nbt::NbtTag, packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, Packet}, utils::send_packet};
   use super::*;
 
   pub fn set_player_position(data: &mut [u8], game: &mut Game, stream: &mut TcpStream, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
     let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
-    let old_x = player.get_x();
-    let old_y = player.get_y();
-    let old_z = player.get_z();
+    let old_x = player.get_position().x;
+    let old_y = player.get_position().y;
+    let old_z = player.get_position().z;
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world)?;
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world, &mut game.last_created_entity_id)?;
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
         lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
           entity_id: player.entity_id,
-          delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
-          delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
-          delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+          delta_x: ((player.get_position().x * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.get_position().y * 4096.0) - (old_y * 4096.0)) as i16,
+          delta_z: ((player.get_position().z * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
         }.try_into()?)?;
       }
     }
@@ -925,40 +914,28 @@ pub mod play {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
     let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
-    let old_x = player.get_x();
-    let old_y = player.get_y();
-    let old_z = player.get_z();
+    let old_x = player.get_position().x;
+    let old_y = player.get_position().y;
+    let old_z = player.get_position().z;
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world)?;
-
-    let pitch: u8 = if parsed_packet.pitch < 0.0 {
-   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((parsed_packet.pitch / 90.0) * 64.0) as u8
-    };
-
-    let yaw: u8 = if player.get_yaw() < 0.0 {
-   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((player.get_yaw() / 90.0) * 64.0) as u8
-    };
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world, &mut game.last_created_entity_id)?;
 
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
 	        entity_id: player.entity_id,
-	        delta_x: ((player.get_x() * 4096.0) - (old_x * 4096.0)) as i16,
-	        delta_y: ((player.get_y() * 4096.0) - (old_y * 4096.0)) as i16,
-	        delta_z: ((player.get_z() * 4096.0) - (old_z * 4096.0)) as i16,
-	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw,
-	        pitch,
+					delta_x: ((player.get_position().x * 4096.0) - (old_x * 4096.0)) as i16,
+          delta_y: ((player.get_position().y * 4096.0) - (old_y * 4096.0)) as i16,
+          delta_z: ((player.get_position().z * 4096.0) - (old_z * 4096.0)) as i16,
+          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+	        yaw: player.get_yaw_u8(),
+	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;
 
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
       }
     }
@@ -972,31 +949,19 @@ pub mod play {
 
     player.new_rotation(parsed_packet.yaw % 360.0, parsed_packet.pitch);
 
-    let pitch: u8 = if parsed_packet.pitch < 0.0 {
-   		(((parsed_packet.pitch / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((parsed_packet.pitch / 90.0) * 64.0) as u8
-    };
-
-    let yaw: u8 = if player.get_yaw() < 0.0 {
-   		(((player.get_yaw() / 90.0) * 64.0) + 256.0) as u8
-    } else {
-    	((player.get_yaw() / 90.0) * 64.0) as u8
-    };
-
     let default_connection = Connection::default();
     for other_stream in connection_streams {
       if *other_stream.0 != stream.peer_addr()? && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
       	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
 	        entity_id: player.entity_id,
-	        on_ground: player.get_y() == -48.0, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw,
-	        pitch,
+	        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+	        yaw: player.get_yaw_u8(),
+	        pitch: player.get_pitch_u8(),
 	      }.try_into()?)?;
 
 	      lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
 	        entity_id: player.entity_id,
-					head_yaw: yaw,
+					head_yaw: player.get_yaw_u8(),
 	      }.try_into()?)?;
       }
     }
@@ -1035,36 +1000,135 @@ pub mod play {
   pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec())?;
 
-    let old_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let all_blocks = data::blocks::get_blocks();
+
+    let old_block_id = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &all_blocks);
+
+    if old_block.block_type == data::blocks::Type::Door {
+      let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &all_blocks);
+      let location: Option<BlockPosition> = if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
+        Some(BlockPosition { y: parsed_packet.location.y - 1, ..parsed_packet.location })
+      } else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
+        Some(BlockPosition { y: parsed_packet.location.y + 1, ..parsed_packet.location })
+      } else {
+        None
+      };
+
+      if let Some(location) = location {
+        game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0)?;
+
+        connection_streams.iter()
+         	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+          .inspect(|x| {
+            send_packet(x.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+              location,
+              block_id: 0,
+            }.try_into().unwrap()).unwrap();
+          })
+         	.filter(|x| *x.0 != stream.peer_addr().unwrap())
+         	.for_each(|x| {
+     	      send_packet(x.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+    	      	event: 2001,
+    	      	location,
+     	       	data: old_block_id as i32,
+     	      }.try_into().unwrap()).unwrap();
+          });
+      }
+    }
+
+
     let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+      let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+      let items = match &block_entity.data {
+        BlockEntityData::Chest(items) => items,
+        BlockEntityData::Furnace(items, _, _, _, _) => items,
+        BlockEntityData::BrewingStand(items) => items,
+        BlockEntityData::Crafter(items) => items,
+        BlockEntityData::Dispenser(items) => items,
+        BlockEntityData::Hopper(items) => items,
+        _ => &Vec::new(),
+      };
+
+      for item in items.clone() {
+        game.last_created_entity_id += 1;
+
+        let new_entity = lib::entity::ItemEntity {
+          common: lib::entity::CommonEntity {
+            position: parsed_packet.location.into(),
+         		velocity: EntityPosition::default(),
+            uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+            entity_id: game.last_created_entity_id,
+            ..Default::default()
+          },
+          age: 0,
+          health: 5,
+          item,
+          owner: 0,
+          pickup_delay: 0,
+          thrower: 0,
+        };
+
+       	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+          entity_id: new_entity.get_common_entity_data().entity_id,
+          entity_uuid: new_entity.get_common_entity_data().uuid,
+          entity_type: new_entity.get_type(),
+          x: parsed_packet.location.x as f64,
+          y: parsed_packet.location.y as f64,
+          z: parsed_packet.location.z as f64,
+          pitch: new_entity.get_pitch_u8(),
+          yaw: new_entity.get_yaw_u8(),
+          head_yaw: 0,
+          data: 0,
+          velocity_x: 0,
+          velocity_y: 0,
+          velocity_z: 0,
+       	};
+
+       	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+          entity_id: new_entity.get_common_entity_data().entity_id,
+          metadata: new_entity.get_metadata(),
+       	};
+
+       	game.world.dimensions
+          .get_mut("minecraft:overworld").unwrap()
+          .add_entity(Box::new(new_entity));
+
+          connection_streams.iter()
+            .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+            .for_each(|x| {
+              lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+              lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+            });
+      }
+
       game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
       game.players.iter_mut()
         .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
         .for_each(|x| x.close_inventory().unwrap());
     }
 
-    for stream in connection_streams.iter() {
-      send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
-        location: parsed_packet.location,
-        block_id: 0,
-      }.try_into()?)?;
-    }
-
-    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
-      sequence_id: parsed_packet.sequence,
-    }.try_into()?)?;
-
    	connection_streams.iter()
      	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+      .inspect(|x| {
+        send_packet(x.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+          location: parsed_packet.location,
+          block_id: 0,
+        }.try_into().unwrap()).unwrap();
+      })
      	.filter(|x| *x.0 != stream.peer_addr().unwrap())
      	.for_each(|x| {
 	      send_packet(x.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
 	      	event: 2001,
 	      	location: parsed_packet.location,
-	       	data: old_block as i32,
+	       	data: old_block_id as i32,
 	      }.try_into().unwrap()).unwrap();
       });
+
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into()?)?;
 
     return Ok(None);
   }
@@ -1089,7 +1153,7 @@ pub mod play {
     let block_states = data::blocks::get_blocks();
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
-    let blocks_to_place: Vec<(u16, Position)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
+    let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
       //Don't place block, because player right clicked something that does something when right clicked
       match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
@@ -1126,6 +1190,48 @@ pub mod play {
       let used_item_id = player.get_held_item(true).unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).item_id;
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
 
+      if used_item_name.ends_with("spawn_egg") {
+        let entity_type = used_item_name.replace("_spawn_egg", "");
+
+        let new_entity = entity::new(
+          &entity_type,
+          lib::entity::CommonEntity {
+            position: new_block_location.into(),
+            velocity: EntityPosition::default(),
+            uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+            entity_id: game.last_created_entity_id,
+            ..Default::default()
+          },
+          NbtListTag::TagCompound(Vec::new()),
+        );
+
+        if let Some(new_entity) = new_entity {
+         	let packet = lib::packets::clientbound::play::SpawnEntity {
+            entity_id: new_entity.get_common_entity_data().entity_id,
+            entity_uuid: new_entity.get_common_entity_data().uuid,
+            entity_type: new_entity.get_type(),
+            x: new_block_location.x as f64 + 0.5,
+            y: new_block_location.y as f64,
+            z: new_block_location.z as f64 + 0.5,
+            pitch: new_entity.get_pitch_u8(),
+            yaw: new_entity.get_yaw_u8(),
+            head_yaw: 0,
+            data: 0,
+            velocity_x: 0,
+            velocity_y: 0,
+            velocity_z: 0,
+          };
+
+          game.world.dimensions
+            .get_mut("minecraft:overworld").unwrap()
+            .add_entity(new_entity);
+
+          connection_streams.iter()
+            .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+            .for_each(|x| lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+        };
+      }
+
       lib::block::get_block_state_id(parsed_packet.face, player.get_looking_cardinal_direction(), game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
     };
 
@@ -1141,6 +1247,69 @@ pub mod play {
             }.try_into()?)?;
           }
           if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
+            let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+            let items = match &block_entity.data {
+              BlockEntityData::Chest(items) => items,
+              BlockEntityData::Furnace(items, _, _, _, _) => items,
+              BlockEntityData::BrewingStand(items) => items,
+              BlockEntityData::Crafter(items) => items,
+              BlockEntityData::Dispenser(items) => items,
+              BlockEntityData::Hopper(items) => items,
+              _ => &Vec::new(),
+            };
+
+            for item in items.clone() {
+              game.last_created_entity_id += 1;
+
+              let new_entity = lib::entity::ItemEntity {
+                common: lib::entity::CommonEntity {
+                  position: parsed_packet.location.into(),
+               		velocity: EntityPosition::default(),
+                  uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+                  entity_id: game.last_created_entity_id,
+                  ..Default::default()
+                },
+                age: 0,
+                health: 5,
+                item,
+                owner: 0,
+                pickup_delay: 0,
+                thrower: 0,
+              };
+
+             	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+                entity_id: new_entity.get_common_entity_data().entity_id,
+                entity_uuid: new_entity.get_common_entity_data().uuid,
+                entity_type: new_entity.get_type(),
+                x: parsed_packet.location.x as f64,
+                y: parsed_packet.location.y as f64,
+                z: parsed_packet.location.z as f64,
+                pitch: new_entity.get_pitch_u8(),
+                yaw: new_entity.get_yaw_u8(),
+                head_yaw: 0,
+                data: 0,
+                velocity_x: 0,
+                velocity_y: 0,
+                velocity_z: 0,
+             	};
+
+             	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+                entity_id: new_entity.get_common_entity_data().entity_id,
+                metadata: new_entity.get_metadata(),
+             	};
+
+             	game.world.dimensions
+                .get_mut("minecraft:overworld").unwrap()
+                .add_entity(Box::new(new_entity));
+
+                connection_streams.iter()
+                  .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+                  .for_each(|x| {
+                    lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+                    lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+                  });
+            }
+
             game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
             game.players.iter_mut()
               .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
@@ -1407,6 +1576,189 @@ pub mod play {
     } else {
       player.set_sneaking(false, connection_streams, connections);
     }
+
+    return Ok(None);
+  }
+
+  pub fn interact(stream: &mut TcpStream, data: &mut [u8], game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>>{
+    let parsed_packet = lib::packets::serverbound::play::Interact::try_from(data.to_vec())?;
+
+    let player = game.players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let held_item = player.get_held_item(true);
+
+    let Some(entity) = game.world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
+      return Ok(None);
+    };
+    let entity_id = entity.get_common_entity_data().entity_id;
+
+
+    if parsed_packet.interact_type == 1 {
+      //Attack
+      let damage = if held_item.is_some() {
+        10.0
+      } else {
+        1.0
+      };
+
+      if entity.is_mob() {
+        let mob_data = entity.get_mob_data_mut();
+
+        if mob_data.hurt_time > 0 {
+          return Ok(None);
+        }
+
+        mob_data.health -= damage;
+        mob_data.hurt_time = 10;
+        mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
+
+        let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+          entity_id,
+          metadata: vec![
+            EntityMetadata {
+              index: 9,
+              value: EntityMetadataValue::Float(mob_data.health)
+            },
+          ],
+        };
+
+        let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
+          entity_id,
+          yaw: 0.0,
+        };
+
+        let entity_data = entity.get_common_entity_data_mut();
+        entity_data.velocity.y += 0.05;
+
+        let horizontal_velocity = 0.05;
+        match player.get_looking_cardinal_direction() {
+          CardinalDirection::North => entity_data.velocity.z -= horizontal_velocity,
+          CardinalDirection::East => entity_data.velocity.x += horizontal_velocity,
+          CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
+          CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
+        };
+
+        connection_streams.iter()
+          .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+          .for_each(|x| {
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, entity_metadata_packet.clone().try_into().unwrap()).unwrap();
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet.clone().try_into().unwrap()).unwrap();
+          });
+      }
+    } else if parsed_packet.interact_type == 0 {
+      //interact
+      if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper" && held_item.is_some() && held_item.unwrap().item_id == data::items::get_items().get("minecraft:flint_and_steel").unwrap().id {
+        //right clicked a creeper with flint and steel -> explode!
+        entity.get_mob_data_mut().health = 0.0;
+
+        let explosion_packet = lib::packets::clientbound::play::Explosion {
+          x: entity.get_common_entity_data().position.x,
+          y: entity.get_common_entity_data().position.y,
+          z: entity.get_common_entity_data().position.z,
+          player_delta_velocity: None,
+          particle_id: 21,
+          particle_data: (),
+          sound: 616,
+        };
+
+        let creeper_position = BlockPosition::from(entity.get_common_entity_data().position);
+        for x in (creeper_position.x-2)..creeper_position.x+2 {
+          for y in (creeper_position.y-2)..creeper_position.y+2 {
+            for z in (creeper_position.z-2)..creeper_position.z+2 {
+              let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
+              if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+                let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
+                let items = match &block_entity.data {
+                  BlockEntityData::Chest(items) => items,
+                  BlockEntityData::Furnace(items, _, _, _, _) => items,
+                  BlockEntityData::BrewingStand(items) => items,
+                  BlockEntityData::Crafter(items) => items,
+                  BlockEntityData::Dispenser(items) => items,
+                  BlockEntityData::Hopper(items) => items,
+                  _ => &Vec::new(),
+                };
+
+                for item in items.clone() {
+                  game.last_created_entity_id += 1;
+
+                  let new_entity = lib::entity::ItemEntity {
+                    common: lib::entity::CommonEntity {
+                      position: BlockPosition {x,y,z}.into(),
+                   		velocity: EntityPosition::default(),
+                      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+                      entity_id: game.last_created_entity_id,
+                      ..Default::default()
+                    },
+                    age: 0,
+                    health: 5,
+                    item,
+                    owner: 0,
+                    pickup_delay: 0,
+                    thrower: 0,
+                  };
+
+                 	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
+                    entity_id: new_entity.get_common_entity_data().entity_id,
+                    entity_uuid: new_entity.get_common_entity_data().uuid,
+                    entity_type: new_entity.get_type(),
+                    x: x as f64,
+                    y: y as f64,
+                    z: z as f64,
+                    pitch: new_entity.get_pitch_u8(),
+                    yaw: new_entity.get_yaw_u8(),
+                    head_yaw: 0,
+                    data: 0,
+                    velocity_x: 0,
+                    velocity_y: 0,
+                    velocity_z: 0,
+                 	};
+
+                 	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+                    entity_id: new_entity.get_common_entity_data().entity_id,
+                    metadata: new_entity.get_metadata(),
+                 	};
+
+                 	game.world.dimensions
+                    .get_mut("minecraft:overworld").unwrap()
+                    .add_entity(Box::new(new_entity));
+
+                    connection_streams.iter()
+                      .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+                      .for_each(|x| {
+                        lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+                        lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+                      });
+                }
+
+                game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(BlockPosition {x,y,z}).unwrap().block_entities.retain(|be| be.position != BlockPosition {x,y,z});
+                game.players.iter_mut()
+                  .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == BlockPosition {x,y,z}))
+                  .for_each(|x| x.close_inventory().unwrap());
+              }
+
+              for stream in connection_streams.iter() {
+                send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                  location: BlockPosition {x,y,z},
+                  block_id: 0,
+                }.try_into()?)?;
+              }
+            }
+          }
+        }
+
+
+
+        connection_streams.iter()
+          .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
+          .for_each(|x| {
+            lib::utils::send_packet(x.1, lib::packets::clientbound::play::Explosion::PACKET_ID, explosion_packet.clone().try_into().unwrap()).unwrap();
+          });
+      }
+
+    } else {
+      //interact at
+    }
+
+
 
     return Ok(None);
   }

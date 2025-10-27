@@ -157,7 +157,7 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 
 #[derive(Debug, Clone)]
 pub struct BlockEntityData {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub block_entity_type: i32,
 	pub nbt_data: NbtTag,
 }
@@ -200,7 +200,7 @@ impl TryFrom<Vec<u8>> for BlockEntityData {
 
 #[derive(Debug, Clone)]
 pub struct BlockAction {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub action_id: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Block_actions
 	pub action_parameter: u8,
 	pub block_type: i32,
@@ -246,7 +246,7 @@ impl TryFrom<Vec<u8>> for BlockAction {
 
 #[derive(Debug, Clone)]
 pub struct BlockUpdate {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub block_id: i32,
 }
 
@@ -504,6 +504,46 @@ impl TryFrom<Vec<u8>> for SetContainerSlot {
 	}
 }
 
+//
+// MARK: 0x1e entity event
+//
+
+#[derive(Debug, Clone)]
+pub struct EntityEvent {
+	pub entity_id: i32,
+	pub entity_status: u8, //see https://minecraft.wiki/w/Java_Edition_protocol/Entity_statuses
+}
+
+impl Packet for EntityEvent {
+	const PACKET_ID: u8 = 0x1e;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<EntityEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: EntityEvent) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::int(value.entity_id));
+		output.push(value.entity_status);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for EntityEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::int(&mut value)?,
+			entity_status: value.remove(0),
+		});
+	}
+}
+
 
 //
 // MARK: 0x1f teleport entity
@@ -570,6 +610,83 @@ impl TryFrom<Vec<u8>> for TeleportEntity {
 }
 
 //
+// MARK: 0x20 Explosion
+//
+
+#[derive(Debug, Clone)]
+pub struct Explosion {
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub player_delta_velocity: Option<(f64, f64, f64)>,
+	pub particle_id: i32,
+	pub particle_data: (), //see https://minecraft.wiki/w/Java_Edition_protocol/Particles
+	pub sound: i32,
+}
+
+impl Packet for Explosion {
+	const PACKET_ID: u8 = 0x20;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<Explosion> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Explosion) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		if value.player_delta_velocity.is_some() {
+      output.push(1);
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().1));
+  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().2));
+		} else {
+      output.push(0);
+		}
+		output.append(&mut crate::serialize::varint(value.particle_id));
+		output.append(&mut crate::serialize::varint(value.sound));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Explosion {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+	  let x = crate::deserialize::double(&mut value)?;
+	  let y = crate::deserialize::double(&mut value)?;
+	  let z = crate::deserialize::double(&mut value)?;
+		let player_delta_velocity: Option<(f64, f64, f64)> = if crate::deserialize::boolean(&mut value)? {
+      Some((
+        crate::deserialize::double(&mut value)?,
+        crate::deserialize::double(&mut value)?,
+        crate::deserialize::double(&mut value)?
+      ))
+		} else {
+		  None
+		};
+
+		let particle_id = crate::deserialize::varint(&mut value)?;
+		let sound = crate::deserialize::varint(&mut value)?;
+
+		return Ok(Self {
+      x,
+      y,
+      z,
+      player_delta_velocity,
+      particle_id,
+      particle_data: (),
+      sound,
+		});
+	}
+}
+
+//
 // MARK: 0x22 Game event
 //
 
@@ -605,6 +722,46 @@ impl TryFrom<Vec<u8>> for GameEvent {
 		return Ok(Self {
 			event: value.remove(0),
 			value: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x24 Hurt Animation
+//
+
+#[derive(Debug, Clone)]
+pub struct HurtAnimation {
+	pub entity_id: i32,
+	pub yaw: f32,
+}
+
+impl Packet for HurtAnimation {
+	const PACKET_ID: u8 = 0x24;
+  fn get_target() -> PacketTarget { PacketTarget::Client }
+  fn get_state() -> ConnectionState { ConnectionState::Play }
+}
+
+impl TryFrom<HurtAnimation> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: HurtAnimation) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::float(value.yaw));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for HurtAnimation {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
 		});
 	}
 }
@@ -1025,7 +1182,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1043,7 +1200,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
   			}
@@ -1084,7 +1241,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1102,7 +1259,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
           let value = crate::deserialize::unsigned_long(value)?;
           for i in 0..entries_per_long {
             let entry = value >> (i * bits_per_entry as i32);
-            let entry = (entry & u64::MAX) >> (64 - bits_per_entry);
+            let entry = entry >> (64 - bits_per_entry);
             data_array.push(entry as i32);
           }
    			}
@@ -1122,7 +1279,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 #[derive(Debug, Clone)]
 pub struct WorldEvent {
 	pub event: i32,
-	pub location: Position,
+	pub location: BlockPosition,
 	pub data: i32,
 }
 
@@ -1509,7 +1666,7 @@ impl TryFrom<Vec<u8>> for OpenScreen {
 
 #[derive(Debug, Clone)]
 pub struct OpenSignEditor {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub is_front_text: bool,
 }
 
@@ -2218,7 +2375,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 						}
 					}
 				},
-				EntityMetadataValue::Slot(_) => output.append(&mut vec![0; 6]),
+				EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
 				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
 				EntityMetadataValue::Rotations(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
@@ -2320,7 +2477,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					};
 					EntityMetadataValue::OptionalTextComponent(nbt)
 				},
-				7 => break,
+				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap()),
 				8 => EntityMetadataValue::Boolean(crate::deserialize::boolean(&mut value)?),
 				9 => EntityMetadataValue::Rotations(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
 				10 => EntityMetadataValue::Position(crate::deserialize::long(&mut value)?),

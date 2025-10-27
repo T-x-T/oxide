@@ -343,6 +343,12 @@ fn main() {
 								println!("parsed packet: {parsed_packet:?}");
 	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
+							lib::packets::clientbound::play::Explosion::PACKET_ID => {
+								println!("\n\nraw packet: {:?}\n\n", client_packet.data);
+	        			let parsed_packet = lib::packets::clientbound::play::Explosion::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+	              parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							},
 							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID => {
 		        		// Disabled because implementation is still incomplete
 		            // let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();

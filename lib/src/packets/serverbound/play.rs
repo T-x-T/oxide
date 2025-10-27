@@ -293,15 +293,11 @@ impl TryFrom<Interact> for Vec<u8> {
 		result.append(&mut crate::serialize::varint(value.entity_id));
 		result.append(&mut crate::serialize::varint(value.interact_type));
 		if value.interact_type == 2 {
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_x.unwrap()));
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_y.unwrap()));
-      result.push(1);
 		  result.append(&mut crate::serialize::float(value.target_z.unwrap()));
 		}
 		if value.interact_type == 0 || value.interact_type == 2 {
-      result.push(1);
       result.append(&mut crate::serialize::varint(value.hand.unwrap()));
 		}
 		result.append(&mut crate::serialize::boolean(value.sneak_key_pressed));
@@ -317,25 +313,21 @@ impl TryFrom<Vec<u8>> for Interact {
 	  let entity_id: i32 = crate::deserialize::varint(&mut value)?;
 	  let interact_type: i32 = crate::deserialize::varint(&mut value)?;
 		let target_x: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let target_y: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let target_z: Option<f32> = if interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::float(&mut value)?)
 		} else {
 		  None
 		};
 		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 {
-		  value.remove(0);
 		  Some(crate::deserialize::varint(&mut value)?)
 		} else {
 		  None
@@ -501,7 +493,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 
 #[derive(Debug, Clone)]
 pub struct PickItemFromBlock {
-	pub location: Position,
+	pub location: BlockPosition,
 	pub include_data: bool,
 }
 
@@ -542,7 +534,7 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
   pub status: i32,
-  pub location: crate::Position,
+  pub location: crate::BlockPosition,
   pub face: u8,
   pub sequence: i32,
 }
@@ -719,7 +711,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 
 #[derive(Debug, Clone)]
 pub struct UpdateSign {
-  pub location: Position,
+  pub location: BlockPosition,
   pub is_front_text: bool,
   pub line_1: String,
   pub line_2: String,
@@ -809,7 +801,7 @@ impl TryFrom<Vec<u8>> for SwingArm {
 #[derive(Debug, Clone)]
 pub struct UseItemOn {
   pub hand: i32,
-  pub location: crate::Position,
+  pub location: crate::BlockPosition,
   pub face: u8,
   pub cursor_position_x: f32,
   pub cursor_position_y: f32,
