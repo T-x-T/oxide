@@ -1000,7 +1000,44 @@ pub mod play {
   pub fn player_action(data: &mut [u8], stream: &mut TcpStream, connection_streams: &mut HashMap<SocketAddr, TcpStream>, game: &mut Game, connections: &mut HashMap<SocketAddr, Connection>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec())?;
 
-    let old_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let all_blocks = data::blocks::get_blocks();
+
+    let old_block_id = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &all_blocks);
+
+    if old_block.block_type == data::blocks::Type::Door {
+      let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &all_blocks);
+      let location: Option<BlockPosition> = if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
+        Some(BlockPosition { y: parsed_packet.location.y - 1, ..parsed_packet.location })
+      } else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
+        Some(BlockPosition { y: parsed_packet.location.y + 1, ..parsed_packet.location })
+      } else {
+        None
+      };
+
+      if let Some(location) = location {
+        game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0)?;
+
+        connection_streams.iter()
+         	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+          .inspect(|x| {
+            send_packet(x.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+              location,
+              block_id: 0,
+            }.try_into().unwrap()).unwrap();
+          })
+         	.filter(|x| *x.0 != stream.peer_addr().unwrap())
+         	.for_each(|x| {
+     	      send_packet(x.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+    	      	event: 2001,
+    	      	location,
+     	       	data: old_block_id as i32,
+     	      }.try_into().unwrap()).unwrap();
+          });
+      }
+    }
+
+
     let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
       let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
@@ -1072,27 +1109,26 @@ pub mod play {
         .for_each(|x| x.close_inventory().unwrap());
     }
 
-    for stream in connection_streams.iter() {
-      send_packet(stream.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
-        location: parsed_packet.location,
-        block_id: 0,
-      }.try_into()?)?;
-    }
-
-    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
-      sequence_id: parsed_packet.sequence,
-    }.try_into()?)?;
-
    	connection_streams.iter()
      	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+      .inspect(|x| {
+        send_packet(x.1, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+          location: parsed_packet.location,
+          block_id: 0,
+        }.try_into().unwrap()).unwrap();
+      })
      	.filter(|x| *x.0 != stream.peer_addr().unwrap())
      	.for_each(|x| {
 	      send_packet(x.1, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
 	      	event: 2001,
 	      	location: parsed_packet.location,
-	       	data: old_block as i32,
+	       	data: old_block_id as i32,
 	      }.try_into().unwrap()).unwrap();
       });
+
+    send_packet(stream, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
+      sequence_id: parsed_packet.sequence,
+    }.try_into()?)?;
 
     return Ok(None);
   }
