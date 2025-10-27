@@ -51,28 +51,38 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 	} else {
 		let mut arg_iter = arg_string.split(" ");
 		let x = arg_iter.next().unwrap_or_default();
-		let x: i32 = str::parse(x).unwrap_or_default(); //parsing needs proper bounds checking https://git.thetxt.io/thetxt/oxide/issues/19
+		let x: f64 = str::parse(x).unwrap_or_default();
 		let y = arg_iter.next().unwrap_or_default();
-		let y: i32 = str::parse(y).unwrap_or_default();
+		let y: f64 = str::parse(y).unwrap_or_default();
 		let z = arg_iter.next().unwrap_or_default();
-		let z: i32 = str::parse(z).unwrap_or_default();
+		let z: f64 = str::parse(z).unwrap_or_default();
+
+		if x > 30_000_000.0 || y > 30_000_000.0 || z > 30_000_000.0 || x < -30_000_000.0 || y < -30_000_000.0 || z < -30_000_000.0 {
+  		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+ 			  content: NbtTag::Root(vec![
+  				NbtTag::String("type".to_string(), "text".to_string()),
+  				NbtTag::String("text".to_string(), "coordinates must be between -30 million and +30 million".to_string()),
+  			]),
+  		  overlay: false,
+  	 	}.try_into()?)?;
+
+      return Ok(());
+		}
+
 		EntityPosition {
-      x: x as f64,
-      y: y as f64,
-      z: z as f64,
+      x,
+      y,
+      z,
       yaw: 0.0,
       pitch: 0.0,
 		}
 	};
 
-	let sending_player_index = game.players
-    .iter()
-    .enumerate()
-    .find_map(|x| if x.1.peer_socket_address == stream.peer_addr().unwrap() { Some(x.0) } else { None })
+	let sending_player = game.players
+    .iter_mut()
+    .find(|x| x.peer_socket_address == stream.peer_addr().unwrap())
     .unwrap();
 
-	let sending_player = game.players.get_mut(sending_player_index).unwrap();
-	game.last_created_entity_id += 1;
 	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, &mut game.world, &mut game.last_created_entity_id)?;
 
 	sending_player.current_teleport_id += 1;
