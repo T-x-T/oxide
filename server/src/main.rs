@@ -33,7 +33,6 @@ fn initialize_server() {
     players: Vec::new(),
     world: World::new(world_loader, next_entity_id),
     last_created_entity_id: 0,
-    chat_message_index: 0,
     commands: Vec::new(),
     last_save_all_timestamp: std::time::Instant::now(),
     block_state_data: data::blocks::get_blocks(),

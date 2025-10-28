@@ -29,6 +29,7 @@ pub struct Player {
   pub opened_inventory_at: Option<BlockPosition>,
   pub cursor_item: Option<Slot>,
   is_sneaking: bool,
+  pub chat_message_index: i32,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -52,6 +53,7 @@ impl Clone for Player {
       opened_inventory_at: self.opened_inventory_at,
       cursor_item: self.cursor_item.clone(),
       is_sneaking: self.is_sneaking,
+      chat_message_index: self.chat_message_index,
     }
   }
 }
@@ -125,6 +127,7 @@ impl Player {
 				opened_inventory_at: None,
 				cursor_item: None,
 				is_sneaking: false,
+				chat_message_index: 0,
 	    };
 
 	    game.last_created_entity_id += 1;
@@ -214,6 +217,7 @@ impl Player {
       opened_inventory_at: None,
       cursor_item: None,
       is_sneaking: false,
+      chat_message_index: 0,
     };
 
     game.last_created_entity_id += 1;
