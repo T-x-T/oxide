@@ -200,27 +200,29 @@ fn tick(game: Arc<Mutex<Game>>) {
             lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap()).unwrap();
           }
 
-          dimension.1.get_chunk_from_position_mut(
+          if let Some(chunk) = dimension.1.get_chunk_from_position_mut(
             dimension.1.entities
               .iter()
               .find(|x| x.get_common_entity_data().entity_id == outcome.0)
               .unwrap()
               .get_common_entity_data()
               .position.into()
-          ).unwrap()
-          .modified = true;
+          ) {
+            chunk.modified = true;
+          };
           dimension.1.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
         },
         EntityTickOutcome::Updated => {
-          dimension.1.get_chunk_from_position_mut(
+          if let Some(chunk) = dimension.1.get_chunk_from_position_mut(
             dimension.1.entities
               .iter()
               .find(|x| x.get_common_entity_data().entity_id == outcome.0)
               .unwrap()
               .get_common_entity_data()
               .position.into()
-          ).unwrap()
-          .modified = true;
+          ) {
+            chunk.modified = true;
+          };
         },
         EntityTickOutcome::None => (),
       }
