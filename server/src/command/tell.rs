@@ -20,7 +20,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, _connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
 	let Some(target_player) = game.players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
 		let Some(stream) = stream else {
 			println!("Couldn't find that player :(");

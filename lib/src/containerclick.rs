@@ -4,7 +4,7 @@ use std::net::{SocketAddr, TcpStream};
 use crate::packets::Packet;
 use crate::types::*;
 
-pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, chest_items: &mut [Item], player: &mut Player, connections: &mut HashMap<SocketAddr, Connection>, connection_streams: &mut HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
+pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, chest_items: &mut [Item], player: &mut Player, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>, streams_with_container_opened: Vec<TcpStream>) {
   const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
   let player_inventory_index = parsed_packet.slot - chest_items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
 

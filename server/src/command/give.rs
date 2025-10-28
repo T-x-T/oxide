@@ -17,7 +17,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
 	let Some(stream) = stream else {
 		println!("This command currently only works in game");
 		return Ok(());
@@ -73,7 +73,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     .add_entity(Box::new(new_entity));
 
 	connection_streams.iter()
-    .filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
+    .filter(|x| game.connections.lock().unwrap().get(x.0).unwrap().state == ConnectionState::Play)
     .for_each(|x| {
       lib::utils::send_packet(x.1, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
       lib::utils::send_packet(x.1, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();

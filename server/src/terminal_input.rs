@@ -2,7 +2,7 @@ use std::{collections::HashMap, net::{SocketAddr, TcpStream}, sync::{Arc, Mutex}
 use lib::packets::Packet;
 use lib::types::*;
 
-pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game: Arc<Mutex<Game>>, connections: Arc<Mutex<HashMap<SocketAddr, Connection>>>) {
+pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game: Arc<Mutex<Game>>) {
 	std::thread::spawn(move || {
 		loop {
 			let mut input = String::new();
@@ -12,7 +12,6 @@ pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game
 				continue;
 			}
 			let mut connection_streams = connection_streams.lock().unwrap();
-			let mut connections = connections.lock().unwrap();
 			let mut game = game.lock().unwrap();
 
 			if input.chars().next().unwrap_or_default() == '/' {
@@ -23,7 +22,7 @@ pub fn init(connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>, game
 		    	continue;
 	    	};
 
-	    	let _ = (command.execute)(input, None, &mut game, &mut connection_streams, &mut connections);
+	    	let _ = (command.execute)(input, None, &mut game, &mut connection_streams);
 			} else {
 				for stream in connection_streams.iter() {
 					lib::utils::send_packet(stream.1, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {

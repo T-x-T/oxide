@@ -25,7 +25,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>, connections: &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
 	let Some(stream) = stream else {
 		println!("this command doesnt work from the console");
 		return Ok(());
@@ -101,7 +101,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 
 	let default_connection = Connection::default();
     for other_stream in connection_streams {
-      if *other_stream.0 != stream.peer_addr().unwrap() && connections.get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
+      if *other_stream.0 != stream.peer_addr().unwrap() && game.connections.lock().unwrap().get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
 	      	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::PACKET_ID, lib::packets::clientbound::play::TeleportEntity {
             entity_id: sending_player.entity_id,
             x: target_coordinates.x,
