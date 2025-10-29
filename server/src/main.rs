@@ -1,11 +1,10 @@
 #![allow(clippy::needless_return)]
 
 use std::collections::HashMap;
-use std::net::{TcpListener, SocketAddr, TcpStream};
+use std::net::{TcpListener, SocketAddr};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use lib::packets::Packet;
-use lib::ConnectionState;
 use lib::types::*;
 
 mod packet_handlers;
@@ -37,13 +36,12 @@ fn initialize_server() {
     last_save_all_timestamp: std::time::Instant::now(),
     block_state_data: data::blocks::get_blocks(),
     connections: Arc::new(Mutex::new(HashMap::new())),
+    connection_streams: Arc::new(Mutex::new(HashMap::new())),
   };
   game.last_created_entity_id = *next_entity_id;
   command::init(&mut game);
 
   let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));
-
-  let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
 
   terminal_input::init(game.clone());
 
@@ -54,7 +52,6 @@ fn initialize_server() {
     let stream = stream.unwrap();
 
     println!("New Connection from {}", stream.peer_addr().unwrap());
-    let connection_streams_clone = connection_streams.clone();
     let game_clone = game.clone();
     std::thread::spawn(move || {
       let mut stream = stream.try_clone().unwrap();
@@ -65,12 +62,12 @@ fn initialize_server() {
         match stream.peek(&mut peek_buf) {
           Ok(0) => {
             println!("client disconnected.");
-            disconnect_player(&peer_addr, game_clone, &mut connection_streams_clone.lock().unwrap());
+            disconnect_player(&peer_addr, game_clone);
             break;
           }
           Err(e) => {
             eprintln!("error reading from client: {e}");
-            disconnect_player(&peer_addr, game_clone, &mut connection_streams_clone.lock().unwrap());
+            disconnect_player(&peer_addr, game_clone);
             break;
           }
           _ => {}
@@ -79,19 +76,19 @@ fn initialize_server() {
         let packet = lib::utils::read_packet(&stream);
 
         if stream.peer_addr().is_err() {
-          disconnect_player(&peer_addr, game_clone, &mut connection_streams_clone.lock().unwrap());
+          disconnect_player(&peer_addr, game_clone);
           break;
         }
 
-        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, &mut connection_streams_clone.lock().unwrap(), &mut game_clone.lock().unwrap());
+        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, &mut game_clone.lock().unwrap());
         if packet_handler_result.is_err() {
        		println!("got error, so lets disconnect: {}", packet_handler_result.err().unwrap());
-          disconnect_player(&peer_addr, game_clone, &mut connection_streams_clone.lock().unwrap());
+         disconnect_player(&peer_addr, game_clone);
           break;
         }
         if packet_handler_result.is_ok_and(|x| x.is_some()) {
        		println!("handler told us to disconnect");
-          disconnect_player(&peer_addr, game_clone, &mut connection_streams_clone.lock().unwrap());
+          disconnect_player(&peer_addr, game_clone);
           break;
         }
       }
@@ -99,27 +96,25 @@ fn initialize_server() {
   }
 }
 
-fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>, connection_streams: &mut HashMap<SocketAddr, TcpStream>) {
+fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
   let mut game = game.lock().unwrap();
   let mut connections = game.connections.lock().unwrap();
 	let player_to_remove = game.players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
     player_to_remove.save_to_disk();
-		connection_streams.iter()
-	    .filter(|x| connections.get(x.0).is_some_and(|x| x.state == ConnectionState::Play))
-	    .for_each(|x| {
-		    let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
-		      uuids: vec![player_to_remove.uuid],
-		    }.try_into().unwrap());
+    game.players.iter().for_each(|x| {
+	    let _ = lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
+	      uuids: vec![player_to_remove.uuid],
+	    }.try_into().unwrap());
 
-				let _ = lib::utils::send_packet(x.1, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
-          entity_ids: vec![player_to_remove.entity_id]
-        }.try_into().unwrap());
-	    });
+			let _ = lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
+        entity_ids: vec![player_to_remove.entity_id]
+      }.try_into().unwrap());
+    });
 	}
 
   connections.remove(peer_addr);
-  connection_streams.remove(peer_addr);
+  game.connection_streams.lock().unwrap().remove(peer_addr);
 
   drop(connections);
   game.players.retain(|x| x.peer_socket_address != *peer_addr);

@@ -1,7 +1,7 @@
 use super::*;
-use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}, ConnectionState};
+use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}};
 use crate::entity::CommonEntity;
-use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
+use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
 use flate2::read::GzDecoder;
@@ -462,14 +462,13 @@ impl Player {
 		return self.selected_slot;
 	}
 
-	pub fn set_selected_slot(&mut self, slot: u8, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player]) {
 		self.selected_slot = slot;
 
-		connection_streams.iter()
-	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
-	   	.filter(|x| *x.0 != self.peer_socket_address)
+		players.iter()
+	   	.filter(|x| x.uuid != self.uuid)
 	   	.for_each(|x| {
-		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment: vec![
 						(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
@@ -483,14 +482,14 @@ impl Player {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
-		self.set_inventory_slot(self.get_selected_slot() + 36, item, connections, connection_streams);
+	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player]) {
+		self.set_inventory_slot(self.get_selected_slot() + 36, item, players);
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player]) {
 		self.inventory[slot as usize] = item.clone();
 
-  	crate::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, crate::packets::clientbound::play::SetPlayerInventorySlot {
+  	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, crate::packets::clientbound::play::SetPlayerInventorySlot {
    		slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
     	slot: (self.get_selected_slot()) as i32,
     }.try_into().unwrap()).unwrap();
@@ -499,9 +498,8 @@ impl Player {
 			return;
 		}
 
-		connection_streams.iter()
-	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
-	   	.filter(|x| *x.0 != self.peer_socket_address)
+		players.iter()
+	   	.filter(|x| x.uuid != self.uuid)
 	   	.for_each(|x| {
 				let mut equipment: Vec<(u8, Option<Slot>)> = vec![
 					(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
@@ -520,26 +518,25 @@ impl Player {
        		);
 				};
 
-		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
 		   	}.try_into().unwrap()).unwrap();
 			}
 		);
 	}
-	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, connections: &HashMap<SocketAddr, Connection>, connection_streams: &HashMap<SocketAddr, TcpStream>) {
+	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, players: &[Player]) {
 		self.inventory = items.clone();
 
-		crate::utils::send_packet(connection_streams.get(&self.peer_socket_address).unwrap(), crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+		crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 0,
       state_id: 1,
       slot_data: self.inventory.clone(),
       carried_item: None,
 		}.try_into().unwrap()).unwrap();
 
-		connection_streams.iter()
-	   	.filter(|x| connections.get(x.0).unwrap().state == ConnectionState::Play)
-	   	.filter(|x| *x.0 != self.peer_socket_address)
+		players.iter()
+	   	.filter(|x| x.uuid != self.uuid)
 	   	.for_each(|x| {
 				let equipment: Vec<(u8, Option<Slot>)> = vec![
 					(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone()),
@@ -550,7 +547,7 @@ impl Player {
 					(5, self.inventory[5].clone()),
 				];
 
-		   	crate::utils::send_packet(x.1, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
 		   	}.try_into().unwrap()).unwrap();
@@ -609,7 +606,7 @@ impl Player {
 	  return self.is_sneaking;
 	}
 
-	pub fn set_sneaking(&mut self, is_sneaking: bool, connection_streams: &HashMap<SocketAddr, TcpStream>, connections: &HashMap<SocketAddr, Connection>) {
+	pub fn set_sneaking(&mut self, is_sneaking: bool, players: &[Player]) {
 	  //No need to do anything if is_sneaking didnt change
 	  if self.is_sneaking == is_sneaking {
 			return;
@@ -617,12 +614,12 @@ impl Player {
 
 	  self.is_sneaking = is_sneaking;
 
-		for stream in connection_streams {
-		  if stream.1.peer_addr().unwrap() == self.connection_stream.peer_addr().unwrap() || connections.get(stream.0).is_some_and(|x| x.state != ConnectionState::Play) {
+		for player in players {
+		  if player.uuid == self.uuid {
 				continue;
 			}
 
-			crate::utils::send_packet(stream.1, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, crate::packets::clientbound::play::SetEntityMetadata {
+			crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, crate::packets::clientbound::play::SetEntityMetadata {
         entity_id: self.entity_id,
         metadata: vec![
           EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }
