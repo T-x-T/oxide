@@ -1,5 +1,3 @@
-use std::{collections::HashMap, net::SocketAddr};
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -20,7 +18,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
 	let Some(target_player) = game.players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
 		let Some(stream) = stream else {
 			println!("Couldn't find that player :(");
@@ -47,7 +45,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
 		"console".to_string()
 	};
 
-	lib::utils::send_packet(connection_streams.get(&target_player.peer_socket_address).unwrap(), lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+	lib::utils::send_packet(&target_player.connection_stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 		  content: NbtTag::Root(vec![
 			NbtTag::String("type".to_string(), "text".to_string()),
 			NbtTag::String("text".to_string(), format!("<{}> whispered: {}", sending_player_name, command.split(" ").skip(2).collect::<Vec<&str>>().join(" "))),

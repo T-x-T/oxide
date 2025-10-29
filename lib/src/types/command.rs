@@ -1,10 +1,9 @@
 use super::*;
 
 use std::error::Error;
-use std::collections::HashMap;
-use std::net::{SocketAddr, TcpStream};
+use std::net::TcpStream;
 
-type CommandExecFn = fn(String, Option<&mut TcpStream>, &mut Game, &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>>;
+type CommandExecFn = fn(String, Option<&mut TcpStream>, &mut Game) -> Result<(), Box<dyn Error>>;
 
 #[derive(Debug, Clone)]
 pub struct Command {

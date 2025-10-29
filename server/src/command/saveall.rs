@@ -1,5 +1,3 @@
-use std::{collections::HashMap, net::SocketAddr};
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -10,7 +8,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game, _connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+fn execute(_command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
 	if let Some(stream) = stream {
 		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::Root(vec![

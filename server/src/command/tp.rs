@@ -1,7 +1,3 @@
-use std::{collections::HashMap, net::SocketAddr};
-
-use lib::ConnectionState;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -25,7 +21,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, connection_streams: &mut HashMap<SocketAddr, TcpStream>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
 	let Some(stream) = stream else {
 		println!("this command doesnt work from the console");
 		return Ok(());
@@ -83,6 +79,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     .find(|x| x.peer_socket_address == stream.peer_addr().unwrap())
     .unwrap();
 
+	let sending_player_entity_id = sending_player.entity_id;
+
 	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, &mut game.world, &mut game.last_created_entity_id)?;
 
 	sending_player.current_teleport_id += 1;
@@ -99,23 +97,22 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game, con
     flags: 0,
 	}.try_into()?)?;
 
-	let default_connection = Connection::default();
-    for other_stream in connection_streams {
-      if *other_stream.0 != stream.peer_addr().unwrap() && game.connections.lock().unwrap().get(other_stream.0).unwrap_or(&default_connection).state == ConnectionState::Play {
-	      	lib::utils::send_packet(other_stream.1, lib::packets::clientbound::play::TeleportEntity::PACKET_ID, lib::packets::clientbound::play::TeleportEntity {
-            entity_id: sending_player.entity_id,
-            x: target_coordinates.x,
-            y: target_coordinates.y,
-            z: target_coordinates.z,
-            velocity_x: 0.0,
-            velocity_y: 0.0,
-            velocity_z: 0.0,
-            yaw: target_coordinates.yaw,
-            pitch: target_coordinates.pitch,
-            on_ground: true,
-        }.try_into().unwrap())?;
-      }
+  for other_stream in game.players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
+    if other_stream.peer_addr().unwrap() != stream.peer_addr().unwrap() {
+      	lib::utils::send_packet(other_stream, lib::packets::clientbound::play::TeleportEntity::PACKET_ID, lib::packets::clientbound::play::TeleportEntity {
+          entity_id: sending_player_entity_id,
+          x: target_coordinates.x,
+          y: target_coordinates.y,
+          z: target_coordinates.z,
+          velocity_x: 0.0,
+          velocity_y: 0.0,
+          velocity_z: 0.0,
+          yaw: target_coordinates.yaw,
+          pitch: target_coordinates.pitch,
+          on_ground: true,
+      }.try_into().unwrap())?;
     }
+  }
 
 	return Ok(());
 }

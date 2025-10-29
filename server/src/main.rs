@@ -45,7 +45,7 @@ fn initialize_server() {
 
   let connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>> = Arc::new(Mutex::new(HashMap::new()));
 
-  terminal_input::init(connection_streams.clone(), game.clone());
+  terminal_input::init(game.clone());
 
   let game_clone = game.clone();
   std::thread::spawn(move || main_loop(game_clone));

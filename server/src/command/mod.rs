@@ -12,7 +12,6 @@ use lib::packets::Packet;
 use lib::types::*;
 use std::net::TcpStream;
 use std::error::Error;
-use std::{collections::HashMap, net::SocketAddr};
 
 pub fn init(game: &mut Game) {
 	ping::init(game);
