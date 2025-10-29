@@ -11,7 +11,6 @@ pub enum Action {
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
   game.connections.lock().unwrap().entry(stream.peer_addr()?).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
- 	game.connection_streams.lock().unwrap().entry(stream.peer_addr()?).or_insert_with(|| stream.try_clone().unwrap());
 
   let state = game.connections.lock().unwrap().get(&stream.peer_addr()?).unwrap().state.clone();
 

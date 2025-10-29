@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::{SocketAddr, TcpStream}, sync::{Arc, Mutex}};
+use std::{collections::HashMap, net::SocketAddr, sync::{Arc, Mutex}};
 
 use super::*;
 
@@ -10,7 +10,6 @@ pub struct Game {
   pub last_save_all_timestamp: std::time::Instant,
   pub block_state_data: std::collections::HashMap<String, data::blocks::Block>,
   pub connections: Arc<Mutex<HashMap<SocketAddr, Connection>>>,
-  pub connection_streams: Arc<Mutex<HashMap<SocketAddr, TcpStream>>>,
 }
 
 impl Game {

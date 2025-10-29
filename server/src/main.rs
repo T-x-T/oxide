@@ -36,7 +36,6 @@ fn initialize_server() {
     last_save_all_timestamp: std::time::Instant::now(),
     block_state_data: data::blocks::get_blocks(),
     connections: Arc::new(Mutex::new(HashMap::new())),
-    connection_streams: Arc::new(Mutex::new(HashMap::new())),
   };
   game.last_created_entity_id = *next_entity_id;
   command::init(&mut game);
@@ -114,7 +113,6 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
 	}
 
   connections.remove(peer_addr);
-  game.connection_streams.lock().unwrap().remove(peer_addr);
 
   drop(connections);
   game.players.retain(|x| x.peer_socket_address != *peer_addr);
