@@ -30,12 +30,13 @@ pub enum AiExecutionResult {
 
 pub trait CreatableEntity: Entity + Send {
   fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
-  fn from_nbt(value: NbtListTag, next_entity_id: &AtomicI32) -> Box<dyn SaveableEntity + Send> {
-    next_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+  fn from_nbt(value: NbtListTag, last_created_entity_id: &AtomicI32) -> Box<dyn SaveableEntity + Send> {
     let mut common_data = CommonEntity {
-      entity_id: next_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+      entity_id: last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
       ..Default::default()
     };
+
+    last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
     let entity_type = value.get_child("id").unwrap().as_string();
     let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
