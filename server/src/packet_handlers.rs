@@ -1385,7 +1385,8 @@ pub mod play {
 
     println!("<{}> invoked: {}", game.players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().display_name, parsed_packet.command);
 
-   	let Some(command) = game.commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
+    let commands = game.commands.lock().unwrap().clone();
+   	let Some(command) = commands.iter().find(|x| x.name == parsed_packet.command.split(" ").next().unwrap_or_default()) else {
   		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 				  content: NbtTag::Root(vec![
 					NbtTag::String("type".to_string(), "text".to_string()),

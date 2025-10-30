@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn init(game: &mut Game) {
-	game.commands.push(Command {
+	game.commands.lock().unwrap().push(Command {
 		name: "ping".to_string(),
 		execute,
 		arguments: vec![

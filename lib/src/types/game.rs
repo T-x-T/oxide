@@ -6,7 +6,7 @@ pub struct Game {
   pub players: Vec<Player>,
   pub world: World,
   pub last_created_entity_id: AtomicI32,
-  pub commands: Vec<Command>,
+  pub commands: Arc<Mutex<Vec<Command>>>,
   pub last_save_all_timestamp: std::time::Instant,
   pub block_state_data: Arc<std::collections::HashMap<String, data::blocks::Block>>,
   pub connections: Arc<Mutex<HashMap<SocketAddr, Connection>>>,

@@ -17,7 +17,8 @@ pub fn init(game: Arc<Mutex<Game>>) {
 			if input.chars().next().unwrap_or_default() == '/' {
 				let input = input.chars().skip(1).collect::<String>().replace("\n", "");
 				println!("{}", input.split(" ").next().unwrap_or_default());
-				let Some(command) = game.commands.iter().find(|x| x.name == input.split(" ").next().unwrap_or_default()) else {
+				let commands = game.commands.lock().unwrap().clone();
+				let Some(command) = commands.iter().find(|x| x.name == input.split(" ").next().unwrap_or_default()) else {
 	  			println!("command not found");
 		    	continue;
 	    	};

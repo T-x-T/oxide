@@ -33,7 +33,7 @@ fn initialize_server() {
     players: Vec::new(),
     world: World::new(world_loader, &next_entity_id),
     last_created_entity_id: AtomicI32::new(0),
-    commands: Vec::new(),
+    commands: Arc::new(Mutex::new(Vec::new())),
     last_save_all_timestamp: std::time::Instant::now(),
     block_state_data: Arc::new(data::blocks::get_blocks()),
     connections: Arc::new(Mutex::new(HashMap::new())),

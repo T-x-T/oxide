@@ -3,7 +3,7 @@ use lib::entity::CommonEntity;
 use super::*;
 
 pub fn init(game: &mut Game) {
-	game.commands.push(Command {
+	game.commands.lock().unwrap().push(Command {
 		name: "summon".to_string(),
 		execute,
 		arguments: vec![

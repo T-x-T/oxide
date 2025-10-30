@@ -39,7 +39,7 @@ pub fn get_command_packet_data(game: &Game) -> Vec<CommandNode> {
 
 	let mut nodes = vec![root_node];
 
-	for command in &game.commands {
+	for command in game.commands.lock().unwrap().iter() {
 		nodes.push(CommandNode {
 			flags: if command.arguments.is_empty() { 1 } else { 5 },
 			children: Vec::new(),
