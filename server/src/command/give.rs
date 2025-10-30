@@ -68,7 +68,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
     metadata: new_entity.get_metadata(),
 	};
 
-	game.world.dimensions
+	game.world.lock().unwrap().dimensions
 	  .get_mut("minecraft:overworld").unwrap()
     .add_entity(Box::new(new_entity));
 

@@ -676,7 +676,7 @@ use super::*;
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
-        new_player.send_chunk(&mut game.world, x, z, &game.last_created_entity_id)?;
+        new_player.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.last_created_entity_id)?;
       }
     }
 
@@ -818,7 +818,7 @@ use super::*;
     }
 
 
-    for entity in &game.world.dimensions.get("minecraft:overworld").unwrap().entities {
+    for entity in &game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities {
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
         entity_id: entity.get_common_entity_data().entity_id,
         entity_uuid: entity.get_common_entity_data().uuid,
@@ -891,7 +891,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world, &game.last_created_entity_id)?;
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.last_created_entity_id)?;
     let new_position = player.get_position();
 
     for other_player in &game.players {
@@ -918,7 +918,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world, &game.last_created_entity_id)?;
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.last_created_entity_id)?;
     let new_position = player.get_position();
     let new_yaw = player.get_yaw_u8();
     let new_pitch = player.get_pitch_u8();
@@ -1008,7 +1008,8 @@ pub mod play {
 
     let all_blocks = data::blocks::get_blocks();
 
-    let old_block_id = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+    let mut world = game.world.lock().unwrap();
+    let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
     let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &all_blocks);
 
     if old_block.block_type == data::blocks::Type::Door {
@@ -1022,7 +1023,7 @@ pub mod play {
       };
 
       if let Some(location) = location {
-        game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0)?;
+        world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0)?;
 
         game.players.iter()
           .inspect(|x| {
@@ -1043,9 +1044,9 @@ pub mod play {
     }
 
 
-    let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
+    let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-      let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+      let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
       let items = match &block_entity.data {
         BlockEntityData::Chest(items) => items,
         BlockEntityData::Furnace(items, _, _, _, _) => items,
@@ -1096,7 +1097,7 @@ pub mod play {
           metadata: new_entity.get_metadata(),
        	};
 
-       	game.world.dimensions
+       	world.dimensions
           .get_mut("minecraft:overworld").unwrap()
           .add_entity(Box::new(new_entity));
 
@@ -1106,7 +1107,7 @@ pub mod play {
           });
       }
 
-      game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
+      world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
       game.players.iter_mut()
         .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
         .for_each(|x| x.close_inventory().unwrap());
@@ -1151,7 +1152,8 @@ pub mod play {
     let player = game.players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
 
-    let dimension = game.world.dimensions.get("minecraft:overworld").unwrap();
+    let mut world = game.world.lock().unwrap();
+    let dimension = world.dimensions.get("minecraft:overworld").unwrap();
     let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
     let block_states = data::blocks::get_blocks();
     let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
@@ -1226,7 +1228,7 @@ pub mod play {
             velocity_z: 0,
           };
 
-          game.world.dimensions
+          world.dimensions
             .get_mut("minecraft:overworld").unwrap()
             .add_entity(new_entity);
 
@@ -1234,11 +1236,11 @@ pub mod play {
         };
       }
 
-      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, game.world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
+      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
     };
 
     for block_to_place in &blocks_to_place {
-      match game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
+      match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
         Ok(res) => {
           let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &block_states);
           //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
@@ -1249,7 +1251,7 @@ pub mod play {
             }.try_into()?)?;
           }
           if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-            let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
+            let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
             let items = match &block_entity.data {
               BlockEntityData::Chest(items) => items,
               BlockEntityData::Furnace(items, _, _, _, _) => items,
@@ -1300,7 +1302,7 @@ pub mod play {
                 metadata: new_entity.get_metadata(),
              	};
 
-             	game.world.dimensions
+             	world.dimensions
                 .get_mut("minecraft:overworld").unwrap()
                 .add_entity(Box::new(new_entity));
 
@@ -1311,7 +1313,7 @@ pub mod play {
                   });
             }
 
-            game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
+            world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(parsed_packet.location).unwrap().block_entities.retain(|x| x.position != parsed_packet.location);
             game.players.iter_mut()
               .filter(|x| x.opened_inventory_at.is_some_and(|y| y == parsed_packet.location))
               .for_each(|x| x.close_inventory().unwrap());
@@ -1405,7 +1407,7 @@ pub mod play {
 
   pub fn pick_item_from_block(data: &mut[u8], stream: &mut TcpStream, game: &mut Game) -> Result<Option<Action>, Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::PickItemFromBlock::try_from(data.to_vec())?;
-   	let picked_block = game.world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
+   	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
     let picked_block_name = data::blocks::get_blocks().iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
     let item_id = data::items::get_items().get(&picked_block_name).unwrap_or(&data::items::Item {max_stack_size: 0, rarity: data::items::ItemRarity::Common, id:0, repair_cost:0}).id;
 
@@ -1454,7 +1456,7 @@ pub mod play {
       .map(|x| x.connection_stream.try_clone().unwrap())
       .collect::<Vec<TcpStream>>();
 
-    let mut dimensions = std::mem::take(&mut game.world.dimensions);
+    let mut dimensions = std::mem::take(&mut game.world.lock().unwrap().dimensions);
     let block_entity = dimensions.get_mut("minecraft:overworld").unwrap()
       .get_chunk_from_position_mut(position).unwrap()
       .try_get_block_entity_mut(position).unwrap();
@@ -1496,7 +1498,7 @@ pub mod play {
       x => println!("can't handle click_container packet for entity {x:?}"),
     }
 
-    game.world.dimensions = dimensions;
+    game.world.lock().unwrap().dimensions = dimensions;
 
     return Ok(None);
   }
@@ -1516,7 +1518,7 @@ pub mod play {
     	      	location: position,
               action_id: 1,
               action_parameter: 0,
-              block_type: game.world.dimensions.get("minecraft:overworld").unwrap().get_block(position).unwrap() as i32,
+              block_type: game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(position).unwrap() as i32,
      	      }.try_into().unwrap()).unwrap();
           });
         }
@@ -1534,7 +1536,8 @@ pub mod play {
   pub fn update_sign(data: &mut [u8], game: &mut Game) -> Result<Option<Action>, Box<dyn Error>>{
     let parsed_packet = lib::packets::serverbound::play::UpdateSign::try_from(data.to_vec())?;
 
-    let chunk = game.world.dimensions
+    let mut world = game.world.lock().unwrap();
+    let chunk = world.dimensions
       .get_mut("minecraft:overworld").unwrap()
       .chunks.iter_mut()
       .find(|x| x.x == parsed_packet.location.convert_to_coordinates_of_chunk().x && x.z == parsed_packet.location.convert_to_coordinates_of_chunk().z).unwrap();
@@ -1586,7 +1589,8 @@ pub mod play {
     let player = game.players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     let held_item = player.get_held_item(true);
 
-    let Some(entity) = game.world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
+    let mut world = game.world.lock().unwrap();
+    let Some(entity) = world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
       return Ok(None);
     };
     let entity_id = entity.get_common_entity_data().entity_id;
@@ -1662,9 +1666,9 @@ pub mod play {
         for x in (creeper_position.x-2)..creeper_position.x+2 {
           for y in (creeper_position.y-2)..creeper_position.y+2 {
             for z in (creeper_position.z-2)..creeper_position.z+2 {
-              let res = game.world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
+              let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
               if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-                let block_entity = game.world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
+                let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
                 let items = match &block_entity.data {
                   BlockEntityData::Chest(items) => items,
                   BlockEntityData::Furnace(items, _, _, _, _) => items,
@@ -1715,7 +1719,7 @@ pub mod play {
                     metadata: new_entity.get_metadata(),
                  	};
 
-                 	game.world.dimensions
+                 	world.dimensions
                     .get_mut("minecraft:overworld").unwrap()
                     .add_entity(Box::new(new_entity));
 
@@ -1725,7 +1729,7 @@ pub mod play {
                     });
                 }
 
-                game.world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(BlockPosition {x,y,z}).unwrap().block_entities.retain(|be| be.position != BlockPosition {x,y,z});
+                world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(BlockPosition {x,y,z}).unwrap().block_entities.retain(|be| be.position != BlockPosition {x,y,z});
                 game.players.iter_mut()
                   .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == BlockPosition {x,y,z}))
                   .for_each(|x| x.close_inventory().unwrap());

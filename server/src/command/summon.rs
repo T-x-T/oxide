@@ -70,7 +70,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
     velocity_z: 0,
 	};
 
-	game.world.dimensions
+	game.world.lock().unwrap().dimensions
 	  .get_mut("minecraft:overworld").unwrap()
     .add_entity(new_entity);
 

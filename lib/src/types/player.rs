@@ -108,10 +108,11 @@ impl Entity for Player {
 impl Player {
   pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
+      let default_spawn_location = game.world.lock().unwrap().default_spawn_location;
 	  	let player = Self {
-	      x: game.world.default_spawn_location.x as f64,
-	      y: game.world.default_spawn_location.y as f64,
-	      z: game.world.default_spawn_location.z as f64,
+	      x: default_spawn_location.x as f64,
+	      y: default_spawn_location.y as f64,
+	      z: default_spawn_location.z as f64,
 	      yaw: 0.0,
 	      pitch: 0.0,
 				velocity: EntityPosition::default(),

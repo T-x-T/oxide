@@ -81,7 +81,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 
 	let sending_player_entity_id = sending_player.entity_id;
 
-	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, &mut game.world, &game.last_created_entity_id)?;
+	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, &mut game.world.lock().unwrap(), &game.last_created_entity_id)?;
 
 	sending_player.current_teleport_id += 1;
 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID, lib::packets::clientbound::play::SynchronizePlayerPosition {

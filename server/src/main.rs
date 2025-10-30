@@ -31,10 +31,10 @@ fn initialize_server() {
   let last_created_entity_id = AtomicI32::new(0);
   let mut game = Game {
     players: Vec::new(),
-    world: World::new(world_loader, &last_created_entity_id),
+    world: Arc::new(Mutex::new(World::new(world_loader, &last_created_entity_id))),
     last_created_entity_id: AtomicI32::new(0),
     commands: Arc::new(Mutex::new(Vec::new())),
-    last_save_all_timestamp: std::time::Instant::now(),
+    last_save_all_timestamp: Arc::new(Mutex::new(std::time::Instant::now())),
     block_state_data: Arc::new(data::blocks::get_blocks()),
     connections: Arc::new(Mutex::new(HashMap::new())),
   };
@@ -145,7 +145,7 @@ fn tick(game: Arc<Mutex<Game>>) {
   .parse::<u64>()
   .unwrap_or(60);
 
-  if std::time::Instant::now() > game.lock().unwrap().last_save_all_timestamp + std::time::Duration::from_secs(save_interval) {
+  if std::time::Instant::now() > *game.lock().unwrap().last_save_all_timestamp.lock().unwrap() + std::time::Duration::from_secs(save_interval) {
     println!("run save-all");
     game.lock().unwrap().save_all();
   }
@@ -155,7 +155,7 @@ fn tick(game: Arc<Mutex<Game>>) {
   let block_state_data = std::mem::take(&mut game.block_state_data);
 
   let players = game.players.clone();
-  for dimension in &mut game.world.dimensions {
+  for dimension in &mut game.world.lock().unwrap().dimensions {
     for chunk in &mut dimension.1.chunks {
       for blockentity in &mut chunk.block_entities {
         if blockentity.needs_ticking {
