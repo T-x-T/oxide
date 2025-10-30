@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::atomic::AtomicI32;
 
 use rand::Rng;
 
@@ -29,10 +30,10 @@ pub enum AiExecutionResult {
 
 pub trait CreatableEntity: Entity + Send {
   fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
-  fn from_nbt(value: NbtListTag, next_entity_id: &mut i32) -> Box<dyn SaveableEntity + Send> {
-    *next_entity_id += 1;
+  fn from_nbt(value: NbtListTag, next_entity_id: &AtomicI32) -> Box<dyn SaveableEntity + Send> {
+    next_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
     let mut common_data = CommonEntity {
-      entity_id: *next_entity_id,
+      entity_id: next_entity_id.load(std::sync::atomic::Ordering::SeqCst),
       ..Default::default()
     };
 

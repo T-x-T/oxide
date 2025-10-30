@@ -1,7 +1,7 @@
 use super::*;
 use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}};
 use crate::entity::CommonEntity;
-use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}};
+use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}, sync::atomic::AtomicI32};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
 use flate2::read::GzDecoder;
@@ -106,7 +106,7 @@ impl Entity for Player {
 }
 
 impl Player {
-  pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &mut Game, connection_stream: TcpStream) -> Self {
+  pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &Game, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
 	  	let player = Self {
 	      x: game.world.default_spawn_location.x as f64,
@@ -119,9 +119,9 @@ impl Player {
 	      uuid,
 	      peer_socket_address,
 	      connection_stream,
-	      entity_id: game.last_created_entity_id + 1,
+	      entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
 	      waiting_for_confirm_teleportation: false,
-	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
+	      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst) + 1 + 12345) as u64) as i32, //should probably use random number instead
 	      inventory: vec![None; 46],
 	      selected_slot: 0,
 				opened_inventory_at: None,
@@ -130,7 +130,7 @@ impl Player {
 				chat_message_index: 0,
 	    };
 
-	    game.last_created_entity_id += 1;
+	    game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
 	    return player;
     };
@@ -209,9 +209,9 @@ impl Player {
       uuid,
       peer_socket_address,
       connection_stream,
-      entity_id: game.last_created_entity_id + 1,
+      entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
       waiting_for_confirm_teleportation: false,
-      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
+      current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() / (game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst) + 1 + 12345) as u64) as i32, //should probably use random number instead
       inventory,
       selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
       opened_inventory_at: None,
@@ -220,7 +220,7 @@ impl Player {
       chat_message_index: 0,
     };
 
-    game.last_created_entity_id += 1;
+    game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
     return player;
   }
@@ -323,7 +323,7 @@ impl Player {
   }
 
   //chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player https://git.thetxt.io/thetxt/oxide/issues/24
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, next_entity_id: &AtomicI32) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -358,7 +358,7 @@ impl Player {
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, next_entity_id: &AtomicI32) -> Result<(), Box<dyn Error>> {
     self.yaw = yaw;
     self.pitch = pitch;
  		self.new_position(x, y, z, world, next_entity_id)?;
@@ -371,7 +371,7 @@ impl Player {
     self.pitch = pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, next_entity_id: &mut i32) -> Result<(), Box<dyn Error>> {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, next_entity_id: &AtomicI32) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {

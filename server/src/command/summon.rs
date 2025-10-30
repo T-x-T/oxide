@@ -28,19 +28,19 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
     .unwrap()
     .get_position();
 
-	game.last_created_entity_id += 1;
-
 	let new_entity = entity::new(
 	  command.replace("summon ", "").as_str(),
 		CommonEntity {
   		position,
   		velocity: EntityPosition::default(),
   		uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-  		entity_id: game.last_created_entity_id,
+  		entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
       ..Default::default()
 		},
 		NbtListTag::TagCompound(Vec::new()),
 	);
+
+	game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
 	let Some(new_entity) = new_entity else {
 	  lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {

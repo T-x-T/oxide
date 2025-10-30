@@ -1,6 +1,6 @@
 pub mod loader;
 
-use std::{collections::HashMap, error::Error, fmt::Debug};
+use std::{collections::HashMap, error::Error, fmt::Debug, sync::atomic::AtomicI32};
 use super::*;
 
 use crate::{loader::WorldLoader, types::position::BlockPosition, SPAWN_CHUNK_RADIUS};
@@ -43,7 +43,7 @@ pub enum BlockOverwriteOutcome {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new(loader: impl WorldLoader + 'static, next_entity_id: &mut i32) -> Self {
+  pub fn new(loader: impl WorldLoader + 'static, next_entity_id: &AtomicI32) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
     let default_spawn_location: BlockPosition;
   	if loader.is_initialized() {
@@ -83,7 +83,7 @@ impl Dimension {
     };
   }
 
-  pub fn new_from_loader(loader: &impl loader::WorldLoader, next_entity_id: &mut i32) -> Self {
+  pub fn new_from_loader(loader: &impl loader::WorldLoader, next_entity_id: &AtomicI32) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
     let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 

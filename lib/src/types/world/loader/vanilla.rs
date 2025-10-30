@@ -184,7 +184,7 @@ impl super::WorldLoader for Loader {
 		};
   }
 
-  fn load_entities_in_chunk(&self, x: i32, z: i32, next_entity_id: &mut i32) -> Vec<Box<dyn SaveableEntity + Send>> {
+  fn load_entities_in_chunk(&self, x: i32, z: i32, next_entity_id: &AtomicI32) -> Vec<Box<dyn SaveableEntity + Send>> {
     let mut output: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 
     let region = chunk_to_region(x, z);
@@ -263,8 +263,6 @@ impl super::WorldLoader for Loader {
         "minecraft:sheep" => output.push(crate::entity::Sheep::from_nbt(entity, next_entity_id)),
         _ => println!("tried loading unknown entity {entity_type} from disk"),
       };
-
-      *next_entity_id += 1;
     }
 
     return output;
