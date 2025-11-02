@@ -339,12 +339,12 @@ impl Player {
 	     	chunk_z: new_chunk_position.z,
      	}.try_into()?)?;
 
-      let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
-        (old_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= old_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
+      let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::VIEW_DISTANCE as i32 ..= old_chunk_position.x + crate::VIEW_DISTANCE as i32).flat_map(|x| {
+        (old_chunk_position.z - crate::VIEW_DISTANCE as i32 ..= old_chunk_position.z + crate::VIEW_DISTANCE as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
       }).collect();
 
-      let new_chunk_coords: Vec<(i32, i32)> = (new_chunk_position.x - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.x + crate::SPAWN_CHUNK_RADIUS as i32).flat_map(|x| {
-        (new_chunk_position.z - crate::SPAWN_CHUNK_RADIUS as i32 ..= new_chunk_position.z + crate::SPAWN_CHUNK_RADIUS as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
+      let new_chunk_coords: Vec<(i32, i32)> = (new_chunk_position.x - crate::VIEW_DISTANCE as i32 ..= new_chunk_position.x + crate::VIEW_DISTANCE as i32).flat_map(|x| {
+        (new_chunk_position.z - crate::VIEW_DISTANCE as i32 ..= new_chunk_position.z + crate::VIEW_DISTANCE as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
       }).collect();
 
       let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
