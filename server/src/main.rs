@@ -123,7 +123,7 @@ fn main_loop(game: Arc<Game>) {
   loop {
     let start_time = std::time::Instant::now();
 
-    tick(game.clone());
+    let tick_timings = tick(game.clone());
 
     let end_time = std::time::Instant::now();
     let tick_duration = end_time - start_time;
@@ -131,12 +131,22 @@ fn main_loop(game: Arc<Game>) {
     if std::time::Duration::from_millis(50) > tick_duration {
       std::thread::sleep(std::time::Duration::from_millis(50) - tick_duration);
     } else {
-      println!("tick took longer than 50ms! It finished in {tick_duration:.2?}");
+      println!("tick took longer than 50ms! It finished in {tick_duration:.2?}\n{tick_timings:?}");
     }
   }
 }
 
-fn tick(game: Arc<Game>) {
+#[derive(Debug)]
+pub struct TickTimings {
+  pub save_all: std::time::Duration,
+  pub clone_players: std::time::Duration,
+  pub send_keepalives: std::time::Duration,
+  pub tick_blockentities: std::time::Duration,
+  pub tick_entities: std::time::Duration,
+}
+
+fn tick(game: Arc<Game>) -> TickTimings {
+  let now = std::time::Instant::now();
   // TODO: Make a better way to handle configuration to avoid repeated and complex code
   // all this just to get the number to a u64
   // also shouldn't be run every tick but just once in initialize_server()
@@ -149,27 +159,35 @@ fn tick(game: Arc<Game>) {
     println!("run save-all");
     game.save_all();
   }
+  let duration_save_all = std::time::Instant::now() - now;
 
-  let block_state_data = &game.block_state_data;
-
+  let now = std::time::Instant::now();
   let players = game.players.lock().unwrap().clone();
+  let duration_clone_players = std::time::Instant::now() - now;
 
+  let now = std::time::Instant::now();
   if std::time::Instant::now() > *game.last_player_keepalive_timestamp.lock().unwrap() + std::time::Duration::from_secs(5) {
-    for player in &players {
-      let useless_buf_no_one_crates_about = &mut [0; 1];
-      if player.connection_stream.peek(useless_buf_no_one_crates_about).is_err() {
-        disconnect_player(&player.peer_socket_address, game.clone());
-      }
-      if lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID, lib::packets::clientbound::play::ClientboundKeepAlive {
-        keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
-      }.try_into().unwrap()).is_err() {
-        disconnect_player(&player.peer_socket_address, game.clone());
-      };
-    }
-
     *game.last_player_keepalive_timestamp.lock().unwrap() = std::time::Instant::now();
-  }
 
+    let players = players.clone();
+    let game = game.clone();
+    std::thread::spawn(move || {
+      for player in &players {
+        let useless_buf_no_one_crates_about = &mut [0; 1];
+        if player.connection_stream.peek(useless_buf_no_one_crates_about).is_err() {
+          disconnect_player(&player.peer_socket_address, game.clone());
+        }
+        if lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID, lib::packets::clientbound::play::ClientboundKeepAlive {
+          keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
+        }.try_into().unwrap()).is_err() {
+          disconnect_player(&player.peer_socket_address, game.clone());
+        };
+      }
+    });
+  }
+  let duration_send_keepalives = std::time::Instant::now() - now;
+
+  let now = std::time::Instant::now();
   for dimension in &mut game.world.lock().unwrap().dimensions {
     for chunk in &mut dimension.1.chunks {
       for blockentity in &mut chunk.block_entities {
@@ -178,12 +196,15 @@ fn tick(game: Arc<Game>) {
         }
       }
     }
+  }
+  let duration_tick_blockentities = std::time::Instant::now() - now;
 
+  let now = std::time::Instant::now();
+  for dimension in &mut game.world.lock().unwrap().dimensions {
     let mut entities = std::mem::take(&mut dimension.1.entities);
     let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
     for entity in &mut entities {
-      //let now = std::time::Instant::now();
-      let outcome = entity.tick(dimension.1, &players, block_state_data);
+      let outcome = entity.tick(dimension.1, &players, &game.block_state_data);
       //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
       if outcome != EntityTickOutcome::None {
         entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
@@ -239,6 +260,13 @@ fn tick(game: Arc<Game>) {
       }
     }
   }
+  let duration_tick_entities = std::time::Instant::now() - now;
 
-  drop(game);
+  return TickTimings {
+    save_all: duration_save_all,
+    clone_players: duration_clone_players,
+    send_keepalives: duration_send_keepalives,
+    tick_blockentities: duration_tick_blockentities,
+    tick_entities: duration_tick_entities,
+  }
 }
