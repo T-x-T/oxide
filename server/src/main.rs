@@ -30,7 +30,7 @@ fn initialize_server() {
 
   let last_created_entity_id = AtomicI32::new(0);
   let mut game = Game {
-    players: Vec::new(),
+    players: Arc::new(Mutex::new(Vec::new())),
     world: Arc::new(Mutex::new(World::new(world_loader, &last_created_entity_id))),
     last_created_entity_id: AtomicI32::new(0),
     commands: Arc::new(Mutex::new(Vec::new())),
@@ -97,12 +97,13 @@ fn initialize_server() {
 }
 
 fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
-  let mut game = game.lock().unwrap();
+  let game = game.lock().unwrap();
   let mut connections = game.connections.lock().unwrap();
-	let player_to_remove = game.players.iter().find(|x| x.peer_socket_address == *peer_addr);
+  let mut players = game.players.lock().unwrap();
+	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
     player_to_remove.save_to_disk();
-    game.players.iter().for_each(|x| {
+    players.iter().for_each(|x| {
 	    let _ = lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
 	      uuids: vec![player_to_remove.uuid],
 	    }.try_into().unwrap());
@@ -116,7 +117,7 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
   connections.remove(peer_addr);
 
   drop(connections);
-  game.players.retain(|x| x.peer_socket_address != *peer_addr);
+  players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 
 fn main_loop(game: Arc<Mutex<Game>>) {
@@ -154,7 +155,7 @@ fn tick(game: Arc<Mutex<Game>>) {
 
   let block_state_data = std::mem::take(&mut game.block_state_data);
 
-  let players = game.players.clone();
+  let players = game.players.lock().unwrap().clone();
   for dimension in &mut game.world.lock().unwrap().dimensions {
     for chunk in &mut dimension.1.chunks {
       for blockentity in &mut chunk.block_entities {

@@ -23,7 +23,9 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 		return Ok(());
 	};
 
-	let position = game.players.iter()
+	let players = game.players.lock().unwrap();
+
+	let position = players.iter()
 	  .find(|x| x.peer_socket_address == stream.peer_addr().unwrap())
     .unwrap()
     .get_position();
@@ -74,7 +76,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 	  .get_mut("minecraft:overworld").unwrap()
     .add_entity(new_entity);
 
-	game.players.iter().for_each(|x| lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+	players.iter().for_each(|x| lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
 
 	return Ok(());
 }

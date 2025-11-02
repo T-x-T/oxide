@@ -19,7 +19,9 @@ pub fn init(game: &mut Game) {
 }
 
 fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
-	let Some(target_player) = game.players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
+	let players = game.players.lock().unwrap();
+
+  let Some(target_player) = players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
 		let Some(stream) = stream else {
 			println!("Couldn't find that player :(");
 			return Ok(());
@@ -37,8 +39,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 	};
 
 	let sending_player_name = if stream.is_some() {
-		game.players
-			.iter()
+		players.iter()
 			.find(|x| x.peer_socket_address == stream.as_ref().unwrap().peer_addr().unwrap()).unwrap()
 			.display_name.clone()
 	} else {

@@ -3,7 +3,7 @@ use std::{collections::HashMap, net::SocketAddr, sync::{atomic::AtomicI32, Arc, 
 use super::*;
 
 pub struct Game {
-  pub players: Vec<Player>,
+  pub players: Arc<Mutex<Vec<Player>>>,
   pub world: Arc<Mutex<World>>,
   pub last_created_entity_id: AtomicI32,
   pub commands: Arc<Mutex<Vec<Command>>>,
@@ -15,7 +15,7 @@ pub struct Game {
 impl Game {
   pub fn save_all(&mut self) {
     self.world.lock().unwrap().save_to_disk();
-    for player in &self.players {
+    for player in self.players.lock().unwrap().iter() {
       player.save_to_disk();
     }
     *self.last_save_all_timestamp.lock().unwrap() = std::time::Instant::now();

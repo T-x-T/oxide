@@ -27,6 +27,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 		return Ok(());
 	};
 
+	let mut players = game.players.lock().unwrap();
+
 	let arg_string = command.replace("tp ", "");
 	if arg_string.is_empty() {
 		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
@@ -38,8 +40,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 	 	}.try_into()?)?;
 	}
 
-	let target_player = game.players
-		.iter()
+	let target_player = players.iter()
 		.find(|x| x.display_name == arg_string.split(" ").next().unwrap_or_default());
 
 	let target_coordinates: EntityPosition = if target_player.as_ref().is_some() {
@@ -74,8 +75,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
 		}
 	};
 
-	let sending_player = game.players
-    .iter_mut()
+	let sending_player = players.iter_mut()
     .find(|x| x.peer_socket_address == stream.peer_addr().unwrap())
     .unwrap();
 
@@ -97,7 +97,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> 
     flags: 0,
 	}.try_into()?)?;
 
-  for other_stream in game.players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
+  for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
     if other_stream.peer_addr().unwrap() != stream.peer_addr().unwrap() {
       	lib::utils::send_packet(other_stream, lib::packets::clientbound::play::TeleportEntity::PACKET_ID, lib::packets::clientbound::play::TeleportEntity {
           entity_id: sending_player_entity_id,

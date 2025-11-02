@@ -25,7 +25,7 @@ pub fn init(game: Arc<Mutex<Game>>) {
 
 	    	let _ = (command.execute)(input, None, &mut game);
 			} else {
-				for player in &game.players {
+				for player in game.players.lock().unwrap().iter() {
 					lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 					  content: NbtTag::Root(vec![
 							NbtTag::String("type".to_string(), "text".to_string()),
