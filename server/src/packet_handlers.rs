@@ -1,5 +1,4 @@
-use std::net::{TcpStream};
-use std::io::Write;
+use std::net::TcpStream;
 use std::error::Error;
 use std::sync::Arc;
 use lib::packets::Packet;
@@ -23,12 +22,12 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<
 			_ => {Ok(None)},
 		},
     ConnectionState::Status => match packet.id {
-			0x00 => status::status_request(stream, game),
-			0x01 => status::ping_request(&mut packet.data, stream),
+      lib::packets::serverbound::status::StatusRequest::PACKET_ID => status::status_request(stream, game),
+			lib::packets::serverbound::status::PingRequest::PACKET_ID => status::ping_request(&packet.data, stream),
 			_ => {Ok(None)},
 		},
     ConnectionState::Login => match packet.id {
-			lib::packets::serverbound::login::LoginStart::PACKET_ID => login::login_start(&mut packet.data, stream, game),
+			lib::packets::serverbound::login::LoginStart::PACKET_ID => login::login_start(&packet.data, stream, game),
 			lib::packets::serverbound::login::LoginAcknowledged::PACKET_ID => login::login_acknowledged(stream, game),
 			_ => {Ok(None)},
 		},
@@ -103,12 +102,12 @@ pub mod status {
   }
 
   //implement actual packet struct https://git.thetxt.io/thetxt/oxide/issues/20
-  pub fn ping_request(data: &mut Vec<u8>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
-    let mut output: Vec<u8> = Vec::new();
-    output.push(9);
-    output.push(1);
-    output.append(data);
-    stream.write_all(output.as_slice())?;
+  pub fn ping_request(data: &[u8], stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+    let parsed_packet = lib::packets::serverbound::status::PingRequest::try_from(data.to_vec())?;
+
+    lib::utils::send_packet(stream, lib::packets::clientbound::status::PingResponse::PACKET_ID, lib::packets::clientbound::status::PingResponse {
+      timestamp: parsed_packet.timestamp,
+    }.try_into()?)?;
 
     return Ok(Some(Action::DisconnectPlayer));
   }
@@ -117,7 +116,7 @@ pub mod status {
 pub mod login {
   use super::*;
 
-  pub fn login_start(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn login_start(data: &[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.to_vec())?;
 
     game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| {
