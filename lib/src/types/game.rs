@@ -8,6 +8,7 @@ pub struct Game {
   pub entity_id_manager: EntityIdManager,
   pub commands: Mutex<Vec<Command>>,
   pub last_save_all_timestamp: Mutex<std::time::Instant>,
+  pub last_player_keepalive_timestamp: Mutex<std::time::Instant>,
   pub block_state_data: std::collections::HashMap<String, data::blocks::Block>,
   pub connections: Mutex<HashMap<SocketAddr, Connection>>,
 }

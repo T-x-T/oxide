@@ -881,24 +881,6 @@ use super::*;
     	]),
     }.try_into()?)?;
 
-    //get rid of this once we have a real game loop https://git.thetxt.io/thetxt/oxide/issues/23
-    let stream_clone = stream.try_clone()?;
-    std::thread::spawn(move || {
-      loop {
-        let useless_buf_no_one_crates_about = &mut [0; 1];
-        if stream_clone.peek(useless_buf_no_one_crates_about).is_err() {
-          return;
-        }
-        if lib::utils::send_packet(&stream_clone, lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID, lib::packets::clientbound::play::ClientboundKeepAlive {
-          keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
-        }.try_into().unwrap()).is_err() {
-          return;
-        };
-
-        std::thread::sleep(std::time::Duration::from_secs(5));
-      }
-    });
-
     return Ok(None);
   }
 }
