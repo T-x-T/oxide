@@ -702,7 +702,7 @@ use super::*;
 
     for x in current_chunk_coords.x-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.x+lib::SPAWN_CHUNK_RADIUS as i32 {
       for z in current_chunk_coords.z-lib::SPAWN_CHUNK_RADIUS as i32..=current_chunk_coords.z+lib::SPAWN_CHUNK_RADIUS as i32 {
-        new_player.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.last_created_entity_id)?;
+        new_player.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.entity_id_manager)?;
       }
     }
 
@@ -918,7 +918,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.last_created_entity_id)?;
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.entity_id_manager)?;
     let new_position = player.get_position();
 
     for other_player in players.iter() {
@@ -946,7 +946,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.last_created_entity_id)?;
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.entity_id_manager)?;
     let new_position = player.get_position();
     let new_yaw = player.get_yaw_u8();
     let new_pitch = player.get_pitch_u8();
@@ -1092,14 +1092,12 @@ pub mod play {
       };
 
       for item in items.clone() {
-        game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-
         let new_entity = lib::entity::ItemEntity {
           common: lib::entity::CommonEntity {
             position: parsed_packet.location.into(),
          		velocity: EntityPosition::default(),
             uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-            entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+            entity_id: game.entity_id_manager.get_new(),
             ..Default::default()
           },
           age: 0,
@@ -1238,14 +1236,13 @@ pub mod play {
             position: new_block_location.into(),
             velocity: EntityPosition::default(),
             uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-            entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+            entity_id: game.entity_id_manager.get_new(),
             ..Default::default()
           },
           NbtListTag::TagCompound(Vec::new()),
         );
 
         if let Some(new_entity) = new_entity {
-          game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
          	let packet = lib::packets::clientbound::play::SpawnEntity {
             entity_id: new_entity.get_common_entity_data().entity_id,
@@ -1303,7 +1300,7 @@ pub mod play {
                   position: parsed_packet.location.into(),
                		velocity: EntityPosition::default(),
                   uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-                  entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+                  entity_id: game.entity_id_manager.get_new(),
                   ..Default::default()
                 },
                 age: 0,
@@ -1313,8 +1310,6 @@ pub mod play {
                 pickup_delay: 0,
                 thrower: 0,
               };
-
-              game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
              	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
                 entity_id: new_entity.get_common_entity_data().entity_id,
@@ -1728,7 +1723,7 @@ pub mod play {
                       position: BlockPosition {x,y,z}.into(),
                    		velocity: EntityPosition::default(),
                       uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-                      entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+                      entity_id: game.entity_id_manager.get_new(),
                       ..Default::default()
                     },
                     age: 0,
@@ -1738,8 +1733,6 @@ pub mod play {
                     pickup_delay: 0,
                     thrower: 0,
                   };
-
-                  game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
                  	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
                     entity_id: new_entity.get_common_entity_data().entity_id,

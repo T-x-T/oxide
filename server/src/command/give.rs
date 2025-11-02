@@ -38,7 +38,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
       position,
   		velocity: EntityPosition::default(),
       uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-      entity_id: game.last_created_entity_id.load(std::sync::atomic::Ordering::SeqCst),
+      entity_id: game.entity_id_manager.get_new(),
       ..Default::default()
     },
     age: 0,
@@ -48,8 +48,6 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
     pickup_delay: 0,
     thrower: player.uuid,
 	};
-
-	game.last_created_entity_id.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 
 	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
     entity_id: new_entity.get_common_entity_data().entity_id,

@@ -3,7 +3,6 @@
 use std::collections::HashMap;
 use std::net::{TcpListener, SocketAddr};
 use std::path::Path;
-use std::sync::atomic::AtomicI32;
 use std::sync::{Arc, Mutex};
 use lib::packets::Packet;
 use lib::types::*;
@@ -28,17 +27,17 @@ fn initialize_server() {
     block_states,
   };
 
-  let last_created_entity_id = AtomicI32::new(0);
+  let entity_id_manager = EntityIdManager::default();
   let mut game = Game {
     players: Mutex::new(Vec::new()),
-    world: Mutex::new(World::new(world_loader, &last_created_entity_id)),
-    last_created_entity_id: AtomicI32::new(0),
+    world: Mutex::new(World::new(world_loader, &entity_id_manager)),
+    entity_id_manager,
     commands: Mutex::new(Vec::new()),
     last_save_all_timestamp: Mutex::new(std::time::Instant::now()),
     block_state_data: data::blocks::get_blocks(),
     connections: Mutex::new(HashMap::new()),
   };
-  game.last_created_entity_id = last_created_entity_id;
+
   command::init(&mut game);
 
   let game: Arc<Game> = Arc::new(game);
