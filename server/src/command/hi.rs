@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -8,7 +10,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(_command: String, stream: Option<&mut TcpStream>, _game: &mut Game) -> Result<(), Box<dyn Error>> {
+fn execute(_command: String, stream: Option<&mut TcpStream>, _game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let Some(stream) = stream else {
 		println!("Hi back :)");
 		return Ok(());

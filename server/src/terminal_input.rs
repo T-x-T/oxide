@@ -1,8 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use lib::packets::Packet;
 use lib::types::*;
 
-pub fn init(game: Arc<Mutex<Game>>) {
+pub fn init(game: Arc<Game>) {
 	std::thread::spawn(move || {
 		loop {
 			let mut input = String::new();
@@ -11,8 +11,6 @@ pub fn init(game: Arc<Mutex<Game>>) {
 			if input.is_empty() {
 				continue;
 			}
-
-			let mut game = game.lock().unwrap();
 
 			if input.chars().next().unwrap_or_default() == '/' {
 				let input = input.chars().skip(1).collect::<String>().replace("\n", "");
@@ -23,7 +21,7 @@ pub fn init(game: Arc<Mutex<Game>>) {
 		    	continue;
 	    	};
 
-	    	let _ = (command.execute)(input, None, &mut game);
+	    	let _ = (command.execute)(input, None, game.clone());
 			} else {
 				for player in game.players.lock().unwrap().iter() {
 					lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {

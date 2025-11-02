@@ -12,6 +12,7 @@ use lib::packets::Packet;
 use lib::types::*;
 use std::net::TcpStream;
 use std::error::Error;
+use std::sync::Arc;
 
 pub fn init(game: &mut Game) {
 	ping::init(game);
@@ -27,7 +28,7 @@ pub fn init(game: &mut Game) {
 
 
 
-pub fn get_command_packet_data(game: &Game) -> Vec<CommandNode> {
+pub fn get_command_packet_data(game: Arc<Game>) -> Vec<CommandNode> {
 	let root_node = CommandNode {
 		flags: 0,
     children: Vec::new(),

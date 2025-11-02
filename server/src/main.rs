@@ -30,18 +30,18 @@ fn initialize_server() {
 
   let last_created_entity_id = AtomicI32::new(0);
   let mut game = Game {
-    players: Arc::new(Mutex::new(Vec::new())),
-    world: Arc::new(Mutex::new(World::new(world_loader, &last_created_entity_id))),
+    players: Mutex::new(Vec::new()),
+    world: Mutex::new(World::new(world_loader, &last_created_entity_id)),
     last_created_entity_id: AtomicI32::new(0),
-    commands: Arc::new(Mutex::new(Vec::new())),
-    last_save_all_timestamp: Arc::new(Mutex::new(std::time::Instant::now())),
-    block_state_data: Arc::new(data::blocks::get_blocks()),
-    connections: Arc::new(Mutex::new(HashMap::new())),
+    commands: Mutex::new(Vec::new()),
+    last_save_all_timestamp: Mutex::new(std::time::Instant::now()),
+    block_state_data: data::blocks::get_blocks(),
+    connections: Mutex::new(HashMap::new()),
   };
   game.last_created_entity_id = last_created_entity_id;
   command::init(&mut game);
 
-  let game: Arc<Mutex<Game>> = Arc::new(Mutex::new(game));
+  let game: Arc<Game> = Arc::new(game);
 
   terminal_input::init(game.clone());
 
@@ -62,12 +62,12 @@ fn initialize_server() {
         match stream.peek(&mut peek_buf) {
           Ok(0) => {
             println!("client disconnected.");
-            disconnect_player(&peer_addr, game_clone);
+            disconnect_player(&peer_addr, game_clone.clone());
             break;
           }
           Err(e) => {
             eprintln!("error reading from client: {e}");
-            disconnect_player(&peer_addr, game_clone);
+            disconnect_player(&peer_addr, game_clone.clone());
             break;
           }
           _ => {}
@@ -76,11 +76,11 @@ fn initialize_server() {
         let packet = lib::utils::read_packet(&stream);
 
         if stream.peer_addr().is_err() {
-          disconnect_player(&peer_addr, game_clone);
+          disconnect_player(&peer_addr, game_clone.clone());
           break;
         }
 
-        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, &mut game_clone.lock().unwrap());
+        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game_clone.clone());
         if packet_handler_result.is_err() {
        		println!("got error, so lets disconnect: {}", packet_handler_result.err().unwrap());
          disconnect_player(&peer_addr, game_clone);
@@ -96,8 +96,7 @@ fn initialize_server() {
   }
 }
 
-fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
-  let game = game.lock().unwrap();
+fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
   let mut connections = game.connections.lock().unwrap();
   let mut players = game.players.lock().unwrap();
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
@@ -120,7 +119,7 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Mutex<Game>>) {
   players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 
-fn main_loop(game: Arc<Mutex<Game>>) {
+fn main_loop(game: Arc<Game>) {
   loop {
     let start_time = std::time::Instant::now();
 
@@ -137,7 +136,7 @@ fn main_loop(game: Arc<Mutex<Game>>) {
   }
 }
 
-fn tick(game: Arc<Mutex<Game>>) {
+fn tick(game: Arc<Game>) {
   // TODO: Make a better way to handle configuration to avoid repeated and complex code
   // all this just to get the number to a u64
   // also shouldn't be run every tick but just once in initialize_server()
@@ -146,14 +145,12 @@ fn tick(game: Arc<Mutex<Game>>) {
   .parse::<u64>()
   .unwrap_or(60);
 
-  if std::time::Instant::now() > *game.lock().unwrap().last_save_all_timestamp.lock().unwrap() + std::time::Duration::from_secs(save_interval) {
+  if std::time::Instant::now() > *game.last_save_all_timestamp.lock().unwrap() + std::time::Duration::from_secs(save_interval) {
     println!("run save-all");
-    game.lock().unwrap().save_all();
+    game.save_all();
   }
 
-  let mut game = game.lock().unwrap();
-
-  let block_state_data = std::mem::take(&mut game.block_state_data);
+  let block_state_data = &game.block_state_data;
 
   let players = game.players.lock().unwrap().clone();
   for dimension in &mut game.world.lock().unwrap().dimensions {
@@ -169,7 +166,7 @@ fn tick(game: Arc<Mutex<Game>>) {
     let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
     for entity in &mut entities {
       //let now = std::time::Instant::now();
-      let outcome = entity.tick(dimension.1, &players, &block_state_data);
+      let outcome = entity.tick(dimension.1, &players, block_state_data);
       //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
       if outcome != EntityTickOutcome::None {
         entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
@@ -225,8 +222,6 @@ fn tick(game: Arc<Mutex<Game>>) {
       }
     }
   }
-
-  game.block_state_data = block_state_data;
 
   drop(game);
 }

@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use lib::entity::CommonEntity;
 
 use super::*;
@@ -17,7 +19,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: &mut Game) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let Some(stream) = stream else {
 		println!("This command currently only works in game");
 		return Ok(());

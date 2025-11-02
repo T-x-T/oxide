@@ -2,8 +2,9 @@ use super::*;
 
 use std::error::Error;
 use std::net::TcpStream;
+use std::sync::Arc;
 
-type CommandExecFn = fn(String, Option<&mut TcpStream>, &mut Game) -> Result<(), Box<dyn Error>>;
+type CommandExecFn = fn(String, Option<&mut TcpStream>, Arc<Game>) -> Result<(), Box<dyn Error>>;
 
 #[derive(Debug, Clone)]
 pub struct Command {

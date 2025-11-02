@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -35,7 +37,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, _game: &mut Game) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, _game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let reply_msg = if command.as_str() == "ping" {
    	"pong".to_string()
   } else {

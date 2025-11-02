@@ -1,7 +1,7 @@
 use super::*;
 use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}};
 use crate::entity::CommonEntity;
-use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}, sync::atomic::AtomicI32};
+use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}, sync::{atomic::AtomicI32, Arc}};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
 use flate2::read::GzDecoder;
@@ -106,7 +106,7 @@ impl Entity for Player {
 }
 
 impl Player {
-  pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: &Game, connection_stream: TcpStream) -> Self {
+  pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: Arc<Game>, connection_stream: TcpStream) -> Self {
     let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
       let default_spawn_location = game.world.lock().unwrap().default_spawn_location;
 	  	let player = Self {
