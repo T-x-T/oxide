@@ -1249,7 +1249,7 @@ pub mod play {
         };
       }
 
-      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z)
+      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z, &game.block_state_data)
     };
 
     for block_to_place in &blocks_to_place {

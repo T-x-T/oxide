@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use data::blocks::{self, *};
 
 use crate::{CardinalDirection, Dimension, BlockPosition};
 
-pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: String, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32) -> Vec<(u16, BlockPosition)> {
-  let block = data::blocks::get_block_from_name(used_item_name.clone());
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: &str, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32, block_states: &HashMap<String, Block>) -> Vec<(u16, BlockPosition)> {
+  let block = data::blocks::get_block_from_name(used_item_name, block_states);
   let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
   match block.block_type {
@@ -67,7 +69,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
         x.properties.contains(&Property::EnderChestWaterlogged(EnderChestWaterlogged::False))
       ).unwrap().id, position));
     },
-    Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z)),
+    Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Slab => {
       let position_to_check = if face == 0 {
         BlockPosition { y: position.y + 1, ..position }

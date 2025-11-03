@@ -26,8 +26,8 @@ pub fn interact(location: BlockPosition, block_id_at_location: u16, _face: u8, b
   return BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location), other_half]);
 }
 
-pub fn get_block_state_id(_face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: String, cursor_position_x: f32, _cursor_position_y: f32, cursor_position_z: f32) -> Vec<(u16, BlockPosition)> {
-  let block = data::blocks::get_block_from_name(used_item_name.clone());
+pub fn get_block_state_id(_face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: &str, cursor_position_x: f32, _cursor_position_y: f32, cursor_position_z: f32, block_states: &HashMap<String, Block>) -> Vec<(u16, BlockPosition)> {
+  let block = data::blocks::get_block_from_name(used_item_name, block_states);
   let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
   let facing = match cardinal_direction {
@@ -74,7 +74,7 @@ mod test {
     #[test]
     fn open_door() {
       let block_states = data::blocks::get_blocks();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
       let block_state_id_lower_closed = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::East)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
       let block_state_id_lower_opened = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::East)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::True)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
@@ -93,7 +93,7 @@ mod test {
     #[test]
     fn close_door() {
       let block_states = data::blocks::get_blocks();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
       let block_state_id_lower_opened = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::East)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::True)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
       let block_state_id_lower_closed = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::East)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
@@ -115,14 +115,15 @@ mod test {
 
     #[test]
     fn hinge_left_north() {
+      let block_states = data::blocks::get_blocks();
       let dimension = Dimension::new();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
 
-      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door".to_string(), 0.0, 0.0, 0.0);
+      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.0, &block_states);
 
       let expected = vec![
         (block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }),
@@ -134,14 +135,15 @@ mod test {
 
     #[test]
     fn hinge_left_west() {
+      let block_states = data::blocks::get_blocks();
       let dimension = Dimension::new();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::West)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::West)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
 
-      let res = get_block_state_id(0, CardinalDirection::West, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door".to_string(), 0.0, 0.0, 0.9);
+      let res = get_block_state_id(0, CardinalDirection::West, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.9, &block_states);
 
       let expected = vec![
         (block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }),
@@ -153,14 +155,15 @@ mod test {
 
     #[test]
     fn hinge_right_north() {
+      let block_states = data::blocks::get_blocks();
       let dimension = Dimension::new();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Right)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Right)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
 
-      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door".to_string(), 0.9, 0.0, 0.0);
+      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.9, 0.0, 0.0, &block_states);
 
       let expected = vec![
         (block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }),
@@ -172,8 +175,9 @@ mod test {
 
     #[test]
     fn double_door() {
+      let block_states = data::blocks::get_blocks();
       let mut dimension = Dimension::new();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
@@ -183,7 +187,7 @@ mod test {
       dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_lower).unwrap();
       dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_upper).unwrap();
 
-      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door".to_string(), 0.0, 0.0, 0.0);
+      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.0, &block_states);
 
       let expected = vec![
         (block_state_id_lower_double, BlockPosition { x: 10, y: 80, z: 0 }),
@@ -195,8 +199,9 @@ mod test {
 
     #[test]
     fn double_door_z_offset_one() {
+      let block_states = data::blocks::get_blocks();
       let mut dimension = Dimension::new();
-      let block = data::blocks::get_block_from_name("minecraft:oak_door".to_string());
+      let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
@@ -204,7 +209,7 @@ mod test {
       dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_lower).unwrap();
       dimension.overwrite_block(BlockPosition { x: 9, y: 82, z: 0 }, block_state_id_upper).unwrap();
 
-      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door".to_string(), 0.0, 0.0, 0.0);
+      let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.0, &block_states);
 
       let expected = vec![
         (block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }),
