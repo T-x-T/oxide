@@ -23,19 +23,18 @@ fn initialize_server() {
   let block_states = data::blocks::get_blocks();
 
   let world_loader = lib::world::loader::vanilla::Loader {
-    path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
-    block_states,
+    path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned()
   };
 
   let entity_id_manager = EntityIdManager::default();
   let mut game = Game {
     players: Mutex::new(Vec::new()),
-    world: Mutex::new(World::new(world_loader, &entity_id_manager)),
+    world: Mutex::new(World::new(world_loader, &entity_id_manager, &block_states)),
     entity_id_manager,
     commands: Mutex::new(Vec::new()),
     last_save_all_timestamp: Mutex::new(std::time::Instant::now()),
     last_player_keepalive_timestamp: Mutex::new(std::time::Instant::now()),
-    block_state_data: data::blocks::get_blocks(),
+    block_state_data: block_states,
     connections: Mutex::new(HashMap::new()),
   };
 

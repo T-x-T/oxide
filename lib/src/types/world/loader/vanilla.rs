@@ -11,13 +11,12 @@ use super::*;
 #[derive(Debug)]
 pub struct Loader {
 	pub path: PathBuf,
-	pub block_states: HashMap<String, Block>,
 }
 
 impl super::InnerWorldLoader for Loader{}
 
 impl super::WorldLoader for Loader {
-  fn load_chunk(&self, x: i32, z: i32) -> Chunk {
+  fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>) -> Chunk {
    	let region = chunk_to_region(x, z);
 
   	let mut region_file_path = self.path.clone();
@@ -127,7 +126,7 @@ impl super::WorldLoader for Loader {
        	if block_name == "minecraft:air" {
        		blocks = vec![];
         } else {
-      		blocks = vec![self.block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096];
+      		blocks = vec![block_states.get(block_palette[0].get_child("Name").unwrap().as_string()).unwrap().states.iter().find(|x| x.default).unwrap().id; 4096];
         }
       } else {
 	      let blocks_bits_per_entry = match block_palette.len() {
@@ -150,7 +149,7 @@ impl super::WorldLoader for Loader {
 				 			break;
 				   	}
 				    let entry = (value as u64) << (64 - (blocks_bits_per_entry * (i+1))) >> (64 - blocks_bits_per_entry);
-				    let block_state_id = data::blocks::get_block_state_id_from_raw(&self.block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(String::new(), vec![])).get_compound_children().iter().map(|x| (x.get_description().to_string(), x.as_string().to_string())).collect());
+				    let block_state_id = data::blocks::get_block_state_id_from_raw(block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(String::new(), vec![])).get_compound_children().iter().map(|x| (x.get_description().to_string(), x.as_string().to_string())).collect());
 				    blocks.push(block_state_id);
 				  }
 				}
@@ -274,7 +273,7 @@ impl super::WorldLoader for Loader {
   	return std::fs::exists(level_dat_path).unwrap();
   }
 
-  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: BlockPosition, dimension: &Dimension) {
+  fn save_to_disk(&self, chunks: &[Chunk], default_spawn_location: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) {
  		println!("start saving world with {} chunks to disk", chunks.len());
   	let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
    	for chunk in chunks {
@@ -286,7 +285,7 @@ impl super::WorldLoader for Loader {
     println!("there are {} regions to save", regions.len());
     for region in regions {
     	let now = std::time::Instant::now();
-   		save_region_to_disk(region.0, region.1.as_slice(), self.path.clone());
+   		save_region_to_disk(region.0, region.1.as_slice(), self.path.clone(), block_states);
       save_entity_region_to_disk(region.0, region.1.as_slice(), dimension, self.path.clone());
      	println!("saved region {:?} in {:.2?}", region.0, now.elapsed());
     }
@@ -455,8 +454,7 @@ fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: 
   file.flush().unwrap();
 }
 
-fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
-  let all_blocks = data::blocks::get_blocks();
+fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, block_states: &HashMap<String, Block>) {
 	let mut locations_table = [(0u32, 0u8);1024];
 	let mut timestamps_table = [0u32;1024];
 	const EMPTY_CHUNK_DATA: Option<Vec<u8>> = None;
@@ -554,14 +552,14 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf) {
 
   			let mut block_data = vec![
   			  NbtTag::List("palette".to_string(), block_palette.iter().map(|blockstate_id| {
-            let block = all_blocks.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap();
+            let block = block_states.iter().find(|x| x.1.states.iter().any(|x| x.id == *blockstate_id)).unwrap();
             let mut children = vec![
               NbtTag::String("Name".to_string(), block.0.clone()),
             ];
 
             if block.1.states.len() > 1 {
               children.push(
-                NbtTag::TagCompound("Properties".to_string(), data::blocks::get_raw_properties_from_block_state_id(&all_blocks, *blockstate_id).into_iter().map(|x| {
+                NbtTag::TagCompound("Properties".to_string(), data::blocks::get_raw_properties_from_block_state_id(block_states, *blockstate_id).into_iter().map(|x| {
                   NbtTag::String(x.0, x.1)
                 }).collect())
               );

@@ -43,14 +43,14 @@ pub enum BlockOverwriteOutcome {
 
 impl World {
   #[allow(clippy::new_without_default)]
-  pub fn new(loader: impl WorldLoader + 'static, entity_id_manager: &EntityIdManager) -> Self {
+  pub fn new(loader: impl WorldLoader + 'static, entity_id_manager: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Self {
    	let mut dimensions: HashMap<String, Dimension> = HashMap::new();
     let default_spawn_location: BlockPosition;
   	if loader.is_initialized() {
    		let now = std::time::Instant::now();
  			println!("loading existing world");
       default_spawn_location = loader.get_default_spawn_location();
-   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, entity_id_manager));
+   		dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, entity_id_manager, block_states));
     	println!("finished loading existing world in {:.2?}", now.elapsed());
    	} else {
 	    println!("create new world");
@@ -61,8 +61,8 @@ impl World {
     return Self { dimensions, loader: Box::new(loader), default_spawn_location };
   }
 
-  pub fn save_to_disk(&mut self) {
-  	self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location));
+  pub fn save_to_disk(&mut self, block_states: &HashMap<String, data::blocks::Block>) {
+  	self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location, block_states));
   }
 }
 
@@ -83,13 +83,13 @@ impl Dimension {
     };
   }
 
-  pub fn new_from_loader(loader: &impl loader::WorldLoader, entity_id_manager: &EntityIdManager) -> Self {
+  pub fn new_from_loader(loader: &impl loader::WorldLoader, entity_id_manager: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Self {
   	let mut chunks: Vec<Chunk> = Vec::new();
     let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 
    	for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
     	for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-     		chunks.push(loader.load_chunk(x as i32, z as i32));
+     		chunks.push(loader.load_chunk(x as i32, z as i32, block_states));
         entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager));
       }
     }
@@ -144,9 +144,9 @@ impl Dimension {
     return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
   }
 
-  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: BlockPosition) {
+  pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), default_spawn_location: BlockPosition, block_states: &HashMap<String, data::blocks::Block>) {
  		{
-      loader.save_to_disk(&self.chunks, default_spawn_location, self);
+      loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states);
     }
     for chunk in &mut self.chunks {
       chunk.modified = false;

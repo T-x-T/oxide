@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use data::blocks::{self, *};
+use data::blocks::*;
 
 use crate::{CardinalDirection, Dimension, BlockPosition};
 
@@ -114,8 +114,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(facing.clone())) && x.properties.contains(&Property::StairHalf(stair_half.clone())) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id, position));
     },
     Type::IronBars => {
-      let all_blocks = blocks::get_blocks();
-      let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+      let block_ids_to_check: Vec<u16> = block_states.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
       let north = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or(0)) { IronBarsNorth::True } else { IronBarsNorth::False };
       let south = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or(0)) { IronBarsSouth::True } else { IronBarsSouth::False };
@@ -126,8 +125,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
       output.push((block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(north.clone())) && x.properties.contains(&Property::IronBarsSouth(south.clone())) && x.properties.contains(&Property::IronBarsEast(east.clone())) && x.properties.contains(&Property::IronBarsWest(west.clone())) && x.properties.contains(&Property::IronBarsWaterlogged(water_logged.clone()))).unwrap().id, position));
     },
     Type::StainedGlassPane => {
-      let all_blocks = blocks::get_blocks();
-      let block_ids_to_check: Vec<u16> = all_blocks.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
+      let block_ids_to_check: Vec<u16> = block_states.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 
       let north = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or(0)) { StainedGlassPaneNorth::True } else { StainedGlassPaneNorth::False };
       let south = if block_ids_to_check.contains(&dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or(0)) { StainedGlassPaneSouth::True } else { StainedGlassPaneSouth::False };

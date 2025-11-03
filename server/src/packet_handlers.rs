@@ -701,7 +701,7 @@ use super::*;
 
     for x in current_chunk_coords.x-lib::VIEW_DISTANCE as i32..=current_chunk_coords.x+lib::VIEW_DISTANCE as i32 {
       for z in current_chunk_coords.z-lib::VIEW_DISTANCE as i32..=current_chunk_coords.z+lib::VIEW_DISTANCE as i32 {
-        new_player.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.entity_id_manager)?;
+        new_player.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.entity_id_manager, &game.block_state_data)?;
       }
     }
 
@@ -899,7 +899,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.entity_id_manager)?;
+    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data)?;
     let new_position = player.get_position();
 
     for other_player in players.iter() {
@@ -927,7 +927,7 @@ pub mod play {
     let old_y = player.get_position().y;
     let old_z = player.get_position().z;
 
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.entity_id_manager)?;
+    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data)?;
     let new_position = player.get_position();
     let new_yaw = player.get_yaw_u8();
     let new_pitch = player.get_pitch_u8();
@@ -1167,12 +1167,11 @@ pub mod play {
 
     let dimension = world.dimensions.get("minecraft:overworld").unwrap();
     let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
-    let block_states = data::blocks::get_blocks();
-    let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
+    let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &game.block_state_data);
 
     let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
       //Don't place block, because player right clicked something that does something when right clicked
-      match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face) {
+      match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face, &game.block_state_data) {
         lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
         lib::block::BlockInteractionResult::OpenInventory(window_type) => {
           let Some(block_entity) = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location) else {
@@ -1253,7 +1252,7 @@ pub mod play {
     for block_to_place in &blocks_to_place {
       match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0, &game.block_state_data) {
         Ok(res) => {
-          let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &block_states);
+          let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
           //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
           if block.block_type == data::blocks::Type::WallSign || block.block_type == data::blocks::Type::StandingSign || block.block_type == data::blocks::Type::WallHangingSign || block.block_type == data::blocks::Type::CeilingHangingSign {
             lib::utils::send_packet(stream, lib::packets::clientbound::play::OpenSignEditor::PACKET_ID, lib::packets::clientbound::play::OpenSignEditor {
@@ -1418,7 +1417,7 @@ pub mod play {
   pub fn pick_item_from_block(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::PickItemFromBlock::try_from(data.to_vec())?;
    	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
-    let picked_block_name = data::blocks::get_blocks().iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
+    let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
     let item_id = data::items::get_items().get(&picked_block_name).unwrap_or(&data::items::Item {max_stack_size: 0, rarity: data::items::ItemRarity::Common, id:0, repair_cost:0}).id;
 
     let players_cloned = game.players.lock().unwrap().clone();

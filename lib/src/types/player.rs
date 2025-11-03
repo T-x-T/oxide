@@ -1,7 +1,7 @@
 use super::*;
 use crate::{packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, *}};
 use crate::entity::CommonEntity;
-use std::{error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}, sync::Arc};
+use std::{collections::HashMap, error::Error, fs::{File, OpenOptions}, io::prelude::*, path::{Path, PathBuf}, sync::Arc};
 use std::net::{SocketAddr, TcpStream};
 use std::fs;
 use flate2::read::GzDecoder;
@@ -321,8 +321,7 @@ impl Player {
     return cardinal_direction;
   }
 
-  //chunk loading only works when moving one chunk at a time and falls apart when teleporting. Keep track of chunks sent to player https://git.thetxt.io/thetxt/oxide/issues/24
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -350,17 +349,17 @@ impl Player {
       let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
 
       for chunk_coords in chunks_missing {
-      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger)?;
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states)?;
       }
     }
 
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, entity_id_manger: &EntityIdManager) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
     self.yaw = yaw;
     self.pitch = pitch;
- 		self.new_position(x, y, z, world, entity_id_manger)?;
+ 		self.new_position(x, y, z, world, entity_id_manger, block_states)?;
 
     return Ok(());
   }
@@ -370,13 +369,13 @@ impl Player {
     self.pitch = pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, entity_id_manger: &EntityIdManager) -> Result<(), Box<dyn Error>> {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
-			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z);
+			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z, block_states);
 			dimension.chunks.push(new_chunk);
 
 			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger);

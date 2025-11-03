@@ -15,7 +15,7 @@ pub struct Game {
 
 impl Game {
   pub fn save_all(&self) {
-    self.world.lock().unwrap().save_to_disk();
+    self.world.lock().unwrap().save_to_disk(&self.block_state_data);
     for player in self.players.lock().unwrap().iter() {
       player.save_to_disk();
     }
