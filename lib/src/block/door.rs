@@ -184,8 +184,8 @@ mod test {
       let block_state_id_lower_double = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Right)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper_double = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Right)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_lower).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_upper).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_lower, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_upper, &block_states).unwrap();
 
       let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.0, &block_states);
 
@@ -206,8 +206,8 @@ mod test {
       let block_state_id_lower = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
       let block_state_id_upper = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(DoorFacing::North)) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(DoorOpen::False)) && x.properties.contains(&Property::DoorPowered(DoorPowered::False))).unwrap().id;
 
-      dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_lower).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 82, z: 0 }, block_state_id_upper).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_lower, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 82, z: 0 }, block_state_id_upper, &block_states).unwrap();
 
       let res = get_block_state_id(0, CardinalDirection::North, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_door", 0.0, 0.0, 0.0, &block_states);
 

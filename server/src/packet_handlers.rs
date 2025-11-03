@@ -1022,13 +1022,11 @@ pub mod play {
 
     let parsed_packet = lib::packets::serverbound::play::PlayerAction::try_from(data.to_vec())?;
 
-    let all_blocks = data::blocks::get_blocks();
-
     let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
-    let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &all_blocks);
+    let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &game.block_state_data);
 
     if old_block.block_type == data::blocks::Type::Door {
-      let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &all_blocks);
+      let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &game.block_state_data);
       let location: Option<BlockPosition> = if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
         Some(BlockPosition { y: parsed_packet.location.y - 1, ..parsed_packet.location })
       } else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
@@ -1038,7 +1036,7 @@ pub mod play {
       };
 
       if let Some(location) = location {
-        world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0)?;
+        world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0, &game.block_state_data)?;
 
         players.iter()
           .inspect(|x| {
@@ -1059,7 +1057,7 @@ pub mod play {
     }
 
 
-    let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0)?;
+    let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(parsed_packet.location, 0, &game.block_state_data)?;
     if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
       let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
       let items = match &block_entity.data {
@@ -1253,7 +1251,7 @@ pub mod play {
     };
 
     for block_to_place in &blocks_to_place {
-      match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
+      match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0, &game.block_state_data) {
         Ok(res) => {
           let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &block_states);
           //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
@@ -1685,7 +1683,7 @@ pub mod play {
         for x in (creeper_position.x-2)..creeper_position.x+2 {
           for y in (creeper_position.y-2)..creeper_position.y+2 {
             for z in (creeper_position.z-2)..creeper_position.z+2 {
-              let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0)?;
+              let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0, &game.block_state_data)?;
               if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
                 let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
                 let items = match &block_entity.data {
