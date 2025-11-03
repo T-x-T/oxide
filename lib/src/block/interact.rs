@@ -2,6 +2,7 @@ use crate::BlockPosition;
 use data::blocks::Type;
 use data::inventory::Inventory;
 
+#[derive(Debug, PartialEq)]
 pub enum BlockInteractionResult {
   OverwriteBlocks(Vec<(u16, BlockPosition)>),
   OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
@@ -14,31 +15,7 @@ pub fn interact_with_block_at(location: BlockPosition, block_id_at_location: u16
   let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &block_states);
 
   return match block_type_at_location {
-    Type::Door => {
-      let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&block_states, block_id_at_location);
-      let is_open = block_properties.iter().find(|x| x.0 == "open").unwrap().1 == "true";
-      block_properties.retain(|x| x.0 != "open");
-      block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
-
-      let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, &block_states);
-      let new_block_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties.clone());
-
-      let is_upper = block_properties.iter().find(|x| x.0 == "half").unwrap().1 == "upper";
-      block_properties.retain(|x| x.0 != "half");
-      let other_half: (u16, BlockPosition) = if is_upper {
-        block_properties.push(("half".to_string(), "lower".to_string()));
-        let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-        let other_half_location = BlockPosition { y: location.y - 1, ..location};
-        (other_half_id, other_half_location)
-      } else {
-        block_properties.push(("half".to_string(), "upper".to_string()));
-        let other_half_id = data::blocks::get_block_state_id_from_raw(&block_states, &block_name, block_properties);
-        let other_half_location = BlockPosition { y: location.y + 1, ..location};
-        (other_half_id, other_half_location)
-      };
-
-      BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location), other_half])
-    },
+    Type::Door => super::door::interact(location, block_id_at_location, face, &block_states),
     Type::Trapdoor => {
       let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(&block_states, block_id_at_location);
       let is_open = block_properties.iter().find(|x| x.0 == "open").unwrap().1 == "true";

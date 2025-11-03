@@ -67,38 +67,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
         x.properties.contains(&Property::EnderChestWaterlogged(EnderChestWaterlogged::False))
       ).unwrap().id, position));
     },
-    Type::Door => {
-      let facing = match cardinal_direction {
-        CardinalDirection::North => DoorFacing::North,
-        CardinalDirection::East => DoorFacing::East,
-        CardinalDirection::South => DoorFacing::South,
-        CardinalDirection::West => DoorFacing::West,
-      };
-
-      let open = DoorOpen::False;
-      let powered = DoorPowered::False;
-
-      let hinge_side = match cardinal_direction {
-        CardinalDirection::North => if cursor_position_x > 0.5 { DoorHinge::Right } else { DoorHinge::Left },
-        CardinalDirection::East => if cursor_position_z > 0.5 { DoorHinge::Right } else { DoorHinge::Left },
-        CardinalDirection::South => if cursor_position_x < 0.5 { DoorHinge::Right } else { DoorHinge::Left },
-        CardinalDirection::West => if cursor_position_z < 0.5 { DoorHinge::Right } else { DoorHinge::Left },
-      };
-
-      let position_to_check = match cardinal_direction {
-        CardinalDirection::North => if hinge_side == DoorHinge::Left { BlockPosition { x: position.x - 1, ..position } } else { BlockPosition { x: position.x + 1, ..position } },
-        CardinalDirection::East => if hinge_side == DoorHinge::Left { BlockPosition { z: position.z - 1, ..position } } else { BlockPosition { z: position.z + 1, ..position } },
-        CardinalDirection::South => if hinge_side == DoorHinge::Left { BlockPosition { x: position.x + 1, ..position } } else { BlockPosition { x: position.x - 1, ..position } },
-        CardinalDirection::West => if hinge_side == DoorHinge::Left { BlockPosition { z: position.z + 1, ..position } } else { BlockPosition { z: position.z - 1, ..position } },
-      };
-      let block_id_next_to_door = dimension.get_block(position_to_check).unwrap_or(0);
-      let block_id_of_valid_door = block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(DoorHinge::Left)) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id;
-      let we_must_go_double_door_mode = block_id_next_to_door == block_id_of_valid_door;
-      let hinge = if we_must_go_double_door_mode { if hinge_side == DoorHinge::Right { DoorHinge::Left } else { DoorHinge::Right } } else { hinge_side };
-
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, position));
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::DoorFacing(facing.clone())) && x.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) && x.properties.contains(&Property::DoorHinge(hinge.clone())) && x.properties.contains(&Property::DoorOpen(open.clone())) && x.properties.contains(&Property::DoorPowered(powered.clone()))).unwrap().id, BlockPosition { x: position.x, y: position.y + 1, z: position.z }));
-    },
+    Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z)),
     Type::Slab => {
       let position_to_check = if face == 0 {
         BlockPosition { y: position.y + 1, ..position }

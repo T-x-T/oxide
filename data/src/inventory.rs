@@ -1,5 +1,5 @@
 #[repr(u8)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Inventory {
   Generic9x1,
   Generic9x2,
