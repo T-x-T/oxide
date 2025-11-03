@@ -5,6 +5,7 @@ mod state;
 mod interact;
 
 mod door;
+mod trapdoor;
 
 pub use state::*;
 pub use interact::*;
