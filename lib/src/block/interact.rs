@@ -18,31 +18,7 @@ pub fn interact_with_block_at(location: BlockPosition, block_id_at_location: u16
   return match block_type_at_location {
     Type::Door => super::door::interact(location, block_id_at_location, face, block_states),
     Type::Trapdoor => super::trapdoor::interact(location, block_id_at_location, face, block_states),
-    Type::FenceGate => {
-      let mut block_properties = data::blocks::get_raw_properties_from_block_state_id(block_states, block_id_at_location);
-      let is_open = block_properties.iter().find(|x| x.0 == "open").unwrap().1 == "true";
-      block_properties.retain(|x| x.0 != "open");
-      block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
-      let facing = block_properties.iter().find(|x| x.0 == "facing").unwrap().1.clone();
-      block_properties.retain(|x| x.0 != "facing");
-      if facing == "north" || facing == "south" {
-        if face == 2 {
-          block_properties.push(("facing".to_string(), "south".to_string()));
-        } else {
-          block_properties.push(("facing".to_string(), "north".to_string()));
-        }
-      } else if face == 4 {
-        block_properties.push(("facing".to_string(), "east".to_string()));
-      } else {
-        block_properties.push(("facing".to_string(), "west".to_string()));
-      }
-
-
-      let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
-      let new_block_id = data::blocks::get_block_state_id_from_raw(block_states, &block_name, block_properties.clone());
-
-      BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location)])
-    },
+    Type::FenceGate => super::fencegate::interact(location, block_id_at_location, face, block_states),
     Type::CraftingTable => BlockInteractionResult::OpenInventory(Inventory::Crafting),
     Type::Chest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
     Type::TrappedChest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),

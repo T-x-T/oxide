@@ -71,6 +71,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimen
     },
     Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Trapdoor => output.append(&mut super::trapdoor::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::FenceGate => output.append(&mut super::fencegate::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Slab => {
       let position_to_check = if face == 0 {
         BlockPosition { y: position.y + 1, ..position }
