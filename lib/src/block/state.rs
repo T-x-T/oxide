@@ -4,71 +4,16 @@ use data::blocks::*;
 
 use crate::{CardinalDirection, Dimension, BlockPosition};
 
-pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, dimension: &Dimension, position: BlockPosition, used_item_name: &str, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32, block_states: &HashMap<String, Block>) -> Vec<(u16, BlockPosition)> {
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch: f32, dimension: &Dimension, position: BlockPosition, used_item_name: &str, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32, block_states: &HashMap<String, Block>) -> Vec<(u16, BlockPosition)> {
   let block = data::blocks::get_block_from_name(used_item_name, block_states);
   let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
   match block.block_type {
-    Type::RotatedPillar => {
-      let axis = match face {
-        0|1 => RotatedPillarAxis::Y,
-        2|3 => RotatedPillarAxis::Z,
-        _ => RotatedPillarAxis::X,
-      };
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::RotatedPillarAxis(axis.clone()))).unwrap().id, position));
-    },
-    Type::Barrel => { //This should use the orientation the player is looking in, instead of the face that was placed against to match vanilla
-      let axis = match face {
-        0 => BarrelFacing::Down,
-        1 => BarrelFacing::Up,
-        2 => BarrelFacing::North,
-        3 => BarrelFacing::South,
-        4 => BarrelFacing::West,
-        _ => BarrelFacing::East,
-      };
-      output.push((block.states.iter().find(|x|
-        x.properties.contains(&Property::BarrelFacing(axis.clone())) &&
-        x.properties.contains(&Property::BarrelOpen(BarrelOpen::False))
-      ).unwrap().id, position));
-    },
-    Type::Chest => {
-      let facing = match cardinal_direction {
-        CardinalDirection::North => ChestFacing::South,
-        CardinalDirection::East => ChestFacing::West,
-        CardinalDirection::South => ChestFacing::North,
-        CardinalDirection::West => ChestFacing::East,
-      };
-      output.push((block.states.iter().find(|x|
-        x.properties.contains(&Property::ChestFacing(facing.clone())) &&
-        x.properties.contains(&Property::ChestType(ChestType::Single)) &&
-        x.properties.contains(&Property::ChestWaterlogged(ChestWaterlogged::False))
-      ).unwrap().id, position));
-    },
-    Type::TrappedChest => {
-      let facing = match cardinal_direction {
-        CardinalDirection::North => TrappedChestFacing::South,
-        CardinalDirection::East => TrappedChestFacing::West,
-        CardinalDirection::South => TrappedChestFacing::North,
-        CardinalDirection::West => TrappedChestFacing::East,
-      };
-      output.push((block.states.iter().find(|x|
-        x.properties.contains(&Property::TrappedChestFacing(facing.clone())) &&
-        x.properties.contains(&Property::TrappedChestType(TrappedChestType::Single)) &&
-        x.properties.contains(&Property::TrappedChestWaterlogged(TrappedChestWaterlogged::False))
-      ).unwrap().id, position));
-    },
-    Type::EnderChest => {
-      let facing = match cardinal_direction {
-        CardinalDirection::North => EnderChestFacing::South,
-        CardinalDirection::East => EnderChestFacing::West,
-        CardinalDirection::South => EnderChestFacing::North,
-        CardinalDirection::West => EnderChestFacing::East,
-      };
-      output.push((block.states.iter().find(|x|
-        x.properties.contains(&Property::EnderChestFacing(facing.clone())) &&
-        x.properties.contains(&Property::EnderChestWaterlogged(EnderChestWaterlogged::False))
-      ).unwrap().id, position));
-    },
+    Type::RotatedPillar => output.append(&mut super::rotated_pillar::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Barrel => output.append(&mut super::barell::get_block_state_id(face, cardinal_direction, pitch, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Chest => output.append(&mut super::chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
+    Type::TrappedChest => output.append(&mut super::trapped_chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
+    Type::EnderChest => output.append(&mut super::ender_chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
     Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Trapdoor => output.append(&mut super::trapdoor::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::FenceGate => output.append(&mut super::fencegate::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),

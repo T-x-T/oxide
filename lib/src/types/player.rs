@@ -369,6 +369,10 @@ impl Player {
     self.pitch = pitch;
   }
 
+  pub fn get_pitch(&self) -> f32 {
+    return self.pitch;
+  }
+
   pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });

@@ -7,6 +7,11 @@ mod interact;
 mod door;
 mod trapdoor;
 mod fencegate;
+mod rotated_pillar;
+mod barell;
+mod chest;
+mod trapped_chest;
+mod ender_chest;
 
 pub use state::*;
 pub use interact::*;

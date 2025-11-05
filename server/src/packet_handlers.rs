@@ -1204,6 +1204,7 @@ pub mod play {
       //Let's go - we can place a block
       let used_item_id = player.get_held_item(true).unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).item_id;
       let used_item_name = data::items::get_item_name_by_id(used_item_id);
+      let pitch = player.get_pitch();
 
       if used_item_name.ends_with("spawn_egg") {
         let entity_type = used_item_name.replace("_spawn_egg", "");
@@ -1246,7 +1247,7 @@ pub mod play {
         };
       }
 
-      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z, &game.block_state_data)
+      lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, pitch, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z, &game.block_state_data)
     };
 
     for block_to_place in &blocks_to_place {
