@@ -17,36 +17,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch
     Type::Door => output.append(&mut super::door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Trapdoor => output.append(&mut super::trapdoor::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::FenceGate => output.append(&mut super::fencegate::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
-    Type::Slab => {
-      let position_to_check = if face == 0 {
-        BlockPosition { y: position.y + 1, ..position }
-      } else if face == 1 {
-        BlockPosition { y: position.y - 1, ..position }
-      } else {
-        position
-      };
-      let block_id_at_position_to_check = dimension.get_block(position_to_check).unwrap_or(0);
-      let block_id_at_position = dimension.get_block(position).unwrap_or(0);
-
-      let block_ids_of_half_slabs: Vec<u16> = block.states.iter().filter(|x| !x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
-      let block_ids_of_top_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Top))).map(|x| x.id).collect();
-      let block_ids_of_bottom_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom))).map(|x| x.id).collect();
-      let block_ids_of_double_slabs: Vec<u16> = block.states.iter().filter(|x| x.properties.contains(&Property::SlabType(SlabType::Double))).map(|x| x.id).collect();
-
-      let placed_underneath_bottom_slab = block_ids_of_bottom_slabs.contains(&block_id_at_position_to_check) && face == 0;
-      let double_up_placed_underneath_bottom_slab = placed_underneath_bottom_slab && block_ids_of_bottom_slabs.contains(&block_id_at_position);
-      let placed_ontop_top_slab = block_ids_of_top_slabs.contains(&block_id_at_position_to_check) && face == 1;
-      let double_up_placed_ontop_top_slab = placed_ontop_top_slab && block_ids_of_top_slabs.contains(&block_id_at_position);
-      let double_it_up = (block_ids_of_half_slabs.contains(&block_id_at_position_to_check) && !placed_underneath_bottom_slab && !placed_ontop_top_slab) || double_up_placed_underneath_bottom_slab || double_up_placed_ontop_top_slab;
-
-      let place_top = (face >= 2 && cursor_position_y > 0.5) || face == 0;
-      let slab_type_to_place = if double_it_up { SlabType::Double } else if place_top { SlabType::Top } else { SlabType::Bottom };
-
-      let its_already_doubled = block_ids_of_double_slabs.contains(&block_id_at_position_to_check);
-      let position_to_place = if its_already_doubled { position } else if double_it_up { position_to_check } else { position };
-
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::SlabType(slab_type_to_place.clone())) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id, position_to_place));
-    },
+    Type::Slab => output.append(&mut super::slab::get_block_state_id(face, cursor_position_y, dimension, position, used_item_name, block_states)),
     Type::Stair => {
       let facing = match cardinal_direction {
         CardinalDirection::North => StairFacing::North,

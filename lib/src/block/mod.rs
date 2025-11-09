@@ -11,6 +11,7 @@ mod barell;
 mod chest;
 mod trapped_chest;
 mod ender_chest;
+mod slab;
 
 pub use state::*;
 
