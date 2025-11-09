@@ -151,6 +151,84 @@ mod test {
       assert_eq!(res, expected);
     }
 
-    //TOOD: more tests doubling it up by placing on side, building on top and bottom of double slab
+    #[test]
+    fn on_top_side_of_side_of_other_block_doubling_up() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+
+      let res = get_block_state_id(2, 0.49, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn on_bottom_side_of_side_of_other_block_doubling_up() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Top)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+
+      let res = get_block_state_id(2, 0.99, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn on_bottom_of_double_slab() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Top)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+
+      let res = get_block_state_id(0, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn on_top_of_double_slab() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 79, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
+
+      let res = get_block_state_id(1, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
   }
 }
