@@ -18,19 +18,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch
     Type::Trapdoor => output.append(&mut super::trapdoor::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::FenceGate => output.append(&mut super::fencegate::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
     Type::Slab => output.append(&mut super::slab::get_block_state_id(face, cursor_position_y, dimension, position, used_item_name, block_states)),
-    Type::Stair => {
-      let facing = match cardinal_direction {
-        CardinalDirection::North => StairFacing::North,
-        CardinalDirection::East => StairFacing::East,
-        CardinalDirection::South => StairFacing::South,
-        CardinalDirection::West => StairFacing::West,
-      };
-
-      let flip_it = face == 0 || (cursor_position_y > 0.5 && cursor_position_y < 0.9999);
-      let stair_half = if flip_it { StairHalf::Top } else { StairHalf::Bottom };
-
-      output.push((block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(facing.clone())) && x.properties.contains(&Property::StairHalf(stair_half.clone())) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id, position));
-    },
+    Type::Stair => output.append(&mut super::stair::get_block_state_id(face, cardinal_direction, cursor_position_y, dimension, position, used_item_name, block_states)),
     Type::IronBars => {
       let block_ids_to_check: Vec<u16> = block_states.iter().filter(|x| x.0.ends_with("glass_pane") || x.0 == "minecraft:iron_bars").flat_map(|x| x.1.states.iter().map(|x| x.id)).collect();
 

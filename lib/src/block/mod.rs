@@ -12,6 +12,7 @@ mod chest;
 mod trapped_chest;
 mod ender_chest;
 mod slab;
+mod stair;
 
 pub use state::*;
 
