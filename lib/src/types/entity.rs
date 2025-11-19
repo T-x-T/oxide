@@ -428,6 +428,24 @@ pub trait Entity: std::fmt::Debug {
       return AiExecutionResult::DoNothing;
     }
   }
+
+  fn to_spawn_entity_packet(&self) -> crate::packets::clientbound::play::SpawnEntity {
+    return crate::packets::clientbound::play::SpawnEntity {
+      entity_id: self.get_common_entity_data().entity_id,
+      entity_uuid: self.get_common_entity_data().uuid,
+      entity_type: self.get_type(),
+      x: self.get_common_entity_data().position.x,
+      y: self.get_common_entity_data().position.y,
+      z: self.get_common_entity_data().position.z,
+      pitch: self.get_pitch_u8(),
+      yaw: self.get_yaw_u8(),
+      head_yaw: 0,
+      data: 0,
+      velocity_x: 0,
+      velocity_y: 0,
+      velocity_z: 0,
+    }
+  }
 }
 
 pub trait SaveableEntity: Entity + Send {
@@ -603,7 +621,6 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 		_ => None,
   };
 }
-
 
 #[cfg(test)]
 mod test {

@@ -49,21 +49,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
     thrower: player.uuid,
 	};
 
-	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
-    entity_id: new_entity.get_common_entity_data().entity_id,
-    entity_uuid: new_entity.get_common_entity_data().uuid,
-    entity_type: new_entity.get_type(),
-    x: position.x,
-    y: position.y,
-    z: position.z,
-    pitch: new_entity.get_pitch_u8(),
-    yaw: new_entity.get_yaw_u8(),
-    head_yaw: 0,
-    data: 0,
-    velocity_x: 0,
-    velocity_y: 0,
-    velocity_z: 0,
-	};
+	let spawn_packet = new_entity.to_spawn_entity_packet();
 
 	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
     entity_id: new_entity.get_common_entity_data().entity_id,

@@ -844,21 +844,7 @@ use super::*;
 
 
     for entity in &game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities {
-      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, lib::packets::clientbound::play::SpawnEntity {
-        entity_id: entity.get_common_entity_data().entity_id,
-        entity_uuid: entity.get_common_entity_data().uuid,
-        entity_type: entity.get_type(),
-        x: entity.get_common_entity_data().position.x,
-        y: entity.get_common_entity_data().position.y,
-        z: entity.get_common_entity_data().position.z,
-        pitch: entity.get_pitch_u8(),
-        yaw: entity.get_yaw_u8(),
-        head_yaw: entity.get_yaw_u8(),
-        data: 0,
-        velocity_x: 0,
-        velocity_y: 0,
-        velocity_z: 0,
-   	  }.try_into()?)?;
+      lib::utils::send_packet(stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, entity.to_spawn_entity_packet().try_into()?)?;
 
       lib::utils::send_packet(stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, lib::packets::clientbound::play::SetEntityMetadata {
         entity_id: entity.get_common_entity_data().entity_id,
@@ -1087,21 +1073,7 @@ pub mod play {
           thrower: 0,
         };
 
-       	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
-          entity_id: new_entity.get_common_entity_data().entity_id,
-          entity_uuid: new_entity.get_common_entity_data().uuid,
-          entity_type: new_entity.get_type(),
-          x: parsed_packet.location.x as f64,
-          y: parsed_packet.location.y as f64,
-          z: parsed_packet.location.z as f64,
-          pitch: new_entity.get_pitch_u8(),
-          yaw: new_entity.get_yaw_u8(),
-          head_yaw: 0,
-          data: 0,
-          velocity_x: 0,
-          velocity_y: 0,
-          velocity_z: 0,
-       	};
+       	let spawn_packet = new_entity.to_spawn_entity_packet();
 
        	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
           entity_id: new_entity.get_common_entity_data().entity_id,
@@ -1212,7 +1184,13 @@ pub mod play {
         let new_entity = entity::new(
           &entity_type,
           lib::entity::CommonEntity {
-            position: new_block_location.into(),
+            position: EntityPosition {
+              x: new_block_location.x as f64 + 0.5,
+              y: new_block_location.y as f64,
+              z: new_block_location.z as f64 + 0.5,
+              yaw: 0.0,
+              pitch,
+            },
             velocity: EntityPosition::default(),
             uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
             entity_id: game.entity_id_manager.get_new(),
@@ -1222,22 +1200,7 @@ pub mod play {
         );
 
         if let Some(new_entity) = new_entity {
-
-         	let packet = lib::packets::clientbound::play::SpawnEntity {
-            entity_id: new_entity.get_common_entity_data().entity_id,
-            entity_uuid: new_entity.get_common_entity_data().uuid,
-            entity_type: new_entity.get_type(),
-            x: new_block_location.x as f64 + 0.5,
-            y: new_block_location.y as f64,
-            z: new_block_location.z as f64 + 0.5,
-            pitch: new_entity.get_pitch_u8(),
-            yaw: new_entity.get_yaw_u8(),
-            head_yaw: 0,
-            data: 0,
-            velocity_x: 0,
-            velocity_y: 0,
-            velocity_z: 0,
-          };
+         	let packet = new_entity.to_spawn_entity_packet();
 
           world.dimensions
             .get_mut("minecraft:overworld").unwrap()
@@ -1290,21 +1253,7 @@ pub mod play {
                 thrower: 0,
               };
 
-             	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
-                entity_id: new_entity.get_common_entity_data().entity_id,
-                entity_uuid: new_entity.get_common_entity_data().uuid,
-                entity_type: new_entity.get_type(),
-                x: parsed_packet.location.x as f64,
-                y: parsed_packet.location.y as f64,
-                z: parsed_packet.location.z as f64,
-                pitch: new_entity.get_pitch_u8(),
-                yaw: new_entity.get_yaw_u8(),
-                head_yaw: 0,
-                data: 0,
-                velocity_x: 0,
-                velocity_y: 0,
-                velocity_z: 0,
-             	};
+             	let spawn_packet = new_entity.to_spawn_entity_packet();
 
              	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
                 entity_id: new_entity.get_common_entity_data().entity_id,
@@ -1713,21 +1662,7 @@ pub mod play {
                     thrower: 0,
                   };
 
-                 	let spawn_packet = lib::packets::clientbound::play::SpawnEntity {
-                    entity_id: new_entity.get_common_entity_data().entity_id,
-                    entity_uuid: new_entity.get_common_entity_data().uuid,
-                    entity_type: new_entity.get_type(),
-                    x: x as f64,
-                    y: y as f64,
-                    z: z as f64,
-                    pitch: new_entity.get_pitch_u8(),
-                    yaw: new_entity.get_yaw_u8(),
-                    head_yaw: 0,
-                    data: 0,
-                    velocity_x: 0,
-                    velocity_y: 0,
-                    velocity_z: 0,
-                 	};
+                 	let spawn_packet = new_entity.to_spawn_entity_packet();
 
                  	let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
                     entity_id: new_entity.get_common_entity_data().entity_id,
