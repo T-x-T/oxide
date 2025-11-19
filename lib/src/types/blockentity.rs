@@ -127,6 +127,18 @@ impl BlockEntity {
       _ => (),
     }
   }
+
+  pub fn get_contained_items(&self) -> Vec<Item> {
+    return match &self.data {
+      BlockEntityData::Chest(items) => items.clone(),
+      BlockEntityData::Furnace(items, _, _, _, _) => items.clone(),
+      BlockEntityData::BrewingStand(items) => items.clone(),
+      BlockEntityData::Crafter(items) => items.clone(),
+      BlockEntityData::Dispenser(items) => items.clone(),
+      BlockEntityData::Hopper(items) => items.clone(),
+      _ => Vec::new(),
+    };
+  }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -560,6 +572,37 @@ pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_st
     Type::Vault => Some(BlockEntity { id: BlockEntityId::Vault, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
     _ => None,
   };
+}
+
+pub fn remove_block_entity(block_entity: &BlockEntity, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World) {
+  let items = block_entity.get_contained_items();
+
+  let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
+  for item in items {
+    let new_entity = item.get_entity(block_entity.position.into(), entity_id_manager.get_new());
+   	let spawn_packet = new_entity.to_spawn_entity_packet();
+
+   	let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+      entity_id: new_entity.get_common_entity_data().entity_id,
+      metadata: new_entity.get_metadata(),
+   	};
+
+    entities.push(Box::new(new_entity));
+
+    players.iter().for_each(|x| {
+      crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
+      crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+    });
+  }
+
+  world.dimensions
+    .get_mut("minecraft:overworld").unwrap()
+    .add_entities(entities);
+
+  world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(block_entity.position).unwrap().block_entities.retain(|be| be.position != block_entity.position);
+  players.iter_mut()
+    .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == block_entity.position))
+    .for_each(|x| x.close_inventory().unwrap());
 }
 
 impl TryFrom<NbtListTag> for BlockEntity {

@@ -167,6 +167,13 @@ impl Dimension {
     self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
     self.entities.push(entity);
   }
+
+  pub fn add_entities(&mut self, mut entities: Vec<Box<dyn SaveableEntity + Send>>) {
+    for entity in &entities {
+      self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
+    }
+    self.entities.append(&mut entities);
+  }
 }
 
 impl Chunk {

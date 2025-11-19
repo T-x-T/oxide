@@ -1,3 +1,5 @@
+use crate::entity::ItemEntity;
+
 use super::*;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -13,6 +15,26 @@ pub struct Item {
   pub id: String,
   pub count: u8,
   pub components: Vec<SlotComponent>,
+}
+
+impl Item {
+  pub fn get_entity(&self, position: EntityPosition, entity_id: i32) -> ItemEntity {
+    return ItemEntity {
+      common: crate::entity::CommonEntity {
+        position,
+     		velocity: EntityPosition::default(),
+        uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+        entity_id,
+        ..Default::default()
+      },
+      age: 0,
+      health: 5,
+      item: self.clone(),
+      owner: 0,
+      pickup_delay: 0,
+      thrower: 0,
+    }
+  }
 }
 
 impl Default for Item {
@@ -118,6 +140,7 @@ impl From<Item> for Option<Slot> {
     }
   }
 }
+
 
 //implement missing SlotComponent variants https://git.thetxt.io/thetxt/oxide/issues/18
 #[derive(Debug, Clone, PartialEq)]
