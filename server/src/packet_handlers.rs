@@ -1075,6 +1075,7 @@ pub mod play {
 
   pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
+    let players_clone = players.clone();
     let mut world = game.world.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.to_vec())?;
 
@@ -1097,35 +1098,8 @@ pub mod play {
 
     let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
       //Don't place block, because player right clicked something that does something when right clicked
-      match lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face, &game.block_state_data) {
-        lib::block::BlockInteractionResult::OverwriteBlocks(blocks) => blocks,
-        lib::block::BlockInteractionResult::OpenInventory(window_type) => {
-          let Some(block_entity) = dimension.get_chunk_from_position(parsed_packet.location).unwrap().try_get_block_entity(parsed_packet.location) else {
-            return Ok(None);
-          };
-          player.open_inventory(window_type, block_entity);
-
-          players.iter()
-           	.for_each(|x| {
-       	      send_packet(&x.connection_stream, lib::packets::clientbound::play::BlockAction::PACKET_ID, lib::packets::clientbound::play::BlockAction {
-      	      	location: parsed_packet.location,
-                action_id: 1,
-                action_parameter: 1,
-                block_type: block_id_at_location as i32,
-       	      }.try_into().unwrap()).unwrap();
-            });
-
-          Vec::new()
-        },
-        lib::block::BlockInteractionResult::OpenSignEditor => {
-          lib::utils::send_packet(stream, lib::packets::clientbound::play::OpenSignEditor::PACKET_ID, lib::packets::clientbound::play::OpenSignEditor {
-            location: parsed_packet.location,
-            is_front_text: true,
-          }.try_into()?)?;
-          Vec::new()
-        },
-        lib::block::BlockInteractionResult::Nothing => Vec::new(),
-      }
+      let block_interaction_result = lib::block::interact_with_block_at(parsed_packet.location, block_id_at_location, parsed_packet.face, &game.block_state_data);
+      block_interaction_result.handle(dimension, parsed_packet.location, player, &players_clone, block_id_at_location)?
     } else {
       //Let's go - we can place a block
       let used_item_id = player.get_held_item(true).unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).item_id;
@@ -1178,10 +1152,12 @@ pub mod play {
               is_front_text: true,
             }.try_into()?)?;
           }
+          #[allow(clippy::collapsible_if)]
           if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-            let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location).unwrap();
-            let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-            crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world);
+            if let Some(block_entity) = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(parsed_packet.location).unwrap().block_entities.iter().find(|x| x.position == parsed_packet.location) {
+              let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+              crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world);
+            };
           }
         },
         Err(err) => {
