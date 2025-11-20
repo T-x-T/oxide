@@ -622,6 +622,40 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
   };
 }
 
+pub fn create_and_spawn_entity_from_egg(spawn_egg_name: &str, entity_id: i32, position: BlockPosition, dimension: &mut Dimension, players: &[Player]) {
+  let entity_type = spawn_egg_name.replace("_spawn_egg", "");
+  let entity_position = EntityPosition {
+    x: position.x as f64 + 0.5,
+    y: position.y as f64,
+    z: position.z as f64 + 0.5,
+    yaw: 0.0,
+    pitch: 0.0,
+  };
+  create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players);
+}
+
+pub fn create_and_spawn_entity(entity_type: &str, entity_id: i32, position: EntityPosition, dimension: &mut Dimension, players: &[Player]) {
+  let new_entity = entity::new(
+    entity_type,
+    CommonEntity {
+      position,
+      velocity: EntityPosition::default(),
+      uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+      entity_id,
+      ..Default::default()
+    },
+    NbtListTag::TagCompound(Vec::new()),
+  );
+
+  if let Some(new_entity) = new_entity {
+   	let packet = new_entity.to_spawn_entity_packet();
+
+    dimension.add_entity(new_entity);
+
+    players.iter().for_each(|x| crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+  };
+}
+
 #[cfg(test)]
 mod test {
   use super::*;

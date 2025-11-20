@@ -1107,35 +1107,8 @@ pub mod play {
       let pitch = player.get_pitch();
 
       if used_item_name.ends_with("spawn_egg") {
-        let entity_type = used_item_name.replace("_spawn_egg", "");
-
-        let new_entity = entity::new(
-          &entity_type,
-          lib::entity::CommonEntity {
-            position: EntityPosition {
-              x: new_block_location.x as f64 + 0.5,
-              y: new_block_location.y as f64,
-              z: new_block_location.z as f64 + 0.5,
-              yaw: 0.0,
-              pitch,
-            },
-            velocity: EntityPosition::default(),
-            uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-            entity_id: game.entity_id_manager.get_new(),
-            ..Default::default()
-          },
-          NbtListTag::TagCompound(Vec::new()),
-        );
-
-        if let Some(new_entity) = new_entity {
-         	let packet = new_entity.to_spawn_entity_packet();
-
-          world.dimensions
-            .get_mut("minecraft:overworld").unwrap()
-            .add_entity(new_entity);
-
-          players.iter().for_each(|x| lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
-        };
+        let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+        lib::create_and_spawn_entity_from_egg(&used_item_name, game.entity_id_manager.get_new(), new_block_location, dimension, &players);
       }
 
       lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, pitch, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z, &game.block_state_data)
