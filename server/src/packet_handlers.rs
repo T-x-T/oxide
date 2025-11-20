@@ -1070,6 +1070,36 @@ pub mod play {
       sequence_id: parsed_packet.sequence,
     }.try_into()?)?;
 
+
+    let blocks_to_update = [
+      BlockPosition {x: parsed_packet.location.x + 1, ..parsed_packet.location},
+      BlockPosition {x: parsed_packet.location.x - 1, ..parsed_packet.location},
+      BlockPosition {y: parsed_packet.location.y + 1, ..parsed_packet.location},
+      BlockPosition {y: parsed_packet.location.y - 1, ..parsed_packet.location},
+      BlockPosition {z: parsed_packet.location.z + 1, ..parsed_packet.location},
+      BlockPosition {z: parsed_packet.location.z - 1, ..parsed_packet.location},
+    ];
+
+    for block_to_update in blocks_to_update {
+      let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data)?;
+      if let Some(new_block) = res {
+        match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+          Ok(_) => {
+            for player in players.iter() {
+              send_packet(&player.connection_stream, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                location: block_to_update,
+                block_id: new_block as i32,
+              }.try_into()?)?;
+            }
+          },
+          Err(err) => {
+            println!("couldn't place block because {err}");
+            continue;
+          },
+        }
+      };
+    }
+
     return Ok(None);
   }
 
