@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, error::Error};
 
 use data::blocks::*;
 
@@ -49,4 +49,16 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch
   }
 
   return output;
+}
+
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Result<Option<u16>, Box<dyn Error>> {
+  let block_state_id = dimension.get_block(position)?;
+  let block_type = data::blocks::get_type_from_block_state_id(block_state_id, block_states);
+
+  let res = match block_type {
+    Type::Stair => super::stair::update(position, dimension, block_states),
+    _ => None,
+  };
+
+  return Ok(res);
 }

@@ -1114,6 +1114,7 @@ pub mod play {
       lib::block::get_block_state_id(parsed_packet.face, player_get_looking_cardinal_direction, pitch, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, parsed_packet.cursor_position_x, parsed_packet.cursor_position_y, parsed_packet.cursor_position_z, &game.block_state_data)
     };
 
+    let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
     for block_to_place in &blocks_to_place {
       match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0, &game.block_state_data) {
         Ok(res) => {
@@ -1132,6 +1133,15 @@ pub mod play {
               crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world);
             };
           }
+
+          blocks_to_update.append(&mut vec![
+            BlockPosition {x: block_to_place.1.x + 1, ..block_to_place.1},
+            BlockPosition {x: block_to_place.1.x - 1, ..block_to_place.1},
+            BlockPosition {y: block_to_place.1.y + 1, ..block_to_place.1},
+            BlockPosition {y: block_to_place.1.y - 1, ..block_to_place.1},
+            BlockPosition {z: block_to_place.1.z + 1, ..block_to_place.1},
+            BlockPosition {z: block_to_place.1.z - 1, ..block_to_place.1},
+          ]);
         },
         Err(err) => {
           println!("couldn't place block because {err}");
@@ -1140,11 +1150,32 @@ pub mod play {
       };
     }
 
+    blocks_to_update.sort();
+    blocks_to_update.dedup();
+
+    let mut updated_blocks: Vec<(u16, BlockPosition)> = Vec::new();
+    for block_to_update in blocks_to_update {
+      let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data)?;
+      if let Some(new_block) = res {
+        match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+          Ok(_) => {
+            updated_blocks.push((new_block, block_to_update));
+          },
+          Err(err) => {
+            println!("couldn't place block because {err}");
+            continue;
+          },
+        }
+      };
+    }
+
+    let all_changed_blocks: Vec<(u16, BlockPosition)> = vec![blocks_to_place, updated_blocks].into_iter().flatten().collect();
+
     for player in players.iter() {
-      for block_to_place in &blocks_to_place {
+      for block in &all_changed_blocks {
         send_packet(&player.connection_stream, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
-          location: block_to_place.1,
-          block_id: block_to_place.0 as i32,
+          location: block.1,
+          block_id: block.0 as i32,
         }.try_into()?)?;
       }
     }

@@ -105,6 +105,42 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, curso
   return output;
 }
 
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Option<u16> {
+  let Ok(block_state_id) = dimension.get_block(position) else {
+    return None;
+  };
+
+  let block = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+
+  let face = if block.properties.contains(&Property::StairHalf(StairHalf::Top)) {
+    0
+  } else {
+    1
+  };
+
+  let cardinal_direction = if block.properties.contains(&Property::StairFacing(StairFacing::North)) {
+    CardinalDirection::North
+  } else if block.properties.contains(&Property::StairFacing(StairFacing::East)) {
+    CardinalDirection::East
+  } else if block.properties.contains(&Property::StairFacing(StairFacing::South)) {
+    CardinalDirection::South
+  } else {
+    CardinalDirection::West
+  };
+
+  let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id, block_states);
+
+  let res = get_block_state_id(face, cardinal_direction, 0.0, dimension, position, &block_name, block_states);
+
+  let new_block_state_id = res.first().unwrap().0;
+
+  if block_state_id == new_block_state_id {
+    return None;
+  } else {
+    return Some(new_block_state_id);
+  }
+}
+
 #[cfg(test)]
 mod test {
   use super::*;
