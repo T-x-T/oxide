@@ -35,14 +35,32 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, curso
     let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
 
     if north_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
-      if cardinal_direction == CardinalDirection::North {
-        shape = StairShape::OuterLeft;
+      if cardinal_direction == CardinalDirection::South {
+        if stair_block_ids.contains(&west_block) {
+          let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+          if west_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::InnerRight;
+          }
+        } else {
+          shape = StairShape::InnerRight;
+        }
       } else if cardinal_direction != CardinalDirection::West || ( north_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || north_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
-        shape = StairShape::InnerRight;
+        shape = StairShape::OuterLeft;
       }
     } else if north_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
       if cardinal_direction == CardinalDirection::North {
-        shape = StairShape::OuterRight;
+        if stair_block_ids.contains(&west_block) {
+          let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+          if west_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::OuterRight;
+          }
+        } else {
+          shape = StairShape::OuterRight;
+        }
       } else if cardinal_direction != CardinalDirection::East || ( north_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || north_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
         shape = StairShape::InnerLeft;
       }
@@ -52,14 +70,32 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, curso
   if stair_block_ids.contains(&east_block) {
     let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
     if east_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
-      if cardinal_direction == CardinalDirection::East {
-        shape = StairShape::OuterLeft;
+      if cardinal_direction == CardinalDirection::West {
+        if stair_block_ids.contains(&north_block) {
+          let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
+          if north_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::InnerRight;
+          }
+        } else {
+          shape = StairShape::InnerRight;
+        }
       } else if cardinal_direction != CardinalDirection::North || ( east_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || east_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
-        shape = StairShape::InnerRight;
+        shape = StairShape::OuterLeft;
       }
     } else if east_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
       if cardinal_direction == CardinalDirection::East {
-        shape = StairShape::OuterRight;
+        if stair_block_ids.contains(&north_block) {
+          let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
+          if north_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::OuterRight;
+          }
+        } else {
+          shape = StairShape::OuterRight;
+        }
       } else if cardinal_direction != CardinalDirection::South || ( east_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || east_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
         shape = StairShape::InnerLeft;
       }
@@ -69,14 +105,32 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, curso
   if stair_block_ids.contains(&south_block) {
     let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
     if south_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
-      if cardinal_direction == CardinalDirection::South {
-        shape = StairShape::OuterLeft;
+      if cardinal_direction == CardinalDirection::North {
+        if stair_block_ids.contains(&east_block) {
+          let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
+          if east_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::InnerRight;
+          }
+        } else {
+          shape = StairShape::InnerRight;
+        }
       } else if cardinal_direction != CardinalDirection::East || ( south_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || south_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
-        shape = StairShape::InnerRight;
+        shape = StairShape::OuterLeft;
       }
     } else if south_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
       if cardinal_direction == CardinalDirection::South {
-        shape = StairShape::OuterRight;
+        if stair_block_ids.contains(&east_block) {
+          let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
+          if east_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::OuterRight;
+          }
+        } else {
+          shape = StairShape::OuterRight;
+        }
       } else if cardinal_direction != CardinalDirection::West || ( south_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || south_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
         shape = StairShape::InnerLeft;
       }
@@ -86,14 +140,32 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, curso
   if stair_block_ids.contains(&west_block) {
     let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
     if west_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
-      if cardinal_direction == CardinalDirection::West {
-        shape = StairShape::OuterLeft;
+      if cardinal_direction == CardinalDirection::East {
+        if stair_block_ids.contains(&south_block) {
+          let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
+          if south_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
+           shape = StairShape::Straight;
+          } else {
+            shape = StairShape::InnerRight;
+          }
+        } else {
+          shape = StairShape::InnerRight;
+        }
       } else if cardinal_direction != CardinalDirection::South || ( west_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || west_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
-        shape = StairShape::InnerRight;
+        shape = StairShape::OuterLeft;
       }
     } else if west_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
       if cardinal_direction == CardinalDirection::West {
-        shape = StairShape::OuterRight;
+        if stair_block_ids.contains(&south_block) {
+          let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
+          if south_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
+            shape = StairShape::Straight;
+          } else {
+            shape = StairShape::OuterRight;
+          }
+        } else {
+          shape = StairShape::OuterRight;
+        }
       } else if cardinal_direction != CardinalDirection::North || ( west_block_state.properties.contains(&Property::StairShape(StairShape::OuterLeft)) || west_block_state.properties.contains(&Property::StairShape(StairShape::InnerRight)) ) {
         shape = StairShape::InnerLeft;
       }
@@ -830,6 +902,182 @@ mod test {
 
       let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio_straight_north() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio_straight_east() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio_straight_south() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio_straight_west() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio2_straight_north() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio2_straight_east() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio2_straight_south() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      let expected = vec![
+        (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
+      ];
+
+      assert_eq!(res, expected);
+    }
+
+    #[test]
+    fn curved_stair_prio2_straight_west() {
+      let block_states = data::blocks::get_blocks();
+      let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
+      let mut dimension = Dimension::new();
+
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+
+      let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
+
+      let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
       let expected = vec![
         (block_state_id, BlockPosition { x: 10, y: 80, z: 0 }),
       ];
