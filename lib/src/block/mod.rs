@@ -2,7 +2,6 @@ use crate::types::*;
 use crate::packets::Packet;
 use data::{blocks::*, inventory::Inventory};
 use std::{collections::HashMap, error::Error};
-mod state;
 
 mod door;
 mod trapdoor;
@@ -14,8 +13,54 @@ mod trapped_chest;
 mod ender_chest;
 mod slab;
 mod stair;
+mod iron_bars;
+mod stained_glass_pane;
+mod fence;
 
-pub use state::*;
+
+pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch: f32, dimension: &Dimension, position: BlockPosition, used_item_name: &str, cursor_position_x: f32, cursor_position_y: f32, cursor_position_z: f32, block_states: &HashMap<String, Block>) -> Vec<(u16, BlockPosition)> {
+  let block = data::blocks::get_block_from_name(used_item_name, block_states);
+  let mut output: Vec<(u16, BlockPosition)> = Vec::new();
+
+  match block.block_type {
+    Type::RotatedPillar => output.append(&mut rotated_pillar::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Barrel => output.append(&mut barell::get_block_state_id(face, cardinal_direction, pitch, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Chest => output.append(&mut chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
+    Type::TrappedChest => output.append(&mut trapped_chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
+    Type::EnderChest => output.append(&mut ender_chest::get_block_state_id(cardinal_direction, position, used_item_name, block_states)),
+    Type::Door => output.append(&mut door::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Trapdoor => output.append(&mut trapdoor::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::FenceGate => output.append(&mut fencegate::get_block_state_id(face, cardinal_direction, dimension, position, used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, block_states)),
+    Type::Slab => output.append(&mut slab::get_block_state_id(face, cursor_position_y, dimension, position, used_item_name, block_states)),
+    Type::Stair => output.append(&mut stair::get_block_state_id(face, cardinal_direction, cursor_position_y, dimension, position, used_item_name, block_states)),
+    Type::IronBars => output.append(&mut iron_bars::get_block_state_id(dimension, position, used_item_name, block_states)),
+    Type::StainedGlassPane => output.append(&mut stained_glass_pane::get_block_state_id(dimension, position, used_item_name, block_states)),
+    Type::Fence => output.append(&mut fence::get_block_state_id(dimension, position, used_item_name, block_states)),
+    _ => (),
+  }
+
+  if output.is_empty() {
+    output.push((block.states.iter().find(|x| x.default).unwrap().id, position));
+  }
+
+  return output;
+}
+
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Result<Option<u16>, Box<dyn Error>> {
+  let block_state_id = dimension.get_block(position)?;
+  let block_type = data::blocks::get_type_from_block_state_id(block_state_id, block_states);
+
+  let res = match block_type {
+    Type::Stair => stair::update(position, dimension, block_states),
+    Type::IronBars => iron_bars::update(position, dimension, block_states),
+    Type::StainedGlassPane => stained_glass_pane::update(position, dimension, block_states),
+    Type::Fence => fence::update(position, dimension, block_states),
+    _ => None,
+  };
+
+  return Ok(res);
+}
+
 
 
 #[derive(Debug, PartialEq)]
