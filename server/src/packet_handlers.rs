@@ -5,11 +5,7 @@ use lib::packets::Packet;
 use lib::ConnectionState;
 use lib::types::*;
 
-pub enum Action {
-	DisconnectPlayer,
-}
-
-pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
   game.connections.lock().unwrap().entry(stream.peer_addr()?).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
 
   let state = game.connections.lock().unwrap().get(&stream.peer_addr()?).unwrap().state.clone();
@@ -63,7 +59,7 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<
 pub mod handshaking {
   use super::*;
 
-  pub fn handshake(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn handshake(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.to_vec())?;
 
     game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| x.state = parsed_packet.next_state.into());
@@ -75,7 +71,7 @@ pub mod handshaking {
 pub mod status {
   use super::*;
 
-  pub fn status_request(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn status_request(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let version_string = lib::packets::get_version_string();
     let protocol_version = lib::packets::get_protocol_version();
     let player_count = game.players.lock().unwrap().len();
@@ -102,21 +98,21 @@ pub mod status {
   }
 
   //implement actual packet struct https://git.thetxt.io/thetxt/oxide/issues/20
-  pub fn ping_request(data: &[u8], stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn ping_request(data: &[u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::status::PingRequest::try_from(data.to_vec())?;
 
     lib::utils::send_packet(stream, lib::packets::clientbound::status::PingResponse::PACKET_ID, lib::packets::clientbound::status::PingResponse {
       timestamp: parsed_packet.timestamp,
     }.try_into()?)?;
 
-    return Ok(Some(Action::DisconnectPlayer));
+    return Ok(Some(PacketHandlerAction::DisconnectPlayer(stream.peer_addr()?)));
   }
 }
 
 pub mod login {
   use super::*;
 
-  pub fn login_start(data: &[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn login_start(data: &[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.to_vec())?;
 
     game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| {
@@ -132,7 +128,7 @@ pub mod login {
     return Ok(None);
   }
 
-  pub fn login_acknowledged(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn login_acknowledged(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| x.state = ConnectionState::Configuration);
 
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::ClientboundKnownPacks::PACKET_ID, lib::packets::clientbound::configuration::ClientboundKnownPacks {
@@ -158,7 +154,7 @@ pub mod configuration {
 use super::*;
   use lib::{packets::{clientbound::configuration::{RegistryDataEntry, Tag}, Packet}};
 
-  pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn serverbound_known_packets(stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     lib::utils::send_packet(stream, lib::packets::clientbound::configuration::RegistryData::PACKET_ID, lib::packets::clientbound::configuration::RegistryData {
       registry_id: "minecraft:worldgen/biome".to_string(),
       entries: vec![
@@ -634,7 +630,7 @@ use super::*;
     return Ok(None);
   }
 
-  pub fn acknowledge_finish_configuration(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn acknowledge_finish_configuration(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let game_clone = game.clone();
     let mut connections = game_clone.connections.lock().unwrap();
     connections.entry(stream.peer_addr()?).and_modify(|x| x.state = ConnectionState::Play);
@@ -875,35 +871,19 @@ pub mod play {
   use lib::{nbt::NbtTag, packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, Packet}, utils::send_packet};
   use super::*;
 
-  pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
-    let mut players = game.players.lock().unwrap();
+  pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
+    let mut players = game.players.lock().unwrap();
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
-
-    let player_entity_id = player.entity_id;
-    let old_x = player.get_position().x;
-    let old_y = player.get_position().y;
-    let old_z = player.get_position().z;
-
-    player.new_position(parsed_packet.x, parsed_packet.y, parsed_packet.z, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data)?;
-    let new_position = player.get_position();
-
-    for other_player in players.iter() {
-      if other_player.connection_stream.peer_addr()? != stream.peer_addr()? {
-        lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
-          entity_id: player_entity_id,
-          delta_x: ((new_position.x * 4096.0) - (old_x * 4096.0)) as i16,
-          delta_y: ((new_position.y * 4096.0) - (old_y * 4096.0)) as i16,
-          delta_z: ((new_position.z * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-        }.try_into()?)?;
-      }
-    }
-
-    return Ok(None);
+    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
+      x: parsed_packet.x,
+      y: parsed_packet.y,
+      z: parsed_packet.z,
+      ..player.get_position()
+    })));
   }
 
-  pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
@@ -940,7 +920,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec())?;
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
@@ -969,7 +949,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn confirm_teleportation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn confirm_teleportation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.to_vec())?;
@@ -980,7 +960,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.to_vec())?;
     let players_cloned = game.players.lock().unwrap().clone();
     let mut players = game.players.lock().unwrap();
@@ -991,7 +971,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetHandItem::try_from(data.to_vec())?;
     let players_cloned = game.players.lock().unwrap().clone();
     let mut players = game.players.lock().unwrap();
@@ -1002,7 +982,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn player_action(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let mut world = game.world.lock().unwrap();
 
@@ -1103,7 +1083,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let players_clone = players.clone();
     let mut world = game.world.lock().unwrap();
@@ -1217,7 +1197,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn chat_message(data: &mut[u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn chat_message(data: &mut[u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::ChatMessage::try_from(data.to_vec())?;
 
@@ -1258,7 +1238,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn chat_command(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(data.to_vec())?;
 
     println!("<{}> invoked: {}", game.players.lock().unwrap().iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().display_name, parsed_packet.command);
@@ -1281,7 +1261,7 @@ pub mod play {
   	return Ok(None);
   }
 
-  pub fn pick_item_from_block(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn pick_item_from_block(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
   	let parsed_packet = lib::packets::serverbound::play::PickItemFromBlock::try_from(data.to_vec())?;
    	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(parsed_packet.location)?;
     let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
@@ -1303,7 +1283,7 @@ pub mod play {
   	return Ok(None);
   }
 
-  pub fn swing_arm(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn swing_arm(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let players = game.players.lock().unwrap();
    	let parsed_packet = lib::packets::serverbound::play::SwingArm::try_from(data.to_vec())?;
 
@@ -1319,7 +1299,7 @@ pub mod play {
   	return Ok(None);
   }
 
-  pub fn click_container(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn click_container(data: &mut[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::ClickContainer::try_from(data.to_vec())?;
 
     let mut players = game.players.lock().unwrap();
@@ -1383,7 +1363,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn close_container(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>> {
+  pub fn close_container(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let mut players = game.players.lock().unwrap();
     let world = game.world.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::CloseContainer::try_from(data.to_vec())?;
@@ -1414,7 +1394,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn update_sign(data: &mut [u8], game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>>{
+  pub fn update_sign(data: &mut [u8], game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>>{
     let parsed_packet = lib::packets::serverbound::play::UpdateSign::try_from(data.to_vec())?;
 
     let mut world = game.world.lock().unwrap();
@@ -1449,7 +1429,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn player_input(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>>{
+  pub fn player_input(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>>{
     let parsed_packet = lib::packets::serverbound::play::PlayerInput::try_from(data.to_vec())?;
 
     let players_clone = game.players.lock().unwrap().clone();
@@ -1465,7 +1445,7 @@ pub mod play {
     return Ok(None);
   }
 
-  pub fn interact(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<Action>, Box<dyn Error>>{
+  pub fn interact(stream: &mut TcpStream, data: &mut [u8], game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>>{
     let mut players = game.players.lock().unwrap();
     let parsed_packet = lib::packets::serverbound::play::Interact::try_from(data.to_vec())?;
 

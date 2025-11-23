@@ -6,6 +6,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use lib::packets::Packet;
 use lib::types::*;
+use lib::game::PacketHandlerAction;
 
 mod packet_handlers;
 mod command;
@@ -36,6 +37,7 @@ fn initialize_server() {
     last_player_keepalive_timestamp: Mutex::new(std::time::Instant::now()),
     block_state_data: block_states,
     connections: Mutex::new(HashMap::new()),
+    packet_handler_actions: Mutex::new(Vec::new()),
   };
 
   command::init(&mut game);
@@ -85,11 +87,9 @@ fn initialize_server() {
          disconnect_player(&peer_addr, game_clone);
           break;
         }
-        if packet_handler_result.is_ok_and(|x| x.is_some()) {
-       		println!("handler told us to disconnect");
-          disconnect_player(&peer_addr, game_clone);
-          break;
-        }
+        if let Ok(packet_handler_result) = packet_handler_result && let Some(packet_handler_result) = packet_handler_result {
+            game_clone.packet_handler_actions.lock().unwrap().push(packet_handler_result);
+          }
       }
     });
   }
@@ -161,14 +161,48 @@ fn tick(game: Arc<Game>) -> TickTimings {
   let duration_save_all = std::time::Instant::now() - now;
 
   let now = std::time::Instant::now();
-  let players = game.players.lock().unwrap().clone();
+  let players_clone = game.players.lock().unwrap().clone();
   let duration_clone_players = std::time::Instant::now() - now;
+
+  for packet_handler_action in game.packet_handler_actions.lock().unwrap().iter() {
+    match packet_handler_action {
+      PacketHandlerAction::DisconnectPlayer(peer_addr) => {
+        println!("handler told us to disconnect");
+        disconnect_player(peer_addr, game.clone());
+      },
+      PacketHandlerAction::MovePlayer(player_uuid, entity_position) => {
+        let mut players = game.players.lock().unwrap();
+        let player = players.iter_mut().find(|x| x.uuid == *player_uuid).unwrap();
+
+        let player_entity_id = player.entity_id;
+        let old_x = player.get_position().x;
+        let old_y = player.get_position().y;
+        let old_z = player.get_position().z;
+
+        player.new_position(entity_position.x, entity_position.y, entity_position.z, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data).unwrap();
+        let new_position = player.get_position();
+
+        for other_player in players_clone.iter() {
+          if other_player.connection_stream.peer_addr().unwrap() != player.connection_stream.peer_addr().unwrap() {
+            lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
+              entity_id: player_entity_id,
+              delta_x: ((new_position.x * 4096.0) - (old_x * 4096.0)) as i16,
+              delta_y: ((new_position.y * 4096.0) - (old_y * 4096.0)) as i16,
+              delta_z: ((new_position.z * 4096.0) - (old_z * 4096.0)) as i16,
+              on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+            }.try_into().unwrap()).unwrap();
+          }
+        }
+      },
+    }
+  };
+  *game.packet_handler_actions.lock().unwrap() = Vec::new();
 
   let now = std::time::Instant::now();
   if std::time::Instant::now() > *game.last_player_keepalive_timestamp.lock().unwrap() + std::time::Duration::from_secs(5) {
     *game.last_player_keepalive_timestamp.lock().unwrap() = std::time::Instant::now();
 
-    let players = players.clone();
+    let players = players_clone.clone();
     let game = game.clone();
     std::thread::spawn(move || {
       for player in &players {
@@ -191,7 +225,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
     for chunk in &mut dimension.1.chunks {
       for blockentity in &mut chunk.block_entities {
         if blockentity.needs_ticking {
-          blockentity.tick(&players);
+          blockentity.tick(&players_clone);
         }
       }
     }
@@ -203,7 +237,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
     let mut entities = std::mem::take(&mut dimension.1.entities);
     let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
     for entity in &mut entities {
-      let outcome = entity.tick(dimension.1, &players, &game.block_state_data);
+      let outcome = entity.tick(dimension.1, &players_clone, &game.block_state_data);
       //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
       if outcome != EntityTickOutcome::None {
         entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
@@ -218,7 +252,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
             entity_status: 3,
           };
 
-          for player in &players {
+          for player in &players_clone {
             lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::EntityEvent::PACKET_ID, entity_event_packet.clone().try_into().unwrap()).unwrap();
           }
         },
@@ -227,7 +261,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
             entity_ids: vec![outcome.0],
           };
 
-          for player in &players {
+          for player in &players_clone {
             lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap()).unwrap();
           }
 

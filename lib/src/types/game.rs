@@ -11,6 +11,7 @@ pub struct Game {
   pub last_player_keepalive_timestamp: Mutex<std::time::Instant>,
   pub block_state_data: std::collections::HashMap<String, data::blocks::Block>,
   pub connections: Mutex<HashMap<SocketAddr, Connection>>,
+  pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
 }
 
 impl Game {
@@ -21,6 +22,13 @@ impl Game {
     }
     *self.last_save_all_timestamp.lock().unwrap() = std::time::Instant::now();
   }
+}
+
+
+#[derive(Debug, PartialEq)]
+pub enum PacketHandlerAction {
+	DisconnectPlayer(SocketAddr),
+	MovePlayer(u128, EntityPosition),
 }
 
 #[derive(Debug, Default)]
