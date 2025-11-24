@@ -356,10 +356,10 @@ impl Player {
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, x: f64, y: f64, z: f64, yaw: f32, pitch: f32, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
-    self.yaw = yaw;
-    self.pitch = pitch;
- 		self.new_position(x, y, z, world, entity_id_manger, block_states)?;
+  pub fn new_position_and_rotation(&mut self, new_position: EntityPosition, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
+    self.yaw = new_position.yaw;
+    self.pitch = new_position.pitch;
+ 		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states)?;
 
     return Ok(());
   }

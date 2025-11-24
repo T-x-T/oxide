@@ -175,22 +175,49 @@ fn tick(game: Arc<Game>) -> TickTimings {
         let player = players.iter_mut().find(|x| x.uuid == *player_uuid).unwrap();
 
         let player_entity_id = player.entity_id;
-        let old_x = player.get_position().x;
-        let old_y = player.get_position().y;
-        let old_z = player.get_position().z;
+        let old_position = player.get_position();
 
-        player.new_position(entity_position.x, entity_position.y, entity_position.z, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data).unwrap();
+        player.new_position_and_rotation(*entity_position, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data).unwrap();
         let new_position = player.get_position();
+
+        let position_updated = old_position.x != new_position.x || old_position.y != new_position.y || old_position.z != new_position.z;
+        let rotation_updated = old_position.yaw != new_position.yaw || old_position.pitch != new_position.pitch;
 
         for other_player in players_clone.iter() {
           if other_player.connection_stream.peer_addr().unwrap() != player.connection_stream.peer_addr().unwrap() {
-            lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
-              entity_id: player_entity_id,
-              delta_x: ((new_position.x * 4096.0) - (old_x * 4096.0)) as i16,
-              delta_y: ((new_position.y * 4096.0) - (old_y * 4096.0)) as i16,
-              delta_z: ((new_position.z * 4096.0) - (old_z * 4096.0)) as i16,
-              on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-            }.try_into().unwrap()).unwrap();
+            if position_updated && rotation_updated {
+              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
+                entity_id: player_entity_id,
+                delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+                delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+                delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+                yaw: player.get_yaw_u8(),
+                pitch: player.get_pitch_u8(),
+                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+              }.try_into().unwrap()).unwrap();
+            } else if position_updated {
+              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
+                entity_id: player_entity_id,
+                delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+                delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+                delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+              }.try_into().unwrap()).unwrap();
+            } else if rotation_updated {
+              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+                entity_id: player_entity_id,
+                yaw: player.get_yaw_u8(),
+                pitch: player.get_pitch_u8(),
+                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+              }.try_into().unwrap()).unwrap();
+            }
+
+            if rotation_updated {
+              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+       	        entity_id: player_entity_id,
+       					head_yaw: player.get_yaw_u8(),
+       	      }.try_into().unwrap()).unwrap();
+            }
           }
         }
       },

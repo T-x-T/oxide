@@ -871,7 +871,7 @@ pub mod play {
   use lib::{nbt::NbtTag, packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, Packet}, utils::send_packet};
   use super::*;
 
-  pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+  pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
     let mut players = game.players.lock().unwrap();
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
@@ -883,70 +883,30 @@ pub mod play {
     })));
   }
 
-  pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-    let mut players = game.players.lock().unwrap();
+  pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
+    let mut players = game.players.lock().unwrap();
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
-    let player_entity_id = player.entity_id;
-    let old_x = player.get_position().x;
-    let old_y = player.get_position().y;
-    let old_z = player.get_position().z;
-
-    player.new_position_and_rotation(parsed_packet.x, parsed_packet.y, parsed_packet.z, parsed_packet.yaw % 360.0, parsed_packet.pitch, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data)?;
-    let new_position = player.get_position();
-    let new_yaw = player.get_yaw_u8();
-    let new_pitch = player.get_pitch_u8();
-
-    for other_player in players.iter() {
-      if other_player.connection_stream.peer_addr()? != stream.peer_addr()? {
-	      lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
-	        entity_id: player_entity_id,
-					delta_x: ((new_position.x * 4096.0) - (old_x * 4096.0)) as i16,
-					delta_y: ((new_position.y * 4096.0) - (old_y * 4096.0)) as i16,
-					delta_z: ((new_position.z * 4096.0) - (old_z * 4096.0)) as i16,
-          on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw: new_yaw,
-	        pitch: new_pitch,
-	      }.try_into()?)?;
-
-	      lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
-	        entity_id: player_entity_id,
-					head_yaw: new_yaw,
-	      }.try_into()?)?;
-      }
-    }
-
-    return Ok(None);
+    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
+      x: parsed_packet.x,
+      y: parsed_packet.y,
+      z: parsed_packet.z,
+      yaw: parsed_packet.yaw % 360.0,
+      pitch: parsed_packet.pitch
+    })));
   }
 
-  pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-    let mut players = game.players.lock().unwrap();
+  pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec())?;
+    let mut players = game.players.lock().unwrap();
     let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
-    let player_entity_id = player.entity_id;
 
-    player.new_rotation(parsed_packet.yaw % 360.0, parsed_packet.pitch);
-    let new_yaw = player.get_yaw_u8();
-    let pitch = player.get_pitch_u8();
-
-    for other_player in players.iter() {
-      if other_player.connection_stream.peer_addr()? != stream.peer_addr()? {
-      	lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
-	        entity_id: player_entity_id,
-	        on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-	        yaw: new_yaw,
-	        pitch,
-	      }.try_into()?)?;
-
-	      lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
-	        entity_id: player_entity_id,
-					head_yaw: new_yaw,
-	      }.try_into()?)?;
-      }
-    }
-
-    return Ok(None);
+    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
+      yaw: parsed_packet.yaw % 360.0,
+      pitch: parsed_packet.pitch,
+      ..player.get_position()
+    })));
   }
 
   pub fn confirm_teleportation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
