@@ -1,6 +1,10 @@
 use std::{collections::HashMap, net::SocketAddr, sync::{atomic::AtomicI32, Mutex}};
 
+use dashmap::DashMap;
+
 use super::*;
+
+type RawPacket = (u8, Vec<u8>);
 
 pub struct Game {
   pub players: Mutex<Vec<Player>>,
@@ -12,6 +16,7 @@ pub struct Game {
   pub block_state_data: std::collections::HashMap<String, data::blocks::Block>,
   pub connections: Mutex<HashMap<SocketAddr, Connection>>,
   pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
+  pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
 }
 
 impl Game {
@@ -21,6 +26,10 @@ impl Game {
       player.save_to_disk();
     }
     *self.last_save_all_timestamp.lock().unwrap() = std::time::Instant::now();
+  }
+
+  pub fn send_packet(&self, peer_addr: &SocketAddr, packet_id: u8, packet_data: Vec<u8>) {
+    self.packet_send_queues.entry(*peer_addr).or_default().push((packet_id, packet_data));
   }
 }
 

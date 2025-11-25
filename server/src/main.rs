@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::net::{TcpListener, SocketAddr};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
+use dashmap::DashMap;
 use lib::packets::Packet;
 use lib::types::*;
 use lib::game::PacketHandlerAction;
@@ -38,6 +39,7 @@ fn initialize_server() {
     block_state_data: block_states,
     connections: Mutex::new(HashMap::new()),
     packet_handler_actions: Mutex::new(Vec::new()),
+    packet_send_queues: DashMap::new(),
   };
 
   command::init(&mut game);
@@ -52,10 +54,13 @@ fn initialize_server() {
   for stream in listener.incoming() {
     let stream = stream.unwrap();
 
+    //RX
     println!("New Connection from {}", stream.peer_addr().unwrap());
     let game_clone = game.clone();
+    let stream_clone = stream.try_clone().unwrap();
     std::thread::spawn(move || {
-      let mut stream = stream.try_clone().unwrap();
+      let mut stream = stream_clone;
+      let game = game_clone.clone();
       let peer_addr = stream.peer_addr().unwrap();
       loop {
         let mut peek_buf = [0; 1];
@@ -63,12 +68,12 @@ fn initialize_server() {
         match stream.peek(&mut peek_buf) {
           Ok(0) => {
             println!("client disconnected.");
-            disconnect_player(&peer_addr, game_clone.clone());
+            disconnect_player(&peer_addr, game.clone());
             break;
           }
           Err(e) => {
             eprintln!("error reading from client: {e}");
-            disconnect_player(&peer_addr, game_clone.clone());
+            disconnect_player(&peer_addr, game.clone());
             break;
           }
           _ => {}
@@ -77,19 +82,38 @@ fn initialize_server() {
         let packet = lib::utils::read_packet(&stream);
 
         if stream.peer_addr().is_err() {
-          disconnect_player(&peer_addr, game_clone.clone());
+          disconnect_player(&peer_addr, game.clone());
           break;
         }
 
-        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game_clone.clone());
+        let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game.clone());
         if packet_handler_result.is_err() {
        		println!("got error, so lets disconnect: {}", packet_handler_result.err().unwrap());
-         disconnect_player(&peer_addr, game_clone);
+          disconnect_player(&peer_addr, game);
           break;
         }
         if let Ok(packet_handler_result) = packet_handler_result && let Some(packet_handler_result) = packet_handler_result {
-            game_clone.packet_handler_actions.lock().unwrap().push(packet_handler_result);
-          }
+          game.packet_handler_actions.lock().unwrap().push(packet_handler_result);
+        }
+      }
+    });
+
+
+    //TX
+    let game_clone = game.clone();
+    std::thread::spawn(move || {
+      let stream = stream.try_clone().unwrap();
+      let game = game_clone.clone();
+
+      loop {
+        let Ok(peer_addr) = stream.peer_addr() else { break; };
+        let Some(mut queue) = game.packet_send_queues.get_mut(&peer_addr) else { continue; };
+        if let Some(packet) = queue.pop() {
+          drop(queue);
+          let _ = lib::utils::send_packet(&stream, packet.0, packet.1).inspect_err(|x| println!("got error \"{x}\" trying to send packet id \"{}\" to stream \"{}\"", packet.0, stream.peer_addr().unwrap()));
+        } else {
+          drop(queue);
+        };
       }
     });
   }
@@ -115,6 +139,8 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
   connections.remove(peer_addr);
 
   drop(connections);
+
+  game.packet_send_queues.remove(peer_addr);
   players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 
@@ -142,6 +168,7 @@ pub struct TickTimings {
   pub send_keepalives: std::time::Duration,
   pub tick_blockentities: std::time::Duration,
   pub tick_entities: std::time::Duration,
+  pub packet_handler_actions: std::time::Duration,
 }
 
 fn tick(game: Arc<Game>) -> TickTimings {
@@ -164,13 +191,24 @@ fn tick(game: Arc<Game>) -> TickTimings {
   let players_clone = game.players.lock().unwrap().clone();
   let duration_clone_players = std::time::Instant::now() - now;
 
-  for packet_handler_action in game.packet_handler_actions.lock().unwrap().iter() {
+
+  let now = std::time::Instant::now();
+  //prevents handling of two movements packets from one player during tick
+  let mut moved_players: Vec<u128> = Vec::new();
+
+  for packet_handler_action in game.packet_handler_actions.lock().unwrap().iter().rev() {
     match packet_handler_action {
       PacketHandlerAction::DisconnectPlayer(peer_addr) => {
         println!("handler told us to disconnect");
         disconnect_player(peer_addr, game.clone());
       },
       PacketHandlerAction::MovePlayer(player_uuid, entity_position) => {
+        if moved_players.contains(player_uuid) {
+          continue;
+        }
+
+        moved_players.push(*player_uuid);
+
         let mut players = game.players.lock().unwrap();
         let player = players.iter_mut().find(|x| x.uuid == *player_uuid).unwrap();
 
@@ -186,7 +224,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
         for other_player in players_clone.iter() {
           if other_player.connection_stream.peer_addr().unwrap() != player.connection_stream.peer_addr().unwrap() {
             if position_updated && rotation_updated {
-              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
+              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
                 entity_id: player_entity_id,
                 delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
                 delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
@@ -194,22 +232,22 @@ fn tick(game: Arc<Game>) -> TickTimings {
                 yaw: player.get_yaw_u8(),
                 pitch: player.get_pitch_u8(),
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap()).unwrap();
+              }.try_into().unwrap());
             } else if position_updated {
-              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
+              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
                 entity_id: player_entity_id,
                 delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
                 delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
                 delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap()).unwrap();
+              }.try_into().unwrap());
             } else if rotation_updated {
-              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
                 entity_id: player_entity_id,
                 yaw: player.get_yaw_u8(),
                 pitch: player.get_pitch_u8(),
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap()).unwrap();
+              }.try_into().unwrap());
             }
 
             if rotation_updated {
@@ -224,6 +262,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
     }
   };
   *game.packet_handler_actions.lock().unwrap() = Vec::new();
+  let duration_packet_handler_actions = std::time::Instant::now() - now;
 
   let now = std::time::Instant::now();
   if std::time::Instant::now() > *game.last_player_keepalive_timestamp.lock().unwrap() + std::time::Duration::from_secs(5) {
@@ -328,5 +367,6 @@ fn tick(game: Arc<Game>) -> TickTimings {
     send_keepalives: duration_send_keepalives,
     tick_blockentities: duration_tick_blockentities,
     tick_entities: duration_tick_entities,
+    packet_handler_actions: duration_packet_handler_actions,
   }
 }
