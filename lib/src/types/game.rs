@@ -28,6 +28,7 @@ impl Game {
     *self.last_save_all_timestamp.lock().unwrap() = std::time::Instant::now();
   }
 
+  //TODO: maybe move this into something similar to EntityIdManager, so we dont have to pass a reference to entire Game struct _everywhere_
   pub fn send_packet(&self, peer_addr: &SocketAddr, packet_id: u8, packet_data: Vec<u8>) {
     self.packet_send_queues.entry(*peer_addr).or_default().push((packet_id, packet_data));
   }

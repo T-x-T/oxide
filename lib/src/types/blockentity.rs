@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap, error::Error, sync::Arc};
 
 use data::blocks::Type;
 
@@ -16,7 +16,7 @@ pub struct BlockEntity {
 }
 
 impl BlockEntity {
-  pub fn tick(&mut self, players: &[Player]) {
+  pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
     match self.id {
       BlockEntityId::Furnace => {
         if self.needs_ticking {
@@ -32,17 +32,17 @@ impl BlockEntity {
               players.iter()
                 .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
                 .for_each(|x| {
-                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                     window_id: 1,
                     property: 0, //fuel left
                     value: *lit_time_remaining, //ticks of fuel left
-                  }.try_into().unwrap()).unwrap();
+                  }.try_into().unwrap());
 
-                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                  game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                     window_id: 1,
                     property: 2, //progress
                     value: *cooking_time_spent, //progress from 0-200
-                  }.try_into().unwrap()).unwrap();
+                  }.try_into().unwrap());
                 });
 
               return;
@@ -86,36 +86,36 @@ impl BlockEntity {
             players.iter()
               .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
               .for_each(|x| {
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+                game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
                   window_id: 1,
                   state_id: 1,
                   slot_data: data.iter().cloned().map(|x| x.into()).collect(),
                   carried_item: None,
-                }.try_into().unwrap()).unwrap();
+                }.try_into().unwrap());
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 0, //fuel left
                   value: *lit_time_remaining, //ticks of fuel left
-                }.try_into().unwrap()).unwrap();
+                }.try_into().unwrap());
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 1, //max fuel burn time
                   value: 1600, //ticks fuel should burn for
-                }.try_into().unwrap()).unwrap();
+                }.try_into().unwrap());
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 3, //max progress
                   value: 200, //progress from 0-200
-                }.try_into().unwrap()).unwrap();
+                }.try_into().unwrap());
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
+                game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
                   window_id: 1,
                   property: 2, //progress
                   value: *cooking_time_spent, //progress from 0-200
-                }.try_into().unwrap()).unwrap();
+                }.try_into().unwrap());
               });
           };
         } else {
@@ -574,7 +574,7 @@ pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_st
   };
 }
 
-pub fn remove_block_entity(block_entity: &BlockEntity, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World) {
+pub fn remove_block_entity(block_entity: &BlockEntity, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World, game: Arc<Game>) {
   let items = block_entity.get_contained_items();
 
   let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
@@ -590,8 +590,8 @@ pub fn remove_block_entity(block_entity: &BlockEntity, entity_id_manager: &Entit
     entities.push(Box::new(new_entity));
 
     players.iter().for_each(|x| {
-      crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
-      crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+      game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap());
+      game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap());
     });
   }
 
@@ -602,7 +602,7 @@ pub fn remove_block_entity(block_entity: &BlockEntity, entity_id_manager: &Entit
   world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(block_entity.position).unwrap().block_entities.retain(|be| be.position != block_entity.position);
   players.iter_mut()
     .filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == block_entity.position))
-    .for_each(|x| x.close_inventory().unwrap());
+    .for_each(|x| x.close_inventory(game.clone()).unwrap());
 }
 
 impl TryFrom<NbtListTag> for BlockEntity {

@@ -1,7 +1,7 @@
 use crate::types::*;
 use crate::packets::Packet;
 use data::{blocks::*, inventory::Inventory};
-use std::{collections::HashMap, error::Error};
+use std::{collections::HashMap, error::Error, sync::Arc};
 
 mod door;
 mod trapdoor;
@@ -72,31 +72,31 @@ pub enum BlockInteractionResult {
 }
 
 impl BlockInteractionResult {
-  pub fn handle(self, dimension: &Dimension, position: BlockPosition, player: &mut Player, players: &[Player], block_id_at_location: u16) -> Result<Vec<(u16, BlockPosition)>, Box<dyn Error>> {
+  pub fn handle(self, dimension: &Dimension, position: BlockPosition, player: &mut Player, players: &[Player], block_id_at_location: u16, game: Arc<Game>) -> Result<Vec<(u16, BlockPosition)>, Box<dyn Error>> {
     match self {
       BlockInteractionResult::OverwriteBlocks(blocks) => Ok(blocks),
       BlockInteractionResult::OpenInventory(window_type) => {
         let Some(block_entity) = dimension.get_chunk_from_position(position).unwrap().try_get_block_entity(position) else {
           return Err(Box::new(crate::CustomError::BlockEntityNotFoundAtLocation(position)));
         };
-        player.open_inventory(window_type, block_entity);
+        player.open_inventory(window_type, block_entity, game.clone());
 
         players.iter()
          	.for_each(|x| {
-     	      crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::BlockAction::PACKET_ID, crate::packets::clientbound::play::BlockAction {
+     	      game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::BlockAction::PACKET_ID, crate::packets::clientbound::play::BlockAction {
     	      	location: position,
               action_id: 1,
               action_parameter: 1,
               block_type: block_id_at_location as i32,
-     	      }.try_into().unwrap()).unwrap();
+     	      }.try_into().unwrap());
           });
         Ok(Vec::new())
       },
       BlockInteractionResult::OpenSignEditor => {
-        crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::OpenSignEditor::PACKET_ID, crate::packets::clientbound::play::OpenSignEditor {
+        game.send_packet(&player.peer_socket_address, crate::packets::clientbound::play::OpenSignEditor::PACKET_ID, crate::packets::clientbound::play::OpenSignEditor {
           location: position,
           is_front_text: true,
-        }.try_into()?)?;
+        }.try_into()?);
         Ok(Vec::new())
       },
       BlockInteractionResult::Nothing => Ok(Vec::new()),

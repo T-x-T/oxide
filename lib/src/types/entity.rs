@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use rand::Rng;
 
@@ -166,7 +167,7 @@ pub trait Entity: std::fmt::Debug {
     };
   }
 
-  fn tick(&mut self, dimension: &Dimension, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>) -> EntityTickOutcome {
+  fn tick(&mut self, dimension: &Dimension, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> EntityTickOutcome {
     if self.is_mob() {
       let mob_data = self.get_mob_data_mut();
 
@@ -274,7 +275,7 @@ pub trait Entity: std::fmt::Debug {
       };
 
       for player in players {
-        let _ = crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, packet.clone().try_into().unwrap());
+        game.send_packet(&player.peer_socket_address, crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, packet.clone().try_into().unwrap());
       }
 
       return EntityTickOutcome::Updated;
@@ -622,7 +623,7 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
   };
 }
 
-pub fn create_and_spawn_entity_from_egg(spawn_egg_name: &str, entity_id: i32, position: BlockPosition, dimension: &mut Dimension, players: &[Player]) {
+pub fn create_and_spawn_entity_from_egg(spawn_egg_name: &str, entity_id: i32, position: BlockPosition, dimension: &mut Dimension, players: &[Player], game: Arc<Game>) {
   let entity_type = spawn_egg_name.replace("_spawn_egg", "");
   let entity_position = EntityPosition {
     x: position.x as f64 + 0.5,
@@ -631,10 +632,10 @@ pub fn create_and_spawn_entity_from_egg(spawn_egg_name: &str, entity_id: i32, po
     yaw: 0.0,
     pitch: 0.0,
   };
-  create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players);
+  create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players, game);
 }
 
-pub fn create_and_spawn_entity(entity_type: &str, entity_id: i32, position: EntityPosition, dimension: &mut Dimension, players: &[Player]) {
+pub fn create_and_spawn_entity(entity_type: &str, entity_id: i32, position: EntityPosition, dimension: &mut Dimension, players: &[Player], game: Arc<Game>) {
   let new_entity = entity::new(
     entity_type,
     CommonEntity {
@@ -652,7 +653,7 @@ pub fn create_and_spawn_entity(entity_type: &str, entity_id: i32, position: Enti
 
     dimension.add_entity(new_entity);
 
-    players.iter().for_each(|x| crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+    players.iter().for_each(|x| game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()));
   };
 }
 

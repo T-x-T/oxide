@@ -1,7 +1,9 @@
 #![allow(clippy::needless_return)]
 
 use std::collections::HashMap;
-use std::net::{TcpListener, SocketAddr};
+use std::error::Error;
+use std::io::Write;
+use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use dashmap::DashMap;
@@ -108,15 +110,29 @@ fn initialize_server() {
       loop {
         let Ok(peer_addr) = stream.peer_addr() else { break; };
         let Some(mut queue) = game.packet_send_queues.get_mut(&peer_addr) else { continue; };
-        if let Some(packet) = queue.pop() {
+        if !queue.is_empty() {
+          let packet = queue.remove(0);
           drop(queue);
-          let _ = lib::utils::send_packet(&stream, packet.0, packet.1).inspect_err(|x| println!("got error \"{x}\" trying to send packet id \"{}\" to stream \"{}\"", packet.0, stream.peer_addr().unwrap()));
+          let _ = send_packet(&stream, packet.0, packet.1).inspect_err(|x| println!("got error \"{x}\" trying to send packet id \"{}\" to stream \"{}\"", packet.0, stream.peer_addr().unwrap()));
         } else {
           drop(queue);
         };
       }
     });
   }
+}
+
+//copy of this function exists in proxy too
+fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) -> Result<(), Box<dyn Error>> {
+  let mut serialized_id: Vec<u8> = lib::serialize::varint(packet_id as i32);
+  let mut packet: Vec<u8> = lib::serialize::varint((data.len() + serialized_id.len()) as i32);
+  packet.append(&mut serialized_id);
+  packet.append(&mut data);
+
+  stream.write_all(packet.as_slice())?;
+  stream.flush()?;
+
+  return Ok(());
 }
 
 fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
@@ -126,11 +142,11 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
 	if let Some(player_to_remove) = player_to_remove {
     player_to_remove.save_to_disk();
     players.iter().for_each(|x| {
-	    let _ = lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
+	    game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID, lib::packets::clientbound::play::PlayerInfoRemove {
 	      uuids: vec![player_to_remove.uuid],
 	    }.try_into().unwrap());
 
-			let _ = lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
+			game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, lib::packets::clientbound::play::RemoveEntities {
         entity_ids: vec![player_to_remove.entity_id]
       }.try_into().unwrap());
     });
@@ -210,21 +226,21 @@ fn tick(game: Arc<Game>) -> TickTimings {
         moved_players.push(*player_uuid);
 
         let mut players = game.players.lock().unwrap();
-        let player = players.iter_mut().find(|x| x.uuid == *player_uuid).unwrap();
+        let Some(player) = players.iter_mut().find(|x| x.uuid == *player_uuid) else { continue; };
 
         let player_entity_id = player.entity_id;
         let old_position = player.get_position();
 
-        player.new_position_and_rotation(*entity_position, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data).unwrap();
+        player.new_position_and_rotation(*entity_position, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
         let new_position = player.get_position();
 
         let position_updated = old_position.x != new_position.x || old_position.y != new_position.y || old_position.z != new_position.z;
         let rotation_updated = old_position.yaw != new_position.yaw || old_position.pitch != new_position.pitch;
 
         for other_player in players_clone.iter() {
-          if other_player.connection_stream.peer_addr().unwrap() != player.connection_stream.peer_addr().unwrap() {
+          if other_player.peer_socket_address != player.peer_socket_address {
             if position_updated && rotation_updated {
-              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
+              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
                 entity_id: player_entity_id,
                 delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
                 delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
@@ -234,7 +250,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
               }.try_into().unwrap());
             } else if position_updated {
-              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
+              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
                 entity_id: player_entity_id,
                 delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
                 delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
@@ -242,7 +258,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
               }.try_into().unwrap());
             } else if rotation_updated {
-              game.send_packet(&other_player.connection_stream.peer_addr().unwrap(), lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
                 entity_id: player_entity_id,
                 yaw: player.get_yaw_u8(),
                 pitch: player.get_pitch_u8(),
@@ -251,10 +267,10 @@ fn tick(game: Arc<Game>) -> TickTimings {
             }
 
             if rotation_updated {
-              lib::utils::send_packet(&other_player.connection_stream, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
        	        entity_id: player_entity_id,
        					head_yaw: player.get_yaw_u8(),
-       	      }.try_into().unwrap()).unwrap();
+       	      }.try_into().unwrap());
             }
           }
         }
@@ -276,11 +292,9 @@ fn tick(game: Arc<Game>) -> TickTimings {
         if player.connection_stream.peek(useless_buf_no_one_crates_about).is_err() {
           disconnect_player(&player.peer_socket_address, game.clone());
         }
-        if lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID, lib::packets::clientbound::play::ClientboundKeepAlive {
+        game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID, lib::packets::clientbound::play::ClientboundKeepAlive {
           keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
-        }.try_into().unwrap()).is_err() {
-          disconnect_player(&player.peer_socket_address, game.clone());
-        };
+        }.try_into().unwrap());
       }
     });
   }
@@ -291,7 +305,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
     for chunk in &mut dimension.1.chunks {
       for blockentity in &mut chunk.block_entities {
         if blockentity.needs_ticking {
-          blockentity.tick(&players_clone);
+          blockentity.tick(&players_clone, game.clone());
         }
       }
     }
@@ -303,7 +317,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
     let mut entities = std::mem::take(&mut dimension.1.entities);
     let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
     for entity in &mut entities {
-      let outcome = entity.tick(dimension.1, &players_clone, &game.block_state_data);
+      let outcome = entity.tick(dimension.1, &players_clone, &game.block_state_data, game.clone());
       //println!("ticked entity in {:.2?}", std::time::Instant::now() - now);
       if outcome != EntityTickOutcome::None {
         entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
@@ -319,7 +333,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
           };
 
           for player in &players_clone {
-            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::EntityEvent::PACKET_ID, entity_event_packet.clone().try_into().unwrap()).unwrap();
+            game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::EntityEvent::PACKET_ID, entity_event_packet.clone().try_into().unwrap());
           }
         },
         EntityTickOutcome::RemoveSelf => {
@@ -328,7 +342,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
           };
 
           for player in &players_clone {
-            lib::utils::send_packet(&player.connection_stream, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap()).unwrap();
+            game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::RemoveEntities::PACKET_ID, remove_entities_packet.clone().try_into().unwrap());
           }
 
           if let Some(chunk) = dimension.1.get_chunk_from_position_mut(

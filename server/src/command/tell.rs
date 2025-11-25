@@ -29,13 +29,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 			return Ok(());
 		};
 
-		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+		game.send_packet(&stream.peer_addr()?, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::Root(vec![
 				NbtTag::String("type".to_string(), "text".to_string()),
 				NbtTag::String("text".to_string(), "Couldn't find that player :(".to_string()),
 			]),
 		  overlay: false,
-	 	}.try_into()?)?;
+	 	}.try_into()?);
 
 		return Ok(());
 	};
@@ -48,13 +48,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		"console".to_string()
 	};
 
-	lib::utils::send_packet(&target_player.connection_stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+	game.send_packet(&target_player.peer_socket_address, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 		  content: NbtTag::Root(vec![
 			NbtTag::String("type".to_string(), "text".to_string()),
 			NbtTag::String("text".to_string(), format!("<{}> whispered: {}", sending_player_name, command.split(" ").skip(2).collect::<Vec<&str>>().join(" "))),
 		]),
 	  overlay: false,
- 	}.try_into()?)?;
+ 	}.try_into()?);
 
 	return Ok(());
 }

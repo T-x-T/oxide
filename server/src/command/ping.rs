@@ -37,7 +37,7 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, _game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let reply_msg = if command.as_str() == "ping" {
    	"pong".to_string()
   } else {
@@ -49,13 +49,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, _game: Arc<Game>) ->
 		return Ok(());
 	};
 
- 	lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+ 	game.send_packet(&stream.peer_addr()?, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 	  content: NbtTag::Root(vec![
 			NbtTag::String("type".to_string(), "text".to_string()),
 			NbtTag::String("text".to_string(), reply_msg),
 		]),
 	  overlay: false,
- 	}.try_into()?)?;
+ 	}.try_into()?);
 
 	return Ok(());
 }

@@ -1,4 +1,4 @@
-use std::{error::Error, io::{Read, Write}, net::TcpStream};
+use std::{io::Read, net::TcpStream};
 
 pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
   let mut packet_length_bits: Vec<u8> = Vec::new();
@@ -26,18 +26,6 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
     data: packet,
     raw_data: raw_packet,
   };
-}
-
-pub fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) -> Result<(), Box<dyn Error>> {
-  let mut serialized_id: Vec<u8> = crate::serialize::varint(packet_id as i32);
-  let mut packet: Vec<u8> = crate::serialize::varint((data.len() + serialized_id.len()) as i32);
-  packet.append(&mut serialized_id);
-  packet.append(&mut data);
-
-  stream.write_all(packet.as_slice())?;
-  stream.flush()?;
-
-  return Ok(());
 }
 
 pub fn u128_to_uuid_without_dashes(input: u128) -> String {

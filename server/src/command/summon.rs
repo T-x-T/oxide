@@ -45,13 +45,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	);
 
 	let Some(new_entity) = new_entity else {
-	  lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+	  game.send_packet(&stream.peer_addr()?, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
    	  content: NbtTag::Root(vec![
    			NbtTag::String("type".to_string(), "text".to_string()),
    			NbtTag::String("text".to_string(), format!("cant summon unknown entity {}", command.replace("summon ", "").as_str())),
       ]),
    	  overlay: false,
- 	  }.try_into()?)?;
+ 	  }.try_into()?);
 		println!("cant summon unknown entity {}", command.replace("summon ", "").as_str());
 		return Ok(());
 	};
@@ -62,7 +62,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	  .get_mut("minecraft:overworld").unwrap()
     .add_entity(new_entity);
 
-	players.iter().for_each(|x| lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()).unwrap());
+	players.iter().for_each(|x| game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap()));
 
 	return Ok(());
 }

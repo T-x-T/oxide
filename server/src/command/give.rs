@@ -61,8 +61,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
     .add_entity(Box::new(new_entity));
 
 	players.iter().for_each(|x| {
-      lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap()).unwrap();
-      lib::utils::send_packet(&x.connection_stream, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap()).unwrap();
+      game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, spawn_packet.clone().try_into().unwrap());
+      game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, metadata_packet.clone().try_into().unwrap());
     });
 
 	return Ok(());

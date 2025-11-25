@@ -39,17 +39,17 @@ pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, 
         //Chest inventory got changed
         chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().into();
         for stream in streams_with_container_opened {
-          crate::utils::send_packet(&stream, crate::packets::clientbound::play::SetContainerSlot::PACKET_ID, crate::packets::clientbound::play::SetContainerSlot {
+          game.send_packet(&stream.peer_addr().unwrap(), crate::packets::clientbound::play::SetContainerSlot::PACKET_ID, crate::packets::clientbound::play::SetContainerSlot {
             window_id: 1,
             state_id: 1,
             slot: parsed_packet.slot,
             slot_data: new_inventory_item.clone(),
-          }.try_into().unwrap()).unwrap();
+          }.try_into().unwrap());
         }
       } else {
         //Player inventory got changed
         let players_clone = players.clone();
-        players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_slot(player_inventory_index as u8, new_inventory_item, &players_clone);
+        players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_slot(player_inventory_index as u8, new_inventory_item, &players_clone, game.clone());
       }
     }
 
@@ -68,7 +68,7 @@ pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, 
       chest_items.clone_from_slice(&new_chest_items);
 
       for player in players.iter() {
-        let _ = crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+        game.send_packet(&player.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
           window_id: 1,
           state_id: 1,
           slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
@@ -79,21 +79,21 @@ pub fn handle(parsed_packet: crate::packets::serverbound::play::ClickContainer, 
 
     if orig_player_inventory != new_player_inventory {
       let players_clone = players.clone();
-      players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory(new_player_inventory, &players_clone);
+      players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory(new_player_inventory, &players_clone, game.clone());
     }
   } else {
-    crate::utils::send_packet(&players.iter().find(|x| x.uuid == player_uuid).unwrap().connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+    game.send_packet(&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
       slot_data: chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect(),
       carried_item: orig_cursor_item.clone(),
-    }.try_into().unwrap()).unwrap();
-    crate::utils::send_packet(&players.iter().find(|x| x.uuid == player_uuid).unwrap().connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+    }.try_into().unwrap());
+    game.send_packet(&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 0,
       state_id: 1,
       slot_data: players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone(),
       carried_item: orig_cursor_item,
-    }.try_into().unwrap()).unwrap();
+    }.try_into().unwrap());
   }
 }
 

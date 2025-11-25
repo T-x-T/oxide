@@ -1,5 +1,7 @@
 #![allow(clippy::needless_return)]
 
+use std::error::Error;
+use std::io::Write;
 use std::net::{TcpListener, TcpStream};
 use std::sync::{Arc, Mutex};
 
@@ -152,8 +154,8 @@ fn main() {
         }
 
         match parsed_server_packet {
-          Some(x) => lib::utils::send_packet(&client_send_stream, packet_id, x).unwrap(),
-          None => lib::utils::send_packet(&client_send_stream, packet_id, server_packet.data).unwrap(),
+          Some(x) => send_packet(&client_send_stream, packet_id, x).unwrap(),
+          None => send_packet(&client_send_stream, packet_id, server_packet.data).unwrap(),
         }
       }
     });
@@ -369,8 +371,8 @@ fn main() {
         }
 
         match parsed_client_packet {
-          Some(x) => lib::utils::send_packet(&server_send_stream, packet_id, x).unwrap(),
-          None => lib::utils::send_packet(&server_send_stream, packet_id, client_packet.data).unwrap(),
+          Some(x) => send_packet(&server_send_stream, packet_id, x).unwrap(),
+          None => send_packet(&server_send_stream, packet_id, client_packet.data).unwrap(),
         }
       }
     });
@@ -382,4 +384,17 @@ fn main() {
 struct Connection {
   state: lib::ConnectionState,
   protocol_version: i32,
+}
+
+//copy of this function exists in server too
+fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) -> Result<(), Box<dyn Error>> {
+  let mut serialized_id: Vec<u8> = lib::serialize::varint(packet_id as i32);
+  let mut packet: Vec<u8> = lib::serialize::varint((data.len() + serialized_id.len()) as i32);
+  packet.append(&mut serialized_id);
+  packet.append(&mut data);
+
+  stream.write_all(packet.as_slice())?;
+  stream.flush()?;
+
+  return Ok(());
 }

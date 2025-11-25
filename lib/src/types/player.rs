@@ -321,7 +321,7 @@ impl Player {
     return cardinal_direction;
   }
 
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -333,10 +333,10 @@ impl Player {
     let new_chunk_position = BlockPosition {x: self.x as i32, y: 0, z: self.z as i32}.convert_to_coordinates_of_chunk();
 
     if old_chunk_position != new_chunk_position {
-    	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetCenterChunk::PACKET_ID, crate::packets::clientbound::play::SetCenterChunk {
+    	game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetCenterChunk::PACKET_ID, crate::packets::clientbound::play::SetCenterChunk {
 	   		chunk_x: new_chunk_position.x,
 	     	chunk_z: new_chunk_position.z,
-     	}.try_into()?)?;
+     	}.try_into()?);
 
       let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::VIEW_DISTANCE as i32 ..= old_chunk_position.x + crate::VIEW_DISTANCE as i32).flat_map(|x| {
         (old_chunk_position.z - crate::VIEW_DISTANCE as i32 ..= old_chunk_position.z + crate::VIEW_DISTANCE as i32).map(|z| (x, z)).collect::<Vec<(i32, i32)>>()
@@ -349,17 +349,17 @@ impl Player {
       let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
 
       for chunk_coords in chunks_missing {
-      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states)?;
+      	self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states, game.clone())?;
       }
     }
 
     return Ok(());
   }
 
-  pub fn new_position_and_rotation(&mut self, new_position: EntityPosition, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, new_position: EntityPosition, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
     self.yaw = new_position.yaw;
     self.pitch = new_position.pitch;
- 		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states)?;
+ 		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, game)?;
 
     return Ok(());
   }
@@ -373,7 +373,7 @@ impl Player {
     return self.pitch;
   }
 
-  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>) -> Result<(), Box<dyn Error>> {
+  pub fn send_chunk(&mut self, world: &mut World, chunk_x: i32, chunk_z: i32, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
   	let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
 	 	let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 	  let chunk = if let Some(chunk) = chunk {
@@ -435,7 +435,7 @@ impl Player {
       })
 		  .collect();
 
-	  crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, crate::packets::clientbound::play::ChunkDataAndUpdateLight {
+	  game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID, crate::packets::clientbound::play::ChunkDataAndUpdateLight {
 	    chunk_x,
 	    chunk_z,
 	    heightmaps: vec![],
@@ -447,7 +447,7 @@ impl Player {
 	    empty_block_light_mask: vec![!block_light_mask],
 	    sky_light_arrays,
 	    block_light_arrays,
-	  }.try_into()?)?;
+	  }.try_into()?);
 
 		return Ok(());
   }
@@ -464,18 +464,18 @@ impl Player {
 		return self.selected_slot;
 	}
 
-	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player]) {
+	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player], game: Arc<Game>) {
 		self.selected_slot = slot;
 
 		players.iter()
 	   	.filter(|x| x.uuid != self.uuid)
 	   	.for_each(|x| {
-		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment: vec![
 						(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())
 		     	]
-		   	}.try_into().unwrap()).unwrap();
+		   	}.try_into().unwrap());
 			}
 		);
 	}
@@ -484,17 +484,17 @@ impl Player {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player]) {
-		self.set_inventory_slot(self.get_selected_slot() + 36, item, players);
+	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
+		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, game);
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player]) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
 		self.inventory[slot as usize] = item.clone();
 
-  	crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, crate::packets::clientbound::play::SetPlayerInventorySlot {
+  	game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID, crate::packets::clientbound::play::SetPlayerInventorySlot {
    		slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
     	slot: (self.get_selected_slot()) as i32,
-    }.try_into().unwrap()).unwrap();
+    }.try_into().unwrap());
 
 		if (slot <= 4 || (9..=44).contains(&slot)) && self.get_selected_slot() + 36 != slot {
 			return;
@@ -520,22 +520,22 @@ impl Player {
        		);
 				};
 
-		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
-		   	}.try_into().unwrap()).unwrap();
+		   	}.try_into().unwrap());
 			}
 		);
 	}
-	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, players: &[Player]) {
+	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
 		self.inventory = items.clone();
 
-		crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+		game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 0,
       state_id: 1,
       slot_data: self.inventory.clone(),
       carried_item: None,
-		}.try_into().unwrap()).unwrap();
+		}.try_into().unwrap());
 
 		players.iter()
 	   	.filter(|x| x.uuid != self.uuid)
@@ -549,16 +549,16 @@ impl Player {
 					(5, self.inventory[5].clone()),
 				];
 
-		   	crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
+		   	game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetEquipment::PACKET_ID, crate::packets::clientbound::play::SetEquipment {
 		 			entity_id: self.entity_id,
 		  		equipment,
-		   	}.try_into().unwrap()).unwrap();
+		   	}.try_into().unwrap());
 			}
 		);
 	}
 
-	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity) {
-	  let _ = crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::OpenScreen::PACKET_ID, crate::packets::clientbound::play::OpenScreen {
+	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity, game: Arc<Game>) {
+	  game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::OpenScreen::PACKET_ID, crate::packets::clientbound::play::OpenScreen {
       window_id: 1,
       window_type: inventory as i32,
       window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
@@ -566,7 +566,7 @@ impl Player {
 
 	  self.opened_inventory_at = Some(block_entity.position);
 
-    let _ = crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
+    game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
       slot_data: match block_entity.clone().data {
@@ -594,12 +594,12 @@ impl Player {
     }.try_into().unwrap());
 	}
 
-	pub fn close_inventory(&mut self) -> Result<(), Box<dyn Error>> {
+	pub fn close_inventory(&mut self, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	  self.opened_inventory_at = None;
 
-		crate::utils::send_packet(&self.connection_stream, crate::packets::clientbound::play::CloseContainer::PACKET_ID, crate::packets::clientbound::play::CloseContainer {
+		game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::CloseContainer::PACKET_ID, crate::packets::clientbound::play::CloseContainer {
       window_id: 1,
-    }.try_into()?)?;
+    }.try_into()?);
 
 		return Ok(());
 	}
@@ -608,7 +608,7 @@ impl Player {
 	  return self.is_sneaking;
 	}
 
-	pub fn set_sneaking(&mut self, is_sneaking: bool, players: &[Player]) {
+	pub fn set_sneaking(&mut self, is_sneaking: bool, players: &[Player], game: Arc<Game>) {
 	  //No need to do anything if is_sneaking didnt change
 	  if self.is_sneaking == is_sneaking {
 			return;
@@ -621,12 +621,12 @@ impl Player {
 				continue;
 			}
 
-			crate::utils::send_packet(&player.connection_stream, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, crate::packets::clientbound::play::SetEntityMetadata {
+			game.send_packet(&player.peer_socket_address, crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID, crate::packets::clientbound::play::SetEntityMetadata {
         entity_id: self.entity_id,
         metadata: vec![
           EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }
         ],
-			}.try_into().unwrap()).unwrap();
+			}.try_into().unwrap());
 		}
 	}
 

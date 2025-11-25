@@ -12,13 +12,13 @@ pub fn init(game: &mut Game) {
 
 fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	if let Some(stream) = stream {
-		lib::utils::send_packet(stream, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+		game.send_packet(&stream.peer_addr()?, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
 			  content: NbtTag::Root(vec![
 				NbtTag::String("type".to_string(), "text".to_string()),
 				NbtTag::String("text".to_string(), "this command is only intended to be used from the console".to_string()),
 			]),
 		  overlay: false,
-	 	}.try_into()?)?;
+	 	}.try_into()?);
 
 		return Ok(());
 	}
