@@ -33,16 +33,16 @@ pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<
       _ => {Ok(None)},
     },
     ConnectionState::Play => match packet.id {
-      lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, game, stream),
+      lib::packets::serverbound::play::ConfirmTeleportation::PACKET_ID => play::confirm_teleportation(&mut packet.data, stream),
       lib::packets::serverbound::play::ChatCommand::PACKET_ID => play::chat_command(&mut packet.data, stream, game),
       lib::packets::serverbound::play::ChatMessage::PACKET_ID => play::chat_message(&mut packet.data, game, stream),
       lib::packets::serverbound::play::PlayerAction::PACKET_ID => play::player_action(&mut packet.data, stream, game),
       lib::packets::serverbound::play::SetCreativeModeSlot::PACKET_ID => play::set_creative_mode_slot(&mut packet.data, stream, game),
       lib::packets::serverbound::play::SetHandItem::PACKET_ID => play::set_held_item(&mut packet.data, stream, game),
       lib::packets::serverbound::play::UseItemOn::PACKET_ID => play::use_item_on(&mut packet.data, stream, game),
-      lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => play::set_player_position(&mut packet.data, game, stream),
-      lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, game, stream),
-      lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, game, stream),
+      lib::packets::serverbound::play::SetPlayerPosition::PACKET_ID => play::set_player_position(&mut packet.data, stream),
+      lib::packets::serverbound::play::SetPlayerPositionAndRotation::PACKET_ID => play::set_player_position_and_rotation(&mut packet.data, stream),
+      lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, stream),
       lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream, game),
       lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream, game),
       lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream, game),
@@ -872,50 +872,24 @@ pub mod play {
   use lib::{nbt::NbtTag, packets::{clientbound::play::{EntityMetadata, EntityMetadataValue}, Packet}};
   use super::*;
 
-  pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+  pub fn set_player_position(data: &mut [u8], stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
-    let players = game.players.lock().unwrap();
-    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
-    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
-      x: parsed_packet.x,
-      y: parsed_packet.y,
-      z: parsed_packet.z,
-      ..player.get_position()
-    })));
+    return Ok(Some(PacketHandlerAction::MovePlayer(stream.peer_addr()?, Some((parsed_packet.x, parsed_packet.y, parsed_packet.z)), None)));
   }
 
-  pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+  pub fn set_player_position_and_rotation(data: &mut [u8], stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
-    let players = game.players.lock().unwrap();
-    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
-
-    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
-      x: parsed_packet.x,
-      y: parsed_packet.y,
-      z: parsed_packet.z,
-      yaw: parsed_packet.yaw % 360.0,
-      pitch: parsed_packet.pitch
-    })));
+    return Ok(Some(PacketHandlerAction::MovePlayer(stream.peer_addr()?, Some((parsed_packet.x, parsed_packet.y, parsed_packet.z)), Some((parsed_packet.yaw % 360.0, parsed_packet.pitch)))));
   }
 
-  pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+  pub fn set_player_rotation(data: &mut [u8], stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec())?;
-    let players = game.players.lock().unwrap();
-    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
-
-    return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
-      yaw: parsed_packet.yaw % 360.0,
-      pitch: parsed_packet.pitch,
-      ..player.get_position()
-    })));
+    return Ok(Some(PacketHandlerAction::MovePlayer(stream.peer_addr()?, None, Some((parsed_packet.yaw % 360.0, parsed_packet.pitch)))));
   }
 
-  pub fn confirm_teleportation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-    let players = game.players.lock().unwrap();
-    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+  pub fn confirm_teleportation(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.to_vec())?;
-
-    return Ok(Some(PacketHandlerAction::ConfirmTeleportation(player.uuid, parsed_packet.teleport_id)));
+    return Ok(Some(PacketHandlerAction::ConfirmTeleportation(stream.peer_addr()?, parsed_packet.teleport_id)));
   }
 
   pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {

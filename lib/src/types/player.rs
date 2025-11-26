@@ -321,7 +321,7 @@ impl Player {
     return cardinal_direction;
   }
 
-  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+  pub fn new_position(&mut self, x: f64, y: f64, z: f64, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<EntityPosition, Box<dyn Error>> {
   	let old_x = self.x;
    	let old_z = self.z;
 
@@ -353,20 +353,22 @@ impl Player {
       }
     }
 
-    return Ok(());
+    return Ok(self.get_position());
   }
 
-  pub fn new_position_and_rotation(&mut self, new_position: EntityPosition, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+  pub fn new_position_and_rotation(&mut self, new_position: EntityPosition, world: &mut World, entity_id_manger: &EntityIdManager, block_states: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> Result<EntityPosition, Box<dyn Error>> {
     self.yaw = new_position.yaw;
     self.pitch = new_position.pitch;
  		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, game)?;
 
-    return Ok(());
+    return Ok(self.get_position());
   }
 
-  pub fn new_rotation(&mut self, yaw: f32, pitch: f32) {
+  pub fn new_rotation(&mut self, yaw: f32, pitch: f32) -> EntityPosition {
     self.yaw = yaw;
     self.pitch = pitch;
+
+    return self.get_position();
   }
 
   pub fn get_pitch(&self) -> f32 {

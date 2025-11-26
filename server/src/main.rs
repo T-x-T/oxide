@@ -83,10 +83,10 @@ fn initialize_server() {
 
         let packet = lib::utils::read_packet(&stream);
 
-        if stream.peer_addr().is_err() {
-          disconnect_player(&peer_addr, game.clone());
-          break;
-        }
+        // if stream.peer_addr().is_err() {
+        //   disconnect_player(&peer_addr, game.clone());
+        //   break;
+        // }
 
         let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game.clone());
         if packet_handler_result.is_err() {
@@ -106,9 +106,9 @@ fn initialize_server() {
     std::thread::spawn(move || {
       let stream = stream.try_clone().unwrap();
       let game = game_clone.clone();
+      let Ok(peer_addr) = stream.peer_addr() else { return; };
 
       loop {
-        let Ok(peer_addr) = stream.peer_addr() else { break; };
         let Some(mut queue) = game.packet_send_queues.get_mut(&peer_addr) else { continue; };
         if !queue.is_empty() {
           let packet = queue.remove(0);
@@ -210,7 +210,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
 
   let now = std::time::Instant::now();
   //prevents handling of two movements packets from one player during tick
-  let mut moved_players: Vec<u128> = Vec::new();
+  let mut moved_players: Vec<SocketAddr> = Vec::new();
 
   for packet_handler_action in game.packet_handler_actions.lock().unwrap().iter().rev() {
     match packet_handler_action {
@@ -218,29 +218,27 @@ fn tick(game: Arc<Game>) -> TickTimings {
         println!("handler told us to disconnect");
         disconnect_player(peer_addr, game.clone());
       },
-      PacketHandlerAction::MovePlayer(player_uuid, entity_position) => {
-        if moved_players.contains(player_uuid) {
+      PacketHandlerAction::MovePlayer(peer_addr, position, rotation) => {
+        if moved_players.contains(peer_addr) {
           continue;
         }
 
-        moved_players.push(*player_uuid);
+        moved_players.push(*peer_addr);
 
         let mut players = game.players.lock().unwrap();
-        let Some(player) = players.iter_mut().find(|x| x.uuid == *player_uuid) else { continue; };
+        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == *peer_addr) else { continue; };
 
         let player_entity_id = player.entity_id;
         let old_position = player.get_position();
 
-        player.new_position_and_rotation(*entity_position, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
-        let new_position = player.get_position();
+        let position_updated = position.is_some();
+        let rotation_updated = rotation.is_some();
 
-        let position_updated = old_position.x != new_position.x || old_position.y != new_position.y || old_position.z != new_position.z;
-        let rotation_updated = old_position.yaw != new_position.yaw || old_position.pitch != new_position.pitch;
-
-        for other_player in players_clone.iter() {
-          if other_player.peer_socket_address != player.peer_socket_address {
-            if position_updated && rotation_updated {
-              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
+        let packets: Vec<(u8, Vec<u8>)> = if position_updated && rotation_updated {
+          let new_position = player.new_position_and_rotation(EntityPosition { x: position.unwrap().0, y: position.unwrap().1, z: position.unwrap().2, yaw: rotation.unwrap().0, pitch: rotation.unwrap().1 }, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
+          vec![
+            (
+              lib::packets::clientbound::play::UpdateEntityPositionAndRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPositionAndRotation {
                 entity_id: player_entity_id,
                 delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
                 delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
@@ -248,36 +246,57 @@ fn tick(game: Arc<Game>) -> TickTimings {
                 yaw: player.get_yaw_u8(),
                 pitch: player.get_pitch_u8(),
                 on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap());
-            } else if position_updated {
-              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
-                entity_id: player_entity_id,
-                delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
-                delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-                delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap());
-            } else if rotation_updated {
-              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
-                entity_id: player_entity_id,
-                yaw: player.get_yaw_u8(),
-                pitch: player.get_pitch_u8(),
-                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
-              }.try_into().unwrap());
-            }
-
-            if rotation_updated {
-              game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+              }.try_into().unwrap()
+            ),
+            (
+              lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
        	        entity_id: player_entity_id,
        					head_yaw: player.get_yaw_u8(),
-       	      }.try_into().unwrap());
+       	      }.try_into().unwrap()
+            )
+          ]
+        } else if position_updated {
+          let new_position = player.new_position(position.unwrap().0, position.unwrap().1, position.unwrap().2, &mut game.world.lock().unwrap(), &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
+          vec![(lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID, lib::packets::clientbound::play::UpdateEntityPosition {
+            entity_id: player_entity_id,
+            delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+            delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+            delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+            on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+          }.try_into().unwrap())]
+        } else if rotation_updated {
+          player.new_rotation(rotation.unwrap().0, rotation.unwrap().1);
+          vec![
+            (
+              lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID, lib::packets::clientbound::play::UpdateEntityRotation {
+                entity_id: player_entity_id,
+                yaw: player.get_yaw_u8(),
+                pitch: player.get_pitch_u8(),
+                on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+              }.try_into().unwrap()
+            ),
+            (
+              lib::packets::clientbound::play::SetHeadRotation::PACKET_ID, lib::packets::clientbound::play::SetHeadRotation {
+       	        entity_id: player_entity_id,
+       					head_yaw: player.get_yaw_u8(),
+       	      }.try_into().unwrap()
+            )
+          ]
+        } else {
+          Vec::new()
+        };
+
+        for other_player in players_clone.iter() {
+          if other_player.peer_socket_address != *peer_addr {
+            for packet in &packets {
+              game.send_packet(&other_player.peer_socket_address, packet.0, packet.1.clone());
             }
           }
         }
       },
-      PacketHandlerAction::ConfirmTeleportation(uuid, teleport_id) => {
+      PacketHandlerAction::ConfirmTeleportation(peer_addr, teleport_id) => {
         let mut players = game.players.lock().unwrap();
-        let Some(player) = players.iter_mut().find(|x| x.uuid == *uuid) else { continue; };
+        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == *peer_addr) else { continue; };
 
         if player.current_teleport_id == *teleport_id {
        		player.waiting_for_confirm_teleportation = false;
