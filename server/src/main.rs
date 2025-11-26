@@ -275,6 +275,14 @@ fn tick(game: Arc<Game>) -> TickTimings {
           }
         }
       },
+      PacketHandlerAction::ConfirmTeleportation(uuid, teleport_id) => {
+        let mut players = game.players.lock().unwrap();
+        let Some(player) = players.iter_mut().find(|x| x.uuid == *uuid) else { continue; };
+
+        if player.current_teleport_id == *teleport_id {
+       		player.waiting_for_confirm_teleportation = false;
+        }
+      }
     }
   };
   *game.packet_handler_actions.lock().unwrap() = Vec::new();

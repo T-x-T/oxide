@@ -874,8 +874,8 @@ pub mod play {
 
   pub fn set_player_position(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPosition::try_from(data.to_vec())?;
-    let mut players = game.players.lock().unwrap();
-    let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let players = game.players.lock().unwrap();
+    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
       x: parsed_packet.x,
       y: parsed_packet.y,
@@ -886,8 +886,8 @@ pub mod play {
 
   pub fn set_player_position_and_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerPositionAndRotation::try_from(data.to_vec())?;
-    let mut players = game.players.lock().unwrap();
-    let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let players = game.players.lock().unwrap();
+    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
     return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
       x: parsed_packet.x,
@@ -900,8 +900,8 @@ pub mod play {
 
   pub fn set_player_rotation(data: &mut [u8], game: Arc<Game>, stream: &TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::play::SetPlayerRotation::try_from(data.to_vec())?;
-    let mut players = game.players.lock().unwrap();
-    let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let players = game.players.lock().unwrap();
+    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
 
     return Ok(Some(PacketHandlerAction::MovePlayer(player.uuid, EntityPosition {
       yaw: parsed_packet.yaw % 360.0,
@@ -911,14 +911,11 @@ pub mod play {
   }
 
   pub fn confirm_teleportation(data: &mut [u8], game: Arc<Game>, stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-    let mut players = game.players.lock().unwrap();
-    let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
+    let players = game.players.lock().unwrap();
+    let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == stream.peer_addr().unwrap()).unwrap();
     let parsed_packet = lib::packets::serverbound::play::ConfirmTeleportation::try_from(data.to_vec())?;
-    if player.current_teleport_id == parsed_packet.teleport_id {
-   		player.waiting_for_confirm_teleportation = false;
-    }
 
-    return Ok(None);
+    return Ok(Some(PacketHandlerAction::ConfirmTeleportation(player.uuid, parsed_packet.teleport_id)));
   }
 
   pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {

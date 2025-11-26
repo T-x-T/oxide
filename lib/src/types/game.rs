@@ -39,6 +39,7 @@ impl Game {
 pub enum PacketHandlerAction {
 	DisconnectPlayer(SocketAddr),
 	MovePlayer(u128, EntityPosition),
+	ConfirmTeleportation(u128, i32),
 }
 
 #[derive(Debug, Default)]
