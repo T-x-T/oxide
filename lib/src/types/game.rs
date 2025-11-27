@@ -44,6 +44,10 @@ pub enum PacketHandlerAction {
 	SetSelectedSlot(SocketAddr, u8),
 	PickItemFromBlock(SocketAddr, BlockPosition, bool), //bool = include_data
 	SwingArm(SocketAddr, u8),
+	BreakBlock(SocketAddr, u8, BlockPosition, u8, i32), //status, location, face, sequence
+	UseItemOn(SocketAddr, u8, BlockPosition, u8, f32, f32, f32, bool, bool, i32), //hand, location, face, cursor_position x,y,z, inside_block, world_border_hit, sequence
+	SendChatMessage(SocketAddr, String, i64, i64), //Message, timestamp, salt
+	SendCommand(SocketAddr, String),
 }
 
 #[derive(Debug, Default)]

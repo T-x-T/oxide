@@ -346,6 +346,269 @@ fn tick(game: Arc<Game>) -> TickTimings {
           }
         }
       },
+      PacketHandlerAction::BreakBlock(peer_addr, _status, location, _face, sequence_id) => {
+        let mut players = game.players.lock().unwrap();
+        let mut world = game.world.lock().unwrap();
+
+        let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
+        let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &game.block_state_data);
+
+        //TODO: move to a update function or similar
+        if old_block.block_type == data::blocks::Type::Door {
+          let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &game.block_state_data);
+          let location: Option<BlockPosition> = if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
+            Some(BlockPosition { y: location.y - 1, ..location })
+          } else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
+            Some(BlockPosition { y: location.y + 1, ..location })
+          } else {
+            None
+          };
+
+          if let Some(location) = location {
+            world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0, &game.block_state_data).unwrap();
+
+            players.iter()
+              .inspect(|x| {
+                game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                  location,
+                  block_id: 0,
+                }.try_into().unwrap());
+              })
+             	.filter(|x| x.peer_socket_address != peer_addr)
+             	.for_each(|x| {
+         	      game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+        	      	event: 2001,
+        	      	location,
+         	       	data: old_block_id as i32,
+         	      }.try_into().unwrap());
+              });
+          }
+        }
+
+
+        let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0, &game.block_state_data).unwrap();
+        if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+          let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.position == location).unwrap();
+          let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+          lib::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+        }
+
+       	players.iter()
+          .inspect(|x| {
+            game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+              location,
+              block_id: 0,
+            }.try_into().unwrap());
+          })
+         	.filter(|x| x.peer_socket_address != peer_addr)
+         	.for_each(|x| {
+     	      game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::WorldEvent::PACKET_ID, lib::packets::clientbound::play::WorldEvent {
+    	      	event: 2001,
+    	      	location,
+     	       	data: old_block_id as i32,
+     	      }.try_into().unwrap());
+          });
+
+        game.send_packet(&peer_addr, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
+          sequence_id,
+        }.try_into().unwrap());
+
+        let blocks_to_update = [
+          BlockPosition {x: location.x + 1, ..location},
+          BlockPosition {x: location.x - 1, ..location},
+          BlockPosition {y: location.y + 1, ..location},
+          BlockPosition {y: location.y - 1, ..location},
+          BlockPosition {z: location.z + 1, ..location},
+          BlockPosition {z: location.z - 1, ..location},
+        ];
+
+        for block_to_update in blocks_to_update {
+          let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
+          if let Some(new_block) = res {
+            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+              Ok(_) => {
+                for player in players.iter() {
+                  game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                    location: block_to_update,
+                    block_id: new_block as i32,
+                  }.try_into().unwrap());
+                }
+              },
+              Err(err) => {
+                println!("couldn't place block because {err}");
+                continue;
+              },
+            }
+          };
+        }
+      },
+      PacketHandlerAction::UseItemOn(peer_addr, _hand, location, face, cursor_position_x, cursor_position_y, cursor_position_z, _inside_block, _world_border_hit, sequence_id) => {
+        let mut players = game.players.lock().unwrap();
+        let mut world = game.world.lock().unwrap();
+
+        let mut new_block_location = location;
+        match face {
+          0 => new_block_location.y -= 1,
+          1 => new_block_location.y += 1,
+          2 => new_block_location.z -= 1,
+          3 => new_block_location.z += 1,
+          4 => new_block_location.x -= 1,
+          _ => new_block_location.x += 1,
+        }
+
+        let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+        let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
+
+        let dimension = world.dimensions.get("minecraft:overworld").unwrap();
+        let block_id_at_location = dimension.get_block(location).unwrap_or_default();
+        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &game.block_state_data);
+
+        let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
+          //Don't place block, because player right clicked something that does something when right clicked
+          let block_interaction_result = lib::block::interact_with_block_at(location, block_id_at_location, face, &game.block_state_data);
+          block_interaction_result.handle(dimension, location, player, &players_clone, block_id_at_location, game.clone()).unwrap()
+        } else {
+          //Let's go - we can place a block
+          let used_item_id = player.get_held_item(true).unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).item_id;
+          let used_item_name = data::items::get_item_name_by_id(used_item_id);
+          let pitch = player.get_pitch();
+
+          if used_item_name.ends_with("spawn_egg") {
+            let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+            lib::create_and_spawn_entity_from_egg(&used_item_name, game.entity_id_manager.get_new(), new_block_location, dimension, &players, game.clone());
+          }
+
+          lib::block::get_block_state_id(face, player_get_looking_cardinal_direction, pitch, world.dimensions.get_mut("minecraft:overworld").unwrap(), new_block_location, &used_item_name, cursor_position_x, cursor_position_y, cursor_position_z, &game.block_state_data)
+        };
+
+        let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
+        for block_to_place in &blocks_to_place {
+          match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0, &game.block_state_data) {
+            Ok(res) => {
+              let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
+              //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
+              if block.block_type == data::blocks::Type::WallSign || block.block_type == data::blocks::Type::StandingSign || block.block_type == data::blocks::Type::WallHangingSign || block.block_type == data::blocks::Type::CeilingHangingSign {
+                game.send_packet(&peer_addr, lib::packets::clientbound::play::OpenSignEditor::PACKET_ID, lib::packets::clientbound::play::OpenSignEditor {
+                  location: block_to_place.1,
+                  is_front_text: true,
+                }.try_into().unwrap());
+              }
+              #[allow(clippy::collapsible_if)]
+              if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
+                if let Some(block_entity) = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.position == location) {
+                  let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+                  crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+                };
+              }
+
+              blocks_to_update.append(&mut vec![
+                BlockPosition {x: block_to_place.1.x + 1, ..block_to_place.1},
+                BlockPosition {x: block_to_place.1.x - 1, ..block_to_place.1},
+                BlockPosition {y: block_to_place.1.y + 1, ..block_to_place.1},
+                BlockPosition {y: block_to_place.1.y - 1, ..block_to_place.1},
+                BlockPosition {z: block_to_place.1.z + 1, ..block_to_place.1},
+                BlockPosition {z: block_to_place.1.z - 1, ..block_to_place.1},
+              ]);
+            },
+            Err(err) => {
+              println!("couldn't place block because {err}");
+              continue;
+            },
+          };
+        }
+
+        blocks_to_update.sort();
+        blocks_to_update.dedup();
+
+        let mut updated_blocks: Vec<(u16, BlockPosition)> = Vec::new();
+        for block_to_update in blocks_to_update {
+          let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
+          if let Some(new_block) = res {
+            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+              Ok(_) => {
+                updated_blocks.push((new_block, block_to_update));
+              },
+              Err(err) => {
+                println!("couldn't place block because {err}");
+                continue;
+              },
+            }
+          };
+        }
+
+        let all_changed_blocks: Vec<(u16, BlockPosition)> = vec![blocks_to_place, updated_blocks].into_iter().flatten().collect();
+
+        for player in players.iter() {
+          for block in &all_changed_blocks {
+            game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+              location: block.1,
+              block_id: block.0 as i32,
+            }.try_into().unwrap());
+          }
+        }
+
+        game.send_packet(&peer_addr, lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID, lib::packets::clientbound::play::AcknowledgeBlockChange {
+          sequence_id,
+        }.try_into().unwrap());
+      },
+      PacketHandlerAction::SendChatMessage(peer_addr, message, timestamp, salt) => {
+        let mut players = game.players.lock().unwrap();
+
+        let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
+        println!("<{}>: {}", player.display_name, message);
+
+        let packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
+          global_index: player.chat_message_index,
+          sender: player.uuid,
+          index: 0,
+          message_signature_bytes: Vec::new(),
+          message: message.clone(),
+          timestamp,
+          salt,
+          signature_array: Vec::new(),
+          unsigned_content: None,
+          filter_type: 0,
+          filter_type_bits: Vec::new(),
+          chat_type: 1,
+          sender_name: NbtTag::Root(vec![
+        		NbtTag::TagCompound("click_event".to_string(), vec![
+         			NbtTag::String("action".to_string(), "suggest_command".to_string()),
+         			NbtTag::String("command".to_string(), format!("/tell {}", player.display_name).to_string()),
+         	]),
+         	NbtTag::String("insertion".to_string(), player.display_name.clone()),
+         	NbtTag::String("text".to_string(), player.display_name.clone()),
+          ]),
+          target_name: None,
+        };
+
+        for player in players.iter_mut() {
+          player.chat_message_index += 1;
+          game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::PlayerChatMessage::PACKET_ID, packet_to_send.clone().try_into().unwrap());
+        }
+      },
+      PacketHandlerAction::SendCommand(peer_addr, command_string) => {
+        let players = game.players.lock().unwrap();
+        let player = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap();
+        println!("<{}> invoked: {}", player.display_name, command_string);
+
+        let commands = game.commands.lock().unwrap().clone();
+
+       	let Some(command) = commands.iter().find(|x| x.name == command_string.split(" ").next().unwrap_or_default()) else {
+      		game.send_packet(&peer_addr, lib::packets::clientbound::play::SystemChatMessage::PACKET_ID, lib::packets::clientbound::play::SystemChatMessage {
+  				  content: NbtTag::Root(vec![
+   					NbtTag::String("type".to_string(), "text".to_string()),
+   					NbtTag::String("text".to_string(), "command not found".to_string()),
+    				]),
+  				  overlay: false,
+          }.try_into().unwrap());
+          continue;
+        };
+
+        let mut stream = player.connection_stream.try_clone().unwrap();
+        drop(players);
+        (command.execute)(command_string, Some(&mut stream), game.clone()).unwrap();
+      },
     }
   };
   *game.packet_handler_actions.lock().unwrap() = Vec::new();
