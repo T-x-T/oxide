@@ -609,6 +609,244 @@ fn tick(game: Arc<Game>) -> TickTimings {
         drop(players);
         (command.execute)(command_string, Some(&mut stream), game.clone()).unwrap();
       },
+      PacketHandlerAction::ClickContainer(peer_addr, parsed_packet) => {
+        let mut players = game.players.lock().unwrap();
+        let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
+        let Some(position) = player.opened_inventory_at else {
+          println!("player doesn't seems to have a container opened at the moment");
+          continue;
+        };
+
+        let streams_with_container_opened = players.iter()
+          .filter(|x| x.opened_inventory_at.is_some_and(|x| x == position))
+          .map(|x| x.connection_stream.try_clone().unwrap())
+          .collect::<Vec<TcpStream>>();
+
+        let mut dimensions = std::mem::take(&mut game.world.lock().unwrap().dimensions);
+        let block_entity = dimensions.get_mut("minecraft:overworld").unwrap()
+          .get_chunk_from_position_mut(position).unwrap()
+          .try_get_block_entity_mut(position).unwrap();
+
+        let player_uuid = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap().uuid;
+        drop(players);
+
+        match &mut block_entity.data {
+          BlockEntityData::Chest(items) => {
+            assert!(items.len() == 27);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
+          BlockEntityData::Furnace(items, _, _, _, _) => {
+            assert!(items.len() == 3);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+            block_entity.needs_ticking = true;
+          },
+          BlockEntityData::BrewingStand(items) => {
+            assert!(items.len() == 5);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
+          BlockEntityData::Crafter(items) => {
+            assert!(items.len() == 9);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
+          BlockEntityData::Dispenser(items) => {
+            assert!(items.len() == 9);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
+          BlockEntityData::Hopper(items) => {
+            assert!(items.len() == 5);
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
+          x => println!("can't handle click_container packet for entity {x:?}"),
+        }
+
+        game.world.lock().unwrap().dimensions = dimensions;
+      },
+      PacketHandlerAction::CloseContainer(peer_addr, window_id) => {
+        let mut players = game.players.lock().unwrap();
+        let world = game.world.lock().unwrap();
+
+        if window_id != 0 {
+          if let Some(position) = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().opened_inventory_at {
+            let number_of_players_with_container_opened = players.iter()
+              .filter(|x| x.opened_inventory_at.is_some_and(|x| x == position))
+              .count();
+
+            if number_of_players_with_container_opened == 1 { //1, because we havent called close_inventory() on current player yet
+              players.iter().for_each(|x| {
+         	      game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::BlockAction::PACKET_ID, lib::packets::clientbound::play::BlockAction {
+        	      	location: position,
+                  action_id: 1,
+                  action_parameter: 0,
+                  block_type: world.dimensions.get("minecraft:overworld").unwrap().get_block(position).unwrap() as i32,
+         	      }.try_into().unwrap());
+              });
+            }
+          };
+
+          players.iter_mut()
+            .filter(|x| x.peer_socket_address == peer_addr)
+            .for_each(|x| x.close_inventory(game.clone()).unwrap());
+        }
+      },
+      PacketHandlerAction::UpdateSign(location, _is_front, text) => {
+        let players = game.players.lock().unwrap();
+        let mut world = game.world.lock().unwrap();
+        let chunk = world.dimensions
+          .get_mut("minecraft:overworld").unwrap()
+          .chunks.iter_mut()
+          .find(|x| x.x == location.convert_to_coordinates_of_chunk().x && x.z == location.convert_to_coordinates_of_chunk().z).unwrap();
+
+        chunk.modified = true;
+
+        let blockentity = chunk.block_entities.iter_mut().find(|x| x.position == location).unwrap();
+
+        if let BlockEntityData::Sign(_is_waxed, front_text, _back_text) = &mut blockentity.data {
+          front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
+          front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
+          front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
+            NbtListTag::String(text[0].clone()),
+            NbtListTag::String(text[1].clone()),
+            NbtListTag::String(text[2].clone()),
+            NbtListTag::String(text[3].clone()),
+          ]));
+        }
+
+        let packet_to_send = lib::packets::clientbound::play::BlockEntityData {
+          location,
+          block_entity_type: *data::blockentity::get_block_entity_types().get(Into::<&str>::into(blockentity.id)).unwrap() as i32,
+          nbt_data: NbtTag::Root(blockentity.data.clone().into()),
+        };
+
+        for player in players.iter() {
+          game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::BlockEntityData::PACKET_ID, packet_to_send.clone().try_into().unwrap());
+        };
+      },
+      PacketHandlerAction::PlayerInput(peer_addr, parsed_packet) => {
+        let players_clone = game.players.lock().unwrap().clone();
+        let mut players = game.players.lock().unwrap();
+        let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
+        if parsed_packet.sneak {
+          player.set_sneaking(true, &players_clone, game.clone());
+        } else {
+          player.set_sneaking(false, &players_clone, game.clone());
+        }
+      },
+      PacketHandlerAction::Interact(peer_addr, parsed_packet) => {
+        let mut players = game.players.lock().unwrap();
+        let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+        let held_item = player.get_held_item(true);
+
+        let mut world = game.world.lock().unwrap();
+        let Some(entity) = world.dimensions.get_mut("minecraft:overworld").unwrap().entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
+          continue;
+        };
+        let entity_id = entity.get_common_entity_data().entity_id;
+
+
+        if parsed_packet.interact_type == 1 {
+          //Attack
+          let damage = if held_item.is_some() {
+            10.0
+          } else {
+            1.0
+          };
+
+          if entity.is_mob() {
+            let mob_data = entity.get_mob_data_mut();
+
+            if mob_data.hurt_time > 0 {
+              continue;
+            }
+
+            mob_data.health -= damage;
+            mob_data.hurt_time = 10;
+            mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
+
+            let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+              entity_id,
+              metadata: vec![
+                lib::packets::clientbound::play::EntityMetadata {
+                  index: 9,
+                  value: lib::packets::clientbound::play::EntityMetadataValue::Float(mob_data.health)
+                },
+              ],
+            };
+
+            let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
+              entity_id,
+              yaw: 0.0,
+            };
+
+            let entity_data = entity.get_common_entity_data_mut();
+            entity_data.velocity.y += 0.05;
+
+            let horizontal_velocity = 0.05;
+            match player.get_looking_cardinal_direction() {
+              CardinalDirection::North => entity_data.velocity.z -= horizontal_velocity,
+              CardinalDirection::East => entity_data.velocity.x += horizontal_velocity,
+              CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
+              CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
+            };
+
+            players.iter().for_each(|x| {
+              game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID, entity_metadata_packet.clone().try_into().unwrap());
+              game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet.clone().try_into().unwrap());
+            });
+          }
+        } else if parsed_packet.interact_type == 0 {
+          //interact
+          if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper" && held_item.is_some() && held_item.unwrap().item_id == data::items::get_items().get("minecraft:flint_and_steel").unwrap().id {
+            //right clicked a creeper with flint and steel -> explode!
+            entity.get_mob_data_mut().health = 0.0;
+
+            let explosion_packet = lib::packets::clientbound::play::Explosion {
+              x: entity.get_common_entity_data().position.x,
+              y: entity.get_common_entity_data().position.y,
+              z: entity.get_common_entity_data().position.z,
+              player_delta_velocity: None,
+              particle_id: 21,
+              particle_data: (),
+              sound: 616,
+            };
+
+            let creeper_position = BlockPosition::from(entity.get_common_entity_data().position);
+            for x in (creeper_position.x-2)..creeper_position.x+2 {
+              for y in (creeper_position.y-2)..creeper_position.y+2 {
+                for z in (creeper_position.z-2)..creeper_position.z+2 {
+                  let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0, &game.block_state_data).unwrap();
+                  if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+                    let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
+                    let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+                    crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+                  }
+
+                  for player in players.iter() {
+                    game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
+                      location: BlockPosition {x,y,z},
+                      block_id: 0,
+                    }.try_into().unwrap());
+                  }
+                }
+              }
+            }
+
+            players.iter().for_each(|x| {
+              game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::Explosion::PACKET_ID, explosion_packet.clone().try_into().unwrap());
+            });
+          }
+
+        } else {
+          //interact at
+        }
+      },
     }
   };
   *game.packet_handler_actions.lock().unwrap() = Vec::new();

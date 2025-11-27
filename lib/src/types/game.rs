@@ -48,6 +48,11 @@ pub enum PacketHandlerAction {
 	UseItemOn(SocketAddr, u8, BlockPosition, u8, f32, f32, f32, bool, bool, i32), //hand, location, face, cursor_position x,y,z, inside_block, world_border_hit, sequence
 	SendChatMessage(SocketAddr, String, i64, i64), //Message, timestamp, salt
 	SendCommand(SocketAddr, String),
+	ClickContainer(SocketAddr, crate::packets::serverbound::play::ClickContainer),
+	CloseContainer(SocketAddr, i32),
+	UpdateSign(BlockPosition, bool, [String;4]),
+	PlayerInput(SocketAddr, crate::packets::serverbound::play::PlayerInput),
+	Interact(SocketAddr, crate::packets::serverbound::play::Interact),
 }
 
 #[derive(Debug, Default)]

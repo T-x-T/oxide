@@ -154,7 +154,7 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 // MARK: 0x11 click container
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ClickContainer {
 	pub window_id: i32,
 	pub state_id: i32,
@@ -267,7 +267,7 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 // MARK: 0x19 interact
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Interact {
 	pub entity_id: i32,
 	pub interact_type: i32,
@@ -577,7 +577,7 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 // MARK: 0x2A player input
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PlayerInput {
   pub forward: bool,
   pub backward: bool,
