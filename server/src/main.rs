@@ -212,21 +212,24 @@ fn tick(game: Arc<Game>) -> TickTimings {
   //prevents handling of two movements packets from one player during tick
   let mut moved_players: Vec<SocketAddr> = Vec::new();
 
-  for packet_handler_action in game.packet_handler_actions.lock().unwrap().iter().rev() {
+  let mut packet_handler_actions: Vec<PacketHandlerAction> = Vec::new();
+  packet_handler_actions.append(&mut game.packet_handler_actions.lock().unwrap());
+
+  for packet_handler_action in packet_handler_actions.into_iter().rev() {
     match packet_handler_action {
       PacketHandlerAction::DisconnectPlayer(peer_addr) => {
         println!("handler told us to disconnect");
-        disconnect_player(peer_addr, game.clone());
+        disconnect_player(&peer_addr, game.clone());
       },
       PacketHandlerAction::MovePlayer(peer_addr, position, rotation) => {
-        if moved_players.contains(peer_addr) {
+        if moved_players.contains(&peer_addr) {
           continue;
         }
 
-        moved_players.push(*peer_addr);
+        moved_players.push(peer_addr);
 
         let mut players = game.players.lock().unwrap();
-        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == *peer_addr) else { continue; };
+        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else { continue; };
 
         let player_entity_id = player.entity_id;
         let old_position = player.get_position();
@@ -287,7 +290,7 @@ fn tick(game: Arc<Game>) -> TickTimings {
         };
 
         for other_player in players_clone.iter() {
-          if other_player.peer_socket_address != *peer_addr {
+          if other_player.peer_socket_address != peer_addr {
             for packet in &packets {
               game.send_packet(&other_player.peer_socket_address, packet.0, packet.1.clone());
             }
@@ -296,12 +299,53 @@ fn tick(game: Arc<Game>) -> TickTimings {
       },
       PacketHandlerAction::ConfirmTeleportation(peer_addr, teleport_id) => {
         let mut players = game.players.lock().unwrap();
-        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == *peer_addr) else { continue; };
+        let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else { continue; };
 
-        if player.current_teleport_id == *teleport_id {
+        if player.current_teleport_id == teleport_id {
        		player.waiting_for_confirm_teleportation = false;
         }
-      }
+      },
+      PacketHandlerAction::SetCreativeModeSlot(peer_addr, slot, item) => {
+        let mut players = game.players.lock().unwrap();
+        let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else { continue; };
+
+        player.set_inventory_slot(slot, item, &players_clone, game.clone());
+      },
+      PacketHandlerAction::SetSelectedSlot(peer_addr, slot) => {
+        let mut players = game.players.lock().unwrap();
+        let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else { continue; };
+
+        player.set_selected_slot(slot, &players_clone, game.clone());
+      },
+      PacketHandlerAction::PickItemFromBlock(peer_addr, location, _include_data) => {
+       	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
+        let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
+        let item_id = data::items::get_items().get(&picked_block_name).unwrap_or(&data::items::Item {max_stack_size: 0, rarity: data::items::ItemRarity::Common, id:0, repair_cost:0}).id;
+
+        let mut players = game.players.lock().unwrap();
+        let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
+        let new_slot_data = Slot {
+     	   	item_count: 1,
+     	    item_id,
+     	    components_to_add: Vec::new(),
+     	    components_to_remove: Vec::new(),
+        };
+
+        player.set_selected_inventory_slot(Some(new_slot_data), &players_clone, game.clone());
+      },
+      PacketHandlerAction::SwingArm(peer_addr, hand) => {
+      	let entity_id = players_clone.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().entity_id;
+
+        for other_player in players_clone.iter() {
+          if other_player.peer_socket_address != peer_addr {
+            game.send_packet(&other_player.peer_socket_address, lib::packets::clientbound::play::EntityAnimation::PACKET_ID, lib::packets::clientbound::play::EntityAnimation {
+         			entity_id,
+          		animation: if hand == 0 { 0 } else { 3 },
+           	}.try_into().unwrap());
+          }
+        }
+      },
     }
   };
   *game.packet_handler_actions.lock().unwrap() = Vec::new();
