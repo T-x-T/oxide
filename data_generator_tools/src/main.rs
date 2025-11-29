@@ -11,10 +11,10 @@ fn main() {
   //do_blocks();
   //do_block_types();
   //do_properties();
-  //do_get_block_state_id_from_raw();
+  do_get_block_state_id_from_raw();
   //do_get_raw_properties_from_block_state_id();
   //do_blockentity_types();
-  do_entities();
+  //do_entities();
 }
 
 fn do_items() {
@@ -185,40 +185,34 @@ fn do_get_block_state_id_from_raw() {
     }
   }
 
-	println!("pub fn get_block_state_id_from_raw(block_states: &HashMap<String, Block>, block_name: &str, properties: Vec<(String, String)>) -> i32 {{");
+	println!("pub fn get_block_state_id_from_raw(block_states: &HashMap<String, Block>, block_name: &str, properties: &[(String, String)]) -> u16 {{");
 	println!("\tlet block = block_states.get(block_name).unwrap();");
 	println!("\treturn match block.block_type {{");
 
 	for block_type in block_types {
 		println!("\t\tType::{} => {{", block_type.replace("\"", ""));
-		println!("\t\t\tlet mut possible_block_states = block.states.clone();");
 		if properties.iter().filter(|x| x.0.0 == block_type).count() == 0 {
-			println!("\t\t\tpossible_block_states.first().unwrap().id");
+			println!("\t\t\tblock.states.first().unwrap().id");
 			println!("\t\t}},");
 		} else {
-			println!("\t\t\tfor prop in properties {{");
-			println!("\t\t\t\tmatch prop.0.as_str() {{");
-
+		  println!("\t\t\tlet block_states: Vec<&State> = block.states.iter()");
 			for prop in properties.keys() {
 				if prop.0 == block_type {
-					println!("\t\t\t\t\t\"{}\" => {{", prop.1);
-					println!("\t\t\t\t\t\tmatch prop.1.as_str() {{");
+		      println!("\t\t\t.filter(|x| match properties.iter().find(|y| y.0.as_str() == \"{}\").unwrap().1.as_str() {{", prop.1);
 					for prop_val in properties.get(prop).unwrap() {
 						let property_name = format!("{block_type}{}", convert_to_upper_camel_case(&prop.1));
 						let property_value = if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(prop_val) {format!("Num{}", convert_to_upper_camel_case(prop_val))} else {convert_to_upper_camel_case(prop_val)};
-						println!("\t\t\t\t\t\t\t\"{prop_val}\" => possible_block_states.retain(|x| x.properties.contains(&Property::{property_name}({property_name}::{property_value}))),");
+						println!("\t\t\t\t\"{prop_val}\" => x.properties.contains(&Property::{property_name}({property_name}::{property_value})),");
 					}
-					println!("\t\t\t\t\t\t\t_ => eprintln!(\"unknown prop value {{}} of prop {{}} of block {{block_name}}\", prop.1, prop.0),");
-					println!("\t\t\t\t\t\t}}");
+					println!("\t\t\t\t_ => false,");
 
-					println!("\t\t\t\t\t}},");
+					println!("\t\t\t\t}})");
 				}
 			}
-			println!("\t\t\t\t\t_ => eprintln!(\"unknown prop {{}} of block {{block_name}}\", prop.0),");
-			println!("\t\t\t\t}}");
-			println!("\t\t\t}}");
-			println!("\t\t\tassert_eq!(possible_block_states.len(), 1);");
-			println!("\t\t\tpossible_block_states.first().unwrap().id");
+			println!("\t\t\t\t.collect();");
+			println!("\t\t\tlet block_state_id = block_states.first().unwrap().id;");
+			println!("\t\t\tassert_eq!(block_states.len(), 1);");
+			println!("\t\t\tblock_state_id");
 			println!("\t\t}},");
 		}
 	}

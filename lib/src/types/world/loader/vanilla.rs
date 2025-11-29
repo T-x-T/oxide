@@ -71,6 +71,8 @@ impl super::WorldLoader for Loader {
     	return Chunk::new(x, z);
     }
 
+    let biome_ids = data::biomes::get_biome_ids();
+
     let mut sections: Vec<super::ChunkSection> = Vec::new();
     for x in chunk_nbt.get_child("sections").unwrap().as_list() {
       //My test world has one chunk like that, idk if thats a normal occurence
@@ -93,7 +95,7 @@ impl super::WorldLoader for Loader {
 
 			let mut biomes: Vec<u8> = Vec::new();
 			if biome_palette.len() == 1 {
-				biomes = vec![*data::biomes::get_biome_ids().get(biome_palette[0].as_string()).unwrap(); 64];
+				biomes = vec![*biome_ids.get(biome_palette[0].as_string()).unwrap(); 64];
 			} else {
 				let biomes_bits_per_entry = match biome_palette.len() {
 				  0..=2 => 1,
@@ -112,13 +114,19 @@ impl super::WorldLoader for Loader {
 				 			break;
 				   	}
 				    let entry = (value as u64) << (64 - (biomes_bits_per_entry * (i+1))) >> (64 - biomes_bits_per_entry);
-				    let biome_id = *data::biomes::get_biome_ids().get(biome_palette[entry as usize].as_string()).unwrap();
+				    let biome_id = *biome_ids.get(biome_palette[entry as usize].as_string()).unwrap();
 				    biomes.push(biome_id);
 				  }
 				}
 			}
 
 	    let block_palette = x.get_child("block_states").unwrap().get_child("palette").unwrap().as_list();
+			let block_palette_properties: Vec<Vec<(String, String)>> = block_palette.iter().map(|x| {
+			  x.get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(String::new(), vec![])).get_compound_children().iter().map(|x| (x.get_description().to_string(), x.as_string().to_string())).collect()
+			}).collect();
+			let block_palette_block_name: Vec<&str> = block_palette.iter().map(|x| {
+			  x.get_child("Name").unwrap().as_string()
+			}).collect();
 
 			let mut blocks: Vec<u16> = Vec::new();
     	if block_palette.len() == 1 {
@@ -145,11 +153,12 @@ impl super::WorldLoader for Loader {
 				let entries_per_long = 64 / blocks_bits_per_entry;
 				for value in long_array {
 				 	for i in 0..entries_per_long {
-				 	if blocks.len() == 4096 {
+				 	  if blocks.len() == 4096 {
 				 			break;
 				   	}
 				    let entry = (value as u64) << (64 - (blocks_bits_per_entry * (i+1))) >> (64 - blocks_bits_per_entry);
-				    let block_state_id = data::blocks::get_block_state_id_from_raw(block_states, block_palette[entry as usize].get_child("Name").unwrap().as_string(), block_palette[entry as usize].get_child("Properties").unwrap_or(&crate::NbtTag::TagCompound(String::new(), vec![])).get_compound_children().iter().map(|x| (x.get_description().to_string(), x.as_string().to_string())).collect());
+
+				    let block_state_id = data::blocks::get_block_state_id_from_raw(block_states, block_palette_block_name[entry as usize], &block_palette_properties[entry as usize]);
 				    blocks.push(block_state_id);
 				  }
 				}
