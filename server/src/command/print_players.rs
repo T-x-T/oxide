@@ -24,7 +24,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) ->
 	}
 
 	println!("game.players:\n{:?}", game.players);
-	println!("connections:\n{:?}", game.connections.lock().unwrap());
+	println!("connections:\n{:?}", game.connections);
 	println!("entities:\n{:?}", game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities);
 
 	return Ok(());

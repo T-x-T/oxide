@@ -6,9 +6,9 @@ use lib::ConnectionState;
 use lib::types::*;
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-  game.connections.lock().unwrap().entry(stream.peer_addr()?).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
+  game.connections.entry(stream.peer_addr()?).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
 
-  let state = game.connections.lock().unwrap().get(&stream.peer_addr()?).unwrap().state.clone();
+  let state = game.connections.get(&stream.peer_addr()?).unwrap().state.clone();
 
   //println!("{}", packet.id);
 
@@ -62,7 +62,7 @@ pub mod handshaking {
   pub fn handshake(data: &mut [u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(data.to_vec())?;
 
-    game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| x.state = parsed_packet.next_state.into());
+    game.connections.entry(stream.peer_addr()?).and_modify(|x| x.state = parsed_packet.next_state.into());
 
     return Ok(None);
   }
@@ -115,7 +115,7 @@ pub mod login {
   pub fn login_start(data: &[u8], stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
     let parsed_packet = lib::packets::serverbound::login::LoginStart::try_from(data.to_vec())?;
 
-    game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| {
+    game.connections.entry(stream.peer_addr()?).and_modify(|x| {
       x.player_name = Some(parsed_packet.name.clone());
       x.player_uuid = Some(parsed_packet.uuid);
     });
@@ -129,7 +129,7 @@ pub mod login {
   }
 
   pub fn login_acknowledged(stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-    game.connections.lock().unwrap().entry(stream.peer_addr()?).and_modify(|x| x.state = ConnectionState::Configuration);
+    game.connections.entry(stream.peer_addr()?).and_modify(|x| x.state = ConnectionState::Configuration);
 
     game.send_packet(&stream.peer_addr()?, lib::packets::clientbound::configuration::ClientboundKnownPacks::PACKET_ID, lib::packets::clientbound::configuration::ClientboundKnownPacks {
       known_packs: vec![lib::Datapack { namespace: "minecraft".to_string(), id: "core".to_string(), version: lib::packets::get_version_string() }],

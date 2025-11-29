@@ -1,6 +1,5 @@
 #![allow(clippy::needless_return)]
 
-use std::collections::HashMap;
 use std::error::Error;
 use std::io::Write;
 use std::net::{SocketAddr, TcpListener, TcpStream};
@@ -39,7 +38,7 @@ fn initialize_server() {
     last_save_all_timestamp: Mutex::new(std::time::Instant::now()),
     last_player_keepalive_timestamp: Mutex::new(std::time::Instant::now()),
     block_state_data: block_states,
-    connections: Mutex::new(HashMap::new()),
+    connections: DashMap::new(),
     packet_handler_actions: Mutex::new(Vec::new()),
     packet_send_queues: DashMap::new(),
   };
@@ -136,7 +135,6 @@ fn send_packet(mut stream: &TcpStream, packet_id: u8, mut data: Vec<u8>) -> Resu
 }
 
 fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
-  let mut connections = game.connections.lock().unwrap();
   let mut players = game.players.lock().unwrap();
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
@@ -152,9 +150,7 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
     });
 	}
 
-  connections.remove(peer_addr);
-
-  drop(connections);
+  game.connections.remove(peer_addr);
 
   game.packet_send_queues.remove(peer_addr);
   players.retain(|x| x.peer_socket_address != *peer_addr);

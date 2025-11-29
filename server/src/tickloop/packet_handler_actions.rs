@@ -640,16 +640,11 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         }
       },
       PacketHandlerAction::NewPlayer(peer_addr, stream) => {
-        let game_clone = game.clone();
-        let mut connections = game_clone.connections.lock().unwrap();
-        connections.entry(peer_addr).and_modify(|x| x.state = lib::ConnectionState::Play);
+        game.connections.entry(peer_addr).and_modify(|x| x.state = lib::ConnectionState::Play);
 
-        let connection_player = connections.get(&peer_addr).unwrap();
+        let connection_player = game.connections.get(&peer_addr).unwrap();
 
         let mut new_player = Player::new(connection_player.player_name.clone().unwrap_or_default(), connection_player.player_uuid.unwrap_or_default(), peer_addr, game.clone(), stream);
-
-        drop(connections);
-        drop(game_clone);
         let mut players = game.players.lock().unwrap();
 
         game.send_packet(&peer_addr, lib::packets::clientbound::play::Login::PACKET_ID, lib::packets::clientbound::play::Login {
