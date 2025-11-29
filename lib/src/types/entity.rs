@@ -167,7 +167,7 @@ pub trait Entity: std::fmt::Debug {
     };
   }
 
-  fn tick(&mut self, dimension: &Dimension, players: &Vec<Player>, block_state_data: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> EntityTickOutcome {
+  fn tick(&mut self, dimension: &Dimension, players: &[Player], block_state_data: &HashMap<String, data::blocks::Block>, game: Arc<Game>) -> EntityTickOutcome {
     if self.is_mob() {
       let mob_data = self.get_mob_data_mut();
 
