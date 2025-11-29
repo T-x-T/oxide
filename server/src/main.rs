@@ -96,6 +96,8 @@ fn initialize_server() {
         if let Ok(packet_handler_result) = packet_handler_result && let Some(packet_handler_result) = packet_handler_result {
           game.packet_handler_actions.lock().unwrap().push(packet_handler_result);
         }
+
+        std::thread::sleep(std::time::Duration::from_millis(1));
       }
     });
 
@@ -116,6 +118,8 @@ fn initialize_server() {
         } else {
           drop(queue);
         };
+
+        std::thread::sleep(std::time::Duration::from_millis(1));
       }
     });
   }
