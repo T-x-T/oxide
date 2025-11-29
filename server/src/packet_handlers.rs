@@ -6,8 +6,6 @@ use lib::ConnectionState;
 use lib::types::*;
 
 pub fn handle_packet(mut packet: lib::Packet, stream: &mut TcpStream, game: Arc<Game>) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-  game.connections.entry(stream.peer_addr()?).or_insert(Connection { state: ConnectionState::Handshaking, player_name: None, player_uuid: None });
-
   let state = game.connections.get(&stream.peer_addr()?).unwrap().state.clone();
 
   //println!("{}", packet.id);

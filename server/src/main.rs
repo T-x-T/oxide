@@ -55,6 +55,8 @@ fn initialize_server() {
   for stream in listener.incoming() {
     let stream = stream.unwrap();
 
+    game.connections.entry(stream.peer_addr().unwrap()).or_insert(Connection { state: lib::ConnectionState::Handshaking, player_name: None, player_uuid: None });
+
     //RX
     println!("New Connection from {}", stream.peer_addr().unwrap());
     let game_clone = game.clone();
@@ -110,6 +112,10 @@ fn initialize_server() {
       let Ok(peer_addr) = stream.peer_addr() else { return; };
 
       loop {
+        if !game.connections.contains_key(&peer_addr) {
+          break;
+        }
+
         let Some(mut queue) = game.packet_send_queues.get_mut(&peer_addr) else { continue; };
         if !queue.is_empty() {
           let packet = queue.remove(0);
