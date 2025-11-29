@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::SocketAddr, sync::{atomic::AtomicI32, Mutex}};
+use std::{collections::HashMap, net::{SocketAddr, TcpStream}, sync::{Mutex, atomic::AtomicI32}};
 
 use dashmap::DashMap;
 
@@ -35,7 +35,7 @@ impl Game {
 }
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum PacketHandlerAction {
 	DisconnectPlayer(SocketAddr),
 	MovePlayer(SocketAddr, Option<(f64, f64, f64)>, Option<(f32, f32)>), //(x,y,z), (yaw,pitch)
@@ -53,6 +53,7 @@ pub enum PacketHandlerAction {
 	UpdateSign(BlockPosition, bool, [String;4]),
 	PlayerInput(SocketAddr, crate::packets::serverbound::play::PlayerInput),
 	Interact(SocketAddr, crate::packets::serverbound::play::Interact),
+	NewPlayer(SocketAddr, TcpStream),
 }
 
 #[derive(Debug, Default)]
