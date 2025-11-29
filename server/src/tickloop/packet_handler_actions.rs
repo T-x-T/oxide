@@ -350,8 +350,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
         println!("<{}>: {}", player.display_name, message);
 
-        let packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
-          global_index: player.chat_message_index,
+        let mut packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
+          global_index: -1,
           sender: player.uuid,
           index: 0,
           message_signature_bytes: Vec::new(),
@@ -375,6 +375,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         };
 
         for player in players.iter_mut() {
+          packet_to_send.global_index = player.chat_message_index;
           player.chat_message_index += 1;
           game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::PlayerChatMessage::PACKET_ID, packet_to_send.clone().try_into().unwrap());
         }
