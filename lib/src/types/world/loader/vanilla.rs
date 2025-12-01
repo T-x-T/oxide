@@ -127,6 +127,9 @@ impl super::WorldLoader for Loader {
 			let block_palette_block_name: Vec<&str> = block_palette.iter().map(|x| {
 			  x.get_child("Name").unwrap().as_string()
 			}).collect();
+			let block_palette_state_id: Vec<u16> = block_palette.iter().enumerate().map(|(i, _)| {
+			  data::blocks::get_block_state_id_from_raw(block_states, block_palette_block_name[i], &block_palette_properties[i])
+			}).collect();
 
 			let mut blocks: Vec<u16> = Vec::new();
     	if block_palette.len() == 1 {
@@ -158,7 +161,7 @@ impl super::WorldLoader for Loader {
 				   	}
 				    let entry = (value as u64) << (64 - (blocks_bits_per_entry * (i+1))) >> (64 - blocks_bits_per_entry);
 
-				    let block_state_id = data::blocks::get_block_state_id_from_raw(block_states, block_palette_block_name[entry as usize], &block_palette_properties[entry as usize]);
+				    let block_state_id = block_palette_state_id[entry as usize];
 				    blocks.push(block_state_id);
 				  }
 				}
