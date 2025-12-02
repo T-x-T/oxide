@@ -65,9 +65,9 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:black_stained_glass_pane", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::False)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::False)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::True)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::False)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::False)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::True)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
 
@@ -87,13 +87,13 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:black_stained_glass_pane", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::False)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::False)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::True)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::False)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::False)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::False)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::False)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::True)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True)) && x.properties.contains(&Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True)) && x.properties.contains(&Property::StainedGlassPaneEast(StainedGlassPaneEast::True)) && x.properties.contains(&Property::StainedGlassPaneWest(StainedGlassPaneWest::True)) && x.properties.contains(&Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False))).unwrap().id;
 

@@ -11,10 +11,11 @@ fn main() {
   //do_blocks();
   //do_block_types();
   //do_properties();
-  do_get_block_state_id_from_raw();
+  //do_get_block_state_id_from_raw();
   //do_get_raw_properties_from_block_state_id();
   //do_blockentity_types();
   //do_entities();
+  get_type_from_block_state_id();
 }
 
 fn do_items() {
@@ -265,6 +266,25 @@ fn do_get_raw_properties_from_block_state_id() {
   println!("\treturn output;");
   println!("}}");
 }
+
+fn get_type_from_block_state_id() {
+  let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+  let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+  println!("pub fn get_type_from_block_state_id(block_state_id: u16) -> Type {{");
+  println!("\treturn match block_state_id {{");
+
+  for x in blocks_json.as_object().unwrap().iter() {
+    let block = x.1.as_object().unwrap();
+    for state in block["states"].as_array().unwrap() {
+      println!("\t\t{} => Type::{},", state["id"], convert_to_upper_camel_case(block["definition"]["type"].as_str().unwrap()));
+    }
+  }
+  println!("\t\t_ => panic!(\"block_state_id {{}} doesnt exist\", block_state_id)");
+
+  println!("\t}};");
+  println!("}}");
+}
+
 
 fn convert_to_upper_camel_case(input: &str) -> String {
   let mut found_underscore = false;

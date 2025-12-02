@@ -120,7 +120,7 @@ impl Dimension {
     return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
   }
 
-  pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
+  pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
     let chunk = self.get_chunk_from_position_mut(position);
     if chunk.is_none() {
       return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -129,7 +129,7 @@ impl Dimension {
       return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
     }
 
-    return Ok(chunk.unwrap().set_block(position, block_state_id, block_states));
+    return Ok(chunk.unwrap().set_block(position, block_state_id));
   }
 
   pub fn get_block(&self, position: BlockPosition) -> Result<u16, Box<dyn Error>> {
@@ -205,7 +205,7 @@ impl Chunk {
     };
   }
 
-  fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> Option<BlockOverwriteOutcome> {
+  fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
     self.modified = true;
     let position_in_chunk = position_global.convert_to_position_in_chunk();
     let section_id = (position_in_chunk.y + 64) / 16;
@@ -221,7 +221,7 @@ impl Chunk {
       None
     };
 
-    if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id, block_states) {
+    if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id) {
       self.block_entities.push(blockentity);
     }
 

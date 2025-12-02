@@ -157,7 +157,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
           };
 
           if let Some(location) = location {
-            world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0, &game.block_state_data).unwrap();
+            world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
 
             players.iter()
               .inspect(|x| {
@@ -178,7 +178,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         }
 
 
-        let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0, &game.block_state_data).unwrap();
+        let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
         if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
           let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.position == location).unwrap();
           let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
@@ -217,7 +217,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         for block_to_update in blocks_to_update {
           let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
           if let Some(new_block) = res {
-            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block) {
               Ok(_) => {
                 for player in players.iter() {
                   game.send_packet(&player.peer_socket_address, lib::packets::clientbound::play::BlockUpdate::PACKET_ID, lib::packets::clientbound::play::BlockUpdate {
@@ -253,7 +253,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
         let dimension = world.dimensions.get("minecraft:overworld").unwrap();
         let block_id_at_location = dimension.get_block(location).unwrap_or_default();
-        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, &game.block_state_data);
+        let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
         let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
           //Don't place block, because player right clicked something that does something when right clicked
@@ -275,7 +275,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
         let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
         for block_to_place in &blocks_to_place {
-          match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0, &game.block_state_data) {
+          match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
             Ok(res) => {
               let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
               //Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
@@ -316,7 +316,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         for block_to_update in blocks_to_update {
           let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
           if let Some(new_block) = res {
-            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block, &game.block_state_data) {
+            match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block) {
               Ok(_) => {
                 updated_blocks.push((new_block, block_to_update));
               },
@@ -614,7 +614,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
             for x in (creeper_position.x-2)..creeper_position.x+2 {
               for y in (creeper_position.y-2)..creeper_position.y+2 {
                 for z in (creeper_position.z-2)..creeper_position.z+2 {
-                  let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0, &game.block_state_data).unwrap();
+                  let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0).unwrap();
                   if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
                     let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
                     let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again

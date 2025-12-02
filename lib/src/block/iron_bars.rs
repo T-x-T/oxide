@@ -66,9 +66,9 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:iron_bars", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::False)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::True)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::False)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::False)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::False)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::False)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::True)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::False)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::True)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::False)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::False)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::True)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
 
@@ -88,13 +88,13 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:iron_bars", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::False)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::True)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::False)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::False)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::False)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::False)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::True)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::False)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::True)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::False)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::False)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::False)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::False)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::False)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::False)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::True)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::IronBarsNorth(IronBarsNorth::True)) && x.properties.contains(&Property::IronBarsSouth(IronBarsSouth::True)) && x.properties.contains(&Property::IronBarsEast(IronBarsEast::True)) && x.properties.contains(&Property::IronBarsWest(IronBarsWest::True)) && x.properties.contains(&Property::IronBarsWaterlogged(IronBarsWaterlogged::False))).unwrap().id;
 

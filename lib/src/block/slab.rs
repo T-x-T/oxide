@@ -118,7 +118,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 
@@ -138,7 +138,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Top)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 
@@ -158,7 +158,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 
@@ -178,7 +178,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Top)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 
@@ -198,7 +198,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Top)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 
@@ -218,7 +218,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Double)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 79, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 79, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::SlabType(SlabType::Bottom)) && x.properties.contains(&Property::SlabWaterlogged(SlabWaterlogged::False))).unwrap().id;
 

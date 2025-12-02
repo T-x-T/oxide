@@ -312,7 +312,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -331,7 +331,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -350,7 +350,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -369,7 +369,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -388,7 +388,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -407,7 +407,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -426,7 +426,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -445,7 +445,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -464,10 +464,10 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -486,10 +486,10 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -508,10 +508,10 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -530,10 +530,10 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -552,7 +552,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -571,7 +571,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -590,7 +590,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -609,7 +609,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -628,7 +628,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -647,7 +647,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -666,7 +666,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -685,7 +685,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -704,7 +704,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -723,7 +723,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -742,7 +742,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -761,7 +761,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -780,7 +780,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -799,7 +799,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -818,7 +818,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -837,7 +837,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -856,7 +856,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -876,7 +876,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Top)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(0, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -896,7 +896,7 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Top)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -916,11 +916,11 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -939,11 +939,11 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -962,11 +962,11 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -985,11 +985,11 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1008,9 +1008,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1029,9 +1029,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1050,9 +1050,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1071,9 +1071,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1092,9 +1092,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerRight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1113,9 +1113,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerRight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1134,9 +1134,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerRight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1155,9 +1155,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerRight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1176,9 +1176,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1197,9 +1197,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::South)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::East, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1218,9 +1218,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::West)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::South, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1239,9 +1239,9 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::West, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 
@@ -1260,15 +1260,15 @@ mod test {
       let mut dimension = Dimension::new();
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::OuterLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::North)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerRight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::InnerLeft)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::StairFacing(StairFacing::East)) && x.properties.contains(&Property::StairHalf(StairHalf::Bottom)) && x.properties.contains(&Property::StairShape(StairShape::Straight)) && x.properties.contains(&Property::StairWaterlogged(StairWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
       let res = get_block_state_id(1, CardinalDirection::North, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_stairs", &block_states);
 

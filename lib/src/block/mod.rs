@@ -48,7 +48,7 @@ pub fn get_block_state_id(face: u8, cardinal_direction: CardinalDirection, pitch
 
 pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Result<Option<u16>, Box<dyn Error>> {
   let block_state_id = dimension.get_block(position)?;
-  let block_type = data::blocks::get_type_from_block_state_id(block_state_id, block_states);
+  let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 
   let res = match block_type {
     Type::Stair => stair::update(position, dimension, block_states),
@@ -105,7 +105,7 @@ impl BlockInteractionResult {
 }
 
 pub fn interact_with_block_at(location: BlockPosition, block_id_at_location: u16, face: u8, block_states: &HashMap<String, data::blocks::Block>) -> BlockInteractionResult {
-  let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location, block_states);
+  let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
   return match block_type_at_location {
     Type::Door => door::interact(location, block_id_at_location, face, block_states),

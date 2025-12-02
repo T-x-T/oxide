@@ -76,9 +76,9 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:oak_fence", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::True)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::True)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::True)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::True)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
 
@@ -98,13 +98,13 @@ mod test {
       let block = data::blocks::get_block_from_name("minecraft:oak_fence", &block_states);
 
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::True)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::True)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::True)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
       let block_state_id_to_place = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::True)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::True)) && x.properties.contains(&Property::FenceSouth(FenceSouth::True)) && x.properties.contains(&Property::FenceEast(FenceEast::True)) && x.properties.contains(&Property::FenceWest(FenceWest::True)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
 
@@ -125,7 +125,7 @@ mod test {
 
       let fence_gate_block = data::blocks::get_block_from_name("minecraft:oak_fence_gate", &block_states);
       let block_state_id_to_place = fence_gate_block.states.iter().find(|x| x.properties.contains(&Property::FenceGateFacing(FenceGateFacing::East)) && x.properties.contains(&Property::FenceGateInWall(FenceGateInWall::False)) && x.properties.contains(&Property::FenceGateOpen(FenceGateOpen::False)) && x.properties.contains(&Property::FenceGatePowered(FenceGatePowered::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::True)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
 
@@ -146,7 +146,7 @@ mod test {
 
       let fence_gate_block = data::blocks::get_block_from_name("minecraft:oak_fence_gate", &block_states);
       let block_state_id_to_place = fence_gate_block.states.iter().find(|x| x.properties.contains(&Property::FenceGateFacing(FenceGateFacing::North)) && x.properties.contains(&Property::FenceGateInWall(FenceGateInWall::False)) && x.properties.contains(&Property::FenceGateOpen(FenceGateOpen::False)) && x.properties.contains(&Property::FenceGatePowered(FenceGatePowered::False))).unwrap().id;
-      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place, &block_states).unwrap();
+      dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
       let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FenceNorth(FenceNorth::False)) && x.properties.contains(&Property::FenceSouth(FenceSouth::False)) && x.properties.contains(&Property::FenceEast(FenceEast::False)) && x.properties.contains(&Property::FenceWest(FenceWest::False)) && x.properties.contains(&Property::FenceWaterlogged(FenceWaterlogged::False))).unwrap().id;
 

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, error::Error, sync::Arc};
+use std::{error::Error, sync::Arc};
 
 use data::blocks::Type;
 
@@ -519,8 +519,8 @@ impl From<BlockEntityData> for Vec<NbtTag> {
   }
 }
 
-pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_state_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> Option<BlockEntity> {
-  return match data::blocks::get_type_from_block_state_id(block_state_id, block_states) {
+pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_state_id: u16) -> Option<BlockEntity> {
+  return match data::blocks::get_type_from_block_state_id(block_state_id) {
     Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
     Type::Barrel => Some(BlockEntity { id: BlockEntityId::Barrel, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
