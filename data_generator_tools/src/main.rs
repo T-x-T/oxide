@@ -4,83 +4,24 @@
   unused
 )]
 
-use std::{collections::HashMap};
+use std::collections::HashMap;
+use std::io::prelude::*;
+
+mod blockentity;
+mod entities;
+mod items;
 
 fn main() {
-  //do_items();
+  blockentity::generate();
+  entities::generate();
+  items::generate();
   //do_blocks();
   //do_block_types();
   //do_properties();
   //do_get_block_state_id_from_raw();
   //do_get_raw_properties_from_block_state_id();
   //do_blockentity_types();
-  //do_entities();
-  get_type_from_block_state_id();
-}
-
-fn do_items() {
-  let items_file = std::fs::read_to_string("../official_server/generated/reports/items.json").expect("failed to read items.json report");
-  let items_json = jzon::parse(&items_file).expect("failed to parse items.json report");
-  let registries_file = std::fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
-  let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
-  let items_registry = registries_json.as_object().unwrap()["minecraft:item"]["entries"].as_object().unwrap();
-
-  for x in items_json.as_object().unwrap().iter() {
-    let components = x.1.as_object().unwrap()["components"].clone();
-
-    let key = x.0;
-    let max_stack_size = components["minecraft:max_stack_size"].as_i32().unwrap();
-    let rarity: String = components["minecraft:rarity"].as_str().unwrap().chars().enumerate().map(|i| if i.0 == 0 {i.1.to_ascii_uppercase()} else {i.1}).collect();
-    let repair_cost = components["minecraft:repair_cost"].as_i32().unwrap();
-    let id = items_registry[key]["protocol_id"].as_i32().unwrap();
-
-    //("minecraft:stone", Item { max_stack_size: 64, rarity: ItemRarity::Common, repair_cost: 0, id: 1 }),
-    println!("(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id} }}),");
-  }
-}
-
-fn do_blockentity_types() {
-  let registries_file = std::fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
-  let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
-  let registry = registries_json.as_object().unwrap()["minecraft:block_entity_type"]["entries"].as_object().unwrap();
-
-  println!("pub fn get_block_entity_types() -> HashMap<String, u8> {{");
-  println!("\tlet mut output: HashMap<String, u8> = HashMap::new();\n");
-
-  for entry in registry.iter() {
-    println!("\toutput.insert(\"{}\".to_string(), {});", entry.0, entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap());
-  }
-
-  println!("\n\treturn output;");
-  println!("}}");
-}
-
-fn do_entities() {
-  let registries_file = std::fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
-  let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
-  let registry = registries_json.as_object().unwrap()["minecraft:entity_type"]["entries"].as_object().unwrap();
-
-  println!("pub fn get_id_from_name(name: &str) -> i32 {{");
-  println!("\treturn match name {{");
-
-  for entry in registry.iter() {
-    println!("\t\t\"{}\" => {},", entry.0, entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap());
-  }
-
-  println!("\t\t_ => panic!(\"get_id_from_name encountered entity with name {{name}} that doesnt exist\"),");
-  println!("\t}};");
-  println!("}}");
-  println!("\n");
-  println!("pub fn get_name_from_id(id: i32) -> String {{");
-  println!("\treturn match id {{");
-
-  for entry in registry.iter() {
-    println!("\t\t{} => \"{}\".to_string(),", entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap(), entry.0);
-  }
-
-  println!("\t\t_ => panic!(\"get_name_from_id encountered entity with id {{id}} that doesnt exist\"),");
-  println!("\t}};");
-  println!("}}");
+  //get_type_from_block_state_id();
 }
 
 fn do_blocks() {

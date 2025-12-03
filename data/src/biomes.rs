@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-pub fn get_biome_ids() -> HashMap<String, u8> {
+pub fn get_biome_ids() -> std::collections::HashMap<String, u8> {
 	return vec![
 	  ("minecraft:badlands", 0),
 	  ("minecraft:bamboo_jungle", 1),

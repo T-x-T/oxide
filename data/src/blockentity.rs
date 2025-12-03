@@ -1,7 +1,5 @@
-use std::collections::HashMap;
-
-pub fn get_block_entity_types() -> HashMap<String, u8> {
-	let mut output: HashMap<String, u8> = HashMap::new();
+pub fn get_block_entity_types() -> std::collections::HashMap<String, u8> {{
+	let mut output: std::collections::HashMap<String, u8> = std::collections::HashMap::new();
 
 	output.insert("minecraft:banner".to_string(), 20);
 	output.insert("minecraft:barrel".to_string(), 27);
@@ -52,4 +50,4 @@ pub fn get_block_entity_types() -> HashMap<String, u8> {
 	output.insert("minecraft:vault".to_string(), 44);
 
 	return output;
-}
+}}
