@@ -9,10 +9,51 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
+name = "biomes"
+version = "0.4.0"
+
+[[package]]
 name = "bitflags"
 version = "2.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
+
+[[package]]
+name = "block_get_blocks"
+version = "0.4.0"
+dependencies = [
+ "block_property_enums",
+ "block_types",
+]
+
+[[package]]
+name = "block_get_type_from_block_state_id"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "block_property_enums"
+version = "0.4.0"
+
+[[package]]
+name = "block_types"
+version = "0.4.0"
+
+[[package]]
+name = "blockentity"
+version = "0.4.0"
+
+[[package]]
+name = "blocks"
+version = "0.4.0"
+dependencies = [
+ "block_get_blocks",
+ "block_get_type_from_block_state_id",
+ "block_property_enums",
+ "block_types",
+]
 
 [[package]]
 name = "cfg-if"
@@ -52,6 +93,14 @@ dependencies = [
 [[package]]
 name = "data"
 version = "0.4.0"
+dependencies = [
+ "biomes",
+ "blockentity",
+ "blocks",
+ "entities",
+ "inventory",
+ "items",
+]
 
 [[package]]
 name = "data_generator_tools"
@@ -59,6 +108,10 @@ version = "0.4.0"
 dependencies = [
  "jzon",
 ]
+
+[[package]]
+name = "entities"
+version = "0.4.0"
 
 [[package]]
 name = "flate2"
@@ -87,6 +140,14 @@ name = "hashbrown"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
+
+[[package]]
+name = "inventory"
+version = "0.4.0"
+
+[[package]]
+name = "items"
+version = "0.4.0"
 
 [[package]]
 name = "jzon"

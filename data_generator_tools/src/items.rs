@@ -9,7 +9,7 @@ pub fn generate() {
   let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
   let items_registry = registries_json.as_object().unwrap()["minecraft:item"]["entries"].as_object().unwrap();
 
-
+  output += "#![allow(clippy::needless_return)]\n";
   output += "use std::collections::HashMap;\n\n";
   output += "#[derive(Debug, Clone)]\n";
   output += "pub enum ItemRarity {\n";
@@ -48,7 +48,7 @@ pub fn generate() {
   output += "}\n";
 
 
-  let path = std::path::PathBuf::from("../data/src/items.rs");
+  let path = std::path::PathBuf::from("../data/items/src/lib.rs");
 
   let mut file = std::fs::OpenOptions::new()
    	.read(true)

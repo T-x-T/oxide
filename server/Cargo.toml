@@ -6,6 +6,6 @@ default-run = "server"
 
 [dependencies]
 lib = {path = "../lib", version = "*"}
-data = {path = "../data", version = "*"}
+data = {path = "../data/main", version = "*"}
 flate2 = "1.1.2"
 dashmap = "6"

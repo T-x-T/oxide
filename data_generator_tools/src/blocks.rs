@@ -1,23 +1,27 @@
 use super::*;
 
 pub fn generate() {
+
+  block_types();
+  get_blocks();
+  property_enums();
+  get_type_from_block_state_id();
+
   let mut output = String::new();
 
-  output += "#![allow(unused_mut)]\nuse std::collections::HashMap;\n";
-  output += block_types().as_str();
-  output += impl_type().as_str();
-  output += structs().as_str();
-  output += get_type_from_block_state_id().as_str();
+  output += "#![allow(unused_mut)]\n#![allow(clippy::needless_return)]\nuse std::collections::HashMap;\n";
+  output += "pub use block_types::*;\n";
+  output += "pub use block_get_blocks::*;\n";
+  output += "pub use block_property_enums::*;\n";
+  output += "pub use block_get_type_from_block_state_id::*;\n";
   output += get_block_from_block_state_id().as_str();
   output += get_block_state_from_block_state_id().as_str();
   output += get_block_name_from_block_state_id().as_str();
   output += get_block_from_name().as_str();
   output += get_raw_properties_from_block_state_id().as_str();
   output += get_block_state_id_from_raw().as_str();
-  output += property_enums().as_str();
-  output += get_blocks().as_str();
 
-  let path = std::path::PathBuf::from("../data/src/blocks.rs");
+  let path = std::path::PathBuf::from("../data/blocks/main/src/lib.rs");
 
   let mut file = std::fs::OpenOptions::new()
    	.read(true)
@@ -28,16 +32,21 @@ pub fn generate() {
     .unwrap();
 
   file.write_all(output.as_bytes()).unwrap();
-  file.flush().unwrap();;;
+  file.flush().unwrap();
 }
 
-fn get_blocks() -> String {
+fn get_blocks() {
   let mut output1 = String::new();
   let mut output2 = String::new();
 
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
   let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
+  output1 += "#![allow(clippy::needless_return)]\n";
+  output1 += "use std::collections::HashMap;\n";
+  output1 += "use block_types::*;\n";
+  output1 += "use block_property_enums::*;\n";
+  output1 += structs().as_str();
   output1 += "pub fn get_blocks() -> HashMap<String, Block> {\n";
   output1 += "\tlet mut output: HashMap<String, Block> = HashMap::new();\n";
 
@@ -64,13 +73,28 @@ fn get_blocks() -> String {
   output1 += "\treturn output;\n";
   output1 += "}\n";
 
-  return output1 + output2.as_str();
+  let output = output1 + output2.as_str();
+
+  let path = std::path::PathBuf::from("../data/blocks/get_blocks/src/lib.rs");
+
+  let mut file = std::fs::OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(path)
+    .unwrap();
+
+  file.write_all(output.as_bytes()).unwrap();
+  file.flush().unwrap();
 }
 
-fn block_types() -> String {
+fn block_types() {
   let mut output = String::new();
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 
+  output += "#![allow(clippy::needless_return)]\n";
+  output += impl_type().as_str();
   output += "#[derive(Debug, Clone, Copy, PartialEq, Eq)]\n";
   output += "pub enum Type {\n";
 
@@ -86,10 +110,23 @@ fn block_types() -> String {
 
   output += "}\n";
 
-  return output.replace("\"", "");
+  output = output.replace("\"", "");
+
+  let path = std::path::PathBuf::from("../data/blocks/types/src/lib.rs");
+
+  let mut file = std::fs::OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(path)
+    .unwrap();
+
+  file.write_all(output.as_bytes()).unwrap();
+  file.flush().unwrap();
 }
 
-fn property_enums() -> String {
+fn property_enums() {
   let mut output = String::new();
 
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
@@ -122,7 +159,18 @@ fn property_enums() -> String {
   properties.into_iter().for_each(|x| output += format!("\t{}({}),\n", x.0, x.0).as_str());
   output += "}\n";
 
-  return output;
+  let path = std::path::PathBuf::from("../data/blocks/property_enums/src/lib.rs");
+
+  let mut file = std::fs::OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(path)
+    .unwrap();
+
+  file.write_all(output.as_bytes()).unwrap();
+  file.flush().unwrap();
 }
 
 fn get_block_state_id_from_raw() -> String {
@@ -239,12 +287,14 @@ fn get_raw_properties_from_block_state_id() -> String {
   return output;
 }
 
-fn get_type_from_block_state_id() -> String {
+fn get_type_from_block_state_id() {
   let mut output = String::new();
 
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
   let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
+  output += "#![allow(clippy::needless_return)]\n";
+  output += "use block_types::*;\n";
   output += "pub fn get_type_from_block_state_id(block_state_id: u16) -> Type {\n";
   output += "\treturn match block_state_id {\n";
 
@@ -259,7 +309,18 @@ fn get_type_from_block_state_id() -> String {
   output += "\t};\n";
   output += "}\n";
 
-  return output;
+  let path = std::path::PathBuf::from("../data/blocks/get_type_from_block_state_id/src/lib.rs");
+
+  let mut file = std::fs::OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(path)
+    .unwrap();
+
+  file.write_all(output.as_bytes()).unwrap();
+  file.flush().unwrap();
 }
 
 fn get_block_from_block_state_id() -> String {

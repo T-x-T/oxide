@@ -7,6 +7,7 @@ pub fn generate() {
   let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
   let registry = registries_json.as_object().unwrap()["minecraft:block_entity_type"]["entries"].as_object().unwrap();
 
+  output += "#![allow(clippy::needless_return)]\n";
   output += "pub fn get_block_entity_types() -> std::collections::HashMap<String, u8> {{\n";
   output += "\tlet mut output: std::collections::HashMap<String, u8> = std::collections::HashMap::new();\n\n";
 
@@ -17,7 +18,7 @@ pub fn generate() {
   output += "\n\treturn output;\n";
   output += "}}";
 
-  let path = std::path::PathBuf::from("../data/src/blockentity.rs");
+  let path = std::path::PathBuf::from("../data/blockentity/src/lib.rs");
 
   let mut file = std::fs::OpenOptions::new()
    	.read(true)

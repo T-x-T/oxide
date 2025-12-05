@@ -7,6 +7,7 @@ pub fn generate() {
   let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
   let registry = registries_json.as_object().unwrap()["minecraft:entity_type"]["entries"].as_object().unwrap();
 
+  output += "#![allow(clippy::needless_return)]\n";
   output += "pub fn get_id_from_name(name: &str) -> i32 {\n";
   output += "\treturn match name {\n";
 
@@ -29,7 +30,7 @@ pub fn generate() {
   output += "\t};\n";
   output += "}\n";
 
-  let path = std::path::PathBuf::from("../data/src/entities.rs");
+  let path = std::path::PathBuf::from("../data/entities/src/lib.rs");
 
   let mut file = std::fs::OpenOptions::new()
    	.read(true)
