@@ -22,8 +22,15 @@ checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 name = "block_get_blocks"
 version = "0.4.0"
 dependencies = [
- "block_property_enums",
  "block_types",
+ "blocks_add_fn_0",
+ "blocks_add_fn_1",
+ "blocks_add_fn_2",
+ "blocks_add_fn_3",
+ "blocks_add_fn_4",
+ "blocks_add_fn_5",
+ "blocks_add_fn_6",
+ "blocks_add_fn_7",
 ]
 
 [[package]]
@@ -32,10 +39,6 @@ version = "0.4.0"
 dependencies = [
  "block_types",
 ]
-
-[[package]]
-name = "block_property_enums"
-version = "0.4.0"
 
 [[package]]
 name = "block_types"
@@ -51,7 +54,62 @@ version = "0.4.0"
 dependencies = [
  "block_get_blocks",
  "block_get_type_from_block_state_id",
- "block_property_enums",
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_0"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_1"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_2"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_3"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_4"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_5"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_6"
+version = "0.4.0"
+dependencies = [
+ "block_types",
+]
+
+[[package]]
+name = "blocks_add_fn_7"
+version = "0.4.0"
+dependencies = [
  "block_types",
 ]
 

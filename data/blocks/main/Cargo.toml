@@ -6,6 +6,5 @@
 
 [dependencies]
 block_types = {path = "../types", version = "*"}
-block_property_enums = {path = "../property_enums", version = "*"}
 block_get_blocks = {path = "../get_blocks", version = "*"}
 block_get_type_from_block_state_id = {path = "../get_type_from_block_state_id", version = "*"}

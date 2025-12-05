@@ -1,18 +1,18 @@
 use super::*;
 
-pub fn generate() {
+static ADD_FNS_COUNT: usize = 8;
 
+pub fn generate() {
   block_types();
   get_blocks();
-  property_enums();
   get_type_from_block_state_id();
+  get_blocks_add_functions();
 
   let mut output = String::new();
 
   output += "#![allow(unused_mut)]\n#![allow(clippy::needless_return)]\nuse std::collections::HashMap;\n";
   output += "pub use block_types::*;\n";
   output += "pub use block_get_blocks::*;\n";
-  output += "pub use block_property_enums::*;\n";
   output += "pub use block_get_type_from_block_state_id::*;\n";
   output += get_block_from_block_state_id().as_str();
   output += get_block_state_from_block_state_id().as_str();
@@ -36,19 +36,40 @@ pub fn generate() {
 }
 
 fn get_blocks() {
-  let mut output1 = String::new();
-  let mut output2 = String::new();
+  let mut output = String::new();
+
+  output += "#![allow(clippy::needless_return)]\n";
+
+  let mut cargo_toml_contents = "[package]
+name = \"block_get_blocks\"
+version = \"0.4.0\"
+edition = \"2024\"
+description = \"\"
+
+[dependencies]
+block_types = {path = \"../types\", version = \"*\"}\n".to_string();
+
+  for i in 0..ADD_FNS_COUNT {
+    cargo_toml_contents += format!("blocks_add_fn_{i} = {{path = \"../add_functions/add_fn_{i}\", version = \"*\"}}\n").as_str();
+    output += format!("use blocks_add_fn_{i}::*;\n").as_str();
+  }
+  let mut file = std::fs::OpenOptions::new()
+   	.read(true)
+   	.write(true)
+    .truncate(true)
+    .create(true)
+    .open(std::path::PathBuf::from("../data/blocks/get_blocks/Cargo.toml"))
+    .unwrap();
+  file.write_all(cargo_toml_contents.as_bytes()).unwrap();
+  file.flush().unwrap();
 
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
   let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
-  output1 += "#![allow(clippy::needless_return)]\n";
-  output1 += "use std::collections::HashMap;\n";
-  output1 += "use block_types::*;\n";
-  output1 += "use block_property_enums::*;\n";
-  output1 += structs().as_str();
-  output1 += "pub fn get_blocks() -> HashMap<String, Block> {\n";
-  output1 += "\tlet mut output: HashMap<String, Block> = HashMap::new();\n";
+  output += "use std::collections::HashMap;\n";
+  output += "use block_types::*;\n";
+  output += "pub fn get_blocks() -> HashMap<String, Block> {\n";
+  output += "\tlet mut output: HashMap<String, Block> = HashMap::new();\n";
 
   for x in blocks_json.as_object().unwrap().iter() {
     let block = x.1.as_object().unwrap();
@@ -60,20 +81,10 @@ fn get_blocks() {
       String::new()
     };
 
-    output2 += format!("fn add_{}(map: &mut HashMap<String, Block>) {{\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
-    output2 += format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};\n").as_str();
-    for x in block["states"].as_array().unwrap().iter() {
-      output2 += format!("\tblock.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});\n", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } ).as_str();
-    }
-    output2 += format!("\tmap.insert(\"{key}\".to_string(), block);\n").as_str();
-    output2 += "}\n";
-    output1 += format!("\tadd_{}(&mut output);\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
-
+    output += format!("\tadd_{}(&mut output);\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
   }
-  output1 += "\treturn output;\n";
-  output1 += "}\n";
-
-  let output = output1 + output2.as_str();
+  output += "\treturn output;\n";
+  output += "}\n";
 
   let path = std::path::PathBuf::from("../data/blocks/get_blocks/src/lib.rs");
 
@@ -89,12 +100,82 @@ fn get_blocks() {
   file.flush().unwrap();
 }
 
+fn get_blocks_add_functions() {
+  let mut outputs: Vec<String> = Vec::new();
+
+  let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+  let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+  let mut i = 0;
+  #[allow(clippy::explicit_counter_loop)]
+  for x in blocks_json.as_object().unwrap().iter() {
+    let output_index = i % ADD_FNS_COUNT;
+    if outputs.len() <= output_index {
+      outputs.push("use block_types::*;\nuse std::collections::HashMap;\n".to_string());
+    }
+
+    let block = x.1.as_object().unwrap();
+    let key = x.0;
+    let block_type = convert_to_upper_camel_case(block["definition"]["type"].as_str().unwrap());
+    let properties: String = if block["properties"].is_object() {
+      block["properties"].as_object().unwrap().iter().flat_map(|x| x.1.as_array().unwrap().iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(x.0), block_type, convert_to_upper_camel_case(x.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.as_str().unwrap())) } else { convert_to_upper_camel_case(y.as_str().unwrap()) } ))).collect()
+    } else {
+      String::new()
+    };
+    outputs[output_index] += format!("pub fn add_{}(map: &mut HashMap<String, Block>) {{\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
+    outputs[output_index] += format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};\n").as_str();
+    for x in block["states"].as_array().unwrap().iter() {
+      outputs[output_index] += format!("\tblock.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});\n", x.as_object().unwrap()["id"].as_i32().unwrap(), x.as_object().unwrap()["properties"].as_object().unwrap_or(jzon::object! {}.as_object().unwrap()).iter().map(|y| format!("Property::{}{}({}{}::{}),", block_type, convert_to_upper_camel_case(y.0), block_type, convert_to_upper_camel_case(y.0), if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&y.1.as_str().unwrap().to_string()) { format!("Num{}", convert_to_upper_camel_case(y.1.as_str().unwrap())) } else { convert_to_upper_camel_case(y.1.as_str().unwrap()) } )).collect::<String>(), if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" } ).as_str();
+    }
+    outputs[output_index] += format!("\tmap.insert(\"{key}\".to_string(), block);\n").as_str();
+    outputs[output_index] += "}\n";
+
+    i += 1;
+  }
+
+  std::fs::remove_dir_all(std::path::PathBuf::from("../data/blocks/add_functions"));
+  #[allow(clippy::needless_range_loop)]
+  for i in 0..outputs.len() {
+    std::fs::create_dir_all(std::path::PathBuf::from(format!("../data/blocks/add_functions/add_fn_{i}/src")));
+
+    let cargo_toml_contents = format!("[package]
+name = \"blocks_add_fn_{i}\"
+version = \"0.4.0\"
+edition = \"2024\"
+description = \"\"
+
+[dependencies]
+block_types = {{path = \"../../types\", version = \"*\"}}");
+    let mut file = std::fs::OpenOptions::new()
+     	.read(true)
+     	.write(true)
+      .truncate(true)
+      .create(true)
+      .open(std::path::PathBuf::from(format!("../data/blocks/add_functions/add_fn_{i}/Cargo.toml")))
+      .unwrap();
+    file.write_all(cargo_toml_contents.as_bytes()).unwrap();
+    file.flush().unwrap();
+
+    let mut file = std::fs::OpenOptions::new()
+     	.read(true)
+     	.write(true)
+      .truncate(true)
+      .create(true)
+      .open(std::path::PathBuf::from(format!("../data/blocks/add_functions/add_fn_{i}/src/lib.rs")))
+      .unwrap();
+    file.write_all(outputs[i].as_bytes()).unwrap();
+    file.flush().unwrap();
+  }
+}
+
 fn block_types() {
   let mut output = String::new();
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 
   output += "#![allow(clippy::needless_return)]\n";
+  output += structs().as_str();
   output += impl_type().as_str();
+  output += property_enums().as_str();
   output += "#[derive(Debug, Clone, Copy, PartialEq, Eq)]\n";
   output += "pub enum Type {\n";
 
@@ -126,7 +207,7 @@ fn block_types() {
   file.flush().unwrap();
 }
 
-fn property_enums() {
+fn property_enums() -> String {
   let mut output = String::new();
 
   let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
@@ -159,18 +240,7 @@ fn property_enums() {
   properties.into_iter().for_each(|x| output += format!("\t{}({}),\n", x.0, x.0).as_str());
   output += "}\n";
 
-  let path = std::path::PathBuf::from("../data/blocks/property_enums/src/lib.rs");
-
-  let mut file = std::fs::OpenOptions::new()
-   	.read(true)
-   	.write(true)
-    .truncate(true)
-    .create(true)
-    .open(path)
-    .unwrap();
-
-  file.write_all(output.as_bytes()).unwrap();
-  file.flush().unwrap();
+  return output;
 }
 
 fn get_block_state_id_from_raw() -> String {
