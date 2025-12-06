@@ -462,7 +462,6 @@ fn impl_type() -> String {
 \t\t\tType::EndPortalFrame => true,
 \t\t\tType::EnderChest => true,
 \t\t\tType::FenceGate => true,
-\t\t\tType::FletchingTable => true,
 \t\t\tType::FlowerPot => true,
 \t\t\tType::Furnace => true,
 \t\t\tType::Grindstone => true,

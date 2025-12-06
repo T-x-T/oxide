@@ -247,7 +247,7 @@ fn main() {
           	match packet_id {
            		lib::packets::clientbound::play::SpawnEntity::PACKET_ID => {
 	            	let parsed_packet = lib::packets::clientbound::play::SpawnEntity::try_from(client_packet.data.clone()).unwrap();
-		            // println!("parsed packet: {parsed_packet:?}");
+		            println!("parsed packet: {parsed_packet:?}");
 		            parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
 							lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID => {
@@ -353,12 +353,9 @@ fn main() {
 							},
 							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID => {
 		        		// Disabled because implementation is still incomplete
-		            // let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
-		            // println!("parsed packet: {parsed_packet:?}");
-		            // parsed_client_packet = Some(parsed_packet.try_into().unwrap());
-							},
-							0x5e | 0x4c | 0x6a  => {
-
+		            let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
+		            println!("parsed packet: {parsed_packet:?}");
+		            parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							},
            		_ => {
            			//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");

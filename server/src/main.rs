@@ -120,7 +120,10 @@ fn initialize_server() {
         if !queue.is_empty() {
           let packet = queue.remove(0);
           drop(queue);
-          let _ = send_packet(&stream, packet.0, packet.1).inspect_err(|x| println!("got error \"{x}\" trying to send packet id \"{}\" to stream \"{}\"", packet.0, stream.peer_addr().unwrap()));
+          //println!("{}", packet.0);
+          if send_packet(&stream, packet.0, packet.1).is_err() {
+            return;
+          }
         } else {
           drop(queue);
         };

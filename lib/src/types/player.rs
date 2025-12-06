@@ -70,7 +70,7 @@ impl Entity for Player {
         value: crate::packets::clientbound::play::EntityMetadataValue::Float(20.0),
       },
       crate::packets::clientbound::play::EntityMetadata {
-        index: 17,
+        index: 16,
         value: crate::packets::clientbound::play::EntityMetadataValue::Byte(127),
       },
     ];

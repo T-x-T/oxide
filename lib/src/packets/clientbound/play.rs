@@ -40,13 +40,11 @@ impl TryFrom<SpawnEntity> for Vec<u8> {
 		output.append(&mut crate::serialize::double(value.x));
 		output.append(&mut crate::serialize::double(value.y));
 		output.append(&mut crate::serialize::double(value.z));
+		output.push(0);
 		output.push(value.pitch);
 		output.push(value.yaw);
 		output.push(value.head_yaw);
 		output.append(&mut crate::serialize::varint(value.data));
-		output.append(&mut crate::serialize::short(value.velocity_x));
-		output.append(&mut crate::serialize::short(value.velocity_y));
-		output.append(&mut crate::serialize::short(value.velocity_z));
 
 		return Ok(output);
 	}
@@ -67,9 +65,9 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 			yaw: value.remove(0),
 			head_yaw: value.remove(0),
 			data: crate::deserialize::varint(&mut value)?,
-			velocity_x: crate::deserialize::short(&mut value)?,
-			velocity_y: crate::deserialize::short(&mut value)?,
-			velocity_z: crate::deserialize::short(&mut value)?,
+			velocity_x: 0,
+			velocity_y: 0,
+			velocity_z: 0,
 		});
 	}
 }
@@ -505,7 +503,7 @@ impl TryFrom<Vec<u8>> for SetContainerSlot {
 }
 
 //
-// MARK: 0x1e entity event
+// MARK: 0x22 entity event
 //
 
 #[derive(Debug, Clone)]
@@ -515,7 +513,7 @@ pub struct EntityEvent {
 }
 
 impl Packet for EntityEvent {
-	const PACKET_ID: u8 = 0x1e;
+	const PACKET_ID: u8 = 0x22;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -546,7 +544,7 @@ impl TryFrom<Vec<u8>> for EntityEvent {
 
 
 //
-// MARK: 0x1f teleport entity
+// MARK: 0x23 teleport entity
 //
 
 #[derive(Debug, Clone)]
@@ -564,7 +562,7 @@ pub struct TeleportEntity {
 }
 
 impl Packet for TeleportEntity {
-	const PACKET_ID: u8 = 0x1f;
+	const PACKET_ID: u8 = 0x23;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -610,7 +608,7 @@ impl TryFrom<Vec<u8>> for TeleportEntity {
 }
 
 //
-// MARK: 0x20 Explosion
+// MARK: 0x24 Explosion
 //
 
 #[derive(Debug, Clone)]
@@ -625,7 +623,7 @@ pub struct Explosion {
 }
 
 impl Packet for Explosion {
-	const PACKET_ID: u8 = 0x20;
+	const PACKET_ID: u8 = 0x24;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -687,7 +685,7 @@ impl TryFrom<Vec<u8>> for Explosion {
 }
 
 //
-// MARK: 0x22 Game event
+// MARK: 0x26 Game event
 //
 
 #[derive(Debug, Clone)]
@@ -697,7 +695,7 @@ pub struct GameEvent {
 }
 
 impl Packet for GameEvent {
-	const PACKET_ID: u8 = 0x22;
+	const PACKET_ID: u8 = 0x26;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -727,7 +725,7 @@ impl TryFrom<Vec<u8>> for GameEvent {
 }
 
 //
-// MARK: 0x24 Hurt Animation
+// MARK: 0x29 Hurt Animation
 //
 
 #[derive(Debug, Clone)]
@@ -737,7 +735,7 @@ pub struct HurtAnimation {
 }
 
 impl Packet for HurtAnimation {
-	const PACKET_ID: u8 = 0x24;
+	const PACKET_ID: u8 = 0x29;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -767,7 +765,7 @@ impl TryFrom<Vec<u8>> for HurtAnimation {
 }
 
 //
-// MARK: 0x26 clientbound keep alive
+// MARK: 0x2b clientbound keep alive
 //
 
 #[derive(Debug, Clone)]
@@ -776,7 +774,7 @@ pub struct ClientboundKeepAlive {
 }
 
 impl Packet for ClientboundKeepAlive {
-	const PACKET_ID: u8 = 0x26;
+	const PACKET_ID: u8 = 0x2b;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -804,7 +802,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 }
 
 //
-// MARK: 0x27 Chunk Data and Update Light
+// MARK: 0x2c Chunk Data and Update Light
 //
 
 #[derive(Debug, Clone)]
@@ -823,7 +821,7 @@ pub struct ChunkDataAndUpdateLight {
 }
 
 impl Packet for ChunkDataAndUpdateLight {
-	const PACKET_ID: u8 = 0x27;
+	const PACKET_ID: u8 = 0x2c;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1273,7 +1271,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 }
 
 //
-// MARK: 0x28 world event
+// MARK: 0x2d world event
 //
 
 #[derive(Debug, Clone)]
@@ -1284,7 +1282,7 @@ pub struct WorldEvent {
 }
 
 impl Packet for WorldEvent {
-	const PACKET_ID: u8 = 0x28;
+	const PACKET_ID: u8 = 0x2d;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1321,7 +1319,7 @@ impl TryFrom<Vec<u8>> for WorldEvent {
 }
 
 //
-// MARK: 0x2b Login
+// MARK: 0x30 Login
 //
 
 #[derive(Debug, Clone)]
@@ -1351,7 +1349,7 @@ pub struct Login {
 }
 
 impl Packet for Login {
-	const PACKET_ID: u8 = 0x2b;
+	const PACKET_ID: u8 = 0x30;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1468,7 +1466,7 @@ impl TryFrom<Vec<u8>> for Login {
 }
 
 //
-// MARK: 0x2e Update entity position
+// MARK: 0x33 Update entity position
 //
 
 #[derive(Debug, Clone)]
@@ -1481,7 +1479,7 @@ pub struct UpdateEntityPosition {
 }
 
 impl Packet for UpdateEntityPosition {
-	const PACKET_ID: u8 = 0x2e;
+	const PACKET_ID: u8 = 0x33;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1517,7 +1515,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPosition {
 }
 
 //
-// MARK: 0x2f Update entity position and rotation
+// MARK: 0x34 Update entity position and rotation
 //
 
 #[derive(Debug, Clone)]
@@ -1532,7 +1530,7 @@ pub struct UpdateEntityPositionAndRotation {
 }
 
 impl Packet for UpdateEntityPositionAndRotation {
-	const PACKET_ID: u8 = 0x2f;
+	const PACKET_ID: u8 = 0x34;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1572,7 +1570,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 }
 
 //
-// MARK: 0x31 Update entity rotation
+// MARK: 0x36 Update entity rotation
 //
 
 #[derive(Debug, Clone)]
@@ -1584,7 +1582,7 @@ pub struct UpdateEntityRotation {
 }
 
 impl Packet for UpdateEntityRotation {
-	const PACKET_ID: u8 = 0x31;
+	const PACKET_ID: u8 = 0x36;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1618,7 +1616,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityRotation {
 }
 
 //
-// MARK: 0x34 Open Screen
+// MARK: 0x39 Open Screen
 //
 
 #[derive(Debug, Clone)]
@@ -1629,7 +1627,7 @@ pub struct OpenScreen {
 }
 
 impl Packet for OpenScreen {
-	const PACKET_ID: u8 = 0x34;
+	const PACKET_ID: u8 = 0x39;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1661,7 +1659,7 @@ impl TryFrom<Vec<u8>> for OpenScreen {
 }
 
 //
-// MARK: 0x35 Open Sign Editor
+// MARK: 0x3a Open Sign Editor
 //
 
 #[derive(Debug, Clone)]
@@ -1671,7 +1669,7 @@ pub struct OpenSignEditor {
 }
 
 impl Packet for OpenSignEditor {
-	const PACKET_ID: u8 = 0x35;
+	const PACKET_ID: u8 = 0x3a;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1701,7 +1699,7 @@ impl TryFrom<Vec<u8>> for OpenSignEditor {
 }
 
 //
-// MARK: 0x3a player chat message
+// MARK: 0x3f player chat message
 //
 
 #[derive(Debug, Clone)]
@@ -1723,7 +1721,7 @@ pub struct PlayerChatMessage {
 }
 
 impl Packet for PlayerChatMessage {
-	const PACKET_ID: u8 = 0x3a;
+	const PACKET_ID: u8 = 0x3f;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1841,7 +1839,7 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 }
 
 //
-// MARK: 0x3e player info remove
+// MARK: 0x43 player info remove
 //
 
 #[derive(Debug, Clone)]
@@ -1850,7 +1848,7 @@ pub struct PlayerInfoRemove {
 }
 
 impl Packet for PlayerInfoRemove {
-	const PACKET_ID: u8 = 0x3e;
+	const PACKET_ID: u8 = 0x43;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -1886,7 +1884,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoRemove {
 }
 
 //
-// MARK: 0x3f PlayerInfoUpdate
+// MARK: 0x44 PlayerInfoUpdate
 //
 
 #[derive(Debug, Clone)]
@@ -1896,7 +1894,7 @@ pub struct PlayerInfoUpdate {
 }
 
 impl Packet for PlayerInfoUpdate {
-	const PACKET_ID: u8 = 0x3f;
+	const PACKET_ID: u8 = 0x44;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2061,7 +2059,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 }
 
 //
-// MARK: 0x41 synchronize player position
+// MARK: 0x46 synchronize player position
 //
 
 #[derive(Debug, Clone)]
@@ -2079,7 +2077,7 @@ pub struct SynchronizePlayerPosition {
 }
 
 impl Packet for SynchronizePlayerPosition {
-	const PACKET_ID: u8 = 0x41;
+	const PACKET_ID: u8 = 0x46;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2125,7 +2123,7 @@ impl TryFrom<Vec<u8>> for SynchronizePlayerPosition {
 }
 
 //
-// MARK: 0x46 remove entities
+// MARK: 0x4b remove entities
 //
 
 #[derive(Debug, Clone)]
@@ -2134,7 +2132,7 @@ pub struct RemoveEntities {
 }
 
 impl Packet for RemoveEntities {
-	const PACKET_ID: u8 = 0x46;
+	const PACKET_ID: u8 = 0x4b;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2170,7 +2168,7 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 }
 
 //
-// MARK: 0x4c set head rotation
+// MARK: 0x51 set head rotation
 //
 
 #[derive(Debug, Clone)]
@@ -2180,7 +2178,7 @@ pub struct SetHeadRotation {
 }
 
 impl Packet for SetHeadRotation {
-	const PACKET_ID: u8 = 0x4c;
+	const PACKET_ID: u8 = 0x51;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2210,7 +2208,7 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 }
 
 //
-// MARK: 0x57 set center chunk
+// MARK: 0x5c set center chunk
 //
 
 #[derive(Debug, Clone)]
@@ -2220,7 +2218,7 @@ pub struct SetCenterChunk {
 }
 
 impl Packet for SetCenterChunk {
-	const PACKET_ID: u8 = 0x57;
+	const PACKET_ID: u8 = 0x5c;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2250,7 +2248,7 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 }
 
 //
-// MARK: 0x5c Set Entity Metadata
+// MARK: 0x61 Set Entity Metadata
 //
 
 #[derive(Debug, Clone)]
@@ -2260,7 +2258,7 @@ pub struct SetEntityMetadata {
 }
 
 impl Packet for SetEntityMetadata {
-	const PACKET_ID: u8 = 0x5c;
+	const PACKET_ID: u8 = 0x61;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2289,59 +2287,71 @@ pub enum EntityMetadataValue {
 	OptionalUuid(bool, u128),
 	BlockState(i32),
 	OptionalBlockState(i32),
-	Nbt(NbtTag),
 	Particle(i32), //Missing a type that varies, whatever the fuck that means
 	Particles(i32, Vec<i32>), //Missing a type that varies, whatever the fuck that means
 	VillagerData(i32, i32, i32),
 	OptionalVarint(i32),
 	Pose(i32),
 	CatVariant(i32),
+	CowVariant(i32),
 	WolfVariant(i32),
+	WolfSoundVariant(i32),
 	FrogVariant(i32),
+	PigVariant(i32),
+	ChickenVariant(i32),
 	OptionalGlobalPosition(bool, bool, String, bool, i64),
 	PaintingVariant(i32),
 	SnifferState(i32),
 	ArmadilloState(i32),
+	CopperGolemState(i32),
+	WeatheringCopperState(i32),
 	Vector3(f32, f32, f32),
 	Quaternion(f32, f32, f32, f32),
+	ResolvableProfile(i32), //kind; theres more that I havent bothered with yet
 }
 
 #[allow(clippy::from_over_into)]
 impl Into<i32> for EntityMetadataValue {
 	fn into(self) -> i32 {
 		match self {
-			EntityMetadataValue::Byte(_) => 0,
-			EntityMetadataValue::Varint(_) => 1,
-			EntityMetadataValue::Varlong(_) => 2,
-			EntityMetadataValue::Float(_) => 3,
-			EntityMetadataValue::String(_) => 4,
-			EntityMetadataValue::TextComponent(_) => 5,
-			EntityMetadataValue::OptionalTextComponent(_) => 6,
-			EntityMetadataValue::Slot(_) => 7,
-			EntityMetadataValue::Boolean(_) => 8,
-			EntityMetadataValue::Rotations(_, _, _) => 9,
-			EntityMetadataValue::Position(_) => 10,
-			EntityMetadataValue::OptionalPosition(_) => 11,
-			EntityMetadataValue::Direction(_) => 12,
-			EntityMetadataValue::OptionalUuid(_, _) => 13,
-			EntityMetadataValue::BlockState(_) => 14,
-			EntityMetadataValue::OptionalBlockState(_) => 15,
-			EntityMetadataValue::Nbt(_) => 16,
-			EntityMetadataValue::Particle(_) => 17,
-			EntityMetadataValue::Particles(_, _) => 18,
-			EntityMetadataValue::VillagerData(_, _, _) => 19,
-			EntityMetadataValue::OptionalVarint(_) => 20,
-			EntityMetadataValue::Pose(_) => 21,
-			EntityMetadataValue::CatVariant(_) => 22,
-			EntityMetadataValue::WolfVariant(_) => 23,
-			EntityMetadataValue::FrogVariant(_) => 24,
-			EntityMetadataValue::OptionalGlobalPosition(_, _, _, _, _) => 25,
-			EntityMetadataValue::PaintingVariant(_) => 26,
-			EntityMetadataValue::SnifferState(_) => 27,
-			EntityMetadataValue::ArmadilloState(_) => 28,
-			EntityMetadataValue::Vector3(_, _, _) => 29,
-			EntityMetadataValue::Quaternion(_, _, _, _) => 30,
-		}
+      EntityMetadataValue::Byte(_) => 0,
+      EntityMetadataValue::Varint(_) => 1,
+      EntityMetadataValue::Varlong(_) => 2,
+      EntityMetadataValue::Float(_) => 3,
+      EntityMetadataValue::String(_) => 4,
+      EntityMetadataValue::TextComponent(_) => 5,
+      EntityMetadataValue::OptionalTextComponent(_) => 6,
+      EntityMetadataValue::Slot(_) => 7,
+      EntityMetadataValue::Boolean(_) => 8,
+      EntityMetadataValue::Rotations(_, _, _) => 9,
+      EntityMetadataValue::Position(_) => 10,
+      EntityMetadataValue::OptionalPosition(_) => 11,
+      EntityMetadataValue::Direction(_) => 12,
+      EntityMetadataValue::OptionalUuid(_, _) => 13,
+      EntityMetadataValue::BlockState(_) => 14,
+      EntityMetadataValue::OptionalBlockState(_) => 15,
+      EntityMetadataValue::Particle(_) => 16,
+      EntityMetadataValue::Particles(_, _) => 17,
+      EntityMetadataValue::VillagerData(_, _, _) => 18,
+      EntityMetadataValue::OptionalVarint(_) => 19,
+      EntityMetadataValue::Pose(_) => 20,
+      EntityMetadataValue::CatVariant(_) => 21,
+      EntityMetadataValue::CowVariant(_) => 22,
+      EntityMetadataValue::WolfVariant(_) => 23,
+      EntityMetadataValue::WolfSoundVariant(_) => 24,
+      EntityMetadataValue::FrogVariant(_) => 25,
+      EntityMetadataValue::PigVariant(_) => 26,
+      EntityMetadataValue::ChickenVariant(_) => 27,
+      EntityMetadataValue::OptionalGlobalPosition(_, _, _, _, _) => 28,
+      EntityMetadataValue::PaintingVariant(_) => 29,
+      EntityMetadataValue::SnifferState(_) => 30,
+      EntityMetadataValue::ArmadilloState(_) => 31,
+      EntityMetadataValue::CopperGolemState(_) => 32,
+      EntityMetadataValue::WeatheringCopperState(_) => 33,
+      EntityMetadataValue::Vector3(_, _, _) => 34,
+      EntityMetadataValue::Quaternion(_, _, _, _) => 35,
+      EntityMetadataValue::ResolvableProfile(_) => 36,
+    }
 	}
 }
 
@@ -2358,76 +2368,77 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 			output.append(&mut crate::serialize::varint(metadata.value.clone().into()));
 
 			match metadata.value {
-				EntityMetadataValue::Byte(a) => output.push(a),
-				EntityMetadataValue::Varint(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::Varlong(_) => todo!(),
-				EntityMetadataValue::Float(a) => output.append(&mut crate::serialize::float(a)),
-				EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
-				EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt_network(a)),
-				EntityMetadataValue::OptionalTextComponent(a) => {
-					match a {
-					  Some(a) => {
-							output.push(0x01);
-							output.append(&mut crate::serialize::nbt_network(a));
-						},
-						None => {
-						  output.push(0x00);
-						}
-					}
-				},
-				EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
-				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
-				EntityMetadataValue::Rotations(a, b, c) => {
-					output.append(&mut crate::serialize::float(a));
-					output.append(&mut crate::serialize::float(b));
-					output.append(&mut crate::serialize::float(c));
-				},
-				EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
-				EntityMetadataValue::OptionalPosition(a) => {
-				  match a {
-						Some(a) => {
-  						output.push(0x01);
-  						output.append(&mut crate::serialize::long(a));
-						},
-						None => {
-						  output.push(0x00);
-						}
-					}
-				},
-				EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::OptionalUuid(a, b) => {
-					output.append(&mut crate::serialize::boolean(a));
-					if a {
-						output.append(&mut crate::serialize::uuid(&b));
-					}
-				},
-				EntityMetadataValue::BlockState(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::OptionalBlockState(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::Nbt(a) => output.append(&mut crate::serialize::nbt_network(a)),
-				EntityMetadataValue::Particle(_) => todo!(),
-				EntityMetadataValue::Particles(_, _) => todo!(),
-				EntityMetadataValue::VillagerData(_, _, _) => todo!(),
-				EntityMetadataValue::OptionalVarint(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::Pose(a) => output.append(&mut crate::serialize::varint(a)),
-				EntityMetadataValue::CatVariant(_) => todo!(),
-				EntityMetadataValue::WolfVariant(_) => todo!(),
-				EntityMetadataValue::FrogVariant(_) => todo!(),
-				EntityMetadataValue::OptionalGlobalPosition(a, b, c, d, e) => {
-					output.append(&mut crate::serialize::boolean(a));
-					output.append(&mut crate::serialize::boolean(b));
-					if b {
-						output.append(&mut crate::serialize::string(&c));
-					}
-
-					output.append(&mut crate::serialize::boolean(d));
-					if d {
-						output.append(&mut crate::serialize::long(e));
-					}
-				},
-				EntityMetadataValue::PaintingVariant(_) => todo!(),
-				EntityMetadataValue::SnifferState(_) => todo!(),
-				EntityMetadataValue::ArmadilloState(_) => todo!(),
-				EntityMetadataValue::Vector3(a, b, c) => {
+        EntityMetadataValue::Byte(a) => output.push(a),
+        EntityMetadataValue::Varint(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::Varlong(_) => todo!(),
+        EntityMetadataValue::Float(a) => output.append(&mut crate::serialize::float(a)),
+        EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
+        EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt_network(a)),
+        EntityMetadataValue::OptionalTextComponent(a) => {
+        match a {
+          Some(a) => {
+            output.push(0x01);
+            output.append(&mut crate::serialize::nbt_network(a));
+            },
+            None => {
+              output.push(0x00);
+            }
+          }
+        },
+        EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
+        EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
+        EntityMetadataValue::Rotations(a, b, c) => {
+  		    output.append(&mut crate::serialize::float(a));
+  		    output.append(&mut crate::serialize::float(b));
+  		    output.append(&mut crate::serialize::float(c));
+		    },
+        EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
+        EntityMetadataValue::OptionalPosition(a) => {
+		      match a {
+				    Some(a) => {
+					    output.push(0x01);
+					    output.append(&mut crate::serialize::long(a));
+				    },
+				    None => {
+				      output.push(0x00);
+				    }
+				  }
+		    },
+        EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::OptionalUuid(a, b) => {
+			    output.append(&mut crate::serialize::boolean(a));
+			    if a {
+				    output.append(&mut crate::serialize::uuid(&b));
+			    }
+		    },
+        EntityMetadataValue::BlockState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::OptionalBlockState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::Particle(_) => todo!(),
+        EntityMetadataValue::Particles(_, _) => output.push(0),
+        EntityMetadataValue::VillagerData(_, _, _) => todo!(),
+        EntityMetadataValue::OptionalVarint(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::Pose(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::CatVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::WolfVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::FrogVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::OptionalGlobalPosition(a, b, c, _d, _e) => {
+  		    output.append(&mut crate::serialize::boolean(a));
+  		    output.append(&mut crate::serialize::boolean(b));
+  		    if b {
+  			    output.append(&mut crate::serialize::string(&c));
+  		    }
+		    },
+        EntityMetadataValue::CowVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::WolfSoundVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::PigVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::ChickenVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::CopperGolemState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::WeatheringCopperState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::ResolvableProfile(_) => todo!(),
+        EntityMetadataValue::PaintingVariant(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::SnifferState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::ArmadilloState(a) => output.append(&mut crate::serialize::varint(a)),
+        EntityMetadataValue::Vector3(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
 					output.append(&mut crate::serialize::float(b));
 					output.append(&mut crate::serialize::float(c));
@@ -2438,7 +2449,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 					output.append(&mut crate::serialize::float(c));
 					output.append(&mut crate::serialize::float(d));
 				},
-			}
+      }
 		}
 
 		output.push(255);
@@ -2477,7 +2488,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					};
 					EntityMetadataValue::OptionalTextComponent(nbt)
 				},
-				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap()),
+				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap_or(Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() })),
 				8 => EntityMetadataValue::Boolean(crate::deserialize::boolean(&mut value)?),
 				9 => EntityMetadataValue::Rotations(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
 				10 => EntityMetadataValue::Position(crate::deserialize::long(&mut value)?),
@@ -2494,21 +2505,27 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				13 => todo!(),
 				14 => EntityMetadataValue::BlockState(crate::deserialize::varint(&mut value)?),
 				15 => EntityMetadataValue::OptionalBlockState(crate::deserialize::varint(&mut value)?),
-				16 => EntityMetadataValue::Nbt(crate::deserialize::nbt_network(&mut value)?),
+				16 => todo!(),
 				17 => todo!(),
-				18 => todo!(),
-				19 => EntityMetadataValue::VillagerData(crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?),
-				20 => EntityMetadataValue::OptionalVarint(crate::deserialize::varint(&mut value)?),
-				21 => EntityMetadataValue::Pose(crate::deserialize::varint(&mut value)?),
-				22 => EntityMetadataValue::CatVariant(crate::deserialize::varint(&mut value)?),
-				23 => EntityMetadataValue::WolfVariant(crate::deserialize::varint(&mut value)?),
-				24 => EntityMetadataValue::FrogVariant(crate::deserialize::varint(&mut value)?),
-				25 => todo!(),
-				26 => EntityMetadataValue::PaintingVariant(crate::deserialize::varint(&mut value)?),
-				27 => EntityMetadataValue::SnifferState(crate::deserialize::varint(&mut value)?),
-				28 => EntityMetadataValue::ArmadilloState(crate::deserialize::varint(&mut value)?),
-				29 => EntityMetadataValue::Vector3(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
-				30 => EntityMetadataValue::Quaternion(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
+				18 => EntityMetadataValue::VillagerData(crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?),
+				19 => EntityMetadataValue::OptionalVarint(crate::deserialize::varint(&mut value)?),
+				20 => EntityMetadataValue::Pose(crate::deserialize::varint(&mut value)?),
+				21 => EntityMetadataValue::CatVariant(crate::deserialize::varint(&mut value)?),
+				23 => EntityMetadataValue::CowVariant(crate::deserialize::varint(&mut value)?),
+				22 => EntityMetadataValue::WolfVariant(crate::deserialize::varint(&mut value)?),
+				24 => EntityMetadataValue::WolfSoundVariant(crate::deserialize::varint(&mut value)?),
+				25 => EntityMetadataValue::FrogVariant(crate::deserialize::varint(&mut value)?),
+				26 => EntityMetadataValue::PigVariant(crate::deserialize::varint(&mut value)?),
+				27 => EntityMetadataValue::ChickenVariant(crate::deserialize::varint(&mut value)?),
+				28 => todo!(),
+				29 => EntityMetadataValue::PaintingVariant(crate::deserialize::varint(&mut value)?),
+				30 => EntityMetadataValue::SnifferState(crate::deserialize::varint(&mut value)?),
+				31 => EntityMetadataValue::ArmadilloState(crate::deserialize::varint(&mut value)?),
+				32 => EntityMetadataValue::CopperGolemState(crate::deserialize::varint(&mut value)?),
+				33 => EntityMetadataValue::WeatheringCopperState(crate::deserialize::varint(&mut value)?),
+				34 => EntityMetadataValue::Vector3(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
+				35 => EntityMetadataValue::Quaternion(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
+				36 => todo!(),
 				id => panic!("type_id {id} is not a recognized entity type"),
 			};
 
@@ -2523,7 +2540,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 }
 
 //
-// MARK: 0x5f set equipment
+// MARK: 0x64 set equipment
 //
 
 #[derive(Debug, Clone)]
@@ -2533,7 +2550,7 @@ pub struct SetEquipment {
 }
 
 impl Packet for SetEquipment {
-	const PACKET_ID: u8 = 0x5f;
+	const PACKET_ID: u8 = 0x64;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2586,7 +2603,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 }
 
 //
-// MARK: 0x62 set held item
+// MARK: 0x67 set held item
 //
 
 #[derive(Debug, Clone)]
@@ -2595,7 +2612,7 @@ pub struct SetHeldItem {
 }
 
 impl Packet for SetHeldItem {
-	const PACKET_ID: u8 = 0x62;
+	const PACKET_ID: u8 = 0x67;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2623,7 +2640,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 }
 
 //
-// MARK: 0x65 set player inventory slot
+// MARK: 0x6a set player inventory slot
 //
 
 #[derive(Debug, Clone)]
@@ -2633,7 +2650,7 @@ pub struct SetPlayerInventorySlot {
 }
 
 impl Packet for SetPlayerInventorySlot {
-	const PACKET_ID: u8 = 0x65;
+	const PACKET_ID: u8 = 0x6a;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2663,7 +2680,7 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 }
 
 //
-// MARK: 0x72 system chat message
+// MARK: 0x77 system chat message
 //
 
 #[derive(Debug, Clone)]
@@ -2673,7 +2690,7 @@ pub struct SystemChatMessage {
 }
 
 impl Packet for SystemChatMessage {
-	const PACKET_ID: u8 = 0x72;
+	const PACKET_ID: u8 = 0x77;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2703,7 +2720,7 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 }
 
 //
-// MARK: 0x73 set tab list header and footer
+// MARK: 0x78 set tab list header and footer
 //
 
 #[derive(Debug, Clone)]
@@ -2713,7 +2730,7 @@ pub struct SetTabListHeaderAndFooter {
 }
 
 impl Packet for SetTabListHeaderAndFooter {
-	const PACKET_ID: u8 = 0x73;
+	const PACKET_ID: u8 = 0x78;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
@@ -2743,7 +2760,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 }
 
 //
-// MARK: 0x82 server links
+// MARK: 0x87 server links
 //
 
 #[derive(Debug, Clone)]
@@ -2752,7 +2769,7 @@ pub struct ServerLinks {
 }
 
 impl Packet for ServerLinks {
-	const PACKET_ID: u8 = 0x82;
+	const PACKET_ID: u8 = 0x87;
   fn get_target() -> PacketTarget { PacketTarget::Client }
   fn get_state() -> ConnectionState { ConnectionState::Play }
 }
