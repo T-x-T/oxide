@@ -180,9 +180,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
         let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
         if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-          let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.position == location).unwrap();
+          let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.get_position() == location).unwrap();
           let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-          lib::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+          block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
         }
 
        	players.iter()
@@ -287,9 +287,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
               }
               #[allow(clippy::collapsible_if)]
               if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-                if let Some(block_entity) = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.position == location) {
+                if let Some(block_entity) = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.get_position() == location) {
                   let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-                  crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+                  block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
                 };
               }
 
@@ -417,46 +417,46 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
           .collect::<Vec<TcpStream>>();
 
         let mut dimensions = std::mem::take(&mut game.world.lock().unwrap().dimensions);
-        let block_entity = dimensions.get_mut("minecraft:overworld").unwrap()
+        let mut block_entity = dimensions.get_mut("minecraft:overworld").unwrap()
           .get_chunk_from_position_mut(position).unwrap()
           .try_get_block_entity_mut(position).unwrap();
 
         let player_uuid = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap().uuid;
         drop(players);
 
-        match &mut block_entity.data {
-          BlockEntityData::Chest(items) => {
-            assert!(items.len() == 27);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+        match &mut block_entity {
+          // BlockEntity::Chest(items) => {
+          //   assert!(items.len() == 27);
+          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          // },
+          BlockEntity::Furnace(furnace) => {
+            assert!(parsed_packet.slot < 36 + 3 as i16); //36 for the players inventory
+            let mut items = furnace.get_contained_items_owned();
+            lib::containerclick::handle(parsed_packet, &mut items, player_uuid, game.clone(), streams_with_container_opened);
+            block_entity.set_needs_ticking(true);
           },
-          BlockEntityData::Furnace(items, _, _, _, _) => {
-            assert!(items.len() == 3);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-            block_entity.needs_ticking = true;
-          },
-          BlockEntityData::BrewingStand(items) => {
-            assert!(items.len() == 5);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-          },
-          BlockEntityData::Crafter(items) => {
-            assert!(items.len() == 9);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-          },
-          BlockEntityData::Dispenser(items) => {
-            assert!(items.len() == 9);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-          },
-          BlockEntityData::Hopper(items) => {
-            assert!(items.len() == 5);
-            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-          },
-          x => println!("can't handle click_container packet for entity {x:?}"),
+          // BlockEntity::BrewingStand(items) => {
+          //   assert!(items.len() == 5);
+          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          // },
+          // BlockEntity::Crafter(items) => {
+          //   assert!(items.len() == 9);
+          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          // },
+          // BlockEntity::Dispenser(items) => {
+          //   assert!(items.len() == 9);
+          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          // },
+          // BlockEntity::Hopper(items) => {
+          //   assert!(items.len() == 5);
+          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          // },
+          //x => println!("can't handle click_container packet for entity {x:?}"),
         }
 
         game.world.lock().unwrap().dimensions = dimensions;
@@ -498,23 +498,23 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
         chunk.modified = true;
 
-        let blockentity = chunk.block_entities.iter_mut().find(|x| x.position == location).unwrap();
+        let blockentity = chunk.block_entities.iter_mut().find(|x| x.get_position() == location).unwrap();
 
-        if let BlockEntityData::Sign(_is_waxed, front_text, _back_text) = &mut blockentity.data {
-          front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
-          front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
-          front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
-            NbtListTag::String(text[0].clone()),
-            NbtListTag::String(text[1].clone()),
-            NbtListTag::String(text[2].clone()),
-            NbtListTag::String(text[3].clone()),
-          ]));
-        }
+        // if let BlockEntity::Sign(_is_waxed, front_text, _back_text) = &mut blockentity {
+        //   front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
+        //   front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
+        //   front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
+        //     NbtListTag::String(text[0].clone()),
+        //     NbtListTag::String(text[1].clone()),
+        //     NbtListTag::String(text[2].clone()),
+        //     NbtListTag::String(text[3].clone()),
+        //   ]));
+        // }
 
         let packet_to_send = lib::packets::clientbound::play::BlockEntityData {
           location,
-          block_entity_type: *data::blockentity::get_block_entity_types().get(Into::<&str>::into(blockentity.id)).unwrap() as i32,
-          nbt_data: NbtTag::Root(blockentity.data.clone().into()),
+          block_entity_type: *data::blockentity::get_block_entity_types().get(Into::<&str>::into(blockentity.get_id().as_str())).unwrap() as i32,
+          nbt_data: NbtTag::Root(blockentity.clone().into()),
         };
 
         for player in players.iter() {
@@ -616,9 +616,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
                 for z in (creeper_position.z-2)..creeper_position.z+2 {
                   let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition {x,y,z}, 0).unwrap();
                   if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-                    let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.position == BlockPosition {x,y,z}).unwrap();
+                    let block_entity = world.dimensions.get("minecraft:overworld").unwrap().get_chunk_from_position(BlockPosition {x,y,z}).unwrap().block_entities.iter().find(|a| a.get_position() == BlockPosition {x,y,z}).unwrap();
                     let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-                    crate::blockentity::remove_block_entity(&block_entity, &game.entity_id_manager, &mut players, &mut world, game.clone());
+                    block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
                   }
 
                   for player in players.iter() {

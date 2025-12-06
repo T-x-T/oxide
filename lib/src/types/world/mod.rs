@@ -221,7 +221,7 @@ impl Chunk {
       None
     };
 
-    if let Some(blockentity) = crate::blockentity::get_blockentity_for_placed_block(position_global, block_state_id) {
+    if let Some(blockentity) = crate::blockentity::BlockEntity::new_from_block(data::blocks::get_type_from_block_state_id(block_state_id), position_global) {
       self.block_entities.push(blockentity);
     }
 
@@ -248,12 +248,12 @@ impl Chunk {
   }
 
   pub fn try_get_block_entity(&self, position_in_chunk: BlockPosition) -> Option<&BlockEntity> {
-    return self.block_entities.iter().find(|x| x.position == position_in_chunk);
+    return self.block_entities.iter().find(|x| x.get_position() == position_in_chunk);
   }
 
   pub fn try_get_block_entity_mut(&mut self, position_in_chunk: BlockPosition) -> Option<&mut BlockEntity> {
     self.modified = true; //cant know what caller will do with the &mut so better be safe
-    return self.block_entities.iter_mut().find(|x| x.position == position_in_chunk);
+    return self.block_entities.iter_mut().find(|x| x.get_position() == position_in_chunk);
   }
 }
 

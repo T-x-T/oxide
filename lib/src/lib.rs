@@ -15,6 +15,7 @@ pub mod block;
 pub mod types;
 pub mod containerclick;
 pub mod entity;
+pub mod blockentities;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 pub const VIEW_DISTANCE: i8 = 10;

@@ -430,10 +430,10 @@ impl Player {
 		let block_entities: Vec<crate::packets::clientbound::play::BlockEntity> = chunk.block_entities
 		  .iter()
 		  .map(|x| crate::packets::clientbound::play::BlockEntity {
-        packed_xz: (x.position.convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.position.convert_to_position_in_chunk().z as u8 & 0x0f,
-        y: x.position.y,
-        block_entity_type: *block_entity_types.get(Into::<&str>::into(x.id)).unwrap() as i32,
-        data: Some(NbtTag::Root(x.data.clone().into())),
+        packed_xz: (x.get_position().convert_to_position_in_chunk().x as u8 & 0x0f) << 4 | x.get_position().convert_to_position_in_chunk().z as u8 & 0x0f,
+        y: x.get_position().y,
+        block_entity_type: *block_entity_types.get(Into::<&str>::into(x.get_id().as_str())).unwrap() as i32,
+        data: Some(NbtTag::Root(x.clone().into())),
       })
 		  .collect();
 
@@ -566,32 +566,39 @@ impl Player {
       window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
     }.try_into().unwrap());
 
-	  self.opened_inventory_at = Some(block_entity.position);
+	  self.opened_inventory_at = Some(block_entity.get_position());
 
     game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
-      slot_data: match block_entity.clone().data {
-        BlockEntityData::Chest(block_entity_data_items) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        BlockEntityData::Furnace(block_entity_data_items, _, _, _, _) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        BlockEntityData::BrewingStand(block_entity_data_items) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        BlockEntityData::Crafter(block_entity_data_items) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        BlockEntityData::Dispenser(block_entity_data_items) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        BlockEntityData::Hopper(block_entity_data_items) => {
-          block_entity_data_items.into_iter().map(Into::into).collect()
-        },
-        _ => Vec::new(),
+      slot_data: match block_entity.clone() {
+        BlockEntity::Furnace(furnace) => vec![
+          furnace.slot_input.into(),
+          furnace.slot_fuel.into(),
+          furnace.slot_output.into(),
+        ],
       },
+      // slot_data: match block_entity.clone().data {
+      //   BlockEntityData::Chest(block_entity_data_items) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   BlockEntityData::Furnace(block_entity_data_items, _, _, _, _) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   BlockEntityData::BrewingStand(block_entity_data_items) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   BlockEntityData::Crafter(block_entity_data_items) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   BlockEntityData::Dispenser(block_entity_data_items) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   BlockEntityData::Hopper(block_entity_data_items) => {
+      //     block_entity_data_items.into_iter().map(Into::into).collect()
+      //   },
+      //   _ => Vec::new(),
+      // },
       carried_item: None,
     }.try_into().unwrap());
 	}
