@@ -604,8 +604,10 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
               x: entity.get_common_entity_data().position.x,
               y: entity.get_common_entity_data().position.y,
               z: entity.get_common_entity_data().position.z,
+              radius: 2.0,
+              block_count: 64,
               player_delta_velocity: None,
-              particle_id: 21,
+              particle_id: 23,
               particle_data: (),
               sound: 616,
             };

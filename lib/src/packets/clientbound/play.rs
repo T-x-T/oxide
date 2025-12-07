@@ -616,6 +616,8 @@ pub struct Explosion {
 	pub x: f64,
 	pub y: f64,
 	pub z: f64,
+	pub radius: f32,
+	pub block_count: i32, //int, not a varint!
 	pub player_delta_velocity: Option<(f64, f64, f64)>,
 	pub particle_id: i32,
 	pub particle_data: (), //see https://minecraft.wiki/w/Java_Edition_protocol/Particles
@@ -637,6 +639,8 @@ impl TryFrom<Explosion> for Vec<u8> {
 		output.append(&mut crate::serialize::double(value.x));
 		output.append(&mut crate::serialize::double(value.y));
 		output.append(&mut crate::serialize::double(value.z));
+		output.append(&mut crate::serialize::float(value.radius));
+		output.append(&mut crate::serialize::int(value.block_count));
 		if value.player_delta_velocity.is_some() {
       output.push(1);
   		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
@@ -647,6 +651,7 @@ impl TryFrom<Explosion> for Vec<u8> {
 		}
 		output.append(&mut crate::serialize::varint(value.particle_id));
 		output.append(&mut crate::serialize::varint(value.sound));
+		output.push(0); //block particle alternatives
 
 		return Ok(output);
 	}
@@ -659,6 +664,8 @@ impl TryFrom<Vec<u8>> for Explosion {
 	  let x = crate::deserialize::double(&mut value)?;
 	  let y = crate::deserialize::double(&mut value)?;
 	  let z = crate::deserialize::double(&mut value)?;
+	  let radius = crate::deserialize::float(&mut value)?;
+	  let block_count = crate::deserialize::int(&mut value)?;
 		let player_delta_velocity: Option<(f64, f64, f64)> = if crate::deserialize::boolean(&mut value)? {
       Some((
         crate::deserialize::double(&mut value)?,
@@ -676,6 +683,8 @@ impl TryFrom<Vec<u8>> for Explosion {
       x,
       y,
       z,
+      radius,
+      block_count,
       player_delta_velocity,
       particle_id,
       particle_data: (),
