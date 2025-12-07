@@ -1406,7 +1406,6 @@ impl TryFrom<Vec<u8>> for Login {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let entity_id = crate::deserialize::int(&mut value)?;
-		println!("entity_id: {entity_id}");
 		let is_hardcore = crate::deserialize::boolean(&mut value)?;
 
 		let dimension_names_len = crate::deserialize::varint(&mut value)?;

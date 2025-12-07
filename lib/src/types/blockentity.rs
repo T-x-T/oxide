@@ -2,25 +2,35 @@ use std::{error::Error, sync::Arc};
 
 use data::blocks::Type;
 
-use crate::{blockentities::furnace::Furnace, packets::Packet};
+use crate::packets::Packet;
 
 use super::*;
 
 #[derive(Debug, Clone)]
 pub enum BlockEntity {
   Furnace(crate::blockentities::furnace::Furnace),
+  Chest(crate::blockentities::chest::Chest),
+}
+
+pub trait CommonBlockEntity {
+  fn tick(&mut self, players: &[Player], game: Arc<Game>);
+  fn new(position: BlockPosition) -> Self;
+  fn get_contained_items_mut(&mut self) -> &mut[Item];
+  fn get_contained_items_owned(&self) -> Vec<Item>;
 }
 
 impl BlockEntity {
   pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
     match self {
       BlockEntity::Furnace(furnace) => furnace.tick(players, game),
+      BlockEntity::Chest(chest) => chest.tick(players, game),
     }
   }
 
-  pub fn new_from_block(block_type: data::blocks::Type, position_global: BlockPosition) -> Option<Self> {
+  pub fn new_from_block(block_type: data::blocks::Type, position: BlockPosition) -> Option<Self> {
     return match block_type {
-      Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position_global))),
+      Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
+      Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
       _ => None,
     }
   }
@@ -28,18 +38,21 @@ impl BlockEntity {
   pub fn get_position(&self) -> BlockPosition {
     return match self {
       BlockEntity::Furnace(furnace) => furnace.position,
+      BlockEntity::Chest(chest) => chest.position,
     };
   }
 
   pub fn get_id(&self) -> String {
     match self {
       BlockEntity::Furnace(_) => "minecraft:furnace".to_string(),
+      BlockEntity::Chest(_) => "minecraft:chest".to_string(),
     }
   }
 
   pub fn get_contained_items_owned(&self) -> Vec<Item> {
     return match self {
       BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
+      BlockEntity::Chest(chest) => chest.get_contained_items_owned(),
       //_ => Vec::new(),
     };
   }
@@ -78,12 +91,14 @@ impl BlockEntity {
   pub fn set_needs_ticking(&mut self, new_needs_ticking: bool) {
     match self {
       BlockEntity::Furnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+      _ => (),
     }
   }
 
   pub fn get_needs_ticking(&self) -> bool {
     return match self {
       BlockEntity::Furnace(furnace) => furnace.needs_ticking,
+      _ => false,
     }
   }
 }
@@ -95,7 +110,8 @@ impl TryFrom<NbtListTag> for BlockEntity {
     let id: BlockEntityId = value.get_child("id").unwrap().as_string().try_into()?;
 
     return Ok(match id {
-      BlockEntityId::Furnace => BlockEntity::Furnace(Furnace::try_from(value)?),
+      BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
+      BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
       _ => return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}")))),
     });
   }
@@ -105,6 +121,7 @@ impl From<BlockEntity> for Vec<NbtTag> {
   fn from(value: BlockEntity) -> Self {
     return match value {
       BlockEntity::Furnace(furnace) => furnace.into(),
+      BlockEntity::Chest(chest) => chest.into(),
     };
   }
 }

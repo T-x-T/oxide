@@ -3,7 +3,7 @@ use super::*;
 #[derive(Debug, Clone)]
 pub struct Furnace {
   pub position: BlockPosition, //global position, NOT within the chunk
-  pub components: Option<Vec<SlotComponent>>, //At least I think so?
+  pub components: Vec<SlotComponent>, //At least I think so?
   pub needs_ticking: bool,
   pub inventory: Vec<Item>, //input, fuel, output
   pub lit_time_remaining: i16,
@@ -12,8 +12,8 @@ pub struct Furnace {
   pub lit_total_time: i16,
 }
 
-impl Furnace {
-  pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
+impl CommonBlockEntity for Furnace {
+  fn tick(&mut self, players: &[Player], game: Arc<Game>) {
     if self.needs_ticking {
       if self.inventory[0].count == 0 {
         self.needs_ticking = false;
@@ -116,11 +116,11 @@ impl Furnace {
     }
   }
 
-  pub fn new(position_global: BlockPosition) -> Self {
+  fn new(position: BlockPosition) -> Self {
     Furnace {
       needs_ticking: false,
-      position: position_global,
-      components: None,
+      position,
+      components: Vec::new(),
       inventory: vec![Item::default();3],
       lit_time_remaining: 0,
       cooking_time_spent: 0,
@@ -129,11 +129,11 @@ impl Furnace {
     }
   }
 
-  pub fn get_contained_items_mut(&mut self) -> &mut[Item] {
+  fn get_contained_items_mut(&mut self) -> &mut[Item] {
     return &mut self.inventory;
   }
 
-  pub fn get_contained_items_owned(&self) -> Vec<Item> {
+  fn get_contained_items_owned(&self) -> Vec<Item> {
     return self.inventory.clone();
   }
 }
@@ -180,7 +180,7 @@ impl TryFrom<NbtListTag> for Furnace {
       cooking_total_time: value.get_child("cooking_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
       lit_total_time: value.get_child("lit_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
       position,
-      components: None,
+      components: Vec::new(),
       needs_ticking: slot_input.count > 0,
       inventory,
     });

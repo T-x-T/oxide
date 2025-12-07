@@ -5,3 +5,4 @@ use crate::packets::Packet;
 use crate::types::*;
 
 pub mod furnace;
+pub mod chest;

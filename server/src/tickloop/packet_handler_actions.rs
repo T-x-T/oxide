@@ -425,14 +425,16 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
         drop(players);
 
         match &mut block_entity {
-          // BlockEntity::Chest(items) => {
-          //   assert!(items.len() == 27);
-          //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-          //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-          // },
+          BlockEntity::Chest(chest) => {
+            let items = chest.get_contained_items_mut();
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            assert!(items.len() == 27);
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+          },
           BlockEntity::Furnace(furnace) => {
-            assert!(parsed_packet.slot < 36 + 3); //36 for the players inventory
             let items = furnace.get_contained_items_mut();
+            assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+            assert!(items.len() == 3);
             lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
             block_entity.set_needs_ticking(true);
           },
