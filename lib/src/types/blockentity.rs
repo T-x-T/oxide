@@ -37,13 +37,6 @@ impl BlockEntity {
     }
   }
 
-  pub fn get_contained_items_mut(&mut self) -> Vec<&mut Item> {
-    return match self {
-      BlockEntity::Furnace(furnace) => furnace.get_contained_items_mut(),
-      //_ => Vec::new(),
-    };
-  }
-
   pub fn get_contained_items_owned(&self) -> Vec<Item> {
     return match self {
       BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),

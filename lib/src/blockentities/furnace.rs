@@ -5,9 +5,7 @@ pub struct Furnace {
   pub position: BlockPosition, //global position, NOT within the chunk
   pub components: Option<Vec<SlotComponent>>, //At least I think so?
   pub needs_ticking: bool,
-  pub slot_input: Item,
-  pub slot_fuel: Item,
-  pub slot_output: Item,
+  pub inventory: Vec<Item>, //input, fuel, output
   pub lit_time_remaining: i16,
   pub cooking_time_spent: i16,
   pub cooking_total_time: i16,
@@ -17,7 +15,7 @@ pub struct Furnace {
 impl Furnace {
   pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
     if self.needs_ticking {
-      if self.slot_input.count == 0 {
+      if self.inventory[0].count == 0 {
         self.needs_ticking = false;
 
         self.lit_time_remaining = 0;
@@ -44,15 +42,15 @@ impl Furnace {
         return;
       }
 
-      if (self.slot_fuel.id != "minecraft:coal" && self.lit_time_remaining == 0) || self.slot_input.id != "minecraft:raw_iron" {
+      if (self.inventory[1].id != "minecraft:coal" && self.lit_time_remaining == 0) || self.inventory[0].id != "minecraft:raw_iron" {
         self.needs_ticking = false;
         return;
       }
 
       let mut can_cook = true;
       if self.lit_time_remaining == 0 {
-        if self.slot_fuel.count > 0 {
-          self.slot_fuel = Item { count: self.slot_fuel.count - 1, ..self.slot_fuel.clone() };
+        if self.inventory[1].count > 0 {
+          self.inventory[1] = Item { count: self.inventory[1].count - 1, ..self.inventory[1].clone() };
           self.lit_time_remaining = 1600;
         } else {
           self.cooking_time_spent = 0;
@@ -66,12 +64,12 @@ impl Furnace {
         } else if self.cooking_time_spent == 200 {
           self.cooking_time_spent = 0;
 
-          if self.slot_output.id == "minecraft:iron_ingot" {
-            self.slot_output = Item { count: self.slot_output.count + 1, ..self.slot_output.clone() };
+          if self.inventory[2].id == "minecraft:iron_ingot" {
+            self.inventory[2] = Item { count: self.inventory[2].count + 1, ..self.inventory[2].clone() };
           } else {
-            self.slot_output = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
+            self.inventory[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
           }
-          self.slot_input = Item { count: self.slot_input.count - 1, ..self.slot_input.clone() };
+          self.inventory[0] = Item { count: self.inventory[0].count - 1, ..self.inventory[0].clone() };
         } else {
           self.cooking_time_spent += 1;
         }
@@ -85,11 +83,7 @@ impl Furnace {
           game.send_packet(&x.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
             window_id: 1,
             state_id: 1,
-            slot_data: vec![
-              self.slot_input.clone().into(),
-              self.slot_fuel.clone().into(),
-              self.slot_output.clone().into(),
-            ],
+            slot_data: self.inventory.iter().cloned().map(Into::into).collect(),
             carried_item: None,
           }.try_into().unwrap());
 
@@ -127,9 +121,7 @@ impl Furnace {
       needs_ticking: false,
       position: position_global,
       components: None,
-      slot_input: Item::default(),
-      slot_fuel: Item::default(),
-      slot_output: Item::default(),
+      inventory: vec![Item::default();3],
       lit_time_remaining: 0,
       cooking_time_spent: 0,
       cooking_total_time: 0,
@@ -137,12 +129,12 @@ impl Furnace {
     }
   }
 
-  pub fn get_contained_items_mut(&mut self) -> Vec<&mut Item> {
-    return vec![&mut self.slot_input, &mut self.slot_fuel, &mut self.slot_output];
+  pub fn get_contained_items_mut(&mut self) -> &mut[Item] {
+    return &mut self.inventory;
   }
 
   pub fn get_contained_items_owned(&self) -> Vec<Item> {
-    return vec![self.slot_input.clone(), self.slot_fuel.clone(), self.slot_output.clone()];
+    return self.inventory.clone();
   }
 }
 
@@ -150,11 +142,7 @@ impl Furnace {
 impl From<Furnace> for Vec<NbtTag> {
   fn from(value: Furnace) -> Self {
     vec![
-      vec![
-        value.slot_input,
-        value.slot_fuel,
-        value.slot_output,
-      ].into(),
+      value.inventory.into(),
       NbtTag::Short("lit_time_remaining".to_string(), value.lit_time_remaining),
       NbtTag::Short("cooking_time_spent".to_string(), value.cooking_time_spent),
       NbtTag::Short("cooking_total_time".to_string(), value.cooking_total_time),
@@ -172,10 +160,10 @@ impl TryFrom<NbtListTag> for Furnace {
     let z = value.get_child("z").unwrap().as_int();
     let position = BlockPosition { x, y, z };
 
-    let mut slots = vec![Item::default(); 3];
+    let mut inventory = vec![Item::default(); 3];
     if let Some(items) = value.get_child("Items") {
       for entry in items.as_list() {
-        slots[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
+        inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
           id: entry.get_child("id").unwrap().as_string().to_string(),
           count: entry.get_child("count").unwrap().as_int() as u8,
           components: Vec::new()
@@ -184,7 +172,7 @@ impl TryFrom<NbtListTag> for Furnace {
     }
 
     let lit_time_remaining = value.get_child("lit_time_remaining").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short();
-    let slot_input = slots[0].clone();
+    let slot_input = inventory[0].clone();
 
     return Ok(Furnace {
       lit_time_remaining,
@@ -194,9 +182,7 @@ impl TryFrom<NbtListTag> for Furnace {
       position,
       components: None,
       needs_ticking: slot_input.count > 0,
-      slot_input,
-      slot_fuel: slots[1].clone(),
-      slot_output: slots[2].clone(),
+      inventory,
     });
   }
 }

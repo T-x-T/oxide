@@ -431,9 +431,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
           //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
           // },
           BlockEntity::Furnace(furnace) => {
-            assert!(parsed_packet.slot < 36 + 3 as i16); //36 for the players inventory
-            let mut items = furnace.get_contained_items_owned();
-            lib::containerclick::handle(parsed_packet, &mut items, player_uuid, game.clone(), streams_with_container_opened);
+            assert!(parsed_packet.slot < 36 + 3); //36 for the players inventory
+            let items = furnace.get_contained_items_mut();
+            lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
             block_entity.set_needs_ticking(true);
           },
           // BlockEntity::BrewingStand(items) => {

@@ -567,16 +567,12 @@ impl Player {
     }.try_into().unwrap());
 
 	  self.opened_inventory_at = Some(block_entity.get_position());
-
+		println!("{block_entity:?}");
     game.send_packet(&self.peer_socket_address, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
       window_id: 1,
       state_id: 1,
       slot_data: match block_entity.clone() {
-        BlockEntity::Furnace(furnace) => vec![
-          furnace.slot_input.into(),
-          furnace.slot_fuel.into(),
-          furnace.slot_output.into(),
-        ],
+        BlockEntity::Furnace(furnace) => furnace.inventory.iter().cloned().map(Into::into).collect(),
       },
       // slot_data: match block_entity.clone().data {
       //   BlockEntityData::Chest(block_entity_data_items) => {
