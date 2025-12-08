@@ -61,7 +61,6 @@ pub struct EntityIdManager(AtomicI32);
 
 impl EntityIdManager {
   pub fn get_new(&self) -> i32 {
-    self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-    return self.0.load(std::sync::atomic::Ordering::SeqCst);
+    return self.0.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
   }
 }
