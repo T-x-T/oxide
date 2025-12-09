@@ -64,9 +64,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						),
 						(
 							lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-							lib::packets::clientbound::play::SetHeadRotation { entity_id: player_entity_id, head_yaw: player.get_yaw_u8() }
-								.try_into()
-								.unwrap(),
+							lib::packets::clientbound::play::SetHeadRotation {
+								entity_id: player_entity_id,
+								head_yaw: player.get_yaw_u8(),
+							}
+							.try_into()
+							.unwrap(),
 						),
 					]
 				} else if position_updated {
@@ -109,9 +112,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						),
 						(
 							lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-							lib::packets::clientbound::play::SetHeadRotation { entity_id: player_entity_id, head_yaw: player.get_yaw_u8() }
-								.try_into()
-								.unwrap(),
+							lib::packets::clientbound::play::SetHeadRotation {
+								entity_id: player_entity_id,
+								head_yaw: player.get_yaw_u8(),
+							}
+							.try_into()
+							.unwrap(),
 						),
 					]
 				} else {
@@ -157,13 +163,23 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
 				let item_id = data::items::get_items()
 					.get(&picked_block_name)
-					.unwrap_or(&data::items::Item { max_stack_size: 0, rarity: data::items::ItemRarity::Common, id: 0, repair_cost: 0 })
+					.unwrap_or(&data::items::Item {
+						max_stack_size: 0,
+						rarity: data::items::ItemRarity::Common,
+						id: 0,
+						repair_cost: 0,
+					})
 					.id;
 
 				let mut players = game.players.lock().unwrap();
 				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 
-				let new_slot_data = Slot { item_count: 1, item_id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+				let new_slot_data = Slot {
+					item_count: 1,
+					item_id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				};
 
 				player.set_selected_inventory_slot(Some(new_slot_data), players_clone, game.clone());
 			}
@@ -175,7 +191,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						game.send_packet(
 							&other_player.peer_socket_address,
 							lib::packets::clientbound::play::EntityAnimation::PACKET_ID,
-							lib::packets::clientbound::play::EntityAnimation { entity_id, animation: if hand == 0 { 0 } else { 3 } }.try_into().unwrap(),
+							lib::packets::clientbound::play::EntityAnimation {
+								entity_id,
+								animation: if hand == 0 { 0 } else { 3 },
+							}
+							.try_into()
+							.unwrap(),
 						);
 					}
 				}
@@ -192,9 +213,15 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &game.block_state_data);
 					let location: Option<BlockPosition> =
 						if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
-							Some(BlockPosition { y: location.y - 1, ..location })
+							Some(BlockPosition {
+								y: location.y - 1,
+								..location
+							})
 						} else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
-							Some(BlockPosition { y: location.y + 1, ..location })
+							Some(BlockPosition {
+								y: location.y + 1,
+								..location
+							})
 						} else {
 							None
 						};
@@ -208,7 +235,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								game.send_packet(
 									&x.peer_socket_address,
 									lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-									lib::packets::clientbound::play::BlockUpdate { location, block_id: 0 }.try_into().unwrap(),
+									lib::packets::clientbound::play::BlockUpdate {
+										location,
+										block_id: 0,
+									}
+									.try_into()
+									.unwrap(),
 								);
 							})
 							.filter(|x| x.peer_socket_address != peer_addr)
@@ -216,7 +248,13 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								game.send_packet(
 									&x.peer_socket_address,
 									lib::packets::clientbound::play::WorldEvent::PACKET_ID,
-									lib::packets::clientbound::play::WorldEvent { event: 2001, location, data: old_block_id as i32 }.try_into().unwrap(),
+									lib::packets::clientbound::play::WorldEvent {
+										event: 2001,
+										location,
+										data: old_block_id as i32,
+									}
+									.try_into()
+									.unwrap(),
 								);
 							});
 					}
@@ -245,7 +283,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						game.send_packet(
 							&x.peer_socket_address,
 							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							lib::packets::clientbound::play::BlockUpdate { location, block_id: 0 }.try_into().unwrap(),
+							lib::packets::clientbound::play::BlockUpdate {
+								location,
+								block_id: 0,
+							}
+							.try_into()
+							.unwrap(),
 						);
 					})
 					.filter(|x| x.peer_socket_address != peer_addr)
@@ -253,23 +296,51 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						game.send_packet(
 							&x.peer_socket_address,
 							lib::packets::clientbound::play::WorldEvent::PACKET_ID,
-							lib::packets::clientbound::play::WorldEvent { event: 2001, location, data: old_block_id as i32 }.try_into().unwrap(),
+							lib::packets::clientbound::play::WorldEvent {
+								event: 2001,
+								location,
+								data: old_block_id as i32,
+							}
+							.try_into()
+							.unwrap(),
 						);
 					});
 
 				game.send_packet(
 					&peer_addr,
 					lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-					lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id }.try_into().unwrap(),
+					lib::packets::clientbound::play::AcknowledgeBlockChange {
+						sequence_id,
+					}
+					.try_into()
+					.unwrap(),
 				);
 
 				let blocks_to_update = [
-					BlockPosition { x: location.x + 1, ..location },
-					BlockPosition { x: location.x - 1, ..location },
-					BlockPosition { y: location.y + 1, ..location },
-					BlockPosition { y: location.y - 1, ..location },
-					BlockPosition { z: location.z + 1, ..location },
-					BlockPosition { z: location.z - 1, ..location },
+					BlockPosition {
+						x: location.x + 1,
+						..location
+					},
+					BlockPosition {
+						x: location.x - 1,
+						..location
+					},
+					BlockPosition {
+						y: location.y + 1,
+						..location
+					},
+					BlockPosition {
+						y: location.y - 1,
+						..location
+					},
+					BlockPosition {
+						z: location.z + 1,
+						..location
+					},
+					BlockPosition {
+						z: location.z - 1,
+						..location
+					},
 				];
 
 				for block_to_update in blocks_to_update {
@@ -282,9 +353,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 									game.send_packet(
 										&player.peer_socket_address,
 										lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-										lib::packets::clientbound::play::BlockUpdate { location: block_to_update, block_id: new_block as i32 }
-											.try_into()
-											.unwrap(),
+										lib::packets::clientbound::play::BlockUpdate {
+											location: block_to_update,
+											block_id: new_block as i32,
+										}
+										.try_into()
+										.unwrap(),
 									);
 								}
 							}
@@ -336,7 +410,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					//Let's go - we can place a block
 					let used_item_id = player
 						.get_held_item(true)
-						.unwrap_or(&Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() })
+						.unwrap_or(&Slot {
+							item_count: 0,
+							item_id: 0,
+							components_to_add: Vec::new(),
+							components_to_remove: Vec::new(),
+						})
 						.item_id;
 					let used_item_name = data::items::get_item_name_by_id(used_item_id);
 					let pitch = player.get_pitch();
@@ -381,7 +460,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								game.send_packet(
 									&peer_addr,
 									lib::packets::clientbound::play::OpenSignEditor::PACKET_ID,
-									lib::packets::clientbound::play::OpenSignEditor { location: block_to_place.1, is_front_text: true }.try_into().unwrap(),
+									lib::packets::clientbound::play::OpenSignEditor {
+										location: block_to_place.1,
+										is_front_text: true,
+									}
+									.try_into()
+									.unwrap(),
 								);
 							}
 							#[allow(clippy::collapsible_if)]
@@ -402,12 +486,30 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							}
 
 							blocks_to_update.append(&mut vec![
-								BlockPosition { x: block_to_place.1.x + 1, ..block_to_place.1 },
-								BlockPosition { x: block_to_place.1.x - 1, ..block_to_place.1 },
-								BlockPosition { y: block_to_place.1.y + 1, ..block_to_place.1 },
-								BlockPosition { y: block_to_place.1.y - 1, ..block_to_place.1 },
-								BlockPosition { z: block_to_place.1.z + 1, ..block_to_place.1 },
-								BlockPosition { z: block_to_place.1.z - 1, ..block_to_place.1 },
+								BlockPosition {
+									x: block_to_place.1.x + 1,
+									..block_to_place.1
+								},
+								BlockPosition {
+									x: block_to_place.1.x - 1,
+									..block_to_place.1
+								},
+								BlockPosition {
+									y: block_to_place.1.y + 1,
+									..block_to_place.1
+								},
+								BlockPosition {
+									y: block_to_place.1.y - 1,
+									..block_to_place.1
+								},
+								BlockPosition {
+									z: block_to_place.1.z + 1,
+									..block_to_place.1
+								},
+								BlockPosition {
+									z: block_to_place.1.z - 1,
+									..block_to_place.1
+								},
 							]);
 						}
 						Err(err) => {
@@ -444,7 +546,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						game.send_packet(
 							&player.peer_socket_address,
 							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							lib::packets::clientbound::play::BlockUpdate { location: block.1, block_id: block.0 as i32 }.try_into().unwrap(),
+							lib::packets::clientbound::play::BlockUpdate {
+								location: block.1,
+								block_id: block.0 as i32,
+							}
+							.try_into()
+							.unwrap(),
 						);
 					}
 				}
@@ -452,7 +559,11 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				game.send_packet(
 					&peer_addr,
 					lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-					lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id }.try_into().unwrap(),
+					lib::packets::clientbound::play::AcknowledgeBlockChange {
+						sequence_id,
+					}
+					.try_into()
+					.unwrap(),
 				);
 			}
 			PacketHandlerAction::SendChatMessage(peer_addr, message, timestamp, salt) => {
@@ -568,26 +679,26 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
 						block_entity.set_needs_ticking(true);
 					} // BlockEntity::BrewingStand(items) => {
-					  //   assert!(items.len() == 5);
-					  //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					  //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					  // },
-					  // BlockEntity::Crafter(items) => {
-					  //   assert!(items.len() == 9);
-					  //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					  //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					  // },
-					  // BlockEntity::Dispenser(items) => {
-					  //   assert!(items.len() == 9);
-					  //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					  //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					  // },
-					  // BlockEntity::Hopper(items) => {
-					  //   assert!(items.len() == 5);
-					  //   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					  //   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					  // },
-					  //x => println!("can't handle click_container packet for entity {x:?}"),
+					//   assert!(items.len() == 5);
+					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					// },
+					// BlockEntity::Crafter(items) => {
+					//   assert!(items.len() == 9);
+					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					// },
+					// BlockEntity::Dispenser(items) => {
+					//   assert!(items.len() == 9);
+					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					// },
+					// BlockEntity::Hopper(items) => {
+					//   assert!(items.len() == 5);
+					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					// },
+					x => println!("can't handle click_container packet for entity {x:?}"),
 				}
 
 				game.world.lock().unwrap().dimensions = dimensions;
@@ -639,16 +750,19 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				let blockentity = chunk.block_entities.iter_mut().find(|x| x.get_position() == location).unwrap();
 
-				// if let BlockEntity::Sign(_is_waxed, front_text, _back_text) = &mut blockentity {
-				//   front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
-				//   front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
-				//   front_text.as_tag_compound_mut().push(NbtTag::List("messages".to_string(), vec![
-				//     NbtListTag::String(text[0].clone()),
-				//     NbtListTag::String(text[1].clone()),
-				//     NbtListTag::String(text[2].clone()),
-				//     NbtListTag::String(text[3].clone()),
-				//   ]));
-				// }
+				if let BlockEntity::Sign(sign) = blockentity {
+					sign.front_text.as_tag_compound_mut().push(NbtTag::Byte("has_glowing_text".to_string(), 0));
+					sign.front_text.as_tag_compound_mut().push(NbtTag::String("color".to_string(), "black".to_string()));
+					sign.front_text.as_tag_compound_mut().push(NbtTag::List(
+						"messages".to_string(),
+						vec![
+							NbtListTag::String(text[0].clone()),
+							NbtListTag::String(text[1].clone()),
+							NbtListTag::String(text[2].clone()),
+							NbtListTag::String(text[3].clone()),
+						],
+					));
+				}
 
 				let packet_to_send = lib::packets::clientbound::play::BlockEntityData {
 					location,
@@ -718,7 +832,10 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							}],
 						};
 
-						let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation { entity_id, yaw: 0.0 };
+						let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
+							entity_id,
+							yaw: 0.0,
+						};
 
 						let entity_data = entity.get_common_entity_data_mut();
 						entity_data.velocity.y += 0.05;
@@ -769,17 +886,40 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						for x in (creeper_position.x - 2)..creeper_position.x + 2 {
 							for y in (creeper_position.y - 2)..creeper_position.y + 2 {
 								for z in (creeper_position.z - 2)..creeper_position.z + 2 {
-									let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(BlockPosition { x, y, z }, 0).unwrap();
+									let res = world
+										.dimensions
+										.get_mut("minecraft:overworld")
+										.unwrap()
+										.overwrite_block(
+											BlockPosition {
+												x,
+												y,
+												z,
+											},
+											0,
+										)
+										.unwrap();
 									if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
 										let block_entity = world
 											.dimensions
 											.get("minecraft:overworld")
 											.unwrap()
-											.get_chunk_from_position(BlockPosition { x, y, z })
+											.get_chunk_from_position(BlockPosition {
+												x,
+												y,
+												z,
+											})
 											.unwrap()
 											.block_entities
 											.iter()
-											.find(|a| a.get_position() == BlockPosition { x, y, z })
+											.find(|a| {
+												a.get_position()
+													== BlockPosition {
+														x,
+														y,
+														z,
+													}
+											})
 											.unwrap();
 										let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
 										block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
@@ -789,7 +929,16 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 										game.send_packet(
 											&player.peer_socket_address,
 											lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-											lib::packets::clientbound::play::BlockUpdate { location: BlockPosition { x, y, z }, block_id: 0 }.try_into().unwrap(),
+											lib::packets::clientbound::play::BlockUpdate {
+												location: BlockPosition {
+													x,
+													y,
+													z,
+												},
+												block_id: 0,
+											}
+											.try_into()
+											.unwrap(),
 										);
 									}
 								}
@@ -875,7 +1024,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				game.send_packet(
 					&peer_addr,
 					lib::packets::clientbound::play::GameEvent::PACKET_ID,
-					lib::packets::clientbound::play::GameEvent { event: 13, value: 0.0 }.try_into().unwrap(),
+					lib::packets::clientbound::play::GameEvent {
+						event: 13,
+						value: 0.0,
+					}
+					.try_into()
+					.unwrap(),
 				);
 
 				game.send_packet(
@@ -904,7 +1058,11 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				game.send_packet(
 					&peer_addr,
 					lib::packets::clientbound::play::SetHeldItem::PACKET_ID,
-					lib::packets::clientbound::play::SetHeldItem { slot: new_player.get_selected_slot() }.try_into().unwrap(),
+					lib::packets::clientbound::play::SetHeldItem {
+						slot: new_player.get_selected_slot(),
+					}
+					.try_into()
+					.unwrap(),
 				);
 
 				let new_player_uuid = new_player.uuid;
@@ -922,7 +1080,11 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					game.send_packet(
 						&x.peer_socket_address,
 						lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-						lib::packets::clientbound::play::PlayerInfoRemove { uuids: players.iter().map(|x| x.uuid).collect() }.try_into().unwrap(),
+						lib::packets::clientbound::play::PlayerInfoRemove {
+							uuids: players.iter().map(|x| x.uuid).collect(),
+						}
+						.try_into()
+						.unwrap(),
 					);
 
 					game.send_packet(
@@ -1026,9 +1188,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					game.send_packet(
 						&peer_addr,
 						lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-						lib::packets::clientbound::play::SetHeadRotation { entity_id: player.entity_id, head_yaw: player.get_yaw_u8() }
-							.try_into()
-							.unwrap(),
+						lib::packets::clientbound::play::SetHeadRotation {
+							entity_id: player.entity_id,
+							head_yaw: player.get_yaw_u8(),
+						}
+						.try_into()
+						.unwrap(),
 					);
 				}
 
@@ -1104,9 +1269,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					game.send_packet(
 						&player.peer_socket_address,
 						lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-						lib::packets::clientbound::play::SetHeadRotation { entity_id: player.entity_id, head_yaw: player.get_yaw_u8() }
-							.try_into()
-							.unwrap(),
+						lib::packets::clientbound::play::SetHeadRotation {
+							entity_id: player.entity_id,
+							head_yaw: player.get_yaw_u8(),
+						}
+						.try_into()
+						.unwrap(),
 					);
 				}
 
@@ -1133,9 +1301,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				game.send_packet(
 					&peer_addr,
 					lib::packets::clientbound::play::Commands::PACKET_ID,
-					lib::packets::clientbound::play::Commands { nodes: crate::command::get_command_packet_data(game.clone()), root_index: 0 }
-						.try_into()
-						.unwrap(),
+					lib::packets::clientbound::play::Commands {
+						nodes: crate::command::get_command_packet_data(game.clone()),
+						root_index: 0,
+					}
+					.try_into()
+					.unwrap(),
 				);
 
 				game.send_packet(

@@ -6,3 +6,4 @@ use crate::types::*;
 
 pub mod chest;
 pub mod furnace;
+pub mod sign;

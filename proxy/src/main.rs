@@ -20,7 +20,10 @@ fn main() {
 		let client_read_stream = client_send_stream.try_clone().unwrap();
 		let server_send_stream = server_read_stream.try_clone().unwrap();
 
-		let connection = Arc::new(Mutex::new(Connection { state: lib::ConnectionState::Handshaking, protocol_version: 0 }));
+		let connection = Arc::new(Mutex::new(Connection {
+			state: lib::ConnectionState::Handshaking,
+			protocol_version: 0,
+		}));
 		let connection_clone = connection.clone();
 
 		//Handle packets coming in on the server side
@@ -55,8 +58,10 @@ fn main() {
 						if packet_id == 0x00 {
 							let parsed_packet = lib::packets::serverbound::handshaking::Handshake::try_from(server_packet.data.clone()).unwrap();
 							println!("parsed packet: {parsed_packet:?}");
-							let new_connection_data =
-								Connection { state: parsed_packet.next_state.clone().into(), protocol_version: parsed_packet.protocol_version };
+							let new_connection_data = Connection {
+								state: parsed_packet.next_state.clone().into(),
+								protocol_version: parsed_packet.protocol_version,
+							};
 							*connection.lock().unwrap() = new_connection_data.clone();
 							println!("Set state to {:?} and version to {}", new_connection_data.state, new_connection_data.protocol_version);
 							parsed_server_packet = Some(parsed_packet.try_into().unwrap());
@@ -355,9 +360,9 @@ fn main() {
 							}
 							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID => {
 								// Disabled because implementation is still incomplete
-								let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
-								println!("parsed packet: {parsed_packet:?}");
-								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+								//let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
+								//println!("parsed packet: {parsed_packet:?}");
+								//parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
 							_ => {
 								//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");

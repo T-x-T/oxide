@@ -11,6 +11,7 @@ use super::*;
 pub enum BlockEntity {
 	Furnace(crate::blockentities::furnace::Furnace),
 	Chest(crate::blockentities::chest::Chest),
+	Sign(crate::blockentities::sign::Sign),
 }
 
 pub trait CommonBlockEntity {
@@ -25,6 +26,7 @@ impl BlockEntity {
 		match self {
 			BlockEntity::Furnace(furnace) => furnace.tick(players, game),
 			BlockEntity::Chest(chest) => chest.tick(players, game),
+			BlockEntity::Sign(sign) => sign.tick(players, game),
 		}
 	}
 
@@ -32,6 +34,9 @@ impl BlockEntity {
 		return match block_type {
 			Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
 			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
+			Type::WallSign | Type::StandingSign | Type::WallHangingSign | Type::CeilingHangingSign => {
+				Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position)))
+			}
 			_ => None,
 		};
 	}
@@ -40,6 +45,7 @@ impl BlockEntity {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.position,
 			BlockEntity::Chest(chest) => chest.position,
+			BlockEntity::Sign(sign) => sign.position,
 		};
 	}
 
@@ -47,6 +53,7 @@ impl BlockEntity {
 		match self {
 			BlockEntity::Furnace(_) => "minecraft:furnace".to_string(),
 			BlockEntity::Chest(_) => "minecraft:chest".to_string(),
+			BlockEntity::Sign(_) => "minecraft:sign".to_string(),
 		}
 	}
 
@@ -54,7 +61,7 @@ impl BlockEntity {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
 			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),
-			//_ => Vec::new(),
+			_ => Vec::new(),
 		};
 	}
 
@@ -127,6 +134,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
 		return Ok(match id {
 			BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
 			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
+			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
 			_ => {
 				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}"))));
 			}
@@ -139,6 +147,7 @@ impl From<BlockEntity> for Vec<NbtTag> {
 		return match value {
 			BlockEntity::Furnace(furnace) => furnace.into(),
 			BlockEntity::Chest(chest) => chest.into(),
+			BlockEntity::Sign(sign) => sign.into(),
 		};
 	}
 }
@@ -928,7 +937,11 @@ impl TryFrom<NbtListTag> for BlockEntityBaseData {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition { x, y, z };
+		let position = BlockPosition {
+			x,
+			y,
+			z,
+		};
 
 		let data: BlockEntityData = match id {
 			BlockEntityId::Banner => {
@@ -1122,7 +1135,11 @@ impl TryFrom<NbtListTag> for BlockEntityBaseData {
 						components: Vec::new(),
 					}
 				} else {
-					Item { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
+					Item {
+						id: "minecraft:air".to_string(),
+						count: 0,
+						components: Vec::new(),
+					}
 				},
 			),
 			BlockEntityId::EndGateway => BlockEntityData::EndGateway(
@@ -1179,6 +1196,12 @@ impl TryFrom<NbtListTag> for BlockEntityBaseData {
 			| BlockEntityId::Vault => BlockEntityData::NoData,
 		};
 
-		return Ok(BlockEntityBaseData { id, position, components: None, data, needs_ticking: false });
+		return Ok(BlockEntityBaseData {
+			id,
+			position,
+			components: None,
+			data,
+			needs_ticking: false,
+		});
 	}
 }
