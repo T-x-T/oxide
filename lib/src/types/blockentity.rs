@@ -13,6 +13,8 @@ pub enum BlockEntity {
 	Chest(crate::blockentities::chest::Chest),
 	Sign(crate::blockentities::sign::Sign),
 	Barrel(crate::blockentities::barrel::Barrel),
+	Bed(crate::blockentities::bed::Bed),
+	MobSpaner(crate::blockentities::mob_spawner::MobSpawner),
 }
 
 pub trait CommonBlockEntity {
@@ -29,6 +31,8 @@ impl BlockEntity {
 			BlockEntity::Chest(chest) => chest.tick(players, game),
 			BlockEntity::Sign(sign) => sign.tick(players, game),
 			BlockEntity::Barrel(barrel) => barrel.tick(players, game),
+			BlockEntity::Bed(bed) => bed.tick(players, game),
+			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.tick(players, game),
 		}
 	}
 
@@ -40,6 +44,8 @@ impl BlockEntity {
 				Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position)))
 			}
 			Type::Barrel => Some(BlockEntity::Barrel(crate::blockentities::barrel::Barrel::new(position))),
+			Type::Bed => Some(BlockEntity::Bed(crate::blockentities::bed::Bed::new(position))),
+			Type::Spawner => Some(BlockEntity::MobSpaner(crate::blockentities::mob_spawner::MobSpawner::new(position))),
 			_ => None,
 		};
 	}
@@ -50,6 +56,8 @@ impl BlockEntity {
 			BlockEntity::Chest(chest) => chest.position,
 			BlockEntity::Sign(sign) => sign.position,
 			BlockEntity::Barrel(barrel) => barrel.position,
+			BlockEntity::Bed(bed) => bed.position,
+			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.position,
 		};
 	}
 
@@ -59,6 +67,8 @@ impl BlockEntity {
 			BlockEntity::Chest(_) => "minecraft:chest".to_string(),
 			BlockEntity::Sign(_) => "minecraft:sign".to_string(),
 			BlockEntity::Barrel(_) => "minecraft:barrel".to_string(),
+			BlockEntity::Bed(_) => "minecraft:bed".to_string(),
+			BlockEntity::MobSpaner(_) => "minecraft:mob_spawner".to_string(),
 		}
 	}
 
@@ -143,6 +153,8 @@ impl TryFrom<NbtListTag> for BlockEntity {
 			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
 			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
 			BlockEntityId::Barrel => BlockEntity::Barrel(crate::blockentities::barrel::Barrel::try_from(value)?),
+			BlockEntityId::Bed => BlockEntity::Bed(crate::blockentities::bed::Bed::try_from(value)?),
+			BlockEntityId::MobSpawner => BlockEntity::MobSpaner(crate::blockentities::mob_spawner::MobSpawner::try_from(value)?),
 			_ => {
 				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}"))));
 			}
@@ -157,6 +169,8 @@ impl From<BlockEntity> for Vec<NbtTag> {
 			BlockEntity::Chest(chest) => chest.into(),
 			BlockEntity::Sign(sign) => sign.into(),
 			BlockEntity::Barrel(barrel) => barrel.into(),
+			BlockEntity::Bed(bed) => bed.into(),
+			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.into(),
 		};
 	}
 }
