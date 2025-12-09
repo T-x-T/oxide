@@ -11,16 +11,29 @@ pub struct ServerboundKnownPackets {
 
 impl Packet for ServerboundKnownPackets {
 	const PACKET_ID: u8 = 0x07;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<ServerboundKnownPackets> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
 	fn try_from(value: ServerboundKnownPackets) -> Result<Self, Box<dyn Error>> {
-		let data: Vec<u8> = value.known_packs.clone().into_iter()
-			.flat_map(|x| vec![crate::serialize::string(x.namespace.as_str()), crate::serialize::string(x.id.as_str()), crate::serialize::string(x.version.as_str())])
+		let data: Vec<u8> = value
+			.known_packs
+			.clone()
+			.into_iter()
+			.flat_map(|x| {
+				vec![
+					crate::serialize::string(x.namespace.as_str()),
+					crate::serialize::string(x.id.as_str()),
+					crate::serialize::string(x.version.as_str()),
+				]
+			})
 			.flatten()
 			.collect();
 
@@ -52,14 +65,16 @@ impl TryFrom<Vec<u8>> for ServerboundKnownPackets {
 //
 
 #[derive(Debug, Clone, Default)]
-pub struct AcknowledgeFinishConfiguration {
-
-}
+pub struct AcknowledgeFinishConfiguration {}
 
 impl Packet for AcknowledgeFinishConfiguration {
 	const PACKET_ID: u8 = 0x03;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<AcknowledgeFinishConfiguration> for Vec<u8> {
@@ -74,6 +89,6 @@ impl TryFrom<Vec<u8>> for AcknowledgeFinishConfiguration {
 	type Error = Box<dyn Error>;
 
 	fn try_from(_value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {  });
+		return Ok(Self {});
 	}
 }

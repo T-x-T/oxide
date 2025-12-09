@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use std::error::Error;
+use std::sync::Arc;
 
 use crate::packets::Packet;
 use crate::types::*;
 
-pub mod furnace;
 pub mod chest;
+pub mod furnace;

@@ -24,8 +24,12 @@ pub struct SpawnEntity {
 
 impl Packet for SpawnEntity {
 	const PACKET_ID: u8 = 0x01;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SpawnEntity> for Vec<u8> {
@@ -58,9 +62,9 @@ impl TryFrom<Vec<u8>> for SpawnEntity {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			entity_uuid: crate::deserialize::uuid(&mut value)?,
 			entity_type: crate::deserialize::varint(&mut value)?,
-		  x: crate::deserialize::double(&mut value)?,
-		  y: crate::deserialize::double(&mut value)?,
-		  z: crate::deserialize::double(&mut value)?,
+			x: crate::deserialize::double(&mut value)?,
+			y: crate::deserialize::double(&mut value)?,
+			z: crate::deserialize::double(&mut value)?,
 			pitch: value.remove(0),
 			yaw: value.remove(0),
 			head_yaw: value.remove(0),
@@ -84,8 +88,12 @@ pub struct EntityAnimation {
 
 impl Packet for EntityAnimation {
 	const PACKET_ID: u8 = 0x02;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<EntityAnimation> for Vec<u8> {
@@ -105,10 +113,7 @@ impl TryFrom<Vec<u8>> for EntityAnimation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			animation: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, animation: value.remove(0) });
 	}
 }
 
@@ -123,8 +128,12 @@ pub struct AcknowledgeBlockChange {
 
 impl Packet for AcknowledgeBlockChange {
 	const PACKET_ID: u8 = 0x04;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<AcknowledgeBlockChange> for Vec<u8> {
@@ -143,9 +152,7 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			sequence_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { sequence_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -162,8 +169,12 @@ pub struct BlockEntityData {
 
 impl Packet for BlockEntityData {
 	const PACKET_ID: u8 = 0x06;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<BlockEntityData> for Vec<u8> {
@@ -206,8 +217,12 @@ pub struct BlockAction {
 
 impl Packet for BlockAction {
 	const PACKET_ID: u8 = 0x07;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<BlockAction> for Vec<u8> {
@@ -250,8 +265,12 @@ pub struct BlockUpdate {
 
 impl Packet for BlockUpdate {
 	const PACKET_ID: u8 = 0x08;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<BlockUpdate> for Vec<u8> {
@@ -271,10 +290,7 @@ impl TryFrom<Vec<u8>> for BlockUpdate {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			location: crate::deserialize::position(&mut value)?,
-			block_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { location: crate::deserialize::position(&mut value)?, block_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -290,8 +306,12 @@ pub struct Commands {
 
 impl Packet for Commands {
 	const PACKET_ID: u8 = 0x10;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<Commands> for Vec<u8> {
@@ -313,13 +333,10 @@ impl TryFrom<Vec<u8>> for Commands {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let nodes_len = crate::deserialize::varint(&mut value)?;
-		let nodes: Vec<CommandNode> = (0..nodes_len).map(|_| {CommandNode::try_from(&mut value).unwrap() }).collect();
+		let nodes: Vec<CommandNode> = (0..nodes_len).map(|_| CommandNode::try_from(&mut value).unwrap()).collect();
 		let root_index = crate::deserialize::varint(&mut value)?;
 
-		return Ok(Self {
-			nodes,
-			root_index,
-		});
+		return Ok(Self { nodes, root_index });
 	}
 }
 
@@ -334,8 +351,12 @@ pub struct CloseContainer {
 
 impl Packet for CloseContainer {
 	const PACKET_ID: u8 = 0x11;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<CloseContainer> for Vec<u8> {
@@ -354,9 +375,7 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-		  window_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { window_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -374,8 +393,12 @@ pub struct SetContainerContent {
 
 impl Packet for SetContainerContent {
 	const PACKET_ID: u8 = 0x12;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetContainerContent> for Vec<u8> {
@@ -404,12 +427,7 @@ impl TryFrom<Vec<u8>> for SetContainerContent {
 		let slot_data = (0..slot_data_len).map(|_| crate::deserialize::slot(&mut value).unwrap()).collect();
 		let carried_item = crate::deserialize::slot(&mut value)?;
 
-		return Ok(Self {
-			window_id,
-			state_id,
-			slot_data,
-			carried_item,
-		});
+		return Ok(Self { window_id, state_id, slot_data, carried_item });
 	}
 }
 
@@ -426,8 +444,12 @@ pub struct SetContainerProperty {
 
 impl Packet for SetContainerProperty {
 	const PACKET_ID: u8 = 0x13;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetContainerProperty> for Vec<u8> {
@@ -470,8 +492,12 @@ pub struct SetContainerSlot {
 
 impl Packet for SetContainerSlot {
 	const PACKET_ID: u8 = 0x14;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetContainerSlot> for Vec<u8> {
@@ -514,8 +540,12 @@ pub struct EntityEvent {
 
 impl Packet for EntityEvent {
 	const PACKET_ID: u8 = 0x22;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<EntityEvent> for Vec<u8> {
@@ -535,10 +565,7 @@ impl TryFrom<Vec<u8>> for EntityEvent {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::int(&mut value)?,
-			entity_status: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::int(&mut value)?, entity_status: value.remove(0) });
 	}
 }
 
@@ -563,8 +590,12 @@ pub struct TeleportEntity {
 
 impl Packet for TeleportEntity {
 	const PACKET_ID: u8 = 0x23;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<TeleportEntity> for Vec<u8> {
@@ -626,8 +657,12 @@ pub struct Explosion {
 
 impl Packet for Explosion {
 	const PACKET_ID: u8 = 0x24;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<Explosion> for Vec<u8> {
@@ -642,12 +677,12 @@ impl TryFrom<Explosion> for Vec<u8> {
 		output.append(&mut crate::serialize::float(value.radius));
 		output.append(&mut crate::serialize::int(value.block_count));
 		if value.player_delta_velocity.is_some() {
-      output.push(1);
-  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
-  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().1));
-  		output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().2));
+			output.push(1);
+			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
+			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().1));
+			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().2));
 		} else {
-      output.push(0);
+			output.push(0);
 		}
 		output.append(&mut crate::serialize::varint(value.particle_id));
 		output.append(&mut crate::serialize::varint(value.sound));
@@ -661,35 +696,21 @@ impl TryFrom<Vec<u8>> for Explosion {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-	  let x = crate::deserialize::double(&mut value)?;
-	  let y = crate::deserialize::double(&mut value)?;
-	  let z = crate::deserialize::double(&mut value)?;
-	  let radius = crate::deserialize::float(&mut value)?;
-	  let block_count = crate::deserialize::int(&mut value)?;
+		let x = crate::deserialize::double(&mut value)?;
+		let y = crate::deserialize::double(&mut value)?;
+		let z = crate::deserialize::double(&mut value)?;
+		let radius = crate::deserialize::float(&mut value)?;
+		let block_count = crate::deserialize::int(&mut value)?;
 		let player_delta_velocity: Option<(f64, f64, f64)> = if crate::deserialize::boolean(&mut value)? {
-      Some((
-        crate::deserialize::double(&mut value)?,
-        crate::deserialize::double(&mut value)?,
-        crate::deserialize::double(&mut value)?
-      ))
+			Some((crate::deserialize::double(&mut value)?, crate::deserialize::double(&mut value)?, crate::deserialize::double(&mut value)?))
 		} else {
-		  None
+			None
 		};
 
 		let particle_id = crate::deserialize::varint(&mut value)?;
 		let sound = crate::deserialize::varint(&mut value)?;
 
-		return Ok(Self {
-      x,
-      y,
-      z,
-      radius,
-      block_count,
-      player_delta_velocity,
-      particle_id,
-      particle_data: (),
-      sound,
-		});
+		return Ok(Self { x, y, z, radius, block_count, player_delta_velocity, particle_id, particle_data: (), sound });
 	}
 }
 
@@ -705,8 +726,12 @@ pub struct GameEvent {
 
 impl Packet for GameEvent {
 	const PACKET_ID: u8 = 0x26;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<GameEvent> for Vec<u8> {
@@ -726,10 +751,7 @@ impl TryFrom<Vec<u8>> for GameEvent {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			event: value.remove(0),
-			value: crate::deserialize::float(&mut value)?,
-		});
+		return Ok(Self { event: value.remove(0), value: crate::deserialize::float(&mut value)? });
 	}
 }
 
@@ -745,8 +767,12 @@ pub struct HurtAnimation {
 
 impl Packet for HurtAnimation {
 	const PACKET_ID: u8 = 0x29;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<HurtAnimation> for Vec<u8> {
@@ -766,10 +792,7 @@ impl TryFrom<Vec<u8>> for HurtAnimation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			yaw: crate::deserialize::float(&mut value)?,
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, yaw: crate::deserialize::float(&mut value)? });
 	}
 }
 
@@ -784,8 +807,12 @@ pub struct ClientboundKeepAlive {
 
 impl Packet for ClientboundKeepAlive {
 	const PACKET_ID: u8 = 0x2b;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ClientboundKeepAlive> for Vec<u8> {
@@ -804,9 +831,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			keep_alive_id: crate::deserialize::long(&mut value)?,
-		});
+		return Ok(Self { keep_alive_id: crate::deserialize::long(&mut value)? });
 	}
 }
 
@@ -831,8 +856,12 @@ pub struct ChunkDataAndUpdateLight {
 
 impl Packet for ChunkDataAndUpdateLight {
 	const PACKET_ID: u8 = 0x2c;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 type Bitset = Vec<u64>;
@@ -841,8 +870,8 @@ type LightArray = Vec<u8>;
 
 #[derive(Clone, Debug)]
 pub struct HeightMap {
-  pub data_type: i32,
-  pub data: Vec<u64>,
+	pub data_type: i32,
+	pub data: Vec<u64>,
 }
 
 #[derive(Debug, Clone)]
@@ -904,11 +933,11 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 
 		output.append(&mut crate::serialize::varint(value.heightmaps.len() as i32));
 		for heightmap in value.heightmaps {
-      output.append(&mut crate::serialize::varint(heightmap.data_type));
-      output.append(&mut crate::serialize::varint(heightmap.data.len() as i32));
-      for heightmap_data in heightmap.data {
-        output.append(&mut crate::serialize::unsigned_long(heightmap_data));
-      }
+			output.append(&mut crate::serialize::varint(heightmap.data_type));
+			output.append(&mut crate::serialize::varint(heightmap.data.len() as i32));
+			for heightmap_data in heightmap.data {
+				output.append(&mut crate::serialize::unsigned_long(heightmap_data));
+			}
 		}
 
 		let mut chunk_section_data: Vec<u8> = Vec::new();
@@ -971,7 +1000,7 @@ impl TryFrom<BlockStatesPalettedContainer> for Vec<u8> {
 			BlockStatesPalettedContainer::SingleValued(single_valued) => {
 				output.push(single_valued.bits_per_entry);
 				output.append(&mut crate::serialize::varint(single_valued.value));
-			},
+			}
 			BlockStatesPalettedContainer::Indirect(mut indirect) => {
 				output.push(indirect.bits_per_entry);
 				output.append(&mut crate::serialize::varint(indirect.palette.len() as i32));
@@ -980,32 +1009,32 @@ impl TryFrom<BlockStatesPalettedContainer> for Vec<u8> {
 				}
 				indirect.data_array.reverse();
 				while !indirect.data_array.is_empty() {
-				  let entries_per_long = 64 / indirect.bits_per_entry;
+					let entries_per_long = 64 / indirect.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !indirect.data_array.is_empty() {
+						if !indirect.data_array.is_empty() {
 							let value = indirect.data_array.pop().unwrap();
 							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
-			},
+			}
 			BlockStatesPalettedContainer::Direct(mut direct) => {
 				output.push(direct.bits_per_entry);
 				direct.data_array.reverse();
 				while !direct.data_array.is_empty() {
-				  let entries_per_long = 64 / direct.bits_per_entry;
+					let entries_per_long = 64 / direct.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !direct.data_array.is_empty() {
+						if !direct.data_array.is_empty() {
 							let value = direct.data_array.pop().unwrap();
 							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
-			},
+			}
 		};
 
 		return Ok(output);
@@ -1022,7 +1051,7 @@ impl TryFrom<BiomesPalettedContainer> for Vec<u8> {
 			BiomesPalettedContainer::SingleValued(single_valued) => {
 				output.push(single_valued.bits_per_entry);
 				output.append(&mut crate::serialize::varint(single_valued.value));
-			},
+			}
 			BiomesPalettedContainer::Indirect(indirect) => {
 				output.push(indirect.bits_per_entry);
 				output.append(&mut crate::serialize::varint(indirect.palette.len() as i32));
@@ -1031,32 +1060,32 @@ impl TryFrom<BiomesPalettedContainer> for Vec<u8> {
 				}
 				let mut data_array = indirect.data_array.clone();
 				while !data_array.is_empty() {
-				  let entries_per_long = 64 / indirect.bits_per_entry;
+					let entries_per_long = 64 / indirect.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !data_array.is_empty() {
+						if !data_array.is_empty() {
 							let value = data_array.remove(0);
 							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
-			},
+			}
 			BiomesPalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
 				let mut data_array = direct.data_array.clone();
 				while !data_array.is_empty() {
-				  let entries_per_long = 64 / direct.bits_per_entry;
+					let entries_per_long = 64 / direct.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-					  if !data_array.is_empty() {
+						if !data_array.is_empty() {
 							let value = data_array.remove(0);
 							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
-			},
+			}
 		};
 
 		return Ok(output);
@@ -1064,22 +1093,20 @@ impl TryFrom<BiomesPalettedContainer> for Vec<u8> {
 }
 
 
-
-
 impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-	  let chunk_x = crate::deserialize::int(&mut value)?;
+		let chunk_x = crate::deserialize::int(&mut value)?;
 		let chunk_z = crate::deserialize::int(&mut value)?;
 		let mut heightmaps: Vec<HeightMap> = Vec::new();
 		let heightmaps_len = crate::deserialize::varint(&mut value)?;
 		for _ in 0..heightmaps_len {
-		  let data_type = crate::deserialize::varint(&mut value)?;
+			let data_type = crate::deserialize::varint(&mut value)?;
 			let data_len = crate::deserialize::varint(&mut value)?;
 			let mut data: Vec<u64> = Vec::new();
 			for _ in 0..data_len {
-			  data.push(crate::deserialize::unsigned_long(&mut value)?);
+				data.push(crate::deserialize::unsigned_long(&mut value)?);
 			}
 			heightmaps.push(HeightMap { data_type, data });
 		}
@@ -1096,17 +1123,8 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			let packed_xz = value.remove(0);
 			let y = crate::deserialize::short(&mut value)?;
 			let block_entity_type = crate::deserialize::varint(&mut value)?;
-			let data = if *value.first().unwrap() == 0 {
-				None
-			} else {
-				Some(crate::deserialize::nbt_network(&mut value)?)
-			};
-			block_entities.push(BlockEntity {
-				packed_xz,
-				y,
-				block_entity_type,
-				data,
-			});
+			let data = if *value.first().unwrap() == 0 { None } else { Some(crate::deserialize::nbt_network(&mut value)?) };
+			block_entities.push(BlockEntity { packed_xz, y, block_entity_type, data });
 		}
 		let sky_light_mask = crate::deserialize::bitset(&mut value)?;
 		let block_light_mask = crate::deserialize::bitset(&mut value)?;
@@ -1154,7 +1172,7 @@ impl TryFrom<&mut Vec<u8>> for ChunkSection {
 	type Error = Box<dyn Error>;
 
 	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
-	  return Ok(Self {
+		return Ok(Self {
 			block_count: crate::deserialize::unsigned_short(value)?,
 			block_states: value.try_into()?,
 			biomes: value.try_into()?,
@@ -1163,120 +1181,100 @@ impl TryFrom<&mut Vec<u8>> for ChunkSection {
 }
 
 impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
-  type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-  fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
-    let bits_per_entry = value.remove(0);
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		let bits_per_entry = value.remove(0);
 
-    return match bits_per_entry {
-   		0 => {
-        let value_entry = crate::deserialize::varint(value)?;
-   			Ok(BlockStatesPalettedContainer::SingleValued(SingleValued {
-   				bits_per_entry,
-   				value: value_entry,
-   			}))
-       },
-   		1..=14 => {
-   			let palette_length = crate::deserialize::varint(value)?;
-   			let mut palette: Vec<i32> = Vec::new();
-   			for _ in 0..palette_length {
-   				palette.push(crate::deserialize::varint(value)?);
-   			}
-        let entries_per_long = 64 / bits_per_entry as i32;
-   			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
-   			let mut data_array: Vec<i32> = Vec::new();
-   			for _ in 0..long_array_length {
-          let value = crate::deserialize::unsigned_long(value)?;
-          for i in 0..entries_per_long {
-            let entry = value >> (i * bits_per_entry as i32);
-            let entry = entry >> (64 - bits_per_entry);
-            data_array.push(entry as i32);
-          }
-   			}
-   			Ok(BlockStatesPalettedContainer::Indirect(Indirect{
-   				bits_per_entry,
-   				data_array,
-   				palette,
-   			}))
-   		}
-   		_ => {
-        let entries_per_long = 64 / bits_per_entry as i32;
-  			let long_array_length = (f64::from(16*16*16) / f64::from(entries_per_long)).ceil() as i32;
-  			let mut data_array: Vec<i32> = Vec::new();
-  			for _ in 0..long_array_length {
-          let value = crate::deserialize::unsigned_long(value)?;
-          for i in 0..entries_per_long {
-            let entry = value >> (i * bits_per_entry as i32);
-            let entry = entry >> (64 - bits_per_entry);
-            data_array.push(entry as i32);
-          }
-  			}
-   			Ok(BlockStatesPalettedContainer::Direct(Direct {
-   				bits_per_entry,
-   				data_array,
-   			}))
-   		}
-   	};
-  }
+		return match bits_per_entry {
+			0 => {
+				let value_entry = crate::deserialize::varint(value)?;
+				Ok(BlockStatesPalettedContainer::SingleValued(SingleValued { bits_per_entry, value: value_entry }))
+			}
+			1..=14 => {
+				let palette_length = crate::deserialize::varint(value)?;
+				let mut palette: Vec<i32> = Vec::new();
+				for _ in 0..palette_length {
+					palette.push(crate::deserialize::varint(value)?);
+				}
+				let entries_per_long = 64 / bits_per_entry as i32;
+				let long_array_length = (f64::from(16 * 16 * 16) / f64::from(entries_per_long)).ceil() as i32;
+				let mut data_array: Vec<i32> = Vec::new();
+				for _ in 0..long_array_length {
+					let value = crate::deserialize::unsigned_long(value)?;
+					for i in 0..entries_per_long {
+						let entry = value >> (i * bits_per_entry as i32);
+						let entry = entry >> (64 - bits_per_entry);
+						data_array.push(entry as i32);
+					}
+				}
+				Ok(BlockStatesPalettedContainer::Indirect(Indirect { bits_per_entry, data_array, palette }))
+			}
+			_ => {
+				let entries_per_long = 64 / bits_per_entry as i32;
+				let long_array_length = (f64::from(16 * 16 * 16) / f64::from(entries_per_long)).ceil() as i32;
+				let mut data_array: Vec<i32> = Vec::new();
+				for _ in 0..long_array_length {
+					let value = crate::deserialize::unsigned_long(value)?;
+					for i in 0..entries_per_long {
+						let entry = value >> (i * bits_per_entry as i32);
+						let entry = entry >> (64 - bits_per_entry);
+						data_array.push(entry as i32);
+					}
+				}
+				Ok(BlockStatesPalettedContainer::Direct(Direct { bits_per_entry, data_array }))
+			}
+		};
+	}
 }
 
 impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
-  type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-  fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
-    let bits_per_entry = value.remove(0);
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		let bits_per_entry = value.remove(0);
 
-    return match bits_per_entry {
-   		0 => {
-        let value_entry = crate::deserialize::varint(value)?;
-   			Ok(BiomesPalettedContainer::SingleValued(SingleValued {
-   				bits_per_entry,
-   				value: value_entry,
-   			}))
-       },
-   		1..=5 => {
-   			let palette_length = crate::deserialize::varint(value)?;
-   			let mut palette: Vec<i32> = Vec::new();
-   			for _ in 0..palette_length {
-   				palette.push(crate::deserialize::varint(value)?);
-   			}
+		return match bits_per_entry {
+			0 => {
+				let value_entry = crate::deserialize::varint(value)?;
+				Ok(BiomesPalettedContainer::SingleValued(SingleValued { bits_per_entry, value: value_entry }))
+			}
+			1..=5 => {
+				let palette_length = crate::deserialize::varint(value)?;
+				let mut palette: Vec<i32> = Vec::new();
+				for _ in 0..palette_length {
+					palette.push(crate::deserialize::varint(value)?);
+				}
 
-   			let entries_per_long = 64 / bits_per_entry as i32;
-   			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
-   			let mut data_array: Vec<i32> = Vec::new();
-   			for _ in 0..data_array_length {
-          let value = crate::deserialize::unsigned_long(value)?;
-          for i in 0..entries_per_long {
-            let entry = value >> (i * bits_per_entry as i32);
-            let entry = entry >> (64 - bits_per_entry);
-            data_array.push(entry as i32);
-          }
-   			}
-   			Ok(BiomesPalettedContainer::Indirect(Indirect{
-   				bits_per_entry,
-   				data_array,
-   				palette,
-   			}))
-   		}
-   		_ => {
-   			let entries_per_long = 64 / bits_per_entry as i32;
-   			let data_array_length = (f64::from(4*4*4) / f64::from(entries_per_long)).ceil() as i32;
-   			let mut data_array: Vec<i32> = Vec::new();
-   			for _ in 0..data_array_length {
-          let value = crate::deserialize::unsigned_long(value)?;
-          for i in 0..entries_per_long {
-            let entry = value >> (i * bits_per_entry as i32);
-            let entry = entry >> (64 - bits_per_entry);
-            data_array.push(entry as i32);
-          }
-   			}
-   			Ok(BiomesPalettedContainer::Direct(Direct {
-   				bits_per_entry,
-   				data_array,
-   			}))
-   		}
-   	};
-  }
+				let entries_per_long = 64 / bits_per_entry as i32;
+				let data_array_length = (f64::from(4 * 4 * 4) / f64::from(entries_per_long)).ceil() as i32;
+				let mut data_array: Vec<i32> = Vec::new();
+				for _ in 0..data_array_length {
+					let value = crate::deserialize::unsigned_long(value)?;
+					for i in 0..entries_per_long {
+						let entry = value >> (i * bits_per_entry as i32);
+						let entry = entry >> (64 - bits_per_entry);
+						data_array.push(entry as i32);
+					}
+				}
+				Ok(BiomesPalettedContainer::Indirect(Indirect { bits_per_entry, data_array, palette }))
+			}
+			_ => {
+				let entries_per_long = 64 / bits_per_entry as i32;
+				let data_array_length = (f64::from(4 * 4 * 4) / f64::from(entries_per_long)).ceil() as i32;
+				let mut data_array: Vec<i32> = Vec::new();
+				for _ in 0..data_array_length {
+					let value = crate::deserialize::unsigned_long(value)?;
+					for i in 0..entries_per_long {
+						let entry = value >> (i * bits_per_entry as i32);
+						let entry = entry >> (64 - bits_per_entry);
+						data_array.push(entry as i32);
+					}
+				}
+				Ok(BiomesPalettedContainer::Direct(Direct { bits_per_entry, data_array }))
+			}
+		};
+	}
 }
 
 //
@@ -1292,8 +1290,12 @@ pub struct WorldEvent {
 
 impl Packet for WorldEvent {
 	const PACKET_ID: u8 = 0x2d;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<WorldEvent> for Vec<u8> {
@@ -1359,8 +1361,12 @@ pub struct Login {
 
 impl Packet for Login {
 	const PACKET_ID: u8 = 0x30;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<Login> for Vec<u8> {
@@ -1429,11 +1435,7 @@ impl TryFrom<Vec<u8>> for Login {
 		let is_flat = crate::deserialize::boolean(&mut value)?;
 		let has_death_location = crate::deserialize::boolean(&mut value)?;
 
-		let death_dimension_name: Option<String> = if has_death_location {
-			Some(crate::deserialize::string(&mut value)?)
-		} else {
-			None
-		};
+		let death_dimension_name: Option<String> = if has_death_location { Some(crate::deserialize::string(&mut value)?) } else { None };
 
 		let death_location: Option<u64> = if has_death_location {
 			Some(crate::deserialize::long(&mut value)? as u64) //Probably fucked
@@ -1488,8 +1490,12 @@ pub struct UpdateEntityPosition {
 
 impl Packet for UpdateEntityPosition {
 	const PACKET_ID: u8 = 0x33;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<UpdateEntityPosition> for Vec<u8> {
@@ -1539,8 +1545,12 @@ pub struct UpdateEntityPositionAndRotation {
 
 impl Packet for UpdateEntityPositionAndRotation {
 	const PACKET_ID: u8 = 0x34;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<UpdateEntityPositionAndRotation> for Vec<u8> {
@@ -1591,8 +1601,12 @@ pub struct UpdateEntityRotation {
 
 impl Packet for UpdateEntityRotation {
 	const PACKET_ID: u8 = 0x36;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<UpdateEntityRotation> for Vec<u8> {
@@ -1636,8 +1650,12 @@ pub struct OpenScreen {
 
 impl Packet for OpenScreen {
 	const PACKET_ID: u8 = 0x39;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<OpenScreen> for Vec<u8> {
@@ -1678,8 +1696,12 @@ pub struct OpenSignEditor {
 
 impl Packet for OpenSignEditor {
 	const PACKET_ID: u8 = 0x3a;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<OpenSignEditor> for Vec<u8> {
@@ -1699,10 +1721,7 @@ impl TryFrom<Vec<u8>> for OpenSignEditor {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			location: crate::deserialize::position(&mut value)?,
-			is_front_text: crate::deserialize::boolean(&mut value)?,
-		});
+		return Ok(Self { location: crate::deserialize::position(&mut value)?, is_front_text: crate::deserialize::boolean(&mut value)? });
 	}
 }
 
@@ -1730,8 +1749,12 @@ pub struct PlayerChatMessage {
 
 impl Packet for PlayerChatMessage {
 	const PACKET_ID: u8 = 0x3f;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<PlayerChatMessage> for Vec<u8> {
@@ -1744,26 +1767,26 @@ impl TryFrom<PlayerChatMessage> for Vec<u8> {
 		output.append(&mut crate::serialize::uuid(&value.sender));
 		output.append(&mut crate::serialize::varint(value.index));
 		if value.message_signature_bytes.is_empty() {
-      output.append(&mut crate::serialize::boolean(false));
+			output.append(&mut crate::serialize::boolean(false));
 		} else {
-      output.append(&mut crate::serialize::boolean(true));
-      value.message_signature_bytes.iter().for_each(|x| output.push(*x));
+			output.append(&mut crate::serialize::boolean(true));
+			value.message_signature_bytes.iter().for_each(|x| output.push(*x));
 		}
 		output.append(&mut crate::serialize::string(&value.message));
 		output.append(&mut crate::serialize::long(value.timestamp));
 		output.append(&mut crate::serialize::long(value.salt));
 		output.append(&mut crate::serialize::varint(value.signature_array.len() as i32));
 		value.signature_array.iter().for_each(|x| {
-		  output.append(&mut crate::serialize::varint(x.0));
+			output.append(&mut crate::serialize::varint(x.0));
 			if x.0 == 0 {
-			  x.1.iter().for_each(|x| output.push(*x));
+				x.1.iter().for_each(|x| output.push(*x));
 			}
 		});
 		if value.unsigned_content.is_some() {
-		  output.append(&mut crate::serialize::boolean(true));
-		  output.append(&mut crate::serialize::nbt_network(value.unsigned_content.unwrap()));
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::nbt_network(value.unsigned_content.unwrap()));
 		} else {
-		  output.append(&mut crate::serialize::boolean(false));
+			output.append(&mut crate::serialize::boolean(false));
 		}
 		output.append(&mut crate::serialize::varint(value.filter_type));
 		if value.filter_type == 2 {
@@ -1788,60 +1811,42 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 		let sender = crate::deserialize::uuid(&mut value)?;
 		let index = crate::deserialize::varint(&mut value)?;
 		let message_signature_bytes_present = crate::deserialize::boolean(&mut value)?;
-		let message_signature_bytes = if message_signature_bytes_present {
-			(0..255).map(|_| value.remove(0)).collect()
-		} else {
-			Vec::new()
-		};
+		let message_signature_bytes = if message_signature_bytes_present { (0..255).map(|_| value.remove(0)).collect() } else { Vec::new() };
 		let message = crate::deserialize::string(&mut value)?;
 		let timestamp = crate::deserialize::long(&mut value)?;
 		let salt = crate::deserialize::long(&mut value)?;
 		let signature_array_len = crate::deserialize::varint(&mut value)?;
-		let signature_array: Vec<(i32, Vec<u8>)> = (0..signature_array_len).map(|_| {
-			let message_id = crate::deserialize::varint(&mut value).unwrap();
-			let signature = if message_id == 0 {
-				(0..255).map(|_| value.remove(0)).collect()
-			} else {
-				Vec::new()
-			};
-			(message_id, signature)
-		}).collect();
+		let signature_array: Vec<(i32, Vec<u8>)> = (0..signature_array_len)
+			.map(|_| {
+				let message_id = crate::deserialize::varint(&mut value).unwrap();
+				let signature = if message_id == 0 { (0..255).map(|_| value.remove(0)).collect() } else { Vec::new() };
+				(message_id, signature)
+			})
+			.collect();
 		let unsigned_content_present = crate::deserialize::boolean(&mut value)?;
-		let unsigned_content = if unsigned_content_present {
-			Some(crate::deserialize::nbt_network(&mut value)?)
-		} else {
-			None
-		};
+		let unsigned_content = if unsigned_content_present { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 		let filter_type = crate::deserialize::varint(&mut value)?;
-		let filter_type_bits = if filter_type == 2 {
-			crate::deserialize::bitset(&mut value)?
-		} else {
-			Vec::new()
-		};
+		let filter_type_bits = if filter_type == 2 { crate::deserialize::bitset(&mut value)? } else { Vec::new() };
 		let chat_type = crate::deserialize::varint(&mut value)?;
 		let sender_name = crate::deserialize::nbt_network(&mut value)?;
 		let target_name_present = crate::deserialize::boolean(&mut value)?;
-		let target_name = if target_name_present {
-			Some(crate::deserialize::nbt_network(&mut value)?)
-		} else {
-			None
-		};
+		let target_name = if target_name_present { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 
 		return Ok(Self {
-	    global_index,
-	    sender,
-	    index,
-	    message_signature_bytes,
-	    message,
-	    timestamp,
-	    salt,
-	    signature_array,
-	    unsigned_content,
-	    filter_type,
-	    filter_type_bits,
-	    chat_type,
-	    sender_name,
-	    target_name,
+			global_index,
+			sender,
+			index,
+			message_signature_bytes,
+			message,
+			timestamp,
+			salt,
+			signature_array,
+			unsigned_content,
+			filter_type,
+			filter_type_bits,
+			chat_type,
+			sender_name,
+			target_name,
 		});
 	}
 }
@@ -1857,8 +1862,12 @@ pub struct PlayerInfoRemove {
 
 impl Packet for PlayerInfoRemove {
 	const PACKET_ID: u8 = 0x43;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<PlayerInfoRemove> for Vec<u8> {
@@ -1881,13 +1890,11 @@ impl TryFrom<Vec<u8>> for PlayerInfoRemove {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let mut uuids: Vec<u128> = Vec::new();
-		for _ in  0..crate::deserialize::varint(&mut value)? {
+		for _ in 0..crate::deserialize::varint(&mut value)? {
 			uuids.push(crate::deserialize::uuid(&mut value)?);
-		};
+		}
 
-		return Ok(Self {
-			uuids,
-		});
+		return Ok(Self { uuids });
 	}
 }
 
@@ -1903,8 +1910,12 @@ pub struct PlayerInfoUpdate {
 
 impl Packet for PlayerInfoUpdate {
 	const PACKET_ID: u8 = 0x44;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 //proper types missing https://git.thetxt.io/thetxt/oxide/issues/17
@@ -1912,12 +1923,12 @@ impl Packet for PlayerInfoUpdate {
 pub enum PlayerAction {
 	AddPlayer(String, Vec<(String, String, Option<String>)>), //Name, Property<Name, Value, Signature>
 	InitializeChat(Option<(u128, i64, Vec<u8>, Vec<u8>)>), //Chat session ID, Public key expiry time, encoded public key, public key signature
-	UpdateGameMode(i32), //Gamemode
-	UpdateListed(bool), //Listed
-	UpdateLatency(i32), //Ping
-	UpdateDisplayName(Option<NbtTag>), //Display Name
-	UpdateListPriority(i32), //Priority
-	UpdateHat(bool), //Visible
+	UpdateGameMode(i32),                                   //Gamemode
+	UpdateListed(bool),                                    //Listed
+	UpdateLatency(i32),                                    //Ping
+	UpdateDisplayName(Option<NbtTag>),                     //Display Name
+	UpdateListPriority(i32),                               //Priority
+	UpdateHat(bool),                                       //Visible
 }
 
 impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
@@ -1933,43 +1944,41 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 
 			for action in player.1 {
 				match action {
-						PlayerAction::AddPlayer(name, properties) => {
-							output.append(&mut crate::serialize::string(&name));
-							output.append(&mut crate::serialize::varint(properties.len() as i32));
-							for property in properties {
-								output.append(&mut crate::serialize::string(&property.0));
-								output.append(&mut crate::serialize::string(&property.1));
-								output.append(&mut crate::serialize::boolean(property.2.is_some()));
-								if property.2.is_some() {
-									output.append(&mut crate::serialize::string(&property.2.unwrap()));
-								}
+					PlayerAction::AddPlayer(name, properties) => {
+						output.append(&mut crate::serialize::string(&name));
+						output.append(&mut crate::serialize::varint(properties.len() as i32));
+						for property in properties {
+							output.append(&mut crate::serialize::string(&property.0));
+							output.append(&mut crate::serialize::string(&property.1));
+							output.append(&mut crate::serialize::boolean(property.2.is_some()));
+							if property.2.is_some() {
+								output.append(&mut crate::serialize::string(&property.2.unwrap()));
 							}
-						},
-						PlayerAction::InitializeChat(data) => {
-						  match data {
-								Some(data) => {
-  								output.push(1);
-  								output.append(&mut crate::serialize::uuid(&data.clone().0));
-  								output.append(&mut crate::serialize::long(data.clone().1));
-  								output.append(&mut data.clone().2.clone());
-  								output.append(&mut data.3.clone());
-								},
-								None => {
-								  output.push(0);
-								}
-							}
-						},
-						PlayerAction::UpdateGameMode(game_mode) => output.append(&mut crate::serialize::varint(game_mode)),
-						PlayerAction::UpdateListed(listed) => output.append(&mut crate::serialize::boolean(listed)),
-						PlayerAction::UpdateLatency(ping) => output.append(&mut crate::serialize::varint(ping)),
-						PlayerAction::UpdateDisplayName(display_name) => {
-							output.append(&mut crate::serialize::boolean(display_name.is_some()));
-							if let Some(display_name) = display_name {
-								output.append(&mut crate::serialize::nbt_network(display_name));
-							}
-						},
-						PlayerAction::UpdateListPriority(priority) => output.append(&mut crate::serialize::varint(priority)),
-						PlayerAction::UpdateHat(visible) => output.append(&mut crate::serialize::boolean(visible)),
+						}
+					}
+					PlayerAction::InitializeChat(data) => match data {
+						Some(data) => {
+							output.push(1);
+							output.append(&mut crate::serialize::uuid(&data.clone().0));
+							output.append(&mut crate::serialize::long(data.clone().1));
+							output.append(&mut data.clone().2.clone());
+							output.append(&mut data.3.clone());
+						}
+						None => {
+							output.push(0);
+						}
+					},
+					PlayerAction::UpdateGameMode(game_mode) => output.append(&mut crate::serialize::varint(game_mode)),
+					PlayerAction::UpdateListed(listed) => output.append(&mut crate::serialize::boolean(listed)),
+					PlayerAction::UpdateLatency(ping) => output.append(&mut crate::serialize::varint(ping)),
+					PlayerAction::UpdateDisplayName(display_name) => {
+						output.append(&mut crate::serialize::boolean(display_name.is_some()));
+						if let Some(display_name) = display_name {
+							output.append(&mut crate::serialize::nbt_network(display_name));
+						}
+					}
+					PlayerAction::UpdateListPriority(priority) => output.append(&mut crate::serialize::varint(priority)),
+					PlayerAction::UpdateHat(visible) => output.append(&mut crate::serialize::boolean(visible)),
 				}
 			}
 		}
@@ -1996,11 +2005,8 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 				for _ in 0..properties_len {
 					let name = crate::deserialize::string(&mut value)?;
 					let value_prop = crate::deserialize::string(&mut value)?;
-					let signature: Option<String> = if crate::deserialize::boolean(&mut value)? {
-						Some(crate::deserialize::string(&mut value)?)
-					} else {
-						None
-					};
+					let signature: Option<String> =
+						if crate::deserialize::boolean(&mut value)? { Some(crate::deserialize::string(&mut value)?) } else { None };
 					properties.push((name, value_prop, signature));
 				}
 				player_actions.push(PlayerAction::AddPlayer(name, properties));
@@ -2021,7 +2027,12 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 						public_key_signature.push(value.remove(0));
 					}
 
-					player_actions.push(PlayerAction::InitializeChat(Some((chat_session_id, public_key_expiry_time, encoded_public_key, public_key_signature))));
+					player_actions.push(PlayerAction::InitializeChat(Some((
+						chat_session_id,
+						public_key_expiry_time,
+						encoded_public_key,
+						public_key_signature,
+					))));
 				} else {
 					player_actions.push(PlayerAction::InitializeChat(None));
 				}
@@ -2040,11 +2051,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 			}
 
 			if actions & 0x20 != 0 {
-				let display_name = if crate::deserialize::boolean(&mut value)? {
-					Some(crate::deserialize::nbt_network(&mut value)?)
-				} else {
-					None
-				};
+				let display_name = if crate::deserialize::boolean(&mut value)? { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 				player_actions.push(PlayerAction::UpdateDisplayName(display_name));
 			}
 
@@ -2059,10 +2066,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 			players.push((uuid, player_actions));
 		}
 
-		return Ok(Self {
-			actions,
-			players,
-		});
+		return Ok(Self { actions, players });
 	}
 }
 
@@ -2086,8 +2090,12 @@ pub struct SynchronizePlayerPosition {
 
 impl Packet for SynchronizePlayerPosition {
 	const PACKET_ID: u8 = 0x46;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SynchronizePlayerPosition> for Vec<u8> {
@@ -2141,8 +2149,12 @@ pub struct RemoveEntities {
 
 impl Packet for RemoveEntities {
 	const PACKET_ID: u8 = 0x4b;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<RemoveEntities> for Vec<u8> {
@@ -2167,11 +2179,9 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 		let mut entity_ids: Vec<i32> = Vec::new();
 		for _ in 0..crate::deserialize::varint(&mut value)? {
 			entity_ids.push(crate::deserialize::varint(&mut value)?);
-		};
+		}
 
-		return Ok(Self {
-			entity_ids,
-		});
+		return Ok(Self { entity_ids });
 	}
 }
 
@@ -2187,8 +2197,12 @@ pub struct SetHeadRotation {
 
 impl Packet for SetHeadRotation {
 	const PACKET_ID: u8 = 0x51;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetHeadRotation> for Vec<u8> {
@@ -2208,10 +2222,7 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			head_yaw: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, head_yaw: value.remove(0) });
 	}
 }
 
@@ -2227,8 +2238,12 @@ pub struct SetCenterChunk {
 
 impl Packet for SetCenterChunk {
 	const PACKET_ID: u8 = 0x5c;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetCenterChunk> for Vec<u8> {
@@ -2248,10 +2263,7 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			chunk_x: crate::deserialize::varint(&mut value)?,
-			chunk_z: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { chunk_x: crate::deserialize::varint(&mut value)?, chunk_z: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -2267,8 +2279,12 @@ pub struct SetEntityMetadata {
 
 impl Packet for SetEntityMetadata {
 	const PACKET_ID: u8 = 0x61;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 #[derive(Debug, Clone)]
@@ -2295,7 +2311,7 @@ pub enum EntityMetadataValue {
 	OptionalUuid(bool, u128),
 	BlockState(i32),
 	OptionalBlockState(i32),
-	Particle(i32), //Missing a type that varies, whatever the fuck that means
+	Particle(i32),            //Missing a type that varies, whatever the fuck that means
 	Particles(i32, Vec<i32>), //Missing a type that varies, whatever the fuck that means
 	VillagerData(i32, i32, i32),
 	OptionalVarint(i32),
@@ -2322,44 +2338,44 @@ pub enum EntityMetadataValue {
 impl Into<i32> for EntityMetadataValue {
 	fn into(self) -> i32 {
 		match self {
-      EntityMetadataValue::Byte(_) => 0,
-      EntityMetadataValue::Varint(_) => 1,
-      EntityMetadataValue::Varlong(_) => 2,
-      EntityMetadataValue::Float(_) => 3,
-      EntityMetadataValue::String(_) => 4,
-      EntityMetadataValue::TextComponent(_) => 5,
-      EntityMetadataValue::OptionalTextComponent(_) => 6,
-      EntityMetadataValue::Slot(_) => 7,
-      EntityMetadataValue::Boolean(_) => 8,
-      EntityMetadataValue::Rotations(_, _, _) => 9,
-      EntityMetadataValue::Position(_) => 10,
-      EntityMetadataValue::OptionalPosition(_) => 11,
-      EntityMetadataValue::Direction(_) => 12,
-      EntityMetadataValue::OptionalUuid(_, _) => 13,
-      EntityMetadataValue::BlockState(_) => 14,
-      EntityMetadataValue::OptionalBlockState(_) => 15,
-      EntityMetadataValue::Particle(_) => 16,
-      EntityMetadataValue::Particles(_, _) => 17,
-      EntityMetadataValue::VillagerData(_, _, _) => 18,
-      EntityMetadataValue::OptionalVarint(_) => 19,
-      EntityMetadataValue::Pose(_) => 20,
-      EntityMetadataValue::CatVariant(_) => 21,
-      EntityMetadataValue::CowVariant(_) => 22,
-      EntityMetadataValue::WolfVariant(_) => 23,
-      EntityMetadataValue::WolfSoundVariant(_) => 24,
-      EntityMetadataValue::FrogVariant(_) => 25,
-      EntityMetadataValue::PigVariant(_) => 26,
-      EntityMetadataValue::ChickenVariant(_) => 27,
-      EntityMetadataValue::OptionalGlobalPosition(_, _, _, _, _) => 28,
-      EntityMetadataValue::PaintingVariant(_) => 29,
-      EntityMetadataValue::SnifferState(_) => 30,
-      EntityMetadataValue::ArmadilloState(_) => 31,
-      EntityMetadataValue::CopperGolemState(_) => 32,
-      EntityMetadataValue::WeatheringCopperState(_) => 33,
-      EntityMetadataValue::Vector3(_, _, _) => 34,
-      EntityMetadataValue::Quaternion(_, _, _, _) => 35,
-      EntityMetadataValue::ResolvableProfile(_) => 36,
-    }
+			EntityMetadataValue::Byte(_) => 0,
+			EntityMetadataValue::Varint(_) => 1,
+			EntityMetadataValue::Varlong(_) => 2,
+			EntityMetadataValue::Float(_) => 3,
+			EntityMetadataValue::String(_) => 4,
+			EntityMetadataValue::TextComponent(_) => 5,
+			EntityMetadataValue::OptionalTextComponent(_) => 6,
+			EntityMetadataValue::Slot(_) => 7,
+			EntityMetadataValue::Boolean(_) => 8,
+			EntityMetadataValue::Rotations(_, _, _) => 9,
+			EntityMetadataValue::Position(_) => 10,
+			EntityMetadataValue::OptionalPosition(_) => 11,
+			EntityMetadataValue::Direction(_) => 12,
+			EntityMetadataValue::OptionalUuid(_, _) => 13,
+			EntityMetadataValue::BlockState(_) => 14,
+			EntityMetadataValue::OptionalBlockState(_) => 15,
+			EntityMetadataValue::Particle(_) => 16,
+			EntityMetadataValue::Particles(_, _) => 17,
+			EntityMetadataValue::VillagerData(_, _, _) => 18,
+			EntityMetadataValue::OptionalVarint(_) => 19,
+			EntityMetadataValue::Pose(_) => 20,
+			EntityMetadataValue::CatVariant(_) => 21,
+			EntityMetadataValue::CowVariant(_) => 22,
+			EntityMetadataValue::WolfVariant(_) => 23,
+			EntityMetadataValue::WolfSoundVariant(_) => 24,
+			EntityMetadataValue::FrogVariant(_) => 25,
+			EntityMetadataValue::PigVariant(_) => 26,
+			EntityMetadataValue::ChickenVariant(_) => 27,
+			EntityMetadataValue::OptionalGlobalPosition(_, _, _, _, _) => 28,
+			EntityMetadataValue::PaintingVariant(_) => 29,
+			EntityMetadataValue::SnifferState(_) => 30,
+			EntityMetadataValue::ArmadilloState(_) => 31,
+			EntityMetadataValue::CopperGolemState(_) => 32,
+			EntityMetadataValue::WeatheringCopperState(_) => 33,
+			EntityMetadataValue::Vector3(_, _, _) => 34,
+			EntityMetadataValue::Quaternion(_, _, _, _) => 35,
+			EntityMetadataValue::ResolvableProfile(_) => 36,
+		}
 	}
 }
 
@@ -2376,88 +2392,84 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 			output.append(&mut crate::serialize::varint(metadata.value.clone().into()));
 
 			match metadata.value {
-        EntityMetadataValue::Byte(a) => output.push(a),
-        EntityMetadataValue::Varint(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::Varlong(_) => todo!(),
-        EntityMetadataValue::Float(a) => output.append(&mut crate::serialize::float(a)),
-        EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
-        EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt_network(a)),
-        EntityMetadataValue::OptionalTextComponent(a) => {
-        match a {
-          Some(a) => {
-            output.push(0x01);
-            output.append(&mut crate::serialize::nbt_network(a));
-            },
-            None => {
-              output.push(0x00);
-            }
-          }
-        },
-        EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
-        EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
-        EntityMetadataValue::Rotations(a, b, c) => {
-  		    output.append(&mut crate::serialize::float(a));
-  		    output.append(&mut crate::serialize::float(b));
-  		    output.append(&mut crate::serialize::float(c));
-		    },
-        EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
-        EntityMetadataValue::OptionalPosition(a) => {
-		      match a {
-				    Some(a) => {
-					    output.push(0x01);
-					    output.append(&mut crate::serialize::long(a));
-				    },
-				    None => {
-				      output.push(0x00);
-				    }
-				  }
-		    },
-        EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::OptionalUuid(a, b) => {
-			    output.append(&mut crate::serialize::boolean(a));
-			    if a {
-				    output.append(&mut crate::serialize::uuid(&b));
-			    }
-		    },
-        EntityMetadataValue::BlockState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::OptionalBlockState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::Particle(_) => todo!(),
-        EntityMetadataValue::Particles(_, _) => output.push(0),
-        EntityMetadataValue::VillagerData(_, _, _) => todo!(),
-        EntityMetadataValue::OptionalVarint(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::Pose(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::CatVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::WolfVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::FrogVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::OptionalGlobalPosition(a, b, c, _d, _e) => {
-  		    output.append(&mut crate::serialize::boolean(a));
-  		    output.append(&mut crate::serialize::boolean(b));
-  		    if b {
-  			    output.append(&mut crate::serialize::string(&c));
-  		    }
-		    },
-        EntityMetadataValue::CowVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::WolfSoundVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::PigVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::ChickenVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::CopperGolemState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::WeatheringCopperState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::ResolvableProfile(_) => todo!(),
-        EntityMetadataValue::PaintingVariant(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::SnifferState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::ArmadilloState(a) => output.append(&mut crate::serialize::varint(a)),
-        EntityMetadataValue::Vector3(a, b, c) => {
+				EntityMetadataValue::Byte(a) => output.push(a),
+				EntityMetadataValue::Varint(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::Varlong(_) => todo!(),
+				EntityMetadataValue::Float(a) => output.append(&mut crate::serialize::float(a)),
+				EntityMetadataValue::String(a) => output.append(&mut crate::serialize::string(&a)),
+				EntityMetadataValue::TextComponent(a) => output.append(&mut crate::serialize::nbt_network(a)),
+				EntityMetadataValue::OptionalTextComponent(a) => match a {
+					Some(a) => {
+						output.push(0x01);
+						output.append(&mut crate::serialize::nbt_network(a));
+					}
+					None => {
+						output.push(0x00);
+					}
+				},
+				EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
+				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
+				EntityMetadataValue::Rotations(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
 					output.append(&mut crate::serialize::float(b));
 					output.append(&mut crate::serialize::float(c));
+				}
+				EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
+				EntityMetadataValue::OptionalPosition(a) => match a {
+					Some(a) => {
+						output.push(0x01);
+						output.append(&mut crate::serialize::long(a));
+					}
+					None => {
+						output.push(0x00);
+					}
 				},
+				EntityMetadataValue::Direction(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::OptionalUuid(a, b) => {
+					output.append(&mut crate::serialize::boolean(a));
+					if a {
+						output.append(&mut crate::serialize::uuid(&b));
+					}
+				}
+				EntityMetadataValue::BlockState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::OptionalBlockState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::Particle(_) => todo!(),
+				EntityMetadataValue::Particles(_, _) => output.push(0),
+				EntityMetadataValue::VillagerData(_, _, _) => todo!(),
+				EntityMetadataValue::OptionalVarint(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::Pose(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::CatVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::WolfVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::FrogVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::OptionalGlobalPosition(a, b, c, _d, _e) => {
+					output.append(&mut crate::serialize::boolean(a));
+					output.append(&mut crate::serialize::boolean(b));
+					if b {
+						output.append(&mut crate::serialize::string(&c));
+					}
+				}
+				EntityMetadataValue::CowVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::WolfSoundVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::PigVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::ChickenVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::CopperGolemState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::WeatheringCopperState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::ResolvableProfile(_) => todo!(),
+				EntityMetadataValue::PaintingVariant(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::SnifferState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::ArmadilloState(a) => output.append(&mut crate::serialize::varint(a)),
+				EntityMetadataValue::Vector3(a, b, c) => {
+					output.append(&mut crate::serialize::float(a));
+					output.append(&mut crate::serialize::float(b));
+					output.append(&mut crate::serialize::float(c));
+				}
 				EntityMetadataValue::Quaternion(a, b, c, d) => {
 					output.append(&mut crate::serialize::float(a));
 					output.append(&mut crate::serialize::float(b));
 					output.append(&mut crate::serialize::float(c));
 					output.append(&mut crate::serialize::float(d));
-				},
-      }
+				}
+			}
 		}
 
 		output.push(255);
@@ -2489,33 +2501,38 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				5 => EntityMetadataValue::TextComponent(crate::deserialize::nbt_network(&mut value)?),
 				6 => {
 					let nbt_present = crate::deserialize::boolean(&mut value)?;
-					let nbt = if nbt_present {
-						Some(crate::deserialize::nbt_network(&mut value)?)
-					} else {
-						None
-					};
+					let nbt = if nbt_present { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 					EntityMetadataValue::OptionalTextComponent(nbt)
-				},
-				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap_or(Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() })),
+				}
+				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap_or(Slot {
+					item_count: 0,
+					item_id: 0,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				})),
 				8 => EntityMetadataValue::Boolean(crate::deserialize::boolean(&mut value)?),
-				9 => EntityMetadataValue::Rotations(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
+				9 => EntityMetadataValue::Rotations(
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+				),
 				10 => EntityMetadataValue::Position(crate::deserialize::long(&mut value)?),
 				11 => {
 					let position_present = crate::deserialize::boolean(&mut value)?;
-					let position = if position_present {
-						Some(crate::deserialize::long(&mut value)?)
-					} else {
-						None
-					};
+					let position = if position_present { Some(crate::deserialize::long(&mut value)?) } else { None };
 					EntityMetadataValue::OptionalPosition(position)
-				},
+				}
 				12 => EntityMetadataValue::Direction(crate::deserialize::varint(&mut value)?),
 				13 => todo!(),
 				14 => EntityMetadataValue::BlockState(crate::deserialize::varint(&mut value)?),
 				15 => EntityMetadataValue::OptionalBlockState(crate::deserialize::varint(&mut value)?),
 				16 => todo!(),
 				17 => todo!(),
-				18 => EntityMetadataValue::VillagerData(crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?, crate::deserialize::varint(&mut value)?),
+				18 => EntityMetadataValue::VillagerData(
+					crate::deserialize::varint(&mut value)?,
+					crate::deserialize::varint(&mut value)?,
+					crate::deserialize::varint(&mut value)?,
+				),
 				19 => EntityMetadataValue::OptionalVarint(crate::deserialize::varint(&mut value)?),
 				20 => EntityMetadataValue::Pose(crate::deserialize::varint(&mut value)?),
 				21 => EntityMetadataValue::CatVariant(crate::deserialize::varint(&mut value)?),
@@ -2531,8 +2548,17 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				31 => EntityMetadataValue::ArmadilloState(crate::deserialize::varint(&mut value)?),
 				32 => EntityMetadataValue::CopperGolemState(crate::deserialize::varint(&mut value)?),
 				33 => EntityMetadataValue::WeatheringCopperState(crate::deserialize::varint(&mut value)?),
-				34 => EntityMetadataValue::Vector3(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
-				35 => EntityMetadataValue::Quaternion(crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?, crate::deserialize::float(&mut value)?),
+				34 => EntityMetadataValue::Vector3(
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+				),
+				35 => EntityMetadataValue::Quaternion(
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+					crate::deserialize::float(&mut value)?,
+				),
 				36 => todo!(),
 				id => panic!("type_id {id} is not a recognized entity type"),
 			};
@@ -2540,10 +2566,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 			metadata.push(EntityMetadata { index, value: metadata_value });
 		}
 
-		return Ok(Self {
-			entity_id,
-			metadata,
-		});
+		return Ok(Self { entity_id, metadata });
 	}
 }
 
@@ -2559,8 +2582,12 @@ pub struct SetEquipment {
 
 impl Packet for SetEquipment {
 	const PACKET_ID: u8 = 0x64;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetEquipment> for Vec<u8> {
@@ -2570,17 +2597,11 @@ impl TryFrom<SetEquipment> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 
 		output.append(&mut crate::serialize::varint(value.entity_id));
-		value.equipment.iter()
-    	.enumerate()
-    	.for_each(|x| {
-  			let mask = if x.0 < value.equipment.len() -1 {
-     			0b1000_0000
-     		} else {
-       		0b0000_0000
-       	};
-   			output.push(x.1.0 + mask);
-     		output.append(&mut crate::serialize::slot(x.1.1.as_ref()));
-     	});
+		value.equipment.iter().enumerate().for_each(|x| {
+			let mask = if x.0 < value.equipment.len() - 1 { 0b1000_0000 } else { 0b0000_0000 };
+			output.push(x.1.0 + mask);
+			output.append(&mut crate::serialize::slot(x.1.1.as_ref()));
+		});
 
 		return Ok(output);
 	}
@@ -2603,10 +2624,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 			}
 		}
 
-		return Ok(Self {
-			entity_id,
-			equipment
-		});
+		return Ok(Self { entity_id, equipment });
 	}
 }
 
@@ -2621,8 +2639,12 @@ pub struct SetHeldItem {
 
 impl Packet for SetHeldItem {
 	const PACKET_ID: u8 = 0x67;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetHeldItem> for Vec<u8> {
@@ -2641,9 +2663,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			slot: crate::deserialize::varint(&mut value)? as u8,
-		});
+		return Ok(Self { slot: crate::deserialize::varint(&mut value)? as u8 });
 	}
 }
 
@@ -2659,8 +2679,12 @@ pub struct SetPlayerInventorySlot {
 
 impl Packet for SetPlayerInventorySlot {
 	const PACKET_ID: u8 = 0x6a;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetPlayerInventorySlot> for Vec<u8> {
@@ -2680,10 +2704,7 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			slot: crate::deserialize::varint(&mut value)?,
-			slot_data: crate::deserialize::slot(&mut value)?,
-		});
+		return Ok(Self { slot: crate::deserialize::varint(&mut value)?, slot_data: crate::deserialize::slot(&mut value)? });
 	}
 }
 
@@ -2699,8 +2720,12 @@ pub struct SystemChatMessage {
 
 impl Packet for SystemChatMessage {
 	const PACKET_ID: u8 = 0x77;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SystemChatMessage> for Vec<u8> {
@@ -2720,10 +2745,7 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			content: crate::deserialize::nbt_network(&mut value)?,
-			overlay: crate::deserialize::boolean(&mut value)?,
-		});
+		return Ok(Self { content: crate::deserialize::nbt_network(&mut value)?, overlay: crate::deserialize::boolean(&mut value)? });
 	}
 }
 
@@ -2739,8 +2761,12 @@ pub struct SetTabListHeaderAndFooter {
 
 impl Packet for SetTabListHeaderAndFooter {
 	const PACKET_ID: u8 = 0x78;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetTabListHeaderAndFooter> for Vec<u8> {
@@ -2760,10 +2786,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			header: crate::deserialize::nbt_network(&mut value)?,
-			footer: crate::deserialize::nbt_network(&mut value)?,
-		});
+		return Ok(Self { header: crate::deserialize::nbt_network(&mut value)?, footer: crate::deserialize::nbt_network(&mut value)? });
 	}
 }
 
@@ -2778,8 +2801,12 @@ pub struct ServerLinks {
 
 impl Packet for ServerLinks {
 	const PACKET_ID: u8 = 0x87;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ServerLinks> for Vec<u8> {
@@ -2804,16 +2831,13 @@ impl TryFrom<Vec<u8>> for ServerLinks {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let links_len = crate::deserialize::varint(&mut value)?;
-		let links: Vec<(NbtTag, String)> = (0..links_len).map(|_| {
-			value.remove(0);
-			return (
-				crate::deserialize::nbt_network(&mut value).unwrap(),
-				crate::deserialize::string(&mut value).unwrap(),
-			);
-		}).collect();
+		let links: Vec<(NbtTag, String)> = (0..links_len)
+			.map(|_| {
+				value.remove(0);
+				return (crate::deserialize::nbt_network(&mut value).unwrap(), crate::deserialize::string(&mut value).unwrap());
+			})
+			.collect();
 
-		return Ok(Self {
-			links,
-		});
+		return Ok(Self { links });
 	}
 }

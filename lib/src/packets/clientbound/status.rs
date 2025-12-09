@@ -8,8 +8,12 @@ pub struct StatusResponse {
 
 impl Packet for StatusResponse {
 	const PACKET_ID: u8 = 0x00;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Status }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Status
+	}
 }
 
 impl TryFrom<StatusResponse> for Vec<u8> {
@@ -28,9 +32,7 @@ impl TryFrom<Vec<u8>> for StatusResponse {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(StatusResponse {
-			status: crate::deserialize::string(&mut value)?,
-		})
+		return Ok(StatusResponse { status: crate::deserialize::string(&mut value)? });
 	}
 }
 
@@ -41,8 +43,12 @@ pub struct PingResponse {
 
 impl Packet for PingResponse {
 	const PACKET_ID: u8 = 0x01;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Status }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Status
+	}
 }
 
 impl TryFrom<PingResponse> for Vec<u8> {
@@ -61,8 +67,6 @@ impl TryFrom<Vec<u8>> for PingResponse {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(PingResponse {
-			timestamp: crate::deserialize::long(&mut value)?,
-		})
+		return Ok(PingResponse { timestamp: crate::deserialize::long(&mut value)? });
 	}
 }

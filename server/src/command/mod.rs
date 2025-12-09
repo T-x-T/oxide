@@ -1,17 +1,17 @@
-mod ping;
+mod give;
 mod hi;
-mod tp;
-mod tell;
 mod panic;
+mod ping;
 mod print_players;
 mod saveall;
 mod summon;
-mod give;
+mod tell;
+mod tp;
 
 use lib::packets::Packet;
 use lib::types::*;
-use std::net::TcpStream;
 use std::error::Error;
+use std::net::TcpStream;
 use std::sync::Arc;
 
 pub fn init(game: &mut Game) {
@@ -27,16 +27,8 @@ pub fn init(game: &mut Game) {
 }
 
 
-
 pub fn get_command_packet_data(game: Arc<Game>) -> Vec<CommandNode> {
-	let root_node = CommandNode {
-		flags: 0,
-    children: Vec::new(),
-    redirect_node: None,
-    name: None,
-    properties: None,
-    suggestions_type: None,
-  };
+	let root_node = CommandNode { flags: 0, children: Vec::new(), redirect_node: None, name: None, properties: None, suggestions_type: None };
 
 	let mut nodes = vec![root_node];
 
@@ -55,7 +47,7 @@ pub fn get_command_packet_data(game: Arc<Game>) -> Vec<CommandNode> {
 		nodes[0].children.push(command_index as i32);
 
 		process_arguments(&command.arguments, &mut nodes, command_index);
-	};
+	}
 
 	return nodes;
 }

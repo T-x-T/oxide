@@ -2,65 +2,55 @@ use super::*;
 
 #[derive(Debug, Clone)]
 pub struct Chest {
-  pub position: BlockPosition, //global position, NOT within the chunk
-  pub components: Vec<SlotComponent>, //At least I think so?
-  pub inventory: Vec<Item>,
+	pub position: BlockPosition,        //global position, NOT within the chunk
+	pub components: Vec<SlotComponent>, //At least I think so?
+	pub inventory: Vec<Item>,
 }
 
 impl CommonBlockEntity for Chest {
-  fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
-    return;
-  }
+	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
+		return;
+	}
 
-  fn new(position: BlockPosition) -> Self {
-    return Self {
-      position,
-      components: Vec::new(),
-      inventory: vec![Item::default();27],
-    }
-  }
+	fn new(position: BlockPosition) -> Self {
+		return Self { position, components: Vec::new(), inventory: vec![Item::default(); 27] };
+	}
 
-  fn get_contained_items_mut(&mut self) -> &mut[Item] {
-    return &mut self.inventory;
-  }
+	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+		return &mut self.inventory;
+	}
 
-  fn get_contained_items_owned(&self) -> Vec<Item> {
-    return self.inventory.clone()
-  }
+	fn get_contained_items_owned(&self) -> Vec<Item> {
+		return self.inventory.clone();
+	}
 }
 
 impl From<Chest> for Vec<NbtTag> {
-  fn from(value: Chest) -> Self {
-    vec![
-      value.inventory.into(),
-    ]
-  }
+	fn from(value: Chest) -> Self {
+		vec![value.inventory.into()]
+	}
 }
 
 impl TryFrom<NbtListTag> for Chest {
-  type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-  fn try_from(value: NbtListTag) -> Result<Self, Self::Error> {
-    let x = value.get_child("x").unwrap().as_int();
-    let y = value.get_child("y").unwrap().as_int() as i16;
-    let z = value.get_child("z").unwrap().as_int();
-    let position = BlockPosition { x, y, z };
+	fn try_from(value: NbtListTag) -> Result<Self, Self::Error> {
+		let x = value.get_child("x").unwrap().as_int();
+		let y = value.get_child("y").unwrap().as_int() as i16;
+		let z = value.get_child("z").unwrap().as_int();
+		let position = BlockPosition { x, y, z };
 
-    let mut inventory = vec![Item::default(); 27];
-    if let Some(items) = value.get_child("Items") {
-      for entry in items.as_list() {
-        inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-          id: entry.get_child("id").unwrap().as_string().to_string(),
-          count: entry.get_child("count").unwrap().as_int() as u8,
-          components: Vec::new()
-        };
-      }
-    }
+		let mut inventory = vec![Item::default(); 27];
+		if let Some(items) = value.get_child("Items") {
+			for entry in items.as_list() {
+				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
+					id: entry.get_child("id").unwrap().as_string().to_string(),
+					count: entry.get_child("count").unwrap().as_int() as u8,
+					components: Vec::new(),
+				};
+			}
+		}
 
-    return Ok(Chest {
-      position,
-      components: Vec::new(),
-      inventory,
-    });
-  }
+		return Ok(Chest { position, components: Vec::new(), inventory });
+	}
 }

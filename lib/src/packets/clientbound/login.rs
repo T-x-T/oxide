@@ -9,8 +9,12 @@ pub struct LoginSuccess {
 
 impl Packet for LoginSuccess {
 	const PACKET_ID: u8 = 0x02;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Login }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Login
+	}
 }
 
 impl TryFrom<LoginSuccess> for Vec<u8> {
@@ -32,9 +36,6 @@ impl TryFrom<Vec<u8>> for LoginSuccess {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let uuid = crate::deserialize::uuid(&mut value)?;
-		return Ok(LoginSuccess {
-			uuid,
-			username: crate::deserialize::string(&mut value)?,
-		})
+		return Ok(LoginSuccess { uuid, username: crate::deserialize::string(&mut value)? });
 	}
 }

@@ -11,16 +11,29 @@ pub struct ClientboundKnownPacks {
 
 impl Packet for ClientboundKnownPacks {
 	const PACKET_ID: u8 = 0x0e;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<ClientboundKnownPacks> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
 	fn try_from(value: ClientboundKnownPacks) -> Result<Self, Box<dyn Error>> {
-		let data: Vec<u8> = value.known_packs.clone().into_iter()
-			.flat_map(|x| vec![crate::serialize::string(x.namespace.as_str()), crate::serialize::string(x.id.as_str()), crate::serialize::string(x.version.as_str())])
+		let data: Vec<u8> = value
+			.known_packs
+			.clone()
+			.into_iter()
+			.flat_map(|x| {
+				vec![
+					crate::serialize::string(x.namespace.as_str()),
+					crate::serialize::string(x.id.as_str()),
+					crate::serialize::string(x.version.as_str()),
+				]
+			})
 			.flatten()
 			.collect();
 
@@ -59,8 +72,12 @@ pub struct RegistryData {
 
 impl Packet for RegistryData {
 	const PACKET_ID: u8 = 0x07;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -96,24 +113,13 @@ impl TryFrom<Vec<u8>> for RegistryData {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let registry_id = crate::deserialize::string(&mut value)?;
 		let len = crate::deserialize::varint(&mut value)?;
-		let mut output = RegistryData {
-			registry_id,
-			entries: Default::default(),
-		};
+		let mut output = RegistryData { registry_id, entries: Default::default() };
 		for _ in 0..len {
 			let entry_id = crate::deserialize::string(&mut value)?;
 			let has_data = crate::deserialize::boolean(&mut value)?;
-			let data: Option<crate::nbt::NbtTag> = if has_data {
-				Some(crate::deserialize::nbt_network(&mut value)?)
-			} else {
-				None
-			};
+			let data: Option<crate::nbt::NbtTag> = if has_data { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 
-			output.entries.push(RegistryDataEntry {
-				entry_id,
-				has_data,
-				data,
-			});
+			output.entries.push(RegistryDataEntry { entry_id, has_data, data });
 		}
 
 		return Ok(output);
@@ -125,14 +131,16 @@ impl TryFrom<Vec<u8>> for RegistryData {
 //
 
 #[derive(Debug, Clone, Default)]
-pub struct FinishConfiguration {
-
-}
+pub struct FinishConfiguration {}
 
 impl Packet for FinishConfiguration {
 	const PACKET_ID: u8 = 0x03;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<FinishConfiguration> for Vec<u8> {
@@ -147,7 +155,7 @@ impl TryFrom<Vec<u8>> for FinishConfiguration {
 	type Error = Box<dyn Error>;
 
 	fn try_from(_value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {  });
+		return Ok(Self {});
 	}
 }
 
@@ -157,38 +165,42 @@ impl TryFrom<Vec<u8>> for FinishConfiguration {
 
 #[derive(Debug, Clone, Default)]
 pub struct UpdateTags {
-  pub data: Vec<(String, Vec<Tag>)>
+	pub data: Vec<(String, Vec<Tag>)>,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Tag {
-  pub name: String,
-  pub entries: Vec<i32>,
+	pub name: String,
+	pub entries: Vec<i32>,
 }
 
 impl Packet for UpdateTags {
 	const PACKET_ID: u8 = 0x0d;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<UpdateTags> for Vec<u8> {
 	type Error = Box<dyn Error>;
 
 	fn try_from(value: UpdateTags) -> Result<Self, Box<dyn Error>> {
-	  let mut data: Vec<u8> = Vec::new();
+		let mut data: Vec<u8> = Vec::new();
 
 		data.append(&mut crate::serialize::varint(value.data.len() as i32));
 		for entry in value.data {
-		  data.append(&mut crate::serialize::string(&entry.0));
-				data.append(&mut crate::serialize::varint(entry.1.len() as i32));
-				for tag in entry.1 {
-    		  data.append(&mut crate::serialize::string(&tag.name));
-     			data.append(&mut crate::serialize::varint(tag.entries.len() as i32));
-     			for tag_entry in tag.entries {
-     			  data.append(&mut crate::serialize::varint(tag_entry));
-  			  }
+			data.append(&mut crate::serialize::string(&entry.0));
+			data.append(&mut crate::serialize::varint(entry.1.len() as i32));
+			for tag in entry.1 {
+				data.append(&mut crate::serialize::string(&tag.name));
+				data.append(&mut crate::serialize::varint(tag.entries.len() as i32));
+				for tag_entry in tag.entries {
+					data.append(&mut crate::serialize::varint(tag_entry));
 				}
+			}
 		}
 
 		return Ok(data);
@@ -203,24 +215,22 @@ impl TryFrom<Vec<u8>> for UpdateTags {
 
 		let mut data: Vec<(String, Vec<Tag>)> = Vec::new();
 		for _ in 0..data_len {
-		  let registry = crate::deserialize::string(&mut value)?;
+			let registry = crate::deserialize::string(&mut value)?;
 			let mut tags: Vec<Tag> = Vec::new();
 			let tag_len = crate::deserialize::varint(&mut value)?;
 			for _ in 0..tag_len {
-			  let tag_name = crate::deserialize::string(&mut value)?;
+				let tag_name = crate::deserialize::string(&mut value)?;
 				let mut entries: Vec<i32> = Vec::new();
 				let entries_len = crate::deserialize::varint(&mut value)?;
 				for _ in 0..entries_len {
-		      entries.push(crate::deserialize::varint(&mut value)?);
+					entries.push(crate::deserialize::varint(&mut value)?);
 				}
-				tags.push(Tag{name: tag_name, entries});
+				tags.push(Tag { name: tag_name, entries });
 			}
 			data.push((registry, tags));
 		}
 
-	  return Ok(Self {
-      data,
-		});
+		return Ok(Self { data });
 	}
 }
 
@@ -235,8 +245,12 @@ pub struct ServerLinks {
 
 impl Packet for ServerLinks {
 	const PACKET_ID: u8 = 0x10;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<ServerLinks> for Vec<u8> {
@@ -261,17 +275,14 @@ impl TryFrom<Vec<u8>> for ServerLinks {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let links_len = crate::deserialize::varint(&mut value)?;
-		let links: Vec<(NbtTag, String)> = (0..links_len).map(|_| {
-			value.remove(0);
-			return (
-				crate::deserialize::nbt_network(&mut value).unwrap(),
-				crate::deserialize::string(&mut value).unwrap(),
-			);
-		}).collect();
+		let links: Vec<(NbtTag, String)> = (0..links_len)
+			.map(|_| {
+				value.remove(0);
+				return (crate::deserialize::nbt_network(&mut value).unwrap(), crate::deserialize::string(&mut value).unwrap());
+			})
+			.collect();
 
-		return Ok(Self {
-			links,
-		});
+		return Ok(Self { links });
 	}
 }
 //
@@ -285,8 +296,12 @@ pub struct ShowDialog {
 
 impl Packet for ShowDialog {
 	const PACKET_ID: u8 = 0x12;
-  fn get_target() -> PacketTarget { PacketTarget::Client }
-  fn get_state() -> ConnectionState { ConnectionState::Configuration }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Configuration
+	}
 }
 
 impl TryFrom<ShowDialog> for Vec<u8> {
@@ -304,8 +319,6 @@ impl TryFrom<Vec<u8>> for ShowDialog {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			dialog: crate::deserialize::nbt_network(&mut value)?,
-		});
+		return Ok(Self { dialog: crate::deserialize::nbt_network(&mut value)? });
 	}
 }
