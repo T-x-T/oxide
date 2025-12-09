@@ -331,7 +331,7 @@ fn get_block_state_id_from_raw() -> String {
 	}
 
 	output += "pub fn get_block_state_id_from_raw(block_states: &HashMap<String, Block>, block_name: &str, properties: &[(String, String)]) -> u16 {\n";
-	output += "\tlet Some(block) = block_states.get(block_name).unwrap() else {
+	output += "\tlet Some(block) = block_states.get(block_name) else {
 \t\tprintln!(\"get_block_state_id_from_raw couldnt find block {block_name} with properties {properties:?}\");
 \t\treturn 0;
 	};\n";
