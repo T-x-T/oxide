@@ -9,12 +9,26 @@ use super::*;
 
 #[derive(Debug, Clone)]
 pub enum BlockEntity {
-	Furnace(crate::blockentities::furnace::Furnace),
-	Chest(crate::blockentities::chest::Chest),
-	Sign(crate::blockentities::sign::Sign),
 	Barrel(crate::blockentities::barrel::Barrel),
+	Beacon(crate::blockentities::beacon::Beacon),
 	Bed(crate::blockentities::bed::Bed),
-	MobSpaner(crate::blockentities::mob_spawner::MobSpawner),
+	BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace),
+	BrewingStand(crate::blockentities::brewing_stand::BrewingStand),
+	Chest(crate::blockentities::chest::Chest),
+	CommandBlock(crate::blockentities::command_block::CommandBlock),
+	Crafter(crate::blockentities::crafter::Crafter),
+	Dispenser(crate::blockentities::dispenser::Dispenser),
+	Dropper(crate::blockentities::dropper::Dropper),
+	EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable),
+	EnderChest(crate::blockentities::ender_chest::EnderChest),
+	Furnace(crate::blockentities::furnace::Furnace),
+	HangingSign(crate::blockentities::hanging_sign::HangingSign),
+	Hopper(crate::blockentities::hopper::Hopper),
+	Jigsaw(crate::blockentities::jigsaw::Jigsaw),
+	MobSpawner(crate::blockentities::mob_spawner::MobSpawner),
+	Sign(crate::blockentities::sign::Sign),
+	Smoker(crate::blockentities::smoker::Smoker),
+	TrappedChest(crate::blockentities::trapped_chest::TrappedChest),
 }
 
 pub trait CommonBlockEntity {
@@ -32,7 +46,21 @@ impl BlockEntity {
 			BlockEntity::Sign(sign) => sign.tick(players, game),
 			BlockEntity::Barrel(barrel) => barrel.tick(players, game),
 			BlockEntity::Bed(bed) => bed.tick(players, game),
-			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.tick(players, game),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, game),
+			BlockEntity::Beacon(beacon) => beacon.tick(players, game),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, game),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, game),
+			BlockEntity::CommandBlock(command_block) => command_block.tick(players, game),
+			BlockEntity::Crafter(crafter) => crafter.tick(players, game),
+			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, game),
+			BlockEntity::Dropper(dropper) => dropper.tick(players, game),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, game),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, game),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, game),
+			BlockEntity::Hopper(hopper) => hopper.tick(players, game),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, game),
+			BlockEntity::Smoker(smoker) => smoker.tick(players, game),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, game),
 		}
 	}
 
@@ -40,12 +68,26 @@ impl BlockEntity {
 		return match block_type {
 			Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
 			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
-			Type::WallSign | Type::StandingSign | Type::WallHangingSign | Type::CeilingHangingSign => {
-				Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position)))
-			}
+			Type::WallSign | Type::StandingSign => Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position))),
 			Type::Barrel => Some(BlockEntity::Barrel(crate::blockentities::barrel::Barrel::new(position))),
 			Type::Bed => Some(BlockEntity::Bed(crate::blockentities::bed::Bed::new(position))),
-			Type::Spawner => Some(BlockEntity::MobSpaner(crate::blockentities::mob_spawner::MobSpawner::new(position))),
+			Type::Spawner => Some(BlockEntity::MobSpawner(crate::blockentities::mob_spawner::MobSpawner::new(position))),
+			Type::Beacon => Some(BlockEntity::Beacon(crate::blockentities::beacon::Beacon::new(position))),
+			Type::BlastFurnace => Some(BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::new(position))),
+			Type::BrewingStand => Some(BlockEntity::BrewingStand(crate::blockentities::brewing_stand::BrewingStand::new(position))),
+			Type::Command => Some(BlockEntity::CommandBlock(crate::blockentities::command_block::CommandBlock::new(position))),
+			Type::Crafter => Some(BlockEntity::Crafter(crate::blockentities::crafter::Crafter::new(position))),
+			Type::Dispenser => Some(BlockEntity::Dispenser(crate::blockentities::dispenser::Dispenser::new(position))),
+			Type::Dropper => Some(BlockEntity::Dropper(crate::blockentities::dropper::Dropper::new(position))),
+			Type::EnchantmentTable => Some(BlockEntity::EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable::new(position))),
+			Type::EnderChest => Some(BlockEntity::EnderChest(crate::blockentities::ender_chest::EnderChest::new(position))),
+			Type::WallHangingSign | Type::CeilingHangingSign => {
+				Some(BlockEntity::HangingSign(crate::blockentities::hanging_sign::HangingSign::new(position)))
+			}
+			Type::Hopper => Some(BlockEntity::Hopper(crate::blockentities::hopper::Hopper::new(position))),
+			Type::Jigsaw => Some(BlockEntity::Jigsaw(crate::blockentities::jigsaw::Jigsaw::new(position))),
+			Type::Smoker => Some(BlockEntity::Smoker(crate::blockentities::smoker::Smoker::new(position))),
+			Type::TrappedChest => Some(BlockEntity::TrappedChest(crate::blockentities::trapped_chest::TrappedChest::new(position))),
 			_ => None,
 		};
 	}
@@ -57,7 +99,21 @@ impl BlockEntity {
 			BlockEntity::Sign(sign) => sign.position,
 			BlockEntity::Barrel(barrel) => barrel.position,
 			BlockEntity::Bed(bed) => bed.position,
-			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.position,
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.position,
+			BlockEntity::Beacon(beacon) => beacon.position,
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.position,
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.position,
+			BlockEntity::CommandBlock(command_block) => command_block.position,
+			BlockEntity::Crafter(crafter) => crafter.position,
+			BlockEntity::Dispenser(dispenser) => dispenser.position,
+			BlockEntity::Dropper(dropper) => dropper.position,
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.position,
+			BlockEntity::EnderChest(ender_chest) => ender_chest.position,
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.position,
+			BlockEntity::Hopper(hopper) => hopper.position,
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.position,
+			BlockEntity::Smoker(smoker) => smoker.position,
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.position,
 		};
 	}
 
@@ -68,7 +124,21 @@ impl BlockEntity {
 			BlockEntity::Sign(_) => "minecraft:sign".to_string(),
 			BlockEntity::Barrel(_) => "minecraft:barrel".to_string(),
 			BlockEntity::Bed(_) => "minecraft:bed".to_string(),
-			BlockEntity::MobSpaner(_) => "minecraft:mob_spawner".to_string(),
+			BlockEntity::MobSpawner(_) => "minecraft:mob_spawner".to_string(),
+			BlockEntity::Beacon(_) => "minecraft:beacon".to_string(),
+			BlockEntity::BlastFurnace(_) => "minecraft:blast_furnace".to_string(),
+			BlockEntity::BrewingStand(_) => "minecraft:brewing_stand".to_string(),
+			BlockEntity::CommandBlock(_) => "minecraft:command_block".to_string(),
+			BlockEntity::Crafter(_) => "minecraft:crafter".to_string(),
+			BlockEntity::Dispenser(_) => "minecraft:dispenser".to_string(),
+			BlockEntity::Dropper(_) => "minecraft:dropper".to_string(),
+			BlockEntity::EnchantingTable(_) => "minecraft:enchanting_table".to_string(),
+			BlockEntity::EnderChest(_) => "minecraft:ender_chest".to_string(),
+			BlockEntity::HangingSign(_) => "minecraft:hanging_sign".to_string(),
+			BlockEntity::Hopper(_) => "minecraft:hopper".to_string(),
+			BlockEntity::Jigsaw(_) => "minecraft:jigsaw".to_string(),
+			BlockEntity::Smoker(_) => "minecraft:smoker".to_string(),
+			BlockEntity::TrappedChest(_) => "minecraft:trapped_chest".to_string(),
 		}
 	}
 
@@ -77,6 +147,13 @@ impl BlockEntity {
 			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
 			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),
 			BlockEntity::Barrel(barrel) => barrel.get_contained_items_owned(),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.get_contained_items_owned(),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.get_contained_items_owned(),
+			BlockEntity::Crafter(crafter) => crafter.get_contained_items_owned(),
+			BlockEntity::Dispenser(dispenser) => dispenser.get_contained_items_owned(),
+			BlockEntity::Dropper(dropper) => dropper.get_contained_items_owned(),
+			BlockEntity::Hopper(hopper) => hopper.get_contained_items_owned(),
+			BlockEntity::Smoker(smoker) => smoker.get_contained_items_owned(),
 			_ => Vec::new(),
 		};
 	}
@@ -149,12 +226,28 @@ impl TryFrom<NbtListTag> for BlockEntity {
 		let id: BlockEntityId = value.get_child("id").unwrap().as_string().try_into()?;
 
 		return Ok(match id {
-			BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
-			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
-			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
 			BlockEntityId::Barrel => BlockEntity::Barrel(crate::blockentities::barrel::Barrel::try_from(value)?),
+			BlockEntityId::Beacon => BlockEntity::Beacon(crate::blockentities::beacon::Beacon::try_from(value)?),
 			BlockEntityId::Bed => BlockEntity::Bed(crate::blockentities::bed::Bed::try_from(value)?),
-			BlockEntityId::MobSpawner => BlockEntity::MobSpaner(crate::blockentities::mob_spawner::MobSpawner::try_from(value)?),
+			BlockEntityId::BlastFurnace => BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::try_from(value)?),
+			BlockEntityId::BrewingStand => BlockEntity::BrewingStand(crate::blockentities::brewing_stand::BrewingStand::try_from(value)?),
+			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
+			BlockEntityId::CommandBlock => BlockEntity::CommandBlock(crate::blockentities::command_block::CommandBlock::try_from(value)?),
+			BlockEntityId::Crafter => BlockEntity::Crafter(crate::blockentities::crafter::Crafter::try_from(value)?),
+			BlockEntityId::Dispenser => BlockEntity::Dispenser(crate::blockentities::dispenser::Dispenser::try_from(value)?),
+			BlockEntityId::Dropper => BlockEntity::Dropper(crate::blockentities::dropper::Dropper::try_from(value)?),
+			BlockEntityId::EnchantingTable => {
+				BlockEntity::EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable::try_from(value)?)
+			}
+			BlockEntityId::EnderChest => BlockEntity::EnderChest(crate::blockentities::ender_chest::EnderChest::try_from(value)?),
+			BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
+			BlockEntityId::HangingSign => BlockEntity::HangingSign(crate::blockentities::hanging_sign::HangingSign::try_from(value)?),
+			BlockEntityId::Hopper => BlockEntity::Hopper(crate::blockentities::hopper::Hopper::try_from(value)?),
+			BlockEntityId::Jigsaw => BlockEntity::Jigsaw(crate::blockentities::jigsaw::Jigsaw::try_from(value)?),
+			BlockEntityId::MobSpawner => BlockEntity::MobSpawner(crate::blockentities::mob_spawner::MobSpawner::try_from(value)?),
+			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
+			BlockEntityId::Smoker => BlockEntity::Smoker(crate::blockentities::smoker::Smoker::try_from(value)?),
+			BlockEntityId::TrappedChest => BlockEntity::TrappedChest(crate::blockentities::trapped_chest::TrappedChest::try_from(value)?),
 			_ => {
 				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}"))));
 			}
@@ -170,7 +263,21 @@ impl From<BlockEntity> for Vec<NbtTag> {
 			BlockEntity::Sign(sign) => sign.into(),
 			BlockEntity::Barrel(barrel) => barrel.into(),
 			BlockEntity::Bed(bed) => bed.into(),
-			BlockEntity::MobSpaner(mob_spawner) => mob_spawner.into(),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.into(),
+			BlockEntity::Beacon(beacon) => beacon.into(),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.into(),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.into(),
+			BlockEntity::CommandBlock(command_block) => command_block.into(),
+			BlockEntity::Crafter(crafter) => crafter.into(),
+			BlockEntity::Dispenser(dispenser) => dispenser.into(),
+			BlockEntity::Dropper(dropper) => dropper.into(),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.into(),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.into(),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.into(),
+			BlockEntity::Hopper(hopper) => hopper.into(),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.into(),
+			BlockEntity::Smoker(smoker) => smoker.into(),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.into(),
 		};
 	}
 }

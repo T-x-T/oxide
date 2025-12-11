@@ -666,16 +666,46 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				drop(players);
 
 				match &mut block_entity {
+					BlockEntity::Barrel(barrel) => {
+						let items = barrel.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 27);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::BlastFurnace(blast_furnace) => {
+						let items = blast_furnace.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 3);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::BrewingStand(brewing_stand) => {
+						let items = brewing_stand.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 5);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
 					BlockEntity::Chest(chest) => {
 						let items = chest.get_contained_items_mut();
 						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
 						assert!(items.len() == 27);
 						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
 					}
-					BlockEntity::Barrel(barrel) => {
-						let items = barrel.get_contained_items_mut();
+					BlockEntity::Crafter(crafter) => {
+						let items = crafter.get_contained_items_mut();
 						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-						assert!(items.len() == 27);
+						assert!(items.len() == 9);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::Dispenser(dispenser) => {
+						let items = dispenser.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 9);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::Dropper(dropper) => {
+						let items = dropper.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 9);
 						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
 					}
 					BlockEntity::Furnace(furnace) => {
@@ -684,26 +714,25 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						assert!(items.len() == 3);
 						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
 						block_entity.set_needs_ticking(true);
-					} // BlockEntity::BrewingStand(items) => {
-					//   assert!(items.len() == 5);
-					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					// },
-					// BlockEntity::Crafter(items) => {
-					//   assert!(items.len() == 9);
-					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					// },
-					// BlockEntity::Dispenser(items) => {
-					//   assert!(items.len() == 9);
-					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					// },
-					// BlockEntity::Hopper(items) => {
-					//   assert!(items.len() == 5);
-					//   assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
-					//   lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
-					// },
+					}
+					BlockEntity::Hopper(hopper) => {
+						let items = hopper.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 5);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::Smoker(smoker) => {
+						let items = smoker.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 3);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
+					BlockEntity::TrappedChest(trapped_chest) => {
+						let items = trapped_chest.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 27);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
 					x => println!("can't handle click_container packet for entity {x:?}"),
 				}
 
