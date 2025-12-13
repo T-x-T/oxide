@@ -721,6 +721,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						assert!(items.len() == 5);
 						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
 					}
+					BlockEntity::ShulkerBox(shulker_box) => {
+						let items = shulker_box.get_contained_items_mut();
+						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
+						assert!(items.len() == 27);
+						lib::containerclick::handle(parsed_packet, items, player_uuid, game.clone(), streams_with_container_opened);
+					}
 					BlockEntity::Smoker(smoker) => {
 						let items = smoker.get_contained_items_mut();
 						assert!(parsed_packet.slot < 36 + items.len() as i16); //36 for the players inventory
