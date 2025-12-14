@@ -31,7 +31,10 @@ pub enum AiExecutionResult {
 pub trait CreatableEntity: Entity + Send {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
 	fn from_nbt(value: NbtListTag, entity_id_manager: &EntityIdManager) -> Box<dyn SaveableEntity + Send> {
-		let mut common_data = CommonEntity { entity_id: entity_id_manager.get_new(), ..Default::default() };
+		let mut common_data = CommonEntity {
+			entity_id: entity_id_manager.get_new(),
+			..Default::default()
+		};
 
 		let entity_type = value.get_child("id").unwrap().as_string();
 		let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
@@ -40,7 +43,13 @@ pub trait CreatableEntity: Entity + Send {
 		let yaw = value.get_child("Rotation").unwrap().as_list()[0].as_float();
 		let pitch = value.get_child("Rotation").unwrap().as_list()[1].as_float();
 
-		common_data.position = EntityPosition { x, y, z, yaw, pitch };
+		common_data.position = EntityPosition {
+			x,
+			y,
+			z,
+			yaw,
+			pitch,
+		};
 
 		if value.get_child("Motion").is_some() {
 			common_data.velocity = EntityPosition {
@@ -205,8 +214,12 @@ pub trait Entity: std::fmt::Debug {
 
 		//the order in which these are applied differs between different entities, see https://minecraft.wiki/w/Entity#Motion
 		let velocity = self.get_common_entity_data().velocity;
-		self.get_common_entity_data_mut().velocity =
-			EntityPosition { x: velocity.x * 0.91, y: velocity.y * 0.98, z: velocity.z * 0.91, ..velocity };
+		self.get_common_entity_data_mut().velocity = EntityPosition {
+			x: velocity.x * 0.91,
+			y: velocity.y * 0.98,
+			z: velocity.z * 0.91,
+			..velocity
+		};
 
 
 		let mut velocity_from_ai = EntityPosition::default();
@@ -240,8 +253,13 @@ pub trait Entity: std::fmt::Debug {
 
 				//Check if jumping would help
 				if self.is_on_ground(dimension)
-					&& !self.collides_with_blocks_at(dimension, EntityPosition { y: entity_position_to_check.y + 1.0, ..entity_position_to_check })
-				{
+					&& !self.collides_with_blocks_at(
+						dimension,
+						EntityPosition {
+							y: entity_position_to_check.y + 1.0,
+							..entity_position_to_check
+						},
+					) {
 					self.get_common_entity_data_mut().velocity.y += 0.025;
 				};
 				break;
@@ -251,8 +269,12 @@ pub trait Entity: std::fmt::Debug {
 		}
 
 
-		let mut next_position =
-			EntityPosition { x: old_position.x + velocity.x, y: old_position.y + velocity.y, z: old_position.z + velocity.z, ..old_position };
+		let mut next_position = EntityPosition {
+			x: old_position.x + velocity.x,
+			y: old_position.y + velocity.y,
+			z: old_position.z + velocity.z,
+			..old_position
+		};
 		if self.is_on_ground_at(dimension, next_position) {
 			next_position.y = next_position.y.round();
 		}
@@ -369,7 +391,11 @@ pub trait Entity: std::fmt::Debug {
 		for x in x_range.clone() {
 			for y in y_range.clone() {
 				for z in z_range.clone() {
-					output.push(BlockPosition { x, y, z });
+					output.push(BlockPosition {
+						x,
+						y,
+						z,
+					});
 				}
 			}
 		}
@@ -736,8 +762,13 @@ pub fn create_and_spawn_entity_from_egg(
 	game: Arc<Game>,
 ) {
 	let entity_type = spawn_egg_name.replace("_spawn_egg", "");
-	let entity_position =
-		EntityPosition { x: position.x as f64 + 0.5, y: position.y as f64, z: position.z as f64 + 0.5, yaw: 0.0, pitch: 0.0 };
+	let entity_position = EntityPosition {
+		x: position.x as f64 + 0.5,
+		y: position.y as f64,
+		z: position.z as f64 + 0.5,
+		yaw: 0.0,
+		pitch: 0.0,
+	};
 	create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players, game);
 }
 
@@ -878,11 +909,28 @@ mod test {
 		#[test]
 		fn integer_position() {
 			let entity = DefaultMob::default();
-			let entity_position = EntityPosition { x: 10.0, y: 10.0, z: 10.0, yaw: 0.0, pitch: 0.0 };
+			let entity_position = EntityPosition {
+				x: 10.0,
+				y: 10.0,
+				z: 10.0,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
 
 			let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
-			let mut expected: Vec<BlockPosition> = vec![BlockPosition { x: 10, y: 10, z: 10 }, BlockPosition { x: 10, y: 11, z: 10 }];
+			let mut expected: Vec<BlockPosition> = vec![
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 10,
+				},
+			];
 
 			res.sort();
 			expected.sort();
@@ -893,23 +941,77 @@ mod test {
 		#[test]
 		fn block_center_pos() {
 			let entity = DefaultMob::default();
-			let entity_position = EntityPosition { x: 10.5, y: 10.5, z: 10.5, yaw: 0.0, pitch: 0.0 };
+			let entity_position = EntityPosition {
+				x: 10.5,
+				y: 10.5,
+				z: 10.5,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
 
 			let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
 			let mut expected: Vec<BlockPosition> = vec![
-				BlockPosition { x: 10, y: 10, z: 10 },
-				BlockPosition { x: 10, y: 10, z: 11 },
-				BlockPosition { x: 10, y: 11, z: 10 },
-				BlockPosition { x: 10, y: 11, z: 11 },
-				BlockPosition { x: 10, y: 12, z: 10 },
-				BlockPosition { x: 10, y: 12, z: 11 },
-				BlockPosition { x: 11, y: 10, z: 10 },
-				BlockPosition { x: 11, y: 10, z: 11 },
-				BlockPosition { x: 11, y: 11, z: 10 },
-				BlockPosition { x: 11, y: 11, z: 11 },
-				BlockPosition { x: 11, y: 12, z: 10 },
-				BlockPosition { x: 11, y: 12, z: 11 },
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 11,
+				},
 			];
 
 			res.sort();
@@ -922,111 +1024,517 @@ mod test {
 		#[test]
 		fn integer_position_big_mob() {
 			let entity = BigMob::default();
-			let entity_position = EntityPosition { x: 10.5, y: 10.0, z: 10.5, yaw: 0.0, pitch: 0.0 };
+			let entity_position = EntityPosition {
+				x: 10.5,
+				y: 10.0,
+				z: 10.5,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
 
 			let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
 			let mut expected: Vec<BlockPosition> = vec![
-				BlockPosition { x: 9, y: 10, z: 9 },
-				BlockPosition { x: 9, y: 10, z: 10 },
-				BlockPosition { x: 9, y: 10, z: 11 },
-				BlockPosition { x: 9, y: 10, z: 12 },
-				BlockPosition { x: 9, y: 10, z: 13 },
-				BlockPosition { x: 9, y: 11, z: 9 },
-				BlockPosition { x: 9, y: 11, z: 10 },
-				BlockPosition { x: 9, y: 11, z: 11 },
-				BlockPosition { x: 9, y: 11, z: 12 },
-				BlockPosition { x: 9, y: 11, z: 13 },
-				BlockPosition { x: 9, y: 12, z: 9 },
-				BlockPosition { x: 9, y: 12, z: 10 },
-				BlockPosition { x: 9, y: 12, z: 11 },
-				BlockPosition { x: 9, y: 12, z: 12 },
-				BlockPosition { x: 9, y: 12, z: 13 },
-				BlockPosition { x: 9, y: 13, z: 9 },
-				BlockPosition { x: 9, y: 13, z: 10 },
-				BlockPosition { x: 9, y: 13, z: 11 },
-				BlockPosition { x: 9, y: 13, z: 12 },
-				BlockPosition { x: 9, y: 13, z: 13 },
-				BlockPosition { x: 10, y: 10, z: 9 },
-				BlockPosition { x: 10, y: 10, z: 10 },
-				BlockPosition { x: 10, y: 10, z: 11 },
-				BlockPosition { x: 10, y: 10, z: 12 },
-				BlockPosition { x: 10, y: 10, z: 13 },
-				BlockPosition { x: 10, y: 11, z: 9 },
-				BlockPosition { x: 10, y: 11, z: 10 },
-				BlockPosition { x: 10, y: 11, z: 11 },
-				BlockPosition { x: 10, y: 11, z: 12 },
-				BlockPosition { x: 10, y: 11, z: 13 },
-				BlockPosition { x: 10, y: 12, z: 9 },
-				BlockPosition { x: 10, y: 12, z: 10 },
-				BlockPosition { x: 10, y: 12, z: 11 },
-				BlockPosition { x: 10, y: 12, z: 12 },
-				BlockPosition { x: 10, y: 12, z: 13 },
-				BlockPosition { x: 10, y: 13, z: 9 },
-				BlockPosition { x: 10, y: 13, z: 10 },
-				BlockPosition { x: 10, y: 13, z: 11 },
-				BlockPosition { x: 10, y: 13, z: 12 },
-				BlockPosition { x: 10, y: 13, z: 13 },
-				BlockPosition { x: 11, y: 10, z: 9 },
-				BlockPosition { x: 11, y: 10, z: 10 },
-				BlockPosition { x: 11, y: 10, z: 11 },
-				BlockPosition { x: 11, y: 10, z: 12 },
-				BlockPosition { x: 11, y: 10, z: 13 },
-				BlockPosition { x: 11, y: 11, z: 9 },
-				BlockPosition { x: 11, y: 11, z: 10 },
-				BlockPosition { x: 11, y: 11, z: 11 },
-				BlockPosition { x: 11, y: 11, z: 12 },
-				BlockPosition { x: 11, y: 11, z: 13 },
-				BlockPosition { x: 11, y: 12, z: 9 },
-				BlockPosition { x: 11, y: 12, z: 10 },
-				BlockPosition { x: 11, y: 12, z: 11 },
-				BlockPosition { x: 11, y: 12, z: 12 },
-				BlockPosition { x: 11, y: 12, z: 13 },
-				BlockPosition { x: 11, y: 13, z: 9 },
-				BlockPosition { x: 11, y: 13, z: 10 },
-				BlockPosition { x: 11, y: 13, z: 11 },
-				BlockPosition { x: 11, y: 13, z: 12 },
-				BlockPosition { x: 11, y: 13, z: 13 },
-				BlockPosition { x: 12, y: 10, z: 9 },
-				BlockPosition { x: 12, y: 10, z: 10 },
-				BlockPosition { x: 12, y: 10, z: 11 },
-				BlockPosition { x: 12, y: 10, z: 12 },
-				BlockPosition { x: 12, y: 10, z: 13 },
-				BlockPosition { x: 12, y: 11, z: 9 },
-				BlockPosition { x: 12, y: 11, z: 10 },
-				BlockPosition { x: 12, y: 11, z: 11 },
-				BlockPosition { x: 12, y: 11, z: 12 },
-				BlockPosition { x: 12, y: 11, z: 13 },
-				BlockPosition { x: 12, y: 12, z: 9 },
-				BlockPosition { x: 12, y: 12, z: 10 },
-				BlockPosition { x: 12, y: 12, z: 11 },
-				BlockPosition { x: 12, y: 12, z: 12 },
-				BlockPosition { x: 12, y: 12, z: 13 },
-				BlockPosition { x: 12, y: 13, z: 9 },
-				BlockPosition { x: 12, y: 13, z: 10 },
-				BlockPosition { x: 12, y: 13, z: 11 },
-				BlockPosition { x: 12, y: 13, z: 12 },
-				BlockPosition { x: 12, y: 13, z: 13 },
-				BlockPosition { x: 13, y: 10, z: 9 },
-				BlockPosition { x: 13, y: 10, z: 10 },
-				BlockPosition { x: 13, y: 10, z: 11 },
-				BlockPosition { x: 13, y: 10, z: 12 },
-				BlockPosition { x: 13, y: 10, z: 13 },
-				BlockPosition { x: 13, y: 11, z: 9 },
-				BlockPosition { x: 13, y: 11, z: 10 },
-				BlockPosition { x: 13, y: 11, z: 11 },
-				BlockPosition { x: 13, y: 11, z: 12 },
-				BlockPosition { x: 13, y: 11, z: 13 },
-				BlockPosition { x: 13, y: 12, z: 9 },
-				BlockPosition { x: 13, y: 12, z: 10 },
-				BlockPosition { x: 13, y: 12, z: 11 },
-				BlockPosition { x: 13, y: 12, z: 12 },
-				BlockPosition { x: 13, y: 12, z: 13 },
-				BlockPosition { x: 13, y: 13, z: 9 },
-				BlockPosition { x: 13, y: 13, z: 10 },
-				BlockPosition { x: 13, y: 13, z: 11 },
-				BlockPosition { x: 13, y: 13, z: 12 },
-				BlockPosition { x: 13, y: 13, z: 13 },
+				BlockPosition {
+					x: 9,
+					y: 10,
+					z: 9,
+				},
+				BlockPosition {
+					x: 9,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 9,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 9,
+					y: 10,
+					z: 12,
+				},
+				BlockPosition {
+					x: 9,
+					y: 10,
+					z: 13,
+				},
+				BlockPosition {
+					x: 9,
+					y: 11,
+					z: 9,
+				},
+				BlockPosition {
+					x: 9,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 9,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 9,
+					y: 11,
+					z: 12,
+				},
+				BlockPosition {
+					x: 9,
+					y: 11,
+					z: 13,
+				},
+				BlockPosition {
+					x: 9,
+					y: 12,
+					z: 9,
+				},
+				BlockPosition {
+					x: 9,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 9,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 9,
+					y: 12,
+					z: 12,
+				},
+				BlockPosition {
+					x: 9,
+					y: 12,
+					z: 13,
+				},
+				BlockPosition {
+					x: 9,
+					y: 13,
+					z: 9,
+				},
+				BlockPosition {
+					x: 9,
+					y: 13,
+					z: 10,
+				},
+				BlockPosition {
+					x: 9,
+					y: 13,
+					z: 11,
+				},
+				BlockPosition {
+					x: 9,
+					y: 13,
+					z: 12,
+				},
+				BlockPosition {
+					x: 9,
+					y: 13,
+					z: 13,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 9,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 12,
+				},
+				BlockPosition {
+					x: 10,
+					y: 10,
+					z: 13,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 9,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 12,
+				},
+				BlockPosition {
+					x: 10,
+					y: 11,
+					z: 13,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 9,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 12,
+				},
+				BlockPosition {
+					x: 10,
+					y: 12,
+					z: 13,
+				},
+				BlockPosition {
+					x: 10,
+					y: 13,
+					z: 9,
+				},
+				BlockPosition {
+					x: 10,
+					y: 13,
+					z: 10,
+				},
+				BlockPosition {
+					x: 10,
+					y: 13,
+					z: 11,
+				},
+				BlockPosition {
+					x: 10,
+					y: 13,
+					z: 12,
+				},
+				BlockPosition {
+					x: 10,
+					y: 13,
+					z: 13,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 9,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 12,
+				},
+				BlockPosition {
+					x: 11,
+					y: 10,
+					z: 13,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 9,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 12,
+				},
+				BlockPosition {
+					x: 11,
+					y: 11,
+					z: 13,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 9,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 12,
+				},
+				BlockPosition {
+					x: 11,
+					y: 12,
+					z: 13,
+				},
+				BlockPosition {
+					x: 11,
+					y: 13,
+					z: 9,
+				},
+				BlockPosition {
+					x: 11,
+					y: 13,
+					z: 10,
+				},
+				BlockPosition {
+					x: 11,
+					y: 13,
+					z: 11,
+				},
+				BlockPosition {
+					x: 11,
+					y: 13,
+					z: 12,
+				},
+				BlockPosition {
+					x: 11,
+					y: 13,
+					z: 13,
+				},
+				BlockPosition {
+					x: 12,
+					y: 10,
+					z: 9,
+				},
+				BlockPosition {
+					x: 12,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 12,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 12,
+					y: 10,
+					z: 12,
+				},
+				BlockPosition {
+					x: 12,
+					y: 10,
+					z: 13,
+				},
+				BlockPosition {
+					x: 12,
+					y: 11,
+					z: 9,
+				},
+				BlockPosition {
+					x: 12,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 12,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 12,
+					y: 11,
+					z: 12,
+				},
+				BlockPosition {
+					x: 12,
+					y: 11,
+					z: 13,
+				},
+				BlockPosition {
+					x: 12,
+					y: 12,
+					z: 9,
+				},
+				BlockPosition {
+					x: 12,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 12,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 12,
+					y: 12,
+					z: 12,
+				},
+				BlockPosition {
+					x: 12,
+					y: 12,
+					z: 13,
+				},
+				BlockPosition {
+					x: 12,
+					y: 13,
+					z: 9,
+				},
+				BlockPosition {
+					x: 12,
+					y: 13,
+					z: 10,
+				},
+				BlockPosition {
+					x: 12,
+					y: 13,
+					z: 11,
+				},
+				BlockPosition {
+					x: 12,
+					y: 13,
+					z: 12,
+				},
+				BlockPosition {
+					x: 12,
+					y: 13,
+					z: 13,
+				},
+				BlockPosition {
+					x: 13,
+					y: 10,
+					z: 9,
+				},
+				BlockPosition {
+					x: 13,
+					y: 10,
+					z: 10,
+				},
+				BlockPosition {
+					x: 13,
+					y: 10,
+					z: 11,
+				},
+				BlockPosition {
+					x: 13,
+					y: 10,
+					z: 12,
+				},
+				BlockPosition {
+					x: 13,
+					y: 10,
+					z: 13,
+				},
+				BlockPosition {
+					x: 13,
+					y: 11,
+					z: 9,
+				},
+				BlockPosition {
+					x: 13,
+					y: 11,
+					z: 10,
+				},
+				BlockPosition {
+					x: 13,
+					y: 11,
+					z: 11,
+				},
+				BlockPosition {
+					x: 13,
+					y: 11,
+					z: 12,
+				},
+				BlockPosition {
+					x: 13,
+					y: 11,
+					z: 13,
+				},
+				BlockPosition {
+					x: 13,
+					y: 12,
+					z: 9,
+				},
+				BlockPosition {
+					x: 13,
+					y: 12,
+					z: 10,
+				},
+				BlockPosition {
+					x: 13,
+					y: 12,
+					z: 11,
+				},
+				BlockPosition {
+					x: 13,
+					y: 12,
+					z: 12,
+				},
+				BlockPosition {
+					x: 13,
+					y: 12,
+					z: 13,
+				},
+				BlockPosition {
+					x: 13,
+					y: 13,
+					z: 9,
+				},
+				BlockPosition {
+					x: 13,
+					y: 13,
+					z: 10,
+				},
+				BlockPosition {
+					x: 13,
+					y: 13,
+					z: 11,
+				},
+				BlockPosition {
+					x: 13,
+					y: 13,
+					z: 12,
+				},
+				BlockPosition {
+					x: 13,
+					y: 13,
+					z: 13,
+				},
 			];
 
 			res.sort();

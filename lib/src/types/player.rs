@@ -233,7 +233,12 @@ impl Player {
 		let mut file =
 			OpenOptions::new().read(true).write(true).truncate(true).create(true).open(Player::get_playerdata_path(self.uuid)).unwrap();
 
-		let empty_slot = Slot { item_count: 0, item_id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let empty_slot = Slot {
+			item_count: 0,
+			item_id: 0,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
 		let player_data = NbtTag::Root(vec![
 			NbtTag::List("Pos".to_string(), vec![NbtListTag::Double(self.x), NbtListTag::Double(self.y), NbtListTag::Double(self.z)]),
 			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.yaw), NbtListTag::Float(self.pitch)]),
@@ -358,14 +363,28 @@ impl Player {
 		self.y = y;
 		self.z = z;
 
-		let old_chunk_position = BlockPosition { x: old_x as i32, y: 0, z: old_z as i32 }.convert_to_coordinates_of_chunk();
-		let new_chunk_position = BlockPosition { x: self.x as i32, y: 0, z: self.z as i32 }.convert_to_coordinates_of_chunk();
+		let old_chunk_position = BlockPosition {
+			x: old_x as i32,
+			y: 0,
+			z: old_z as i32,
+		}
+		.convert_to_coordinates_of_chunk();
+		let new_chunk_position = BlockPosition {
+			x: self.x as i32,
+			y: 0,
+			z: self.z as i32,
+		}
+		.convert_to_coordinates_of_chunk();
 
 		if old_chunk_position != new_chunk_position {
 			game.send_packet(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetCenterChunk::PACKET_ID,
-				crate::packets::clientbound::play::SetCenterChunk { chunk_x: new_chunk_position.x, chunk_z: new_chunk_position.z }.try_into()?,
+				crate::packets::clientbound::play::SetCenterChunk {
+					chunk_x: new_chunk_position.x,
+					chunk_z: new_chunk_position.z,
+				}
+				.try_into()?,
 			);
 
 			let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::VIEW_DISTANCE as i32
@@ -432,7 +451,11 @@ impl Player {
 		game: Arc<Game>,
 	) -> Result<(), Box<dyn Error>> {
 		let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
-		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
+		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition {
+			x: chunk_x,
+			y: 0,
+			z: chunk_z,
+		});
 		let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
@@ -442,7 +465,13 @@ impl Player {
 			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger);
 			dimension.entities.append(&mut new_entities);
 
-			dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z }).unwrap()
+			dimension
+				.get_chunk_from_chunk_position(BlockPosition {
+					x: chunk_x,
+					y: 0,
+					z: chunk_z,
+				})
+				.unwrap()
 		};
 		let all_chunk_sections = &chunk.sections;
 
@@ -589,7 +618,12 @@ impl Player {
 			game.send_packet(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment { entity_id: self.entity_id, equipment }.try_into().unwrap(),
+				crate::packets::clientbound::play::SetEquipment {
+					entity_id: self.entity_id,
+					equipment,
+				}
+				.try_into()
+				.unwrap(),
 			);
 		});
 	}
@@ -622,7 +656,12 @@ impl Player {
 			game.send_packet(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment { entity_id: self.entity_id, equipment }.try_into().unwrap(),
+				crate::packets::clientbound::play::SetEquipment {
+					entity_id: self.entity_id,
+					equipment,
+				}
+				.try_into()
+				.unwrap(),
 			);
 		});
 	}
@@ -661,7 +700,10 @@ impl Player {
 		game.send_packet(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CloseContainer::PACKET_ID,
-			crate::packets::clientbound::play::CloseContainer { window_id: 1 }.try_into()?,
+			crate::packets::clientbound::play::CloseContainer {
+				window_id: 1,
+			}
+			.try_into()?,
 		);
 
 		return Ok(());
@@ -689,7 +731,10 @@ impl Player {
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
 					entity_id: self.entity_id,
-					metadata: vec![EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }],
+					metadata: vec![EntityMetadata {
+						index: 6,
+						value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }),
+					}],
 				}
 				.try_into()
 				.unwrap(),
@@ -698,6 +743,12 @@ impl Player {
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
-		return EntityPosition { x: self.x, y: self.y, z: self.z, yaw: self.yaw, pitch: self.pitch };
+		return EntityPosition {
+			x: self.x,
+			y: self.y,
+			z: self.z,
+			yaw: self.yaw,
+			pitch: self.pitch,
+		};
 	}
 }

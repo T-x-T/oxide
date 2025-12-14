@@ -3,7 +3,11 @@ use std::sync::Arc;
 use super::*;
 
 pub fn init(game: &mut Game) {
-	game.commands.lock().unwrap().push(Command { name: "print_players".to_string(), execute, arguments: vec![] });
+	game.commands.lock().unwrap().push(Command {
+		name: "print_players".to_string(),
+		execute,
+		arguments: vec![],
+	});
 }
 
 fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {

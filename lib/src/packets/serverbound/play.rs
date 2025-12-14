@@ -36,7 +36,9 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(ConfirmTeleportation { teleport_id: crate::deserialize::varint(&mut value)? });
+		return Ok(ConfirmTeleportation {
+			teleport_id: crate::deserialize::varint(&mut value)?,
+		});
 	}
 }
 
@@ -75,7 +77,9 @@ impl TryFrom<Vec<u8>> for ChatCommand {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(ChatCommand { command: crate::deserialize::string(&mut value)? });
+		return Ok(ChatCommand {
+			command: crate::deserialize::string(&mut value)?,
+		});
 	}
 }
 
@@ -146,7 +150,15 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 		let acknowledged: Vec<u8> = (0..3).map(|_| value.remove(0)).collect();
 		let checksum = value.remove(0);
 
-		return Ok(Self { message, timestamp, salt, signature, message_count, acknowledged, checksum });
+		return Ok(Self {
+			message,
+			timestamp,
+			salt,
+			signature,
+			message_count,
+			acknowledged,
+			checksum,
+		});
 	}
 }
 
@@ -214,7 +226,15 @@ impl TryFrom<Vec<u8>> for ClickContainer {
 		}
 		let carried_item = crate::deserialize::hashed_slot(&mut value)?;
 
-		return Ok(ClickContainer { window_id, state_id, slot, button, mode, changed_slots, carried_item });
+		return Ok(ClickContainer {
+			window_id,
+			state_id,
+			slot,
+			button,
+			mode,
+			changed_slots,
+			carried_item,
+		});
 	}
 }
 
@@ -254,7 +274,9 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let window_id = crate::deserialize::varint(&mut value)?;
-		return Ok(CloseContainer { window_id });
+		return Ok(CloseContainer {
+			window_id,
+		});
 	}
 }
 
@@ -317,7 +339,15 @@ impl TryFrom<Vec<u8>> for Interact {
 		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 { Some(crate::deserialize::varint(&mut value)?) } else { None };
 		let sneak_key_pressed: bool = crate::deserialize::boolean(&mut value)?;
 
-		return Ok(Interact { entity_id, interact_type, target_x, target_y, target_z, hand, sneak_key_pressed });
+		return Ok(Interact {
+			entity_id,
+			interact_type,
+			target_x,
+			target_y,
+			target_z,
+			hand,
+			sneak_key_pressed,
+		});
 	}
 }
 
@@ -466,7 +496,11 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { yaw: crate::deserialize::float(&mut value)?, pitch: crate::deserialize::float(&mut value)?, flags: value.remove(0) });
+		return Ok(Self {
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
+			flags: value.remove(0),
+		});
 	}
 }
 
@@ -507,7 +541,10 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { location: crate::deserialize::position(&mut value)?, include_data: crate::deserialize::boolean(&mut value)? });
+		return Ok(Self {
+			location: crate::deserialize::position(&mut value)?,
+			include_data: crate::deserialize::boolean(&mut value)?,
+		});
 	}
 }
 
@@ -655,7 +692,9 @@ impl TryFrom<Vec<u8>> for SetHandItem {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { slot: crate::deserialize::short(&mut value)? });
+		return Ok(Self {
+			slot: crate::deserialize::short(&mut value)?,
+		});
 	}
 }
 
@@ -696,7 +735,10 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { slot: crate::deserialize::short(&mut value)?, item: crate::deserialize::slot(&mut value)? });
+		return Ok(Self {
+			slot: crate::deserialize::short(&mut value)?,
+			item: crate::deserialize::slot(&mut value)?,
+		});
 	}
 }
 
@@ -791,7 +833,9 @@ impl TryFrom<Vec<u8>> for SwingArm {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { hand: crate::deserialize::varint(&mut value)? });
+		return Ok(Self {
+			hand: crate::deserialize::varint(&mut value)?,
+		});
 	}
 }
 

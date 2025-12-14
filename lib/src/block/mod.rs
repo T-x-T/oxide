@@ -185,7 +185,11 @@ impl BlockInteractionResult {
 				game.send_packet(
 					&player.peer_socket_address,
 					crate::packets::clientbound::play::OpenSignEditor::PACKET_ID,
-					crate::packets::clientbound::play::OpenSignEditor { location: position, is_front_text: true }.try_into()?,
+					crate::packets::clientbound::play::OpenSignEditor {
+						location: position,
+						is_front_text: true,
+					}
+					.try_into()?,
 				);
 				Ok(Vec::new())
 			}

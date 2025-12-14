@@ -113,13 +113,20 @@ impl TryFrom<Vec<u8>> for RegistryData {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let registry_id = crate::deserialize::string(&mut value)?;
 		let len = crate::deserialize::varint(&mut value)?;
-		let mut output = RegistryData { registry_id, entries: Default::default() };
+		let mut output = RegistryData {
+			registry_id,
+			entries: Default::default(),
+		};
 		for _ in 0..len {
 			let entry_id = crate::deserialize::string(&mut value)?;
 			let has_data = crate::deserialize::boolean(&mut value)?;
 			let data: Option<crate::nbt::NbtTag> = if has_data { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 
-			output.entries.push(RegistryDataEntry { entry_id, has_data, data });
+			output.entries.push(RegistryDataEntry {
+				entry_id,
+				has_data,
+				data,
+			});
 		}
 
 		return Ok(output);
@@ -225,12 +232,17 @@ impl TryFrom<Vec<u8>> for UpdateTags {
 				for _ in 0..entries_len {
 					entries.push(crate::deserialize::varint(&mut value)?);
 				}
-				tags.push(Tag { name: tag_name, entries });
+				tags.push(Tag {
+					name: tag_name,
+					entries,
+				});
 			}
 			data.push((registry, tags));
 		}
 
-		return Ok(Self { data });
+		return Ok(Self {
+			data,
+		});
 	}
 }
 
@@ -282,7 +294,9 @@ impl TryFrom<Vec<u8>> for ServerLinks {
 			})
 			.collect();
 
-		return Ok(Self { links });
+		return Ok(Self {
+			links,
+		});
 	}
 }
 //
@@ -319,6 +333,8 @@ impl TryFrom<Vec<u8>> for ShowDialog {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { dialog: crate::deserialize::nbt_network(&mut value)? });
+		return Ok(Self {
+			dialog: crate::deserialize::nbt_network(&mut value)?,
+		});
 	}
 }

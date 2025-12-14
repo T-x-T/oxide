@@ -36,6 +36,9 @@ impl TryFrom<Vec<u8>> for LoginSuccess {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let uuid = crate::deserialize::uuid(&mut value)?;
-		return Ok(LoginSuccess { uuid, username: crate::deserialize::string(&mut value)? });
+		return Ok(LoginSuccess {
+			uuid,
+			username: crate::deserialize::string(&mut value)?,
+		});
 	}
 }

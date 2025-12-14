@@ -120,7 +120,10 @@ pub mod status {
 		game.send_packet(
 			&stream.peer_addr().unwrap(),
 			lib::packets::clientbound::status::PingResponse::PACKET_ID,
-			lib::packets::clientbound::status::PingResponse { timestamp: parsed_packet.timestamp }.try_into()?,
+			lib::packets::clientbound::status::PingResponse {
+				timestamp: parsed_packet.timestamp,
+			}
+			.try_into()?,
 		);
 
 		return Ok(Some(PacketHandlerAction::DisconnectPlayer(stream.peer_addr()?)));
@@ -141,7 +144,11 @@ pub mod login {
 		game.send_packet(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::login::LoginSuccess::PACKET_ID,
-			lib::packets::clientbound::login::LoginSuccess { uuid: parsed_packet.uuid, username: parsed_packet.name }.try_into()?,
+			lib::packets::clientbound::login::LoginSuccess {
+				uuid: parsed_packet.uuid,
+				username: parsed_packet.name,
+			}
+			.try_into()?,
 		);
 
 		return Ok(None);

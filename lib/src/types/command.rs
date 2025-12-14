@@ -339,6 +339,13 @@ impl TryFrom<&mut Vec<u8>> for CommandNode {
 		};
 		let suggestions_type = if flags & 0x10 == 0x10 { Some(crate::deserialize::string(value)?) } else { None };
 
-		return Ok(Self { flags, children, redirect_node, name, properties, suggestions_type });
+		return Ok(Self {
+			flags,
+			children,
+			redirect_node,
+			name,
+			properties,
+			suggestions_type,
+		});
 	}
 }

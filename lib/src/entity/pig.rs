@@ -10,7 +10,10 @@ impl CreatableEntity for Pig {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
-		return Self { common: data, mob };
+		return Self {
+			common: data,
+			mob,
+		};
 	}
 }
 

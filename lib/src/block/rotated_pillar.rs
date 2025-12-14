@@ -45,7 +45,11 @@ mod test {
 				0,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:oak_log",
 				0.0,
 				0.0,
@@ -53,7 +57,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -71,7 +82,11 @@ mod test {
 				4,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:oak_log",
 				0.0,
 				0.0,
@@ -79,7 +94,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}

@@ -171,7 +171,11 @@ pub fn bitset(data: &mut Vec<u8>) -> Result<Vec<u64>, Box<dyn Error>> {
 
 pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::BlockPosition, Box<dyn Error>> {
 	let raw = long(data)?;
-	return Ok(crate::types::position::BlockPosition { x: (raw >> 38) as i32, y: (raw << 52 >> 52) as i16, z: (raw << 26 >> 38) as i32 });
+	return Ok(crate::types::position::BlockPosition {
+		x: (raw >> 38) as i32,
+		y: (raw << 52 >> 52) as i16,
+		z: (raw << 26 >> 38) as i32,
+	});
 }
 
 pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
@@ -197,7 +201,12 @@ pub fn hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
 	}
 
 	//might have to do something about the components_to_add but probably not(?)
-	return Ok(Some(Slot { item_count, item_id, components_to_add: Vec::new(), components_to_remove }));
+	return Ok(Some(Slot {
+		item_count,
+		item_id,
+		components_to_add: Vec::new(),
+		components_to_remove,
+	}));
 }
 
 pub fn slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
@@ -343,7 +352,12 @@ pub fn slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
 		components_to_remove.push(varint(data)?);
 	}
 
-	return Ok(Some(Slot { item_count, item_id, components_to_add, components_to_remove }));
+	return Ok(Some(Slot {
+		item_count,
+		item_id,
+		components_to_add,
+		components_to_remove,
+	}));
 }
 
 const SEGMENT_BITS: u8 = 0b0111_1111;

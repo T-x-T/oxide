@@ -60,7 +60,10 @@ impl CommonBlockEntity for Furnace {
 			let mut can_cook = true;
 			if self.lit_time_remaining == 0 {
 				if self.inventory[1].count > 0 {
-					self.inventory[1] = Item { count: self.inventory[1].count - 1, ..self.inventory[1].clone() };
+					self.inventory[1] = Item {
+						count: self.inventory[1].count - 1,
+						..self.inventory[1].clone()
+					};
 					self.lit_time_remaining = 1600;
 				} else {
 					self.cooking_time_spent = 0;
@@ -75,11 +78,21 @@ impl CommonBlockEntity for Furnace {
 					self.cooking_time_spent = 0;
 
 					if self.inventory[2].id == "minecraft:iron_ingot" {
-						self.inventory[2] = Item { count: self.inventory[2].count + 1, ..self.inventory[2].clone() };
+						self.inventory[2] = Item {
+							count: self.inventory[2].count + 1,
+							..self.inventory[2].clone()
+						};
 					} else {
-						self.inventory[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
+						self.inventory[2] = Item {
+							count: 1,
+							id: "minecraft:iron_ingot".to_string(),
+							components: Vec::new(),
+						};
 					}
-					self.inventory[0] = Item { count: self.inventory[0].count - 1, ..self.inventory[0].clone() };
+					self.inventory[0] = Item {
+						count: self.inventory[0].count - 1,
+						..self.inventory[0].clone()
+					};
 				} else {
 					self.cooking_time_spent += 1;
 				}
@@ -196,7 +209,11 @@ impl TryFrom<NbtListTag> for Furnace {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition { x, y, z };
+		let position = BlockPosition {
+			x,
+			y,
+			z,
+		};
 
 		let mut inventory = vec![Item::default(); 3];
 		if let Some(items) = value.get_child("Items") {

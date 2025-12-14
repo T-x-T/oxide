@@ -54,9 +54,25 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(CardinalDirection::South, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:ender_chest", &block_states);
+			let res = get_block_state_id(
+				CardinalDirection::South,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:ender_chest",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -76,9 +92,25 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(CardinalDirection::West, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:ender_chest", &block_states);
+			let res = get_block_state_id(
+				CardinalDirection::West,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:ender_chest",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}

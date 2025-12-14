@@ -7,7 +7,12 @@ pub fn init(game: &mut Game) {
 		name: "ping".to_string(),
 		execute,
 		arguments: vec![
-			CommandArgument { name: "message".to_string(), properties: ParserProperty::String(1), next_arguments: Vec::new(), optional: true },
+			CommandArgument {
+				name: "message".to_string(),
+				properties: ParserProperty::String(1),
+				next_arguments: Vec::new(),
+				optional: true,
+			},
 			CommandArgument {
 				name: "first_arg".to_string(),
 				properties: ParserProperty::String(1),

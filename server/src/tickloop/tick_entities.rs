@@ -15,7 +15,10 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 		for outcome in entity_tick_outcomes {
 			match outcome.1 {
 				EntityTickOutcome::SelfDied => {
-					let entity_event_packet = lib::packets::clientbound::play::EntityEvent { entity_id: outcome.0, entity_status: 3 };
+					let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
+						entity_id: outcome.0,
+						entity_status: 3,
+					};
 
 					for player in players_clone {
 						game.send_packet(
@@ -26,7 +29,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					}
 				}
 				EntityTickOutcome::RemoveSelf => {
-					let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities { entity_ids: vec![outcome.0] };
+					let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
+						entity_ids: vec![outcome.0],
+					};
 
 					for player in players_clone {
 						game.send_packet(

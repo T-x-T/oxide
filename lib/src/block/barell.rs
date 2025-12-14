@@ -71,7 +71,11 @@ mod test {
 				CardinalDirection::South,
 				44.0,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:barrel",
 				0.0,
 				0.0,
@@ -79,7 +83,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -105,7 +116,11 @@ mod test {
 				CardinalDirection::West,
 				-44.0,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:barrel",
 				0.0,
 				0.0,
@@ -113,7 +128,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -139,7 +161,11 @@ mod test {
 				CardinalDirection::West,
 				46.0,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:barrel",
 				0.0,
 				0.0,
@@ -147,7 +173,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -173,7 +206,11 @@ mod test {
 				CardinalDirection::West,
 				-45.5,
 				&dimension,
-				BlockPosition { x: 10, y: 80, z: 0 },
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
 				"minecraft:barrel",
 				0.0,
 				0.0,
@@ -181,7 +218,14 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}

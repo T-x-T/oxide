@@ -61,6 +61,8 @@ impl TryFrom<Vec<u8>> for PingRequest {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(PingRequest { timestamp: crate::deserialize::long(&mut value)? });
+		return Ok(PingRequest {
+			timestamp: crate::deserialize::long(&mut value)?,
+		});
 	}
 }

@@ -12,9 +12,15 @@ pub fn get_block_state_id(
 	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
 	let position_to_check = if face == 0 {
-		BlockPosition { y: position.y + 1, ..position }
+		BlockPosition {
+			y: position.y + 1,
+			..position
+		}
 	} else if face == 1 {
-		BlockPosition { y: position.y - 1, ..position }
+		BlockPosition {
+			y: position.y - 1,
+			..position
+		}
 	} else {
 		position
 	};
@@ -96,9 +102,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(1, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				1,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -119,9 +143,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(0, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				0,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -142,9 +184,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(2, 0.51, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				2,
+				0.51,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -165,9 +225,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(2, 0.49, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				2,
+				0.49,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -187,7 +265,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 80,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -199,9 +286,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(1, 0.0, &dimension, BlockPosition { x: 10, y: 81, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				1,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 81,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -221,7 +326,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 81,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -233,9 +347,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(0, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				0,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -255,7 +387,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 80,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -267,9 +408,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(2, 0.49, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				2,
+				0.49,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -289,7 +448,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 80,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -301,9 +469,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(2, 0.99, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				2,
+				0.99,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -323,7 +509,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 81, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 81,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -335,9 +530,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(0, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				0,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}
@@ -357,7 +570,16 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension.overwrite_block(BlockPosition { x: 10, y: 79, z: 0 }, block_state_id_to_place).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						x: 10,
+						y: 79,
+						z: 0,
+					},
+					block_state_id_to_place,
+				)
+				.unwrap();
 
 			let block_state_id = block
 				.states
@@ -369,9 +591,27 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = get_block_state_id(1, 0.0, &dimension, BlockPosition { x: 10, y: 80, z: 0 }, "minecraft:oak_slab", &block_states);
+			let res = get_block_state_id(
+				1,
+				0.0,
+				&dimension,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+				"minecraft:oak_slab",
+				&block_states,
+			);
 
-			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
+			let expected = vec![(
+				block_state_id,
+				BlockPosition {
+					x: 10,
+					y: 80,
+					z: 0,
+				},
+			)];
 
 			assert_eq!(res, expected);
 		}

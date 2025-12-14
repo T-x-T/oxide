@@ -7,7 +7,9 @@ pub struct ChestMinecart {
 
 impl CreatableEntity for ChestMinecart {
 	fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
-		return Self { common: data };
+		return Self {
+			common: data,
+		};
 	}
 }
 

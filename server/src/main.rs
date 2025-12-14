@@ -25,8 +25,9 @@ fn initialize_server() {
 
 	let block_states = data::blocks::get_blocks();
 
-	let world_loader =
-		lib::world::loader::vanilla::Loader { path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned() };
+	let world_loader = lib::world::loader::vanilla::Loader {
+		path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
+	};
 
 	let entity_id_manager = EntityIdManager::default();
 	let mut game = Game {
@@ -165,13 +166,21 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
 			game.send_packet(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-				lib::packets::clientbound::play::PlayerInfoRemove { uuids: vec![player_to_remove.uuid] }.try_into().unwrap(),
+				lib::packets::clientbound::play::PlayerInfoRemove {
+					uuids: vec![player_to_remove.uuid],
+				}
+				.try_into()
+				.unwrap(),
 			);
 
 			game.send_packet(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-				lib::packets::clientbound::play::RemoveEntities { entity_ids: vec![player_to_remove.entity_id] }.try_into().unwrap(),
+				lib::packets::clientbound::play::RemoveEntities {
+					entity_ids: vec![player_to_remove.entity_id],
+				}
+				.try_into()
+				.unwrap(),
 			);
 		});
 	}
