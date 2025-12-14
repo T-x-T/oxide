@@ -63,10 +63,18 @@ impl World {
 		} else {
 			println!("create new world");
 			dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
-			default_spawn_location = BlockPosition { x: 0, y: -48, z: 0 };
+			default_spawn_location = BlockPosition {
+				x: 0,
+				y: -48,
+				z: 0,
+			};
 			println!("creation of new world finished");
 		}
-		return Self { dimensions, loader: Box::new(loader), default_spawn_location };
+		return Self {
+			dimensions,
+			loader: Box::new(loader),
+			default_spawn_location,
+		};
 	}
 
 	pub fn save_to_disk(&mut self, block_states: &HashMap<String, data::blocks::Block>) {
@@ -85,7 +93,10 @@ impl Dimension {
 			}
 		}
 
-		return Self { chunks, entities: Vec::new() };
+		return Self {
+			chunks,
+			entities: Vec::new(),
+		};
 	}
 
 	pub fn new_from_loader(
@@ -103,7 +114,10 @@ impl Dimension {
 			}
 		}
 
-		return Self { chunks, entities };
+		return Self {
+			chunks,
+			entities,
+		};
 	}
 
 	pub fn get_chunk_from_position_mut(&mut self, position: BlockPosition) -> Option<&mut Chunk> {
@@ -191,10 +205,24 @@ impl Dimension {
 
 impl Chunk {
 	pub fn new(chunk_x: i32, chunk_z: i32) -> Self {
-		let filled_chunk_sections =
-			vec![ChunkSection { blocks: vec![1; 4096], biomes: vec![40; 64], sky_lights: vec![0xFF; 2048], block_lights: vec![] }; 1];
-		let empty_chunk_sections =
-			vec![ChunkSection { blocks: vec![0; 4096], biomes: vec![40; 64], sky_lights: vec![0xFF; 2048], block_lights: vec![] }; 23];
+		let filled_chunk_sections = vec![
+			ChunkSection {
+				blocks: vec![1; 4096],
+				biomes: vec![40; 64],
+				sky_lights: vec![0xFF; 2048],
+				block_lights: vec![]
+			};
+			1
+		];
+		let empty_chunk_sections = vec![
+			ChunkSection {
+				blocks: vec![0; 4096],
+				biomes: vec![40; 64],
+				sky_lights: vec![0xFF; 2048],
+				block_lights: vec![]
+			};
+			23
+		];
 		let mut all_chunk_sections = filled_chunk_sections.clone();
 		all_chunk_sections.append(&mut empty_chunk_sections.clone());
 

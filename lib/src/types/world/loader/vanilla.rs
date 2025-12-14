@@ -195,7 +195,12 @@ impl super::WorldLoader for Loader {
 				}
 			}
 
-			sections.push(ChunkSection { blocks, biomes, sky_lights, block_lights });
+			sections.push(ChunkSection {
+				blocks,
+				biomes,
+				sky_lights,
+				block_lights,
+			});
 		}
 
 		let mut block_entities: Vec<BlockEntity> = Vec::new();
