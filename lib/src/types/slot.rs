@@ -39,7 +39,11 @@ impl Item {
 
 impl Default for Item {
 	fn default() -> Self {
-		Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() }
+		Self {
+			id: "minecraft:air".to_string(),
+			count: 0,
+			components: Vec::new(),
+		}
 	}
 }
 
@@ -60,6 +64,20 @@ impl From<Vec<Item>> for NbtTag {
 					])
 				})
 				.collect(),
+		);
+	}
+}
+
+impl From<Item> for NbtTag {
+	fn from(value: Item) -> Self {
+		return NbtTag::TagCompound(
+			"Item".to_string(),
+			vec![
+				NbtTag::Byte("Slot".to_string(), 1),
+				NbtTag::String("id".to_string(), value.id.clone()),
+				NbtTag::Int("count".to_string(), value.count as i32),
+				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
+			],
 		);
 	}
 }
@@ -108,7 +126,11 @@ impl From<Slot> for Item {
 impl From<Option<Slot>> for Item {
 	fn from(value: Option<Slot>) -> Self {
 		let Some(value) = value else {
-			return Self { id: "minecraft:air".to_string(), count: 0, components: Vec::new() };
+			return Self {
+				id: "minecraft:air".to_string(),
+				count: 0,
+				components: Vec::new(),
+			};
 		};
 
 		return Self {

@@ -4,6 +4,9 @@ use super::*;
 pub struct EndGateway {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
+	pub age: i64,
+	pub exact_teleport: bool,
+	pub exit_portal: BlockPosition,
 }
 
 impl CommonBlockEntity for EndGateway {
@@ -15,6 +18,13 @@ impl CommonBlockEntity for EndGateway {
 		return Self {
 			position,
 			components: Vec::new(),
+			age: 0,
+			exact_teleport: false,
+			exit_portal: BlockPosition {
+				x: 0,
+				y: 0,
+				z: 0,
+			},
 		};
 	}
 
@@ -28,8 +38,12 @@ impl CommonBlockEntity for EndGateway {
 }
 
 impl From<EndGateway> for Vec<NbtTag> {
-	fn from(_value: EndGateway) -> Self {
-		return Vec::new();
+	fn from(value: EndGateway) -> Self {
+		return vec![
+			NbtTag::Long("Age".to_string(), value.age),
+			NbtTag::Byte("ExactTeleport".to_string(), if value.exact_teleport { 1 } else { 0 }),
+			NbtTag::IntArray("exit_portal".to_string(), vec![value.exit_portal.x, value.exit_portal.y as i32, value.exit_portal.z]),
+		];
 	}
 }
 
@@ -46,9 +60,21 @@ impl TryFrom<NbtListTag> for EndGateway {
 			z,
 		};
 
+		let age = value.get_child("Age").unwrap_or(&NbtTag::Long(String::new(), 0)).as_long();
+		let exact_teleport = value.get_child("ExactTeleport").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1;
+		let exit_portal_raw = value.get_child("exit_portal").unwrap_or(&NbtTag::IntArray(String::new(), vec![0, 0, 0])).as_int_array();
+		let exit_portal = BlockPosition {
+			x: exit_portal_raw[0],
+			y: exit_portal_raw[1] as i16,
+			z: exit_portal_raw[2],
+		};
+
 		return Ok(EndGateway {
 			position,
 			components: Vec::new(),
+			age,
+			exact_teleport,
+			exit_portal,
 		});
 	}
 }

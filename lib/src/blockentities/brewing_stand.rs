@@ -4,7 +4,9 @@ use super::*;
 pub struct BrewingStand {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub inventory: Vec<Item>,           //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
+	pub items: Vec<Item>,               //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
+	pub brew_time: i16,
+	pub fuel: u8,
 }
 
 impl CommonBlockEntity for BrewingStand {
@@ -16,22 +18,24 @@ impl CommonBlockEntity for BrewingStand {
 		return Self {
 			position,
 			components: Vec::new(),
-			inventory: vec![Item::default(); 5],
+			items: vec![Item::default(); 5],
+			brew_time: 0,
+			fuel: 0,
 		};
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Item] {
-		return &mut self.inventory;
+		return &mut self.items;
 	}
 
 	fn get_contained_items_owned(&self) -> Vec<Item> {
-		return self.inventory.clone();
+		return self.items.clone();
 	}
 }
 
 impl From<BrewingStand> for Vec<NbtTag> {
 	fn from(value: BrewingStand) -> Self {
-		vec![value.inventory.into()]
+		return vec![value.items.into(), NbtTag::Short("BrewTime".to_string(), value.brew_time), NbtTag::Byte("Fuel".to_string(), value.fuel)];
 	}
 }
 
@@ -59,10 +63,15 @@ impl TryFrom<NbtListTag> for BrewingStand {
 			}
 		}
 
+		let brew_time = value.get_child("BrewTime").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short();
+		let fuel = value.get_child("Fuel").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte();
+
 		return Ok(BrewingStand {
 			position,
 			components: Vec::new(),
-			inventory,
+			items: inventory,
+			brew_time,
+			fuel,
 		});
 	}
 }
