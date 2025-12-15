@@ -697,11 +697,11 @@ impl TryFrom<Explosion> for Vec<u8> {
 		output.append(&mut crate::serialize::double(value.z));
 		output.append(&mut crate::serialize::float(value.radius));
 		output.append(&mut crate::serialize::int(value.block_count));
-		if value.player_delta_velocity.is_some() {
+		if let Some(player_delta_velocity) = value.player_delta_velocity {
 			output.push(1);
-			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().0));
-			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().1));
-			output.append(&mut crate::serialize::double(value.player_delta_velocity.unwrap().2));
+			output.append(&mut crate::serialize::double(player_delta_velocity.0));
+			output.append(&mut crate::serialize::double(player_delta_velocity.1));
+			output.append(&mut crate::serialize::double(player_delta_velocity.2));
 		} else {
 			output.push(0);
 		}
@@ -991,8 +991,8 @@ impl TryFrom<ChunkDataAndUpdateLight> for Vec<u8> {
 			output.append(&mut crate::serialize::short(x.y));
 			output.append(&mut crate::serialize::varint(x.block_entity_type));
 
-			if x.data.is_some() {
-				output.append(&mut crate::serialize::nbt_network(x.data.unwrap()));
+			if let Some(nbt_tag) = x.data {
+				output.append(&mut crate::serialize::nbt_network(nbt_tag));
 			}
 		}
 		output.append(&mut crate::serialize::bitset(&value.sky_light_mask));
@@ -1852,9 +1852,9 @@ impl TryFrom<PlayerChatMessage> for Vec<u8> {
 				x.1.iter().for_each(|x| output.push(*x));
 			}
 		});
-		if value.unsigned_content.is_some() {
+		if let Some(nbt_tag) = value.unsigned_content {
 			output.append(&mut crate::serialize::boolean(true));
-			output.append(&mut crate::serialize::nbt_network(value.unsigned_content.unwrap()));
+			output.append(&mut crate::serialize::nbt_network(nbt_tag));
 		} else {
 			output.append(&mut crate::serialize::boolean(false));
 		}
@@ -1864,8 +1864,8 @@ impl TryFrom<PlayerChatMessage> for Vec<u8> {
 		}
 		output.append(&mut crate::serialize::varint(value.chat_type));
 		output.append(&mut crate::serialize::nbt_network(value.sender_name));
-		if value.target_name.is_some() {
-			output.append(&mut crate::serialize::nbt_network(value.target_name.unwrap()));
+		if let Some(nbt_tag) = value.target_name {
+			output.append(&mut crate::serialize::nbt_network(nbt_tag));
 		}
 		output.push(0); //not sure why this is needed
 
@@ -2023,8 +2023,8 @@ impl TryFrom<PlayerInfoUpdate> for Vec<u8> {
 							output.append(&mut crate::serialize::string(&property.0));
 							output.append(&mut crate::serialize::string(&property.1));
 							output.append(&mut crate::serialize::boolean(property.2.is_some()));
-							if property.2.is_some() {
-								output.append(&mut crate::serialize::string(&property.2.unwrap()));
+							if let Some(prop) = property.2 {
+								output.append(&mut crate::serialize::string(&prop));
 							}
 						}
 					}

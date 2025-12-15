@@ -2,7 +2,7 @@ use data::blocks::Block;
 use flate2::Compression;
 use flate2::read::{GzDecoder, ZlibDecoder};
 use flate2::write::{GzEncoder, ZlibEncoder};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs::{self, File, OpenOptions};
 use std::io::SeekFrom;
 use std::io::prelude::*;
@@ -325,14 +325,14 @@ impl super::WorldLoader for Loader {
 
 	fn save_to_disk(
 		&self,
-		chunks: &[Chunk],
+		chunks: &HashMap<(i32, i32), Chunk>,
 		default_spawn_location: BlockPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, Block>,
 	) {
 		println!("start saving world with {} chunks to disk", chunks.len());
 		let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
-		for chunk in chunks {
+		for chunk in chunks.values() {
 			let region = chunk_to_region(chunk.x, chunk.z);
 			if chunk.modified {
 				regions.entry(region).or_default().push(chunk);

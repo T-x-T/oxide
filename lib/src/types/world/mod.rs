@@ -1,5 +1,7 @@
 pub mod loader;
 
+use data::blocks::Block;
+
 use super::*;
 use std::collections::HashMap;
 use std::error::Error;
@@ -16,7 +18,7 @@ pub struct World {
 }
 
 pub struct Dimension {
-	pub chunks: Vec<Chunk>,
+	pub chunks: HashMap<(i32, i32), Chunk>,
 	pub entities: Vec<Box<dyn SaveableEntity + Send>>,
 }
 
@@ -47,11 +49,7 @@ pub enum BlockOverwriteOutcome {
 
 impl World {
 	#[allow(clippy::new_without_default)]
-	pub fn new(
-		loader: impl WorldLoader + 'static,
-		entity_id_manager: &EntityIdManager,
-		block_states: &HashMap<String, data::blocks::Block>,
-	) -> Self {
+	pub fn new(loader: impl WorldLoader + 'static, entity_id_manager: &EntityIdManager, block_states: &HashMap<String, Block>) -> Self {
 		let mut dimensions: HashMap<String, Dimension> = HashMap::new();
 		let default_spawn_location: BlockPosition;
 		if loader.is_initialized() {
@@ -77,7 +75,7 @@ impl World {
 		};
 	}
 
-	pub fn save_to_disk(&mut self, block_states: &HashMap<String, data::blocks::Block>) {
+	pub fn save_to_disk(&mut self, block_states: &HashMap<String, Block>) {
 		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location, block_states));
 	}
 }
@@ -85,11 +83,11 @@ impl World {
 impl Dimension {
 	#[allow(clippy::new_without_default)]
 	pub fn new() -> Self {
-		let mut chunks: Vec<Chunk> = Vec::new();
+		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.push(Chunk::new(x as i32, z as i32));
+				chunks.insert((x as i32, z as i32), Chunk::new(x as i32, z as i32));
 			}
 		}
 
@@ -102,14 +100,14 @@ impl Dimension {
 	pub fn new_from_loader(
 		loader: &impl loader::WorldLoader,
 		entity_id_manager: &EntityIdManager,
-		block_states: &HashMap<String, data::blocks::Block>,
+		block_states: &HashMap<String, Block>,
 	) -> Self {
-		let mut chunks: Vec<Chunk> = Vec::new();
+		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 		let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.push(loader.load_chunk(x as i32, z as i32, block_states));
+				chunks.insert((x as i32, z as i32), loader.load_chunk(x as i32, z as i32, block_states));
 				entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager));
 			}
 		}
@@ -123,21 +121,21 @@ impl Dimension {
 	pub fn get_chunk_from_position_mut(&mut self, position: BlockPosition) -> Option<&mut Chunk> {
 		let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
-		return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
+		return self.chunks.get_mut(&(chunk_coordinates.x, chunk_coordinates.z));
 	}
 
 	pub fn get_chunk_from_position(&self, position: BlockPosition) -> Option<&Chunk> {
 		let chunk_coordinates = position.convert_to_coordinates_of_chunk();
 
-		return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
+		return self.chunks.get(&(chunk_coordinates.x, chunk_coordinates.z));
 	}
 
 	pub fn get_chunk_from_chunk_position_mut(&mut self, chunk_coordinates: BlockPosition) -> Option<&mut Chunk> {
-		return self.chunks.iter_mut().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
+		return self.chunks.get_mut(&(chunk_coordinates.x, chunk_coordinates.z));
 	}
 
 	pub fn get_chunk_from_chunk_position(&self, chunk_coordinates: BlockPosition) -> Option<&Chunk> {
-		return self.chunks.iter().find(|chunk| chunk.x == chunk_coordinates.x && chunk.z == chunk_coordinates.z);
+		return self.chunks.get(&(chunk_coordinates.x, chunk_coordinates.z));
 	}
 
 	pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
@@ -161,20 +159,21 @@ impl Dimension {
 			return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
 		}
 
-		return Ok(chunk.unwrap().get_block(position.convert_to_position_in_chunk()));
+		let block_state_id = chunk.unwrap().get_block(position.convert_to_position_in_chunk());
+		return Ok(block_state_id);
 	}
 
 	pub fn save_to_disk(
 		&mut self,
 		loader: &(impl WorldLoader + ?Sized),
 		default_spawn_location: BlockPosition,
-		block_states: &HashMap<String, data::blocks::Block>,
+		block_states: &HashMap<String, Block>,
 	) {
 		{
 			loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states);
 		}
 		for chunk in &mut self.chunks {
-			chunk.modified = false;
+			chunk.1.modified = false;
 		}
 	}
 

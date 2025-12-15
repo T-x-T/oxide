@@ -778,14 +778,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::UpdateSign(location, _is_front, text) => {
 				let players = game.players.lock().unwrap();
 				let mut world = game.world.lock().unwrap();
-				let chunk = world
-					.dimensions
-					.get_mut("minecraft:overworld")
-					.unwrap()
-					.chunks
-					.iter_mut()
-					.find(|x| x.x == location.convert_to_coordinates_of_chunk().x && x.z == location.convert_to_coordinates_of_chunk().z)
-					.unwrap();
+				let chunk = world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(location).unwrap();
 
 				chunk.modified = true;
 

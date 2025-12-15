@@ -12,7 +12,7 @@ pub trait WorldLoader: InnerWorldLoader + std::fmt::Debug + Send {
 	fn is_initialized(&self) -> bool;
 	fn save_to_disk(
 		&self,
-		chunks: &[Chunk],
+		chunks: &HashMap<(i32, i32), Chunk>,
 		default_spawn_location: BlockPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, Block>,

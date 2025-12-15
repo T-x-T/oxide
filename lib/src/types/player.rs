@@ -2,6 +2,7 @@ use super::*;
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 use crate::packets::*;
+use data::blocks::Block;
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -353,7 +354,7 @@ impl Player {
 		z: f64,
 		world: &mut World,
 		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, data::blocks::Block>,
+		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		let old_x = self.x;
@@ -420,7 +421,7 @@ impl Player {
 		new_position: EntityPosition,
 		world: &mut World,
 		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, data::blocks::Block>,
+		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		self.yaw = new_position.yaw;
@@ -447,7 +448,7 @@ impl Player {
 		chunk_x: i32,
 		chunk_z: i32,
 		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, data::blocks::Block>,
+		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<(), Box<dyn Error>> {
 		let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
@@ -460,7 +461,7 @@ impl Player {
 			chunk
 		} else {
 			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z, block_states);
-			dimension.chunks.push(new_chunk);
+			dimension.chunks.insert((new_chunk.x, new_chunk.z), new_chunk);
 
 			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger);
 			dimension.entities.append(&mut new_entities);

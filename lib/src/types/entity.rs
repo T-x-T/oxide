@@ -717,11 +717,11 @@ impl CommonMob {
 				)],
 			));
 		}
-		if self.locator_bar_icon_color.is_some() {
+		if let Some(locator_bar_icon_color) = self.locator_bar_icon_color {
 			output.push(NbtTag::TagCompound(
 				"locator_bar_icon".to_string(),
 				vec![
-					NbtTag::Int("color".to_string(), self.locator_bar_icon_color.unwrap()),
+					NbtTag::Int("color".to_string(), locator_bar_icon_color),
 					NbtTag::String("style".to_string(), self.locator_bar_icon_style.clone().unwrap()),
 				],
 			));
