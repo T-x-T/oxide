@@ -348,8 +348,6 @@ pub trait Entity: std::fmt::Debug {
 	}
 
 	fn get_occupied_block_positions_at_entity_position(&self, position_to_check: EntityPosition) -> Vec<BlockPosition> {
-		let mut output: Vec<BlockPosition> = Vec::new();
-
 		//seems like the center off the hitbox is offset by half a block from the entity position
 		let x_offset = if position_to_check.x.abs() < 1.0 {
 			0.0
@@ -388,17 +386,15 @@ pub trait Entity: std::fmt::Debug {
 			z_max.ceil()
 		} as i32);
 
-		for x in x_range.clone() {
-			for y in y_range.clone() {
-				for z in z_range.clone() {
-					output.push(BlockPosition {
-						x,
-						y,
-						z,
-					});
-				}
-			}
-		}
+		let output: Vec<BlockPosition> = x_range
+			.zip(y_range)
+			.zip(z_range)
+			.map(|((x, y), z)| BlockPosition {
+				x,
+				y,
+				z,
+			})
+			.collect();
 
 		return output;
 	}
