@@ -6,7 +6,7 @@ use data::blocks::Block;
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::error::Error;
 use std::fs;
 use std::fs::{File, OpenOptions};
@@ -478,16 +478,44 @@ impl Player {
 
 		let all_processed_chunk_sections = all_chunk_sections
 			.iter()
-			.map(|section| crate::packets::clientbound::play::ChunkSection {
-				block_count: section.get_non_air_block_count(),
-				block_states: crate::packets::clientbound::play::BlockStatesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
-					bits_per_entry: 15,
-					data_array: if section.blocks.is_empty() { vec![0; 4096] } else { section.blocks.iter().map(|x| *x as i32).collect() },
-				}),
-				biomes: crate::packets::clientbound::play::BiomesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
-					bits_per_entry: 7,
-					data_array: section.biomes.iter().map(|x| *x as i32).collect(),
-				}),
+			.map(|section| {
+				let different_blocks = section.blocks.iter().copied().collect::<BTreeSet<u16>>();
+
+				crate::packets::clientbound::play::ChunkSection {
+					block_count: section.get_non_air_block_count(),
+					block_states: if section.blocks.is_empty() {
+						crate::packets::clientbound::play::BlockStatesPalettedContainer::SingleValued(crate::packets::clientbound::play::SingleValued {
+							bits_per_entry: 0,
+							value: 0,
+						})
+					} else if different_blocks.len() <= 256 {
+						let bits_per_entry = match different_blocks.len() {
+							0..=16 => 4,
+							17..=32 => 5,
+							33..=64 => 6,
+							65..=128 => 7,
+							_ => 8,
+						};
+
+						let palette: Vec<i32> = different_blocks.iter().map(|x| *x as i32).collect();
+						let data_array: Vec<i32> = section.blocks.iter().map(|x| palette.binary_search(&(*x as i32)).unwrap() as i32).collect();
+
+						crate::packets::clientbound::play::BlockStatesPalettedContainer::Indirect(crate::packets::clientbound::play::Indirect {
+							bits_per_entry,
+							data_array,
+							palette,
+						})
+					} else {
+						crate::packets::clientbound::play::BlockStatesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
+							bits_per_entry: 15,
+							data_array: section.blocks.iter().map(|x| *x as i32).collect(),
+						})
+					},
+					biomes: crate::packets::clientbound::play::BiomesPalettedContainer::Direct(crate::packets::clientbound::play::Direct {
+						bits_per_entry: 7,
+						data_array: section.biomes.iter().map(|x| *x as i32).collect(),
+					}),
+				}
 			})
 			.collect();
 

@@ -1081,6 +1081,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
 
+				let now = std::time::Instant::now();
 				for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 					for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {
 						new_player
@@ -1088,6 +1089,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							.unwrap();
 					}
 				}
+				println!("send chunks: {:?}", std::time::Instant::now() - now);
 
 				game.send_packet(
 					&peer_addr,

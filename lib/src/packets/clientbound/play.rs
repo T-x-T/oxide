@@ -1040,35 +1040,36 @@ impl TryFrom<BlockStatesPalettedContainer> for Vec<u8> {
 				output.push(single_valued.bits_per_entry);
 				output.append(&mut crate::serialize::varint(single_valued.value));
 			}
-			BlockStatesPalettedContainer::Indirect(mut indirect) => {
+			BlockStatesPalettedContainer::Indirect(indirect) => {
 				output.push(indirect.bits_per_entry);
 				output.append(&mut crate::serialize::varint(indirect.palette.len() as i32));
 				for palette in indirect.palette {
 					output.append(&mut crate::serialize::varint(palette));
 				}
-				indirect.data_array.reverse();
-				while !indirect.data_array.is_empty() {
+
+				let mut data_iter = indirect.data_array.into_iter();
+				while data_iter.len() != 0 {
 					let entries_per_long = 64 / indirect.bits_per_entry;
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-						if !indirect.data_array.is_empty() {
-							let value = indirect.data_array.pop().unwrap();
-							entry += (value as u64) << (i * indirect.bits_per_entry) as u64;
+						if let Some(next) = data_iter.next() {
+							entry += (next as u64) << (i * indirect.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
 				}
 			}
-			BlockStatesPalettedContainer::Direct(mut direct) => {
+			BlockStatesPalettedContainer::Direct(direct) => {
 				output.push(direct.bits_per_entry);
-				direct.data_array.reverse();
-				while !direct.data_array.is_empty() {
-					let entries_per_long = 64 / direct.bits_per_entry;
+				let entries_per_long = 64 / direct.bits_per_entry;
+
+				let mut data_iter = direct.data_array.into_iter();
+
+				while data_iter.len() != 0 {
 					let mut entry: u64 = 0;
 					for i in 0..entries_per_long {
-						if !direct.data_array.is_empty() {
-							let value = direct.data_array.pop().unwrap();
-							entry += (value as u64) << (i * direct.bits_per_entry) as u64;
+						if let Some(next) = data_iter.next() {
+							entry += (next as u64) << (i * direct.bits_per_entry) as u64;
 						}
 					}
 					output.append(&mut crate::serialize::unsigned_long(entry));
