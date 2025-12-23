@@ -11,7 +11,7 @@ pub struct ItemEntity {
 	pub thrower: u128,
 }
 
-impl CreatableEntity for ItemEntity {
+impl CommonEntityTrait for ItemEntity {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		return Self {
 			common: data,
@@ -54,9 +54,7 @@ impl CreatableEntity for ItemEntity {
 				.unwrap(),
 		};
 	}
-}
 
-impl SaveableEntity for ItemEntity {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![
 			NbtTag::Short("Age".to_string(), self.age),
@@ -85,9 +83,7 @@ impl SaveableEntity for ItemEntity {
 			),
 		];
 	}
-}
 
-impl Entity for ItemEntity {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:item");
 	}

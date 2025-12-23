@@ -297,7 +297,7 @@ impl BlockEntity {
 	pub fn remove_self(&self, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World, game: Arc<Game>) {
 		let items = self.get_contained_items_owned();
 
-		let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
+		let mut entities: Vec<Entity> = Vec::new();
 		for item in items {
 			let new_entity = item.get_entity(self.get_position().into(), entity_id_manager.get_new());
 			let spawn_packet = new_entity.to_spawn_entity_packet();
@@ -307,7 +307,7 @@ impl BlockEntity {
 				metadata: new_entity.get_metadata(),
 			};
 
-			entities.push(Box::new(new_entity));
+			entities.push(Entity::Item(new_entity));
 
 			players.iter().for_each(|x| {
 				game.send_packet(

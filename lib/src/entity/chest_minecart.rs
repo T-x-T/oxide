@@ -5,21 +5,17 @@ pub struct ChestMinecart {
 	pub common: CommonEntity,
 }
 
-impl CreatableEntity for ChestMinecart {
+impl CommonEntityTrait for ChestMinecart {
 	fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
 		return Self {
 			common: data,
 		};
 	}
-}
 
-impl SaveableEntity for ChestMinecart {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![];
 	}
-}
 
-impl Entity for ChestMinecart {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:chest_minecart");
 	}

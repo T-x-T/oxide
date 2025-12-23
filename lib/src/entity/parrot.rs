@@ -6,7 +6,7 @@ pub struct Parrot {
 	pub mob: CommonMob,
 }
 
-impl CreatableEntity for Parrot {
+impl CommonEntityTrait for Parrot {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
@@ -15,15 +15,11 @@ impl CreatableEntity for Parrot {
 			mob,
 		};
 	}
-}
 
-impl SaveableEntity for Parrot {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![];
 	}
-}
 
-impl Entity for Parrot {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:parrot");
 	}

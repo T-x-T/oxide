@@ -48,7 +48,7 @@ pub struct CommonEntity {
 	pub invulnerable: bool,
 	pub no_gravity: bool,
 	pub on_ground: bool,
-	pub passengers: Vec<Box<dyn SaveableEntity + Send>>,
+	pub passengers: Vec<Entity>,
 	pub portal_cooldown: i32,
 	pub is_silent: bool,
 	pub scoreboard_tags: Vec<NbtListTag>,

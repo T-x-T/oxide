@@ -6,7 +6,7 @@ pub struct Rabbit {
 	pub mob: CommonMob,
 }
 
-impl CreatableEntity for Rabbit {
+impl CommonEntityTrait for Rabbit {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
@@ -15,15 +15,11 @@ impl CreatableEntity for Rabbit {
 			mob,
 		};
 	}
-}
 
-impl SaveableEntity for Rabbit {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![];
 	}
-}
 
-impl Entity for Rabbit {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:rabbit");
 	}

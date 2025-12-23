@@ -6,7 +6,7 @@ pub struct Armadillo {
 	pub mob: CommonMob,
 }
 
-impl CreatableEntity for Armadillo {
+impl CommonEntityTrait for Armadillo {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
@@ -15,15 +15,7 @@ impl CreatableEntity for Armadillo {
 			mob,
 		};
 	}
-}
 
-impl SaveableEntity for Armadillo {
-	fn to_nbt_extras(&self) -> Vec<NbtTag> {
-		return vec![];
-	}
-}
-
-impl Entity for Armadillo {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:armadillo");
 	}
@@ -63,5 +55,9 @@ impl Entity for Armadillo {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.65, 0.7);
+	}
+
+	fn to_nbt_extras(&self) -> Vec<NbtTag> {
+		return vec![];
 	}
 }

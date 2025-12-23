@@ -10,7 +10,7 @@ pub struct Creeper {
 	pub is_powered: bool,
 }
 
-impl CreatableEntity for Creeper {
+impl CommonEntityTrait for Creeper {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 
@@ -23,9 +23,7 @@ impl CreatableEntity for Creeper {
 			is_powered: extra_nbt.get_child("powered").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1,
 		};
 	}
-}
 
-impl SaveableEntity for Creeper {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		let mut output: Vec<NbtTag> = vec![
 			NbtTag::Byte("ExplosionRadius".to_string(), self.explosion_radius),
@@ -38,9 +36,7 @@ impl SaveableEntity for Creeper {
 
 		return output;
 	}
-}
 
-impl Entity for Creeper {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:creeper");
 	}

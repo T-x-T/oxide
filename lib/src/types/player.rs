@@ -66,9 +66,25 @@ impl Clone for Player {
 	}
 }
 
-impl Entity for Player {
+impl CommonEntityTrait for Player {
+	fn new(_data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
+		todo!()
+	}
+
+	fn get_common_entity_data(&self) -> &CommonEntity {
+		todo!();
+	}
+
+	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+		todo!();
+	}
+
+	fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
+		todo!();
+	}
+
 	fn get_type(&self) -> i32 {
-		return 149;
+		return data::entities::get_id_from_name("minecraft:player");
 	}
 
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
@@ -84,24 +100,16 @@ impl Entity for Player {
 		];
 	}
 
-	fn get_common_entity_data(&self) -> &CommonEntity {
-		todo!();
-	}
-
-	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
-		todo!();
-	}
-
-	fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
-		todo!();
-	}
-
 	fn get_yaw_u8(&self) -> u8 {
 		return if self.yaw < 0.0 { (((self.yaw / 90.0) * 64.0) + 256.0) as u8 } else { ((self.yaw / 90.0) * 64.0) as u8 };
 	}
 
 	fn get_pitch_u8(&self) -> u8 {
 		return if self.pitch < 0.0 { (((self.pitch / 90.0) * 64.0) + 256.0) as u8 } else { ((self.pitch / 90.0) * 64.0) as u8 };
+	}
+
+	fn to_nbt_extras(&self) -> Vec<NbtTag> {
+		todo!()
 	}
 }
 

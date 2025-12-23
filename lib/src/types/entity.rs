@@ -5,7 +5,25 @@ use rand::Rng;
 
 use crate::entity::*;
 use crate::packets::Packet;
+use crate::packets::clientbound::play::EntityMetadata;
 use crate::types::*;
+
+#[derive(Debug)]
+pub enum Entity {
+	Armadillo(Armadillo),
+	Cat(Cat),
+	ChestMinecart(ChestMinecart),
+	Chicken(Chicken),
+	Cow(Cow),
+	Creeper(Creeper),
+	Donkey(Donkey),
+	Horse(Horse),
+	Item(ItemEntity),
+	Parrot(Parrot),
+	Pig(Pig),
+	Rabbit(Rabbit),
+	Sheep(Sheep),
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum EntityTickOutcome {
@@ -28,15 +46,267 @@ pub enum AiExecutionResult {
 	ApplyVelocity(EntityPosition),
 }
 
-pub trait CreatableEntity: Entity + Send {
+impl Entity {
+	pub fn to_nbt(&self) -> NbtListTag {
+		let common_data = self.get_common_entity_data();
+		let default_tags = vec![
+			NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
+			NbtTag::List(
+				"Pos".to_string(),
+				vec![
+					NbtListTag::Double(common_data.position.x),
+					NbtListTag::Double(common_data.position.y),
+					NbtListTag::Double(common_data.position.z),
+				],
+			),
+			NbtTag::List(
+				"Motion".to_string(),
+				vec![
+					NbtListTag::Double(common_data.velocity.x),
+					NbtListTag::Double(common_data.velocity.y),
+					NbtListTag::Double(common_data.velocity.z),
+				],
+			),
+			NbtTag::List(
+				"Rotation".to_string(),
+				vec![NbtListTag::Float(common_data.position.yaw), NbtListTag::Float(common_data.position.pitch)],
+			),
+			NbtTag::IntArray(
+				"UUID".to_string(),
+				vec![
+					(common_data.uuid >> 96) as i32,
+					(common_data.uuid << 32 >> 96) as i32,
+					(common_data.uuid << 64 >> 96) as i32,
+					(common_data.uuid << 96 >> 96) as i32,
+				],
+			),
+			NbtTag::Short("Air".to_string(), common_data.air),
+			common_data.custom_name.clone(),
+			common_data.data.clone(),
+			NbtTag::Double("fall_distance".to_string(), common_data.fall_distance),
+			NbtTag::Short("Fire".to_string(), common_data.ticks_until_fire_is_out),
+			NbtTag::Byte("Glowing".to_string(), if common_data.is_glowing { 1 } else { 0 }),
+			NbtTag::Byte("HasVisualFire".to_string(), if common_data.has_visual_fire { 1 } else { 0 }),
+			NbtTag::Byte("Invulnerable".to_string(), if common_data.invulnerable { 1 } else { 0 }),
+			NbtTag::Byte("NoGravity".to_string(), if common_data.no_gravity { 1 } else { 0 }),
+			NbtTag::Byte("OnGround".to_string(), if common_data.on_ground { 1 } else { 0 }),
+			NbtTag::List("Passengers".to_string(), common_data.passengers.iter().map(|x| x.to_nbt()).collect()),
+			NbtTag::Int("PortalCooldown".to_string(), common_data.portal_cooldown),
+			NbtTag::Byte("Silent".to_string(), if common_data.is_silent { 1 } else { 0 }),
+			NbtTag::List("Tags".to_string(), common_data.scoreboard_tags.clone()),
+			NbtTag::Int("TicksFrozen".to_string(), common_data.ticks_frozen),
+		];
+
+		return NbtListTag::TagCompound(vec![default_tags, self.to_nbt_extras()].into_iter().flatten().collect());
+	}
+
+	pub fn get_common_entity_data(&self) -> &CommonEntity {
+		return match self {
+			Entity::Armadillo(x) => x.get_common_entity_data(),
+			Entity::Cat(x) => x.get_common_entity_data(),
+			Entity::ChestMinecart(x) => x.get_common_entity_data(),
+			Entity::Chicken(x) => x.get_common_entity_data(),
+			Entity::Cow(x) => x.get_common_entity_data(),
+			Entity::Creeper(x) => x.get_common_entity_data(),
+			Entity::Donkey(x) => x.get_common_entity_data(),
+			Entity::Horse(x) => x.get_common_entity_data(),
+			Entity::Item(x) => x.get_common_entity_data(),
+			Entity::Parrot(x) => x.get_common_entity_data(),
+			Entity::Pig(x) => x.get_common_entity_data(),
+			Entity::Rabbit(x) => x.get_common_entity_data(),
+			Entity::Sheep(x) => x.get_common_entity_data(),
+		};
+	}
+
+	pub fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
+		return match self {
+			Entity::Armadillo(x) => x.get_common_entity_data_mut(),
+			Entity::Cat(x) => x.get_common_entity_data_mut(),
+			Entity::ChestMinecart(x) => x.get_common_entity_data_mut(),
+			Entity::Chicken(x) => x.get_common_entity_data_mut(),
+			Entity::Cow(x) => x.get_common_entity_data_mut(),
+			Entity::Creeper(x) => x.get_common_entity_data_mut(),
+			Entity::Donkey(x) => x.get_common_entity_data_mut(),
+			Entity::Horse(x) => x.get_common_entity_data_mut(),
+			Entity::Item(x) => x.get_common_entity_data_mut(),
+			Entity::Parrot(x) => x.get_common_entity_data_mut(),
+			Entity::Pig(x) => x.get_common_entity_data_mut(),
+			Entity::Rabbit(x) => x.get_common_entity_data_mut(),
+			Entity::Sheep(x) => x.get_common_entity_data_mut(),
+		};
+	}
+
+	pub fn get_mob_data(&self) -> &CommonMob {
+		return match self {
+			Entity::Armadillo(x) => x.get_mob_data(),
+			Entity::Cat(x) => x.get_mob_data(),
+			Entity::ChestMinecart(x) => x.get_mob_data(),
+			Entity::Chicken(x) => x.get_mob_data(),
+			Entity::Cow(x) => x.get_mob_data(),
+			Entity::Creeper(x) => x.get_mob_data(),
+			Entity::Donkey(x) => x.get_mob_data(),
+			Entity::Horse(x) => x.get_mob_data(),
+			Entity::Item(x) => x.get_mob_data(),
+			Entity::Parrot(x) => x.get_mob_data(),
+			Entity::Pig(x) => x.get_mob_data(),
+			Entity::Rabbit(x) => x.get_mob_data(),
+			Entity::Sheep(x) => x.get_mob_data(),
+		};
+	}
+
+	pub fn get_mob_data_mut(&mut self) -> &mut CommonMob {
+		return match self {
+			Entity::Armadillo(x) => x.get_mob_data_mut(),
+			Entity::Cat(x) => x.get_mob_data_mut(),
+			Entity::ChestMinecart(x) => x.get_mob_data_mut(),
+			Entity::Chicken(x) => x.get_mob_data_mut(),
+			Entity::Cow(x) => x.get_mob_data_mut(),
+			Entity::Creeper(x) => x.get_mob_data_mut(),
+			Entity::Donkey(x) => x.get_mob_data_mut(),
+			Entity::Horse(x) => x.get_mob_data_mut(),
+			Entity::Item(x) => x.get_mob_data_mut(),
+			Entity::Parrot(x) => x.get_mob_data_mut(),
+			Entity::Pig(x) => x.get_mob_data_mut(),
+			Entity::Rabbit(x) => x.get_mob_data_mut(),
+			Entity::Sheep(x) => x.get_mob_data_mut(),
+		};
+	}
+
+	pub fn get_type(&self) -> i32 {
+		return match self {
+			Entity::Armadillo(x) => x.get_type(),
+			Entity::Cat(x) => x.get_type(),
+			Entity::ChestMinecart(x) => x.get_type(),
+			Entity::Chicken(x) => x.get_type(),
+			Entity::Cow(x) => x.get_type(),
+			Entity::Creeper(x) => x.get_type(),
+			Entity::Donkey(x) => x.get_type(),
+			Entity::Horse(x) => x.get_type(),
+			Entity::Item(x) => x.get_type(),
+			Entity::Parrot(x) => x.get_type(),
+			Entity::Pig(x) => x.get_type(),
+			Entity::Rabbit(x) => x.get_type(),
+			Entity::Sheep(x) => x.get_type(),
+		};
+	}
+
+	pub fn to_nbt_extras(&self) -> Vec<NbtTag> {
+		return match self {
+			Entity::Armadillo(x) => x.to_nbt_extras(),
+			Entity::Cat(x) => x.to_nbt_extras(),
+			Entity::ChestMinecart(x) => x.to_nbt_extras(),
+			Entity::Chicken(x) => x.to_nbt_extras(),
+			Entity::Cow(x) => x.to_nbt_extras(),
+			Entity::Creeper(x) => x.to_nbt_extras(),
+			Entity::Donkey(x) => x.to_nbt_extras(),
+			Entity::Horse(x) => x.to_nbt_extras(),
+			Entity::Item(x) => x.to_nbt_extras(),
+			Entity::Parrot(x) => x.to_nbt_extras(),
+			Entity::Pig(x) => x.to_nbt_extras(),
+			Entity::Rabbit(x) => x.to_nbt_extras(),
+			Entity::Sheep(x) => x.to_nbt_extras(),
+		};
+	}
+
+	pub fn to_spawn_entity_packet(&self) -> crate::packets::clientbound::play::SpawnEntity {
+		return crate::packets::clientbound::play::SpawnEntity {
+			entity_id: self.get_common_entity_data().entity_id,
+			entity_uuid: self.get_common_entity_data().uuid,
+			entity_type: self.get_type(),
+			x: self.get_common_entity_data().position.x,
+			y: self.get_common_entity_data().position.y,
+			z: self.get_common_entity_data().position.z,
+			pitch: self.get_pitch_u8(),
+			yaw: self.get_yaw_u8(),
+			head_yaw: 0,
+			data: 0,
+			velocity_x: 0,
+			velocity_y: 0,
+			velocity_z: 0,
+		};
+	}
+
+	pub fn get_yaw_u8(&self) -> u8 {
+		return if self.get_common_entity_data().position.yaw < 0.0 {
+			(((self.get_common_entity_data().position.yaw / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.get_common_entity_data().position.yaw / 90.0) * 64.0) as u8
+		};
+	}
+
+	pub fn get_pitch_u8(&self) -> u8 {
+		return if self.get_common_entity_data().position.pitch < 0.0 {
+			(((self.get_common_entity_data().position.pitch / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.get_common_entity_data().position.pitch / 90.0) * 64.0) as u8
+		};
+	}
+
+	pub fn is_mob(&self) -> bool {
+		return match self {
+			Entity::Armadillo(x) => x.is_mob(),
+			Entity::Cat(x) => x.is_mob(),
+			Entity::ChestMinecart(x) => x.is_mob(),
+			Entity::Chicken(x) => x.is_mob(),
+			Entity::Cow(x) => x.is_mob(),
+			Entity::Creeper(x) => x.is_mob(),
+			Entity::Donkey(x) => x.is_mob(),
+			Entity::Horse(x) => x.is_mob(),
+			Entity::Item(x) => x.is_mob(),
+			Entity::Parrot(x) => x.is_mob(),
+			Entity::Pig(x) => x.is_mob(),
+			Entity::Rabbit(x) => x.is_mob(),
+			Entity::Sheep(x) => x.is_mob(),
+		};
+	}
+
+	pub fn get_metadata(&self) -> Vec<EntityMetadata> {
+		return match self {
+			Entity::Armadillo(x) => x.get_metadata(),
+			Entity::Cat(x) => x.get_metadata(),
+			Entity::ChestMinecart(x) => x.get_metadata(),
+			Entity::Chicken(x) => x.get_metadata(),
+			Entity::Cow(x) => x.get_metadata(),
+			Entity::Creeper(x) => x.get_metadata(),
+			Entity::Donkey(x) => x.get_metadata(),
+			Entity::Horse(x) => x.get_metadata(),
+			Entity::Item(x) => x.get_metadata(),
+			Entity::Parrot(x) => x.get_metadata(),
+			Entity::Pig(x) => x.get_metadata(),
+			Entity::Rabbit(x) => x.get_metadata(),
+			Entity::Sheep(x) => x.get_metadata(),
+		};
+	}
+	pub fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+		return match self {
+			Entity::Armadillo(x) => x.tick(dimension, players, game),
+			Entity::Cat(x) => x.tick(dimension, players, game),
+			Entity::ChestMinecart(x) => x.tick(dimension, players, game),
+			Entity::Chicken(x) => x.tick(dimension, players, game),
+			Entity::Cow(x) => x.tick(dimension, players, game),
+			Entity::Creeper(x) => x.tick(dimension, players, game),
+			Entity::Donkey(x) => x.tick(dimension, players, game),
+			Entity::Horse(x) => x.tick(dimension, players, game),
+			Entity::Item(x) => x.tick(dimension, players, game),
+			Entity::Parrot(x) => x.tick(dimension, players, game),
+			Entity::Pig(x) => x.tick(dimension, players, game),
+			Entity::Rabbit(x) => x.tick(dimension, players, game),
+			Entity::Sheep(x) => x.tick(dimension, players, game),
+		};
+	}
+}
+
+pub trait CommonEntityTrait {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
-	fn from_nbt(value: NbtListTag, entity_id_manager: &EntityIdManager) -> Box<dyn SaveableEntity + Send> {
+	fn from_nbt(value: NbtListTag, entity_id_manager: &EntityIdManager) -> Self
+	where
+		Self: std::marker::Sized,
+	{
 		let mut common_data = CommonEntity {
 			entity_id: entity_id_manager.get_new(),
 			..Default::default()
 		};
 
-		let entity_type = value.get_child("id").unwrap().as_string();
 		let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
 		let y = value.get_child("Pos").unwrap().as_list()[1].as_double();
 		let z = value.get_child("Pos").unwrap().as_list()[2].as_double();
@@ -136,11 +406,9 @@ pub trait CreatableEntity: Entity + Send {
 			common_data.ticks_frozen = value.as_int();
 		}
 
-		return self::new(entity_type, common_data, value.clone()).unwrap();
+		return Self::new(common_data, value.clone());
 	}
-}
 
-pub trait Entity: std::fmt::Debug {
 	fn get_common_entity_data(&self) -> &CommonEntity;
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity;
 	fn set_common_entity_data(&mut self, common_entity_data: CommonEntity);
@@ -158,22 +426,6 @@ pub trait Entity: std::fmt::Debug {
 	}
 	fn set_mob_data(&mut self, _common_mob_data: CommonMob) {
 		panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
-	}
-
-	fn get_yaw_u8(&self) -> u8 {
-		return if self.get_common_entity_data().position.yaw < 0.0 {
-			(((self.get_common_entity_data().position.yaw / 90.0) * 64.0) + 256.0) as u8
-		} else {
-			((self.get_common_entity_data().position.yaw / 90.0) * 64.0) as u8
-		};
-	}
-
-	fn get_pitch_u8(&self) -> u8 {
-		return if self.get_common_entity_data().position.pitch < 0.0 {
-			(((self.get_common_entity_data().position.pitch / 90.0) * 64.0) + 256.0) as u8
-		} else {
-			((self.get_common_entity_data().position.pitch / 90.0) * 64.0) as u8
-		};
 	}
 
 	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
@@ -475,6 +727,8 @@ pub trait Entity: std::fmt::Debug {
 		}
 	}
 
+	fn to_nbt_extras(&self) -> Vec<NbtTag>;
+
 	fn to_spawn_entity_packet(&self) -> crate::packets::clientbound::play::SpawnEntity {
 		return crate::packets::clientbound::play::SpawnEntity {
 			entity_id: self.get_common_entity_data().entity_id,
@@ -492,61 +746,21 @@ pub trait Entity: std::fmt::Debug {
 			velocity_z: 0,
 		};
 	}
-}
 
-pub trait SaveableEntity: Entity + Send {
-	fn to_nbt_extras(&self) -> Vec<NbtTag>;
-	fn to_nbt(&self) -> NbtListTag {
-		let common_data = self.get_common_entity_data();
-		let default_tags = vec![
-			NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
-			NbtTag::List(
-				"Pos".to_string(),
-				vec![
-					NbtListTag::Double(common_data.position.x),
-					NbtListTag::Double(common_data.position.y),
-					NbtListTag::Double(common_data.position.z),
-				],
-			),
-			NbtTag::List(
-				"Motion".to_string(),
-				vec![
-					NbtListTag::Double(common_data.velocity.x),
-					NbtListTag::Double(common_data.velocity.y),
-					NbtListTag::Double(common_data.velocity.z),
-				],
-			),
-			NbtTag::List(
-				"Rotation".to_string(),
-				vec![NbtListTag::Float(common_data.position.yaw), NbtListTag::Float(common_data.position.pitch)],
-			),
-			NbtTag::IntArray(
-				"UUID".to_string(),
-				vec![
-					(common_data.uuid >> 96) as i32,
-					(common_data.uuid << 32 >> 96) as i32,
-					(common_data.uuid << 64 >> 96) as i32,
-					(common_data.uuid << 96 >> 96) as i32,
-				],
-			),
-			NbtTag::Short("Air".to_string(), common_data.air),
-			common_data.custom_name.clone(),
-			common_data.data.clone(),
-			NbtTag::Double("fall_distance".to_string(), common_data.fall_distance),
-			NbtTag::Short("Fire".to_string(), common_data.ticks_until_fire_is_out),
-			NbtTag::Byte("Glowing".to_string(), if common_data.is_glowing { 1 } else { 0 }),
-			NbtTag::Byte("HasVisualFire".to_string(), if common_data.has_visual_fire { 1 } else { 0 }),
-			NbtTag::Byte("Invulnerable".to_string(), if common_data.invulnerable { 1 } else { 0 }),
-			NbtTag::Byte("NoGravity".to_string(), if common_data.no_gravity { 1 } else { 0 }),
-			NbtTag::Byte("OnGround".to_string(), if common_data.on_ground { 1 } else { 0 }),
-			NbtTag::List("Passengers".to_string(), common_data.passengers.iter().map(|x| x.to_nbt()).collect()),
-			NbtTag::Int("PortalCooldown".to_string(), common_data.portal_cooldown),
-			NbtTag::Byte("Silent".to_string(), if common_data.is_silent { 1 } else { 0 }),
-			NbtTag::List("Tags".to_string(), common_data.scoreboard_tags.clone()),
-			NbtTag::Int("TicksFrozen".to_string(), common_data.ticks_frozen),
-		];
+	fn get_yaw_u8(&self) -> u8 {
+		return if self.get_common_entity_data().position.yaw < 0.0 {
+			(((self.get_common_entity_data().position.yaw / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.get_common_entity_data().position.yaw / 90.0) * 64.0) as u8
+		};
+	}
 
-		return NbtListTag::TagCompound(vec![default_tags, self.to_nbt_extras()].into_iter().flatten().collect());
+	fn get_pitch_u8(&self) -> u8 {
+		return if self.get_common_entity_data().position.pitch < 0.0 {
+			(((self.get_common_entity_data().position.pitch / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.get_common_entity_data().position.pitch / 90.0) * 64.0) as u8
+		};
 	}
 }
 
@@ -730,21 +944,21 @@ impl CommonMob {
 	}
 }
 
-pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) -> Option<Box<dyn SaveableEntity + Send>> {
+pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) -> Option<Entity> {
 	return match entity_type {
-		"minecraft:armadillo" => Some(Box::new(Armadillo::new(common_data, extra_nbt))),
-		"minecraft:cat" => Some(Box::new(Cat::new(common_data, extra_nbt))),
-		"minecraft:chest_minecart" => Some(Box::new(ChestMinecart::new(common_data, extra_nbt))),
-		"minecraft:chicken" => Some(Box::new(Chicken::new(common_data, extra_nbt))),
-		"minecraft:cow" => Some(Box::new(Cow::new(common_data, extra_nbt))),
-		"minecraft:creeper" => Some(Box::new(Creeper::new(common_data, extra_nbt))),
-		"minecraft:donkey" => Some(Box::new(Donkey::new(common_data, extra_nbt))),
-		"minecraft:horse" => Some(Box::new(Horse::new(common_data, extra_nbt))),
-		"minecraft:item" => Some(Box::new(ItemEntity::new(common_data, extra_nbt))),
-		"minecraft:parrot" => Some(Box::new(Parrot::new(common_data, extra_nbt))),
-		"minecraft:pig" => Some(Box::new(Pig::new(common_data, extra_nbt))),
-		"minecraft:rabbit" => Some(Box::new(Rabbit::new(common_data, extra_nbt))),
-		"minecraft:sheep" => Some(Box::new(Sheep::new(common_data, extra_nbt))),
+		"minecraft:armadillo" => Some(Entity::Armadillo(Armadillo::new(common_data, extra_nbt))),
+		"minecraft:cat" => Some(Entity::Cat(Cat::new(common_data, extra_nbt))),
+		"minecraft:chest_minecart" => Some(Entity::ChestMinecart(ChestMinecart::new(common_data, extra_nbt))),
+		"minecraft:chicken" => Some(Entity::Chicken(Chicken::new(common_data, extra_nbt))),
+		"minecraft:cow" => Some(Entity::Cow(Cow::new(common_data, extra_nbt))),
+		"minecraft:creeper" => Some(Entity::Creeper(Creeper::new(common_data, extra_nbt))),
+		"minecraft:donkey" => Some(Entity::Donkey(Donkey::new(common_data, extra_nbt))),
+		"minecraft:horse" => Some(Entity::Horse(Horse::new(common_data, extra_nbt))),
+		"minecraft:item" => Some(Entity::Item(ItemEntity::new(common_data, extra_nbt))),
+		"minecraft:parrot" => Some(Entity::Parrot(Parrot::new(common_data, extra_nbt))),
+		"minecraft:pig" => Some(Entity::Pig(Pig::new(common_data, extra_nbt))),
+		"minecraft:rabbit" => Some(Entity::Rabbit(Rabbit::new(common_data, extra_nbt))),
+		"minecraft:sheep" => Some(Entity::Sheep(Sheep::new(common_data, extra_nbt))),
 		_ => None,
 	};
 }
@@ -813,7 +1027,7 @@ mod test {
 		mob: CommonMob,
 	}
 
-	impl Entity for DefaultMob {
+	impl CommonEntityTrait for DefaultMob {
 		fn get_type(&self) -> i32 {
 			return data::entities::get_id_from_name("minecraft:creeper");
 		}
@@ -849,6 +1063,14 @@ mod test {
 		fn set_mob_data(&mut self, common_mob_data: CommonMob) {
 			self.mob = common_mob_data;
 		}
+
+		fn new(_data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
+			todo!()
+		}
+
+		fn to_nbt_extras(&self) -> Vec<NbtTag> {
+			todo!()
+		}
 	}
 
 	#[derive(Debug, Default)]
@@ -857,7 +1079,7 @@ mod test {
 		mob: CommonMob,
 	}
 
-	impl Entity for BigMob {
+	impl CommonEntityTrait for BigMob {
 		fn get_type(&self) -> i32 {
 			return data::entities::get_id_from_name("minecraft:creeper");
 		}
@@ -896,6 +1118,14 @@ mod test {
 
 		fn get_hitbox(&self) -> (f64, f64) {
 			(4.0, 4.0)
+		}
+
+		fn new(_data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
+			todo!()
+		}
+
+		fn to_nbt_extras(&self) -> Vec<NbtTag> {
+			todo!()
 		}
 	}
 

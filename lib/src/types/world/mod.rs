@@ -19,7 +19,7 @@ pub struct World {
 
 pub struct Dimension {
 	pub chunks: HashMap<(i32, i32), Chunk>,
-	pub entities: Vec<Box<dyn SaveableEntity + Send>>,
+	pub entities: Vec<Entity>,
 }
 
 #[derive(Debug, Clone)]
@@ -103,7 +103,7 @@ impl Dimension {
 		block_states: &HashMap<String, Block>,
 	) -> Self {
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
-		let mut entities: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
+		let mut entities: Vec<Entity> = Vec::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
@@ -178,7 +178,7 @@ impl Dimension {
 	}
 
 	#[allow(clippy::borrowed_box)]
-	pub fn get_entities_in_chunk(&self, x: i32, z: i32) -> Vec<&Box<dyn SaveableEntity + Send>> {
+	pub fn get_entities_in_chunk(&self, x: i32, z: i32) -> Vec<&Entity> {
 		return self
 			.entities
 			.iter()
@@ -189,12 +189,12 @@ impl Dimension {
 			.collect();
 	}
 
-	pub fn add_entity(&mut self, entity: Box<dyn SaveableEntity + Send>) {
+	pub fn add_entity(&mut self, entity: Entity) {
 		self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
 		self.entities.push(entity);
 	}
 
-	pub fn add_entities(&mut self, mut entities: Vec<Box<dyn SaveableEntity + Send>>) {
+	pub fn add_entities(&mut self, mut entities: Vec<Entity>) {
 		for entity in &entities {
 			self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
 		}

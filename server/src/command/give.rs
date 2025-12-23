@@ -56,7 +56,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		metadata: new_entity.get_metadata(),
 	};
 
-	game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Box::new(new_entity));
+	game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
 
 	players.iter().for_each(|x| {
 		game.send_packet(

@@ -6,7 +6,7 @@ pub struct Donkey {
 	pub mob: CommonMob,
 }
 
-impl CreatableEntity for Donkey {
+impl CommonEntityTrait for Donkey {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
@@ -15,15 +15,11 @@ impl CreatableEntity for Donkey {
 			mob,
 		};
 	}
-}
 
-impl SaveableEntity for Donkey {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![];
 	}
-}
 
-impl Entity for Donkey {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:donkey");
 	}

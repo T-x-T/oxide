@@ -228,8 +228,8 @@ impl super::WorldLoader for Loader {
 		};
 	}
 
-	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager) -> Vec<Box<dyn SaveableEntity + Send>> {
-		let mut output: Vec<Box<dyn SaveableEntity + Send>> = Vec::new();
+	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager) -> Vec<Entity> {
+		let mut output: Vec<Entity> = Vec::new();
 
 		let region = chunk_to_region(x, z);
 
@@ -297,19 +297,19 @@ impl super::WorldLoader for Loader {
 			let entity_type = entity_type.as_string();
 
 			match entity_type {
-				"minecraft:armadillo" => output.push(crate::entity::Armadillo::from_nbt(entity, entity_id_manager)),
-				"minecraft:cat" => output.push(crate::entity::Cat::from_nbt(entity, entity_id_manager)),
-				"minecraft:chest_minecart" => output.push(crate::entity::ChestMinecart::from_nbt(entity, entity_id_manager)),
-				"minecraft:chicken" => output.push(crate::entity::Chicken::from_nbt(entity, entity_id_manager)),
-				"minecraft:cow" => output.push(crate::entity::Cow::from_nbt(entity, entity_id_manager)),
-				"minecraft:creeper" => output.push(crate::entity::Creeper::from_nbt(entity, entity_id_manager)),
-				"minecraft:donkey" => output.push(crate::entity::Donkey::from_nbt(entity, entity_id_manager)),
-				"minecraft:horse" => output.push(crate::entity::Horse::from_nbt(entity, entity_id_manager)),
-				"minecraft:item" => output.push(crate::entity::ItemEntity::from_nbt(entity, entity_id_manager)),
-				"minecraft:parrot" => output.push(crate::entity::Parrot::from_nbt(entity, entity_id_manager)),
-				"minecraft:pig" => output.push(crate::entity::Pig::from_nbt(entity, entity_id_manager)),
-				"minecraft:rabbit" => output.push(crate::entity::Rabbit::from_nbt(entity, entity_id_manager)),
-				"minecraft:sheep" => output.push(crate::entity::Sheep::from_nbt(entity, entity_id_manager)),
+				"minecraft:armadillo" => output.push(Entity::Armadillo(crate::entity::Armadillo::from_nbt(entity, entity_id_manager))),
+				"minecraft:cat" => output.push(Entity::Cat(crate::entity::Cat::from_nbt(entity, entity_id_manager))),
+				"minecraft:chest_minecart" => output.push(Entity::ChestMinecart(crate::entity::ChestMinecart::from_nbt(entity, entity_id_manager))),
+				"minecraft:chicken" => output.push(Entity::Chicken(crate::entity::Chicken::from_nbt(entity, entity_id_manager))),
+				"minecraft:cow" => output.push(Entity::Cow(crate::entity::Cow::from_nbt(entity, entity_id_manager))),
+				"minecraft:creeper" => output.push(Entity::Creeper(crate::entity::Creeper::from_nbt(entity, entity_id_manager))),
+				"minecraft:donkey" => output.push(Entity::Donkey(crate::entity::Donkey::from_nbt(entity, entity_id_manager))),
+				"minecraft:horse" => output.push(Entity::Horse(crate::entity::Horse::from_nbt(entity, entity_id_manager))),
+				"minecraft:item" => output.push(Entity::Item(crate::entity::ItemEntity::from_nbt(entity, entity_id_manager))),
+				"minecraft:parrot" => output.push(Entity::Parrot(crate::entity::Parrot::from_nbt(entity, entity_id_manager))),
+				"minecraft:pig" => output.push(Entity::Pig(crate::entity::Pig::from_nbt(entity, entity_id_manager))),
+				"minecraft:rabbit" => output.push(Entity::Rabbit(crate::entity::Rabbit::from_nbt(entity, entity_id_manager))),
+				"minecraft:sheep" => output.push(Entity::Sheep(crate::entity::Sheep::from_nbt(entity, entity_id_manager))),
 				_ => println!("tried loading unknown entity {entity_type} from disk"),
 			};
 		}

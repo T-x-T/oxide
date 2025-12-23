@@ -6,7 +6,7 @@ pub struct Horse {
 	pub mob: CommonMob,
 }
 
-impl CreatableEntity for Horse {
+impl CommonEntityTrait for Horse {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
@@ -15,15 +15,11 @@ impl CreatableEntity for Horse {
 			mob,
 		};
 	}
-}
 
-impl SaveableEntity for Horse {
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![];
 	}
-}
 
-impl Entity for Horse {
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:horse");
 	}
