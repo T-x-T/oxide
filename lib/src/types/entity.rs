@@ -638,15 +638,19 @@ pub trait CommonEntityTrait {
 			z_max.ceil()
 		} as i32);
 
-		let output: Vec<BlockPosition> = x_range
-			.zip(y_range)
-			.zip(z_range)
-			.map(|((x, y), z)| BlockPosition {
-				x,
-				y,
-				z,
-			})
-			.collect();
+		let mut output: Vec<BlockPosition> = Vec::new();
+
+		for x in x_range.clone() {
+			for y in y_range.clone() {
+				for z in z_range.clone() {
+					output.push(BlockPosition {
+						x,
+						y,
+						z,
+					});
+				}
+			}
+		}
 
 		return output;
 	}
