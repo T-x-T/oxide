@@ -113,7 +113,7 @@ pub fn get_block_state_id(
 	}
 
 	if output.is_empty() {
-		output.push((block.states.iter().find(|x| x.default).unwrap().id, position));
+		output.push((block.states[block.default_state].id, position));
 	}
 
 	return output;

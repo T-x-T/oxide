@@ -264,7 +264,7 @@ impl Player {
 						NbtListTag::TagCompound(vec![
 							NbtTag::Byte("Slot".to_string(), x.0 as u8),
 							NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().item_id)),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().item_id).to_string()),
 						])
 					})
 					.collect(),
@@ -276,28 +276,28 @@ impl Player {
 						"head".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id)),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"chest".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id)),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"legs".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id)),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"feet".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id)),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
 						],
 					),
 					NbtTag::TagCompound(
@@ -306,7 +306,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).item_count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).item_id),
+								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
 							),
 						],
 					),

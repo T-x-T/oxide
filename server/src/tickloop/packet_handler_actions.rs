@@ -162,7 +162,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
 				let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
 				let item_id = data::items::get_items()
-					.get(&picked_block_name)
+					.get(picked_block_name.as_str())
 					.unwrap_or(&data::items::Item {
 						max_stack_size: 0,
 						rarity: data::items::ItemRarity::Common,
@@ -423,7 +423,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					if used_item_name.ends_with("spawn_egg") {
 						let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 						lib::create_and_spawn_entity_from_egg(
-							&used_item_name,
+							used_item_name,
 							game.entity_id_manager.get_new(),
 							new_block_location,
 							dimension,
@@ -438,7 +438,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						pitch,
 						world.dimensions.get_mut("minecraft:overworld").unwrap(),
 						new_block_location,
-						&used_item_name,
+						used_item_name,
 						cursor_position_x,
 						cursor_position_y,
 						cursor_position_z,

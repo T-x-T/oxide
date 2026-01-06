@@ -93,7 +93,7 @@ impl CommonEntityTrait for ItemEntity {
 			index: 8,
 			value: EntityMetadataValue::Slot(Slot {
 				item_count: self.item.count as i32,
-				item_id: data::items::get_items().get(&self.item.id).unwrap().id,
+				item_id: data::items::get_items().get(self.item.id.as_str()).unwrap().id,
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			}),

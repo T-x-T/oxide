@@ -106,7 +106,7 @@ impl From<&Item> for Slot {
 	fn from(value: &Item) -> Self {
 		return Slot {
 			item_count: value.count as i32,
-			item_id: data::items::get_items().iter().find(|y| y.0.clone() == value.id).unwrap().1.id,
+			item_id: data::items::get_items().iter().find(|y| y.0 == &value.id).unwrap().1.id,
 			components_to_add: value.components.clone(),
 			components_to_remove: Vec::new(),
 		};
@@ -116,7 +116,7 @@ impl From<&Item> for Slot {
 impl From<Slot> for Item {
 	fn from(value: Slot) -> Self {
 		return Self {
-			id: data::items::get_item_name_by_id(value.item_id),
+			id: data::items::get_item_name_by_id(value.item_id).to_string(),
 			count: value.item_count as u8,
 			components: value.components_to_add,
 		};
@@ -134,7 +134,7 @@ impl From<Option<Slot>> for Item {
 		};
 
 		return Self {
-			id: data::items::get_item_name_by_id(value.item_id),
+			id: data::items::get_item_name_by_id(value.item_id).to_string(),
 			count: value.item_count as u8,
 			components: value.components_to_add,
 		};
@@ -145,7 +145,7 @@ impl From<Item> for Slot {
 	fn from(value: Item) -> Self {
 		return Self {
 			item_count: value.count as i32,
-			item_id: data::items::get_items().get(&value.id).unwrap().id,
+			item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
 			components_to_add: value.components,
 			components_to_remove: Vec::new(),
 		};
@@ -159,7 +159,7 @@ impl From<Item> for Option<Slot> {
 		} else {
 			Some(Slot {
 				item_count: value.count as i32,
-				item_id: data::items::get_items().get(&value.id).unwrap().id,
+				item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
 				components_to_add: value.components,
 				components_to_remove: Vec::new(),
 			})

@@ -1,7 +1,9 @@
-#![allow(clippy::needless_return, clippy::format_collect, unused)]
+#![allow(clippy::needless_return, unused)]
 
 use std::collections::HashMap;
 use std::io::prelude::*;
+use std::fs;
+use std::path::PathBuf;
 
 mod blockentity;
 mod blocks;
