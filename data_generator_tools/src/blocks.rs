@@ -151,13 +151,19 @@ fn get_blocks_add_functions() {
 		} else {
 			String::new()
 		};
+		let default_state = block["states"]
+			.as_array()
+			.unwrap()
+			.iter()
+			.position(|x| x.as_object().unwrap()["default"].is_boolean())
+			.unwrap();
 		outputs[output_index] +=
 			format!("pub fn add_{}(map: &mut HashMap<String, Block>) {{\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
 		outputs[output_index] +=
-			format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![] }};\n").as_str();
+			format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![], default_state: {default_state} }};\n").as_str();
 		for x in block["states"].as_array().unwrap().iter() {
 			outputs[output_index] += format!(
-				"\tblock.states.push(State {{ id: {}, properties: vec![ {}], default: {} }});\n",
+				"\tblock.states.push(State {{ id: {}, properties: vec![ {}] }});\n",
 				x.as_object().unwrap()["id"].as_i32().unwrap(),
 				x.as_object().unwrap()["properties"]
 					.as_object()
@@ -175,8 +181,7 @@ fn get_blocks_add_functions() {
 							convert_to_upper_camel_case(y.1.as_str().unwrap())
 						}
 					))
-					.collect::<String>(),
-				if x.as_object().unwrap()["default"].is_boolean() { "true" } else { "false" }
+					.collect::<String>()
 			)
 			.as_str();
 		}
@@ -506,124 +511,126 @@ fn get_block_from_name() -> String {
 }
 
 fn impl_type() -> String {
-	return "impl Type {
-\t#[allow(clippy::match_like_matches_macro)]
-\tpub fn has_right_click_behavior(&self) -> bool {
-\t\treturn match self {
-\t\t\tType::Anvil => true,
-\t\t\tType::Barrel => true,
-\t\t\tType::Beacon => true,
-\t\t\tType::Bed => true,
-\t\t\tType::Beehive => true,
-\t\t\tType::Bell => true,
-\t\t\tType::BlastFurnace => true,
-\t\t\tType::BrewingStand => true,
-\t\t\tType::Button => true,
-\t\t\tType::Cake => true,
-\t\t\tType::CalibratedSculkSensor => true,
-\t\t\tType::Campfire => true,
-\t\t\tType::Candle => true,
-\t\t\tType::CandleCake => true,
-\t\t\tType::Carrot => true,
-\t\t\tType::CartographyTable => true,
-\t\t\tType::Cauldron => true,
-\t\t\tType::CeilingHangingSign => true,
-\t\t\tType::Chest => true,
-\t\t\tType::Comparator => true,
-\t\t\tType::Composter => true,
-\t\t\tType::Crafter => true,
-\t\t\tType::CraftingTable => true,
-\t\t\tType::Dispenser => true,
-\t\t\tType::Door => true,
-\t\t\tType::DragonEgg => true,
-\t\t\tType::Dropper => true,
-\t\t\tType::EnchantmentTable => true,
-\t\t\tType::EndGateway => true,
-\t\t\tType::EndPortal => true,
-\t\t\tType::EndPortalFrame => true,
-\t\t\tType::EnderChest => true,
-\t\t\tType::FenceGate => true,
-\t\t\tType::FlowerPot => true,
-\t\t\tType::Furnace => true,
-\t\t\tType::Grindstone => true,
-\t\t\tType::Hopper => true,
-\t\t\tType::Jigsaw => true,
-\t\t\tType::Jukebox => true,
-\t\t\tType::LavaCauldron => true,
-\t\t\tType::LayeredCauldron => true,
-\t\t\tType::Lever => true,
-\t\t\tType::Loom => true,
-\t\t\tType::NetherPortal => true,
-\t\t\tType::Repeater => true,
-\t\t\tType::SmithingTable => true,
-\t\t\tType::Smoker => true,
-\t\t\tType::StandingSign => true,
-\t\t\tType::Stonecutter => true,
-\t\t\tType::Trapdoor => true,
-\t\t\tType::TrappedChest => true,
-\t\t\tType::WallSign => true,
-\t\t\tType::Lectern => true,
-\t\t\tType::ShulkerBox => true,
-\t\t\t_ => false,
-\t\t}
-\t}
-\t
-\t#[allow(clippy::match_like_matches_macro)]
-\tpub fn is_solid(&self) -> bool {
-\t\treturn match self {
-\t\t\tType::Air => false,
-\t\t\tType::SugarCane => false,
-\t\t\tType::Liquid => false,
-\t\t\tType::BubbleColumn => false,
-\t\t\tType::KelpPlant => false,
-\t\t\tType::CoralPlant => false,
-\t\t\tType::DoublePlant => false,
-\t\t\tType::BaseCoralPlant => false,
-\t\t\tType::CaveVinesPlant => false,
-\t\t\tType::WeepingVines => false,
-\t\t\tType::WeepingVinesPlant => false,
-\t\t\tType::TwistingVinesPlant => false,
-\t\t\tType::Sapling => false,
-\t\t\tType::BambooSapling => false,
-\t\t\tType::Mushroom => false,
-\t\t\tType::TallGrass => false,
-\t\t\tType::TallDryGrass => false,
-\t\t\tType::ShortDryGrass => false,
-\t\t\tType::DryVegetation => false,
-\t\t\tType::Fire => false,
-\t\t\tType::SoulFire => false,
-\t\t\tType::WallBanner => false,
-\t\t\tType::WallSign => false,
-\t\t\tType::StandingSign => false,
-\t\t\tType::Torch => false,
-\t\t\tType::TorchflowerCrop => false,
-\t\t\tType::WallTorch => false,
-\t\t\tType::RedstoneTorch => false,
-\t\t\tType::RedstoneWallTorch => false,
-\t\t\tType::PressurePlate => false,
-\t\t\tType::WeightedPressurePlate => false,
-\t\t\tType::Light => false,
-\t\t\tType::Lever => false,
-\t\t\t_ => true,
-\t\t}
-\t}
-}\n"
+	return r#"impl Type {
+	#[allow(clippy::match_like_matches_macro)]
+	pub fn has_right_click_behavior(&self) -> bool {
+		return match self {
+			Type::Anvil => true,
+			Type::Barrel => true,
+			Type::Beacon => true,
+			Type::Bed => true,
+			Type::Beehive => true,
+			Type::Bell => true,
+			Type::BlastFurnace => true,
+			Type::BrewingStand => true,
+			Type::Button => true,
+			Type::Cake => true,
+			Type::CalibratedSculkSensor => true,
+			Type::Campfire => true,
+			Type::Candle => true,
+			Type::CandleCake => true,
+			Type::Carrot => true,
+			Type::CartographyTable => true,
+			Type::Cauldron => true,
+			Type::CeilingHangingSign => true,
+			Type::Chest => true,
+			Type::Comparator => true,
+			Type::Composter => true,
+			Type::Crafter => true,
+			Type::CraftingTable => true,
+			Type::Dispenser => true,
+			Type::Door => true,
+			Type::DragonEgg => true,
+			Type::Dropper => true,
+			Type::EnchantmentTable => true,
+			Type::EndGateway => true,
+			Type::EndPortal => true,
+			Type::EndPortalFrame => true,
+			Type::EnderChest => true,
+			Type::FenceGate => true,
+			Type::FlowerPot => true,
+			Type::Furnace => true,
+			Type::Grindstone => true,
+			Type::Hopper => true,
+			Type::Jigsaw => true,
+			Type::Jukebox => true,
+			Type::LavaCauldron => true,
+			Type::LayeredCauldron => true,
+			Type::Lever => true,
+			Type::Loom => true,
+			Type::NetherPortal => true,
+			Type::Repeater => true,
+			Type::SmithingTable => true,
+			Type::Smoker => true,
+			Type::StandingSign => true,
+			Type::Stonecutter => true,
+			Type::Trapdoor => true,
+			Type::TrappedChest => true,
+			Type::WallSign => true,
+			Type::Lectern => true,
+			Type::ShulkerBox => true,
+			_ => false,
+		}
+	}
+
+	#[allow(clippy::match_like_matches_macro)]
+	pub fn is_solid(&self) -> bool {
+		return match self {
+			Type::Air => false,
+			Type::SugarCane => false,
+			Type::Liquid => false,
+			Type::BubbleColumn => false,
+			Type::KelpPlant => false,
+			Type::CoralPlant => false,
+			Type::DoublePlant => false,
+			Type::BaseCoralPlant => false,
+			Type::CaveVinesPlant => false,
+			Type::WeepingVines => false,
+			Type::WeepingVinesPlant => false,
+			Type::TwistingVinesPlant => false,
+			Type::Sapling => false,
+			Type::BambooSapling => false,
+			Type::Mushroom => false,
+			Type::TallGrass => false,
+			Type::TallDryGrass => false,
+			Type::ShortDryGrass => false,
+			Type::DryVegetation => false,
+			Type::Fire => false,
+			Type::SoulFire => false,
+			Type::WallBanner => false,
+			Type::WallSign => false,
+			Type::StandingSign => false,
+			Type::Torch => false,
+			Type::TorchflowerCrop => false,
+			Type::WallTorch => false,
+			Type::RedstoneTorch => false,
+			Type::RedstoneWallTorch => false,
+			Type::PressurePlate => false,
+			Type::WeightedPressurePlate => false,
+			Type::Light => false,
+			Type::Lever => false,
+			_ => true,
+		}
+	}
+}
+"#
 		.to_string();
 }
 
 fn structs() -> String {
-	return "#[derive(Debug, Clone)]
+	return r#"#[derive(Debug, Clone)]
 pub struct Block {
-\tpub block_type: Type,
-\tpub states: Vec<State>,
-\tpub properties: Vec<Property>,
+	pub block_type: Type,
+	pub states: Vec<State>,
+	pub default_state: usize,
+	pub properties: Vec<Property>,
 }
 
 #[derive(Debug, Clone)]
 pub struct State {
-\tpub id: u16,
-\tpub default: bool,
-\tpub properties: Vec<Property>,
-}\n"
+	pub id: u16,
+	pub properties: Vec<Property>,
+}
+"#
 		.to_string();
 }

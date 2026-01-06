@@ -155,15 +155,11 @@ impl super::WorldLoader for Loader {
 				if block_name == "minecraft:air" {
 					blocks = vec![];
 				} else {
+					let block = block_states
+						.get(block_palette[0].get_child("Name").unwrap().as_string())
+						.unwrap();
 					blocks = vec![
-						block_states
-							.get(block_palette[0].get_child("Name").unwrap().as_string())
-							.unwrap()
-							.states
-							.iter()
-							.find(|x| x.default)
-							.unwrap()
-							.id;
+						block.states[block.default_state].id;
 						4096
 					];
 				}
@@ -591,7 +587,7 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 							biome_palette
 								.iter()
 								.map(|biome| {
-									NbtListTag::String(data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0)
+									NbtListTag::String(data::biomes::get_biome_ids().into_iter().find(|(_, biome_id)| *biome_id == *biome).unwrap().0.to_string())
 								})
 								.collect(),
 						)];
