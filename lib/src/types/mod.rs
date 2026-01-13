@@ -6,6 +6,7 @@ pub mod game;
 pub mod nbt;
 pub mod player;
 pub mod position;
+pub mod serverlinks;
 pub mod slot;
 pub mod world;
 
@@ -17,6 +18,7 @@ pub use game::*;
 pub use nbt::*;
 pub use player::*;
 pub use position::*;
+pub use serverlinks::*;
 pub use slot::*;
 pub use world::*;
 

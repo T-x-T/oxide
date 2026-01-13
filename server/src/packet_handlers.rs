@@ -175,26 +175,24 @@ pub mod login {
 			lib::packets::clientbound::configuration::ServerLinks::PACKET_ID,
 			lib::packets::clientbound::configuration::ServerLinks {
 				links: vec![
-					(
+					ServerLink::Custom(
 						NbtTag::Root(vec![NbtTag::String("text".to_string(), "Git repository".to_string())]),
 						"https://git.thetxt.io/thetxt/oxide".to_string(),
 					),
-					(
+					ServerLink::Custom(
 						NbtTag::Root(vec![NbtTag::String("text".to_string(), "Github mirror".to_string())]),
 						"https://github.com/T-x-T/oxide".to_string(),
 					),
-					(
-						NbtTag::Root(vec![NbtTag::String("text".to_string(), "Report bug".to_string())]),
-						"https://git.thetxt.io/thetxt/oxide/issues/new".to_string(),
-					),
-					(
+					ServerLink::BuiltIn(BuiltInServerLink::BugReport, "https://git.thetxt.io/thetxt/oxide/issues/new".to_string()),
+					ServerLink::Custom(
 						NbtTag::Root(vec![NbtTag::String("text".to_string(), "Suggest feature".to_string())]),
 						"https://git.thetxt.io/thetxt/oxide/issues/new".to_string(),
 					),
-					(
+					ServerLink::Custom(
 						NbtTag::Root(vec![NbtTag::String("text".to_string(), "Support development of Oxide ♥".to_string())]),
 						"https://coff.ee/thetxt".to_string(),
 					),
+					ServerLink::BuiltIn(BuiltInServerLink::Community, "https://discord.gg/RW5Ug4epKS".to_string()),
 				],
 			}
 			.try_into()?,
