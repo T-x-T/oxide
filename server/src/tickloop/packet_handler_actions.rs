@@ -1103,49 +1103,65 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				let new_player_uuid = new_player.uuid;
 				let new_player_entity_id = new_player.entity_id;
+				let new_player_display_name = new_player.display_name.clone();
 				let new_player_x = new_player.get_position().x;
 				let new_player_y = new_player.get_position().y;
 				let new_player_z = new_player.get_position().z;
 				let new_player_inventory = new_player.get_inventory().clone();
 				let new_player_selected_slot = new_player.get_selected_slot();
 				let new_player_entity_metadata = new_player.get_metadata();
+
+				//send player list to newly connected player
+				game.send_packet(
+					&peer_addr,
+					lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
+					lib::packets::clientbound::play::PlayerInfoUpdate {
+						actions: 255,
+						players: players
+							.iter()
+							.map(|y| {
+								(
+									y.uuid,
+									vec![
+										lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
+										lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+										lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+										lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+										lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+										lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+										lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+										lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+									],
+								)
+							})
+							.collect(),
+					}
+					.try_into()
+					.unwrap(),
+				);
+
 				players.push(new_player);
 
+				//update player list for already connected players
 				players.iter().for_each(|x| {
-					//proper logic for updating players instead of removing and readding all https://git.thetxt.io/thetxt/oxide/issues/21
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-						lib::packets::clientbound::play::PlayerInfoRemove {
-							uuids: players.iter().map(|x| x.uuid).collect(),
-						}
-						.try_into()
-						.unwrap(),
-					);
-
 					game.send_packet(
 						&x.peer_socket_address,
 						lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
 						lib::packets::clientbound::play::PlayerInfoUpdate {
 							actions: 255,
-							players: players
-								.iter()
-								.map(|y| {
-									(
-										y.uuid,
-										vec![
-											lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
-											lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-											lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
-											lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
-											lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
-											lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
-											lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
-											lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
-										],
-									)
-								})
-								.collect(),
+							players: vec![(
+								new_player_uuid,
+								vec![
+									lib::packets::clientbound::play::PlayerAction::AddPlayer(new_player_display_name.clone(), vec![]),
+									lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+									lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+									lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+									lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+									lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+									lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+									lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+								],
+							)],
 						}
 						.try_into()
 						.unwrap(),
