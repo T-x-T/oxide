@@ -1991,7 +1991,6 @@ impl Packet for PlayerInfoUpdate {
 	}
 }
 
-//proper types missing https://git.thetxt.io/thetxt/oxide/issues/17
 #[derive(Debug, Clone)]
 pub enum PlayerAction {
 	AddPlayer(String, Vec<(String, String, Option<String>)>), //Name, Property<Name, Value, Signature>
