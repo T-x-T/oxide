@@ -72,7 +72,7 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
-		todo!();
+		todo!()
 	}
 
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
@@ -110,6 +110,19 @@ impl CommonEntityTrait for Player {
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		todo!()
+	}
+
+	fn is_on_ground(&self, dimension: &Dimension) -> bool {
+		return self.is_on_ground_at(
+			dimension,
+			EntityPosition {
+				x: self.x,
+				y: self.y,
+				z: self.z,
+				yaw: self.yaw,
+				pitch: self.pitch,
+			},
+		);
 	}
 }
 
@@ -276,28 +289,40 @@ impl Player {
 						"head".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
+							NbtTag::String(
+								"id".to_string(),
+								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+							),
 						],
 					),
 					NbtTag::TagCompound(
 						"chest".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
+							NbtTag::String(
+								"id".to_string(),
+								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+							),
 						],
 					),
 					NbtTag::TagCompound(
 						"legs".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
+							NbtTag::String(
+								"id".to_string(),
+								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+							),
 						],
 					),
 					NbtTag::TagCompound(
 						"feet".to_string(),
 						vec![
 							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id).to_string()),
+							NbtTag::String(
+								"id".to_string(),
+								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+							),
 						],
 					),
 					NbtTag::TagCompound(

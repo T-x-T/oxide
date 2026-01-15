@@ -14,6 +14,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				crate::disconnect_player(&peer_addr, game.clone());
 			}
 			PacketHandlerAction::MovePlayer(peer_addr, position, rotation) => {
+				let mut world = game.world.lock().unwrap();
+
 				if moved_players.contains(&peer_addr) {
 					continue;
 				}
@@ -41,7 +43,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								yaw: rotation.unwrap().0,
 								pitch: rotation.unwrap().1,
 							},
-							&mut game.world.lock().unwrap(),
+							&mut world,
 							&game.entity_id_manager,
 							&game.block_state_data,
 							game.clone(),
@@ -57,7 +59,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
 								yaw: player.get_yaw_u8(),
 								pitch: player.get_pitch_u8(),
-								on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+								on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
 							}
 							.try_into()
 							.unwrap(),
@@ -78,7 +80,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							position.unwrap().0,
 							position.unwrap().1,
 							position.unwrap().2,
-							&mut game.world.lock().unwrap(),
+							&mut world,
 							&game.entity_id_manager,
 							&game.block_state_data,
 							game.clone(),
@@ -91,7 +93,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
 							delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
 							delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-							on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+							on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
 						}
 						.try_into()
 						.unwrap(),
@@ -105,7 +107,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								entity_id: player_entity_id,
 								yaw: player.get_yaw_u8(),
 								pitch: player.get_pitch_u8(),
-								on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+								on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
 							}
 							.try_into()
 							.unwrap(),
@@ -994,6 +996,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::NewPlayer(peer_addr, stream) => {
 				game.connections.entry(peer_addr).and_modify(|x| x.state = lib::ConnectionState::Play);
 
+				let mut world = game.world.lock().unwrap();
+
 				let connection_player = game.connections.get(&peer_addr).unwrap();
 
 				let mut new_player = Player::new(
@@ -1084,9 +1088,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let now = std::time::Instant::now();
 				for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 					for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {
-						new_player
-							.send_chunk(&mut game.world.lock().unwrap(), x, z, &game.entity_id_manager, &game.block_state_data, game.clone())
-							.unwrap();
+						new_player.send_chunk(&mut world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
 					}
 				}
 				println!("send chunks: {:?}", std::time::Instant::now() - now);
@@ -1230,7 +1232,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 						lib::packets::clientbound::play::UpdateEntityRotation {
 							entity_id: player.entity_id,
-							on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+							on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
 							yaw: player.get_yaw_u8(),
 							pitch: player.get_pitch_u8(),
 						}
@@ -1311,7 +1313,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 						lib::packets::clientbound::play::UpdateEntityRotation {
 							entity_id: player.entity_id,
-							on_ground: true, //add proper check https://git.thetxt.io/thetxt/oxide/issues/22
+							on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
 							yaw: player.get_yaw_u8(),
 							pitch: player.get_pitch_u8(),
 						}
@@ -1331,7 +1333,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 
 
-				for entity in &game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities {
+				for entity in &world.dimensions.get("minecraft:overworld").unwrap().entities {
 					game.send_packet(
 						&peer_addr,
 						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
