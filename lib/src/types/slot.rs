@@ -168,7 +168,69 @@ impl From<Item> for Option<Slot> {
 }
 
 
-//implement missing SlotComponent variants https://git.thetxt.io/thetxt/oxide/issues/18
+#[derive(Debug, Clone, PartialEq)]
+pub struct BlockPredicate {
+	blocks: Vec<String>,
+	properties: Vec<BlockPredicateProperty>,
+	nbt: Option<NbtTag>,
+	data_components: Vec<NbtTag>,
+	partial_data_component_predicates: Vec<NbtTag>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct BlockPredicateProperty {
+	name: String,
+	is_exact_match: bool,
+	exact_value: Option<String>,
+	min_value: Option<String>,
+	max_value: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ConsumeEffect {
+	ApplyEffects(Vec<PotionEffect>, f32),
+	RemoveEffects(Vec<IdSet>),
+	ClearAllEffects,
+	TeleportRandomly(f32),
+	PlaySound(String, bool, Option<f32>), //sound_name, has_fixed_range?, fixed_range //the bool is probably unneccessary?
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum IdSet {
+	ByName(Option<String>),
+	ById(Vec<i32>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PotionEffect {
+	type_id: i32,
+	amplifier: i32,
+	duration: i32,
+	ambient: bool,
+	show_particles: bool,
+	show_icon: bool,
+	hidden_effect: Option<(i32, i32, bool, bool, bool)>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FireworkExplosion {
+	shape: FireworkExplosionShape,
+	colors: Vec<i32>,
+	fade_colors: Vec<i32>,
+	has_trail: bool,
+	has_twinkle: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[repr(u8)]
+pub enum FireworkExplosionShape {
+	SmallBall,
+	LargeBall,
+	Star,
+	Creeper,
+	Burst,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum SlotComponent {
 	CustomData(NbtTag),
@@ -182,9 +244,9 @@ pub enum SlotComponent {
 	Lore(Vec<NbtTag>),
 	Rarity(u8),
 	Enchantments(Vec<(i32, i32)>),
-	CanPlaceOn,         //Missing block predicate array
-	CanBreak,           //Missing block predicate array
-	AttributeModifiers, //Missing attribute modifiers
+	CanPlaceOn(Vec<BlockPredicate>),
+	CanBreak(Vec<BlockPredicate>),
+	AttributeModifiers(Vec<(i32, String, f64, i32, i32)>), //attribute_id, modifier_id, value, operation, slot
 	CustomModelData(Vec<f32>, Vec<bool>, Vec<String>, Vec<i32>),
 	TooltipDisplay(bool, Vec<i32>),
 	RepairCost(i32),
@@ -192,19 +254,19 @@ pub enum SlotComponent {
 	EnchantmentGlintOverride(bool),
 	IntangibleProjectile(NbtTag),
 	Food(i32, f32, bool),
-	Consumable, //Missing consume effects implementation
+	Consumable(f32, i32, String, bool, Vec<ConsumeEffect>),
 	UseRemainder(Option<Slot>),
 	UseCooldown(f32, Option<String>),
 	DamageResistant(String),
-	Tool, //missing Rules implementation
+	Tool(Vec<(IdSet, Option<f32>, Option<bool>)>, f32, i32, bool), //blocks, speed, correct_drop_for_blocks, default_mining_speed, can_destroy_blocks_in_creative
 	Weapon(i32, f32),
 	Enchantable(i32),
-	Equippable, //couldnt be bothered yet
-	Repairable, //Missing ID Set implementation
+	Equippable(i32, String, Option<String>, Option<String>, Option<IdSet>, bool, bool, bool), //slot, equip_sound, model, camera_overlay, allowed_entities, dispensable, swappable, damage_on_hurt
+	Repairable(IdSet),
 	Glider,
 	TooltipStyle(String),
-	DeathProtection, //Missing consume effects implementation
-	BlockAttacks,    //couldnt be bothered
+	DeathProtection(Vec<ConsumeEffect>),
+	BlockAttacks(f32, f32, Vec<(f32, Option<IdSet>, f32, f32)>, f32, f32, f32, Option<String>, Option<String>, Option<String>),
 	StoredEnchantments(Vec<(i32, i32)>),
 	DyedColor(i32),
 	MapColor(i32),
@@ -213,28 +275,28 @@ pub enum SlotComponent {
 	MapPostProcessing(u8),
 	ChargedProjectiles(Vec<Option<Slot>>),
 	BundleContents(Vec<Option<Slot>>),
-	PotionContents, //wont be doing that rn lol
+	PotionContents(Option<i32>, Option<i32>, Vec<PotionEffect>, String),
 	PotionDurationScale(f32),
 	SuspiciousStewEffects(Vec<(i32, i32)>),
 	WritableBookContent(Vec<(String, Option<String>)>),
 	WrittenBookContent(Vec<(String, Option<String>)>),
-	Trim, //yeah this also needs data still
+	Trim(String, String),
 	DebugStickState(NbtTag),
 	EntityData(NbtTag),
 	BucketEntityData(NbtTag),
 	BlockEntityData(NbtTag),
-	Instrument,           //not important enough for now
-	ProvidesTrimMaterial, //also still missing shit
+	Instrument(String),
+	ProvidesTrimMaterial(u8, String),
 	OminousBottleAmplifier(u8),
-	JukeboxPlayable, //still missing some stuffs
+	JukeboxPlayable(u8, String),
 	ProvidesBannerPatterns(String),
 	Recipes(NbtTag),
 	LodestoneTracker(bool, String, crate::BlockPosition, bool),
-	FireworkExplosion, //Missing firework explosion implementation
-	Fireworks,         //Missing firework explosion implementation
+	FireworkExplosion(FireworkExplosion),
+	Fireworks(i32, Vec<FireworkExplosion>),
 	Profile(Option<String>, Option<u128>, Vec<(String, String, Option<String>)>),
 	NoteblockSound(String),
-	BannerPatterns, //figure out later
+	BannerPatterns(Vec<(String, i32)>),
 	BaseColor(u8),
 	PotDecorations(Vec<i32>),
 	Container(Vec<i32>),
@@ -242,10 +304,10 @@ pub enum SlotComponent {
 	Bees(Vec<(NbtTag, i32, i32)>),
 	Lock(NbtTag),
 	ContainerLoot(NbtTag),
-	BreakSound,       //will be implemented in the future
-	VillagerVariant,  //will be implemented in the future
-	WolfVariant,      //will be implemented in the future
-	WolfSoundVariant, //will be implemented in the future
+	BreakSound(String),
+	VillagerVariant(String),
+	WolfVariant(String),
+	WolfSoundVariant(String),
 	WolfCollar(u8),
 	FoxVariant(u8),
 	SalmonSize(u8),
@@ -257,10 +319,10 @@ pub enum SlotComponent {
 	RabbitVariant(u8),
 	PigVariant(u8),
 	CowVariant(u8),
-	ChickenVariant, //will be implemented in the future
+	ChickenVariant(u8, String),
 	FrogVariant(i32),
 	HorseVariant(u8),
-	PaintingVariant, //will maybe be bothered in the future, idk
+	PaintingVariant(i32, i32, String, Option<NbtTag>, Option<NbtTag>),
 	LlamaVariant(u8),
 	AxolotlVariant(u8),
 	CatVariant(i32),
@@ -291,9 +353,9 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::Lore(_) => 8,
 			SlotComponent::Rarity(_) => 9,
 			SlotComponent::Enchantments(_) => 10,
-			SlotComponent::CanPlaceOn => 11,
-			SlotComponent::CanBreak => 12,
-			SlotComponent::AttributeModifiers => 13,
+			SlotComponent::CanPlaceOn(_) => 11,
+			SlotComponent::CanBreak(_) => 12,
+			SlotComponent::AttributeModifiers(_) => 13,
 			SlotComponent::CustomModelData(_, _, _, _) => 14,
 			SlotComponent::TooltipDisplay(_, _) => 15,
 			SlotComponent::RepairCost(_) => 16,
@@ -301,19 +363,19 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::EnchantmentGlintOverride(_) => 18,
 			SlotComponent::IntangibleProjectile(_) => 19,
 			SlotComponent::Food(_, _, _) => 20,
-			SlotComponent::Consumable => 21,
+			SlotComponent::Consumable(..) => 21,
 			SlotComponent::UseRemainder(_) => 22,
 			SlotComponent::UseCooldown(_, _) => 23,
 			SlotComponent::DamageResistant(_) => 24,
-			SlotComponent::Tool => 25,
+			SlotComponent::Tool(..) => 25,
 			SlotComponent::Weapon(_, _) => 26,
 			SlotComponent::Enchantable(_) => 27,
-			SlotComponent::Equippable => 28,
-			SlotComponent::Repairable => 29,
+			SlotComponent::Equippable(..) => 28,
+			SlotComponent::Repairable(_) => 29,
 			SlotComponent::Glider => 30,
 			SlotComponent::TooltipStyle(_) => 31,
-			SlotComponent::DeathProtection => 32,
-			SlotComponent::BlockAttacks => 33,
+			SlotComponent::DeathProtection(_) => 32,
+			SlotComponent::BlockAttacks(..) => 33,
 			SlotComponent::StoredEnchantments(_) => 34,
 			SlotComponent::DyedColor(_) => 35,
 			SlotComponent::MapColor(_) => 36,
@@ -322,28 +384,28 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::MapPostProcessing(_) => 39,
 			SlotComponent::ChargedProjectiles(_) => 40,
 			SlotComponent::BundleContents(_) => 41,
-			SlotComponent::PotionContents => 42,
+			SlotComponent::PotionContents(..) => 42,
 			SlotComponent::PotionDurationScale(_) => 43,
 			SlotComponent::SuspiciousStewEffects(_) => 44,
 			SlotComponent::WritableBookContent(_) => 45,
 			SlotComponent::WrittenBookContent(_) => 46,
-			SlotComponent::Trim => 47,
+			SlotComponent::Trim(..) => 47,
 			SlotComponent::DebugStickState(_) => 48,
 			SlotComponent::EntityData(_) => 49,
 			SlotComponent::BucketEntityData(_) => 50,
 			SlotComponent::BlockEntityData(_) => 51,
-			SlotComponent::Instrument => 52,
-			SlotComponent::ProvidesTrimMaterial => 53,
+			SlotComponent::Instrument(_) => 52,
+			SlotComponent::ProvidesTrimMaterial(..) => 53,
 			SlotComponent::OminousBottleAmplifier(_) => 54,
-			SlotComponent::JukeboxPlayable => 55,
+			SlotComponent::JukeboxPlayable(..) => 55,
 			SlotComponent::ProvidesBannerPatterns(_) => 56,
 			SlotComponent::Recipes(_) => 57,
 			SlotComponent::LodestoneTracker(_, _, _, _) => 58,
-			SlotComponent::FireworkExplosion => 59,
-			SlotComponent::Fireworks => 60,
+			SlotComponent::FireworkExplosion(_) => 59,
+			SlotComponent::Fireworks(_, _) => 60,
 			SlotComponent::Profile(_, _, _) => 61,
 			SlotComponent::NoteblockSound(_) => 62,
-			SlotComponent::BannerPatterns => 63,
+			SlotComponent::BannerPatterns(_) => 63,
 			SlotComponent::BaseColor(_) => 64,
 			SlotComponent::PotDecorations(_) => 65,
 			SlotComponent::Container(_) => 66,
@@ -351,10 +413,10 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::Bees(_) => 68,
 			SlotComponent::Lock(_) => 69,
 			SlotComponent::ContainerLoot(_) => 70,
-			SlotComponent::BreakSound => 71,
-			SlotComponent::VillagerVariant => 72,
-			SlotComponent::WolfVariant => 73,
-			SlotComponent::WolfSoundVariant => 74,
+			SlotComponent::BreakSound(_) => 71,
+			SlotComponent::VillagerVariant(_) => 72,
+			SlotComponent::WolfVariant(_) => 73,
+			SlotComponent::WolfSoundVariant(_) => 74,
 			SlotComponent::WolfCollar(_) => 75,
 			SlotComponent::FoxVariant(_) => 76,
 			SlotComponent::SalmonSize(_) => 77,
@@ -366,10 +428,10 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::RabbitVariant(_) => 83,
 			SlotComponent::PigVariant(_) => 84,
 			SlotComponent::CowVariant(_) => 85,
-			SlotComponent::ChickenVariant => 86,
+			SlotComponent::ChickenVariant(_, _) => 86,
 			SlotComponent::FrogVariant(_) => 87,
 			SlotComponent::HorseVariant(_) => 88,
-			SlotComponent::PaintingVariant => 89,
+			SlotComponent::PaintingVariant(..) => 89,
 			SlotComponent::LlamaVariant(_) => 90,
 			SlotComponent::AxolotlVariant(_) => 91,
 			SlotComponent::CatVariant(_) => 92,
