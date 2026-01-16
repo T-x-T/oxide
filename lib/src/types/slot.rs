@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use crate::entity::ItemEntity;
 
 use super::*;
@@ -440,4 +442,464 @@ impl Into<i32> for SlotComponent {
 			SlotComponent::ShulkerColor(_) => 95,
 		};
 	}
+}
+
+
+pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
+	let item_count = crate::deserialize::varint(data)?;
+
+	if item_count == 0 {
+		return Ok(None);
+	}
+
+	let item_id = crate::deserialize::varint(data)?;
+	let number_of_components_to_add = crate::deserialize::varint(data)?;
+	let number_of_components_to_remove = crate::deserialize::varint(data)?;
+
+	let mut components_to_add: Vec<SlotComponent> = Vec::new();
+	for _ in 0..number_of_components_to_add {
+		let component_id = crate::deserialize::varint(data)?;
+		components_to_add.push(match component_id {
+			0 => SlotComponent::CustomData(crate::deserialize::nbt_network(data)?),
+			1 => SlotComponent::MaxStackSize(crate::deserialize::varint(data)?),
+			2 => SlotComponent::MaxDamage(crate::deserialize::varint(data)?),
+			3 => SlotComponent::Damage(crate::deserialize::varint(data)?),
+			4 => SlotComponent::Unbreakable,
+			5 => SlotComponent::CustomName(crate::deserialize::nbt_network(data)?),
+			6 => SlotComponent::ItemName(crate::deserialize::nbt_network(data)?),
+			7 => SlotComponent::ItemModel(crate::deserialize::string(data)?),
+			8 => SlotComponent::Lore((0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::nbt_network(data).unwrap()).collect()),
+			9 => SlotComponent::Rarity(data.remove(0)),
+			10 => SlotComponent::Enchantments(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| (crate::deserialize::varint(data).unwrap(), crate::deserialize::varint(data).unwrap()))
+					.collect(),
+			),
+			//11 => todo!(), //SlotComponent::CanPlaceOn,
+			//12 => todo!(), //SlotComponent::CanBreak,
+			//13 => todo!(), //SlotComponent::AttributeModifiers,
+			14 => SlotComponent::CustomModelData(
+				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::float(data).unwrap()).collect(),
+				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::boolean(data).unwrap()).collect(),
+				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::string(data).unwrap()).collect(),
+				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::int(data).unwrap()).collect(),
+			),
+			15 => SlotComponent::TooltipDisplay(
+				crate::deserialize::boolean(data)?,
+				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::varint(data).unwrap()).collect(),
+			),
+			16 => SlotComponent::RepairCost(crate::deserialize::varint(data)?),
+			17 => SlotComponent::CreativeSlotLock,
+			18 => SlotComponent::EnchantmentGlintOverride(crate::deserialize::boolean(data)?),
+			19 => SlotComponent::IntangibleProjectile(crate::deserialize::nbt_network(data)?),
+			20 => SlotComponent::Food(crate::deserialize::varint(data)?, crate::deserialize::float(data)?, crate::deserialize::boolean(data)?),
+			//21 => todo!(), //SlotComponent::Consumable,
+			22 => SlotComponent::UseRemainder(deserialize_slot(data)?),
+			23 => SlotComponent::UseCooldown(
+				crate::deserialize::float(data)?,
+				if crate::deserialize::boolean(data)? { Some(crate::deserialize::string(data)?) } else { None },
+			),
+			24 => SlotComponent::DamageResistant(crate::deserialize::string(data)?),
+			//25 => todo!(), //SlotComponent::Tool,
+			26 => SlotComponent::Weapon(crate::deserialize::varint(data)?, crate::deserialize::float(data)?),
+			27 => SlotComponent::Enchantable(crate::deserialize::varint(data)?),
+			//28 => todo!(), //SlotComponent::Equippable,
+			//29 => todo!(), //SlotComponent::Repairable,
+			30 => SlotComponent::Glider,
+			31 => SlotComponent::TooltipStyle(crate::deserialize::string(data)?),
+			//32 => todo!(), //SlotComponent::DeathProtection,
+			//33 => todo!(), //SlotComponent::BlockAttacks,
+			34 => SlotComponent::StoredEnchantments(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| (crate::deserialize::varint(data).unwrap(), crate::deserialize::varint(data).unwrap()))
+					.collect(),
+			),
+			35 => SlotComponent::DyedColor(crate::deserialize::int(data)?),
+			36 => SlotComponent::MapColor(crate::deserialize::int(data)?),
+			37 => SlotComponent::MapId(crate::deserialize::varint(data)?),
+			38 => SlotComponent::MapDecorations(crate::deserialize::nbt_network(data)?),
+			39 => SlotComponent::MapPostProcessing(data.remove(0)),
+			40 => SlotComponent::ChargedProjectiles((0..crate::deserialize::varint(data)?).map(|_| deserialize_slot(data).unwrap()).collect()),
+			41 => SlotComponent::BundleContents((0..crate::deserialize::varint(data)?).map(|_| deserialize_slot(data).unwrap()).collect()),
+			//42 => todo!(), //SlotComponent::PotionContents,
+			43 => SlotComponent::PotionDurationScale(crate::deserialize::float(data)?),
+			44 => SlotComponent::SuspiciousStewEffects(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| (crate::deserialize::varint(data).unwrap(), crate::deserialize::varint(data).unwrap()))
+					.collect(),
+			),
+			45 => SlotComponent::WritableBookContent(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::string(data).unwrap(),
+							if crate::deserialize::boolean(data).unwrap() { Some(crate::deserialize::string(data).unwrap()) } else { None },
+						)
+					})
+					.collect(),
+			),
+			46 => SlotComponent::WrittenBookContent(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::string(data).unwrap(),
+							if crate::deserialize::boolean(data).unwrap() { Some(crate::deserialize::string(data).unwrap()) } else { None },
+						)
+					})
+					.collect(),
+			),
+			//47 => todo!(), //SlotComponent::Trim,
+			48 => SlotComponent::DebugStickState(crate::deserialize::nbt_network(data)?),
+			49 => SlotComponent::EntityData(crate::deserialize::nbt_network(data)?),
+			50 => SlotComponent::BucketEntityData(crate::deserialize::nbt_network(data)?),
+			51 => SlotComponent::BlockEntityData(crate::deserialize::nbt_network(data)?),
+			//52 => todo!(), //SlotComponent::Instrument,
+			//53 => todo!(), //SlotComponent::ProvidesTrimMaterial,
+			54 => SlotComponent::OminousBottleAmplifier(data.remove(0)),
+			//55 => todo!(), //SlotComponent::JukeboxPlayable,
+			56 => SlotComponent::ProvidesBannerPatterns(crate::deserialize::string(data)?),
+			57 => SlotComponent::Recipes(crate::deserialize::nbt_network(data)?),
+			58 => SlotComponent::LodestoneTracker(
+				crate::deserialize::boolean(data)?,
+				crate::deserialize::string(data)?,
+				crate::deserialize::position(data)?,
+				crate::deserialize::boolean(data)?,
+			),
+			//59 => todo!(), //SlotComponent::FireworkExplosion,
+			//60 => todo!(), //SlotComponent::Fireworks,
+			61 => SlotComponent::Profile(
+				if crate::deserialize::boolean(data)? { Some(crate::deserialize::string(data)?) } else { None },
+				if crate::deserialize::boolean(data)? { Some(crate::deserialize::uuid(data)?) } else { None },
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::string(data).unwrap(),
+							crate::deserialize::string(data).unwrap(),
+							if crate::deserialize::boolean(data).unwrap() { Some(crate::deserialize::string(data).unwrap()) } else { None },
+						)
+					})
+					.collect(),
+			),
+			62 => SlotComponent::NoteblockSound(crate::deserialize::string(data)?),
+			//63 => todo!(), //SlotComponent::BannerPatterns,
+			64 => SlotComponent::BaseColor(data.remove(0)),
+			65 => {
+				SlotComponent::PotDecorations((0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::varint(data).unwrap()).collect())
+			}
+			66 => SlotComponent::Container((0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::varint(data).unwrap()).collect()),
+			67 => SlotComponent::BlockState(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| (crate::deserialize::string(data).unwrap(), crate::deserialize::string(data).unwrap()))
+					.collect(),
+			),
+			68 => SlotComponent::Bees(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::nbt_network(data).unwrap(),
+							crate::deserialize::varint(data).unwrap(),
+							crate::deserialize::varint(data).unwrap(),
+						)
+					})
+					.collect(),
+			),
+			69 => SlotComponent::Lock(crate::deserialize::nbt_network(data)?),
+			70 => SlotComponent::ContainerLoot(crate::deserialize::nbt_network(data)?),
+			//71 => todo!(), //SlotComponent::BreakSound,
+			//72 => todo!(), //SlotComponent::VillagerVariant,
+			//73 => todo!(), //SlotComponent::WolfVariant,
+			//74 => todo!(), //SlotComponent::WolfSoundVariant,
+			75 => SlotComponent::WolfCollar(data.remove(0)),
+			76 => SlotComponent::FoxVariant(data.remove(0)),
+			77 => SlotComponent::SalmonSize(data.remove(0)),
+			78 => SlotComponent::ParrotVariant(crate::deserialize::varint(data)?),
+			79 => SlotComponent::TropicalFishPattern(data.remove(0)),
+			80 => SlotComponent::TropicalFishBaseColor(data.remove(0)),
+			81 => SlotComponent::TropicalFishPatternColor(data.remove(0)),
+			82 => SlotComponent::MooshroomVariant(data.remove(0)),
+			83 => SlotComponent::RabbitVariant(data.remove(0)),
+			84 => SlotComponent::PigVariant(data.remove(0)),
+			85 => SlotComponent::CowVariant(data.remove(0)),
+			//86 => todo!(), //SlotComponent::ChickenVariant,
+			87 => SlotComponent::FrogVariant(crate::deserialize::varint(data)?),
+			88 => SlotComponent::HorseVariant(data.remove(0)),
+			//89 => todo!(), //SlotComponent::PaintingVariant,
+			90 => SlotComponent::LlamaVariant(data.remove(0)),
+			91 => SlotComponent::AxolotlVariant(data.remove(0)),
+			92 => SlotComponent::CatVariant(crate::deserialize::varint(data)?),
+			93 => SlotComponent::CatCollar(data.remove(0)),
+			94 => SlotComponent::SheepColor(data.remove(0)),
+			95 => SlotComponent::ShulkerColor(data.remove(0)),
+			x => {
+				println!("I cant deserialize the SlotComponent with id {x}, because I dont know it");
+				return Ok(None);
+			}
+		});
+	}
+	let mut components_to_remove: Vec<i32> = Vec::new();
+	for _ in 0..number_of_components_to_remove {
+		components_to_remove.push(crate::deserialize::varint(data)?);
+	}
+
+	return Ok(Some(Slot {
+		item_count,
+		item_id,
+		components_to_add,
+		components_to_remove,
+	}));
+}
+
+pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
+	let mut output: Vec<u8> = Vec::new();
+
+	let Some(input) = input else {
+		output.append(&mut crate::serialize::varint(0));
+		return output;
+	};
+
+	if input.item_count == 0 {
+		output.append(&mut crate::serialize::varint(0));
+		return output;
+	}
+
+	output.append(&mut crate::serialize::varint(input.item_count));
+	output.append(&mut crate::serialize::varint(input.item_id));
+	output.append(&mut crate::serialize::varint(input.components_to_add.len() as i32));
+	output.append(&mut crate::serialize::varint(input.components_to_remove.len() as i32));
+	for component_to_add in &input.components_to_add {
+		output.append(&mut crate::serialize::varint(component_to_add.into()));
+		output.append(&mut match component_to_add.clone() {
+			SlotComponent::CustomData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::MaxStackSize(a) => crate::serialize::varint(a),
+			SlotComponent::MaxDamage(a) => crate::serialize::varint(a),
+			SlotComponent::Damage(a) => crate::serialize::varint(a),
+			SlotComponent::Unbreakable => vec![],
+			SlotComponent::CustomName(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ItemName(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ItemModel(a) => crate::serialize::string(&a),
+			SlotComponent::Lore(a) => a.into_iter().flat_map(crate::serialize::nbt_network).collect(),
+			SlotComponent::Rarity(a) => vec![a],
+			SlotComponent::Enchantments(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::CanPlaceOn(..) => todo!(),
+			SlotComponent::CanBreak(..) => todo!(),
+			SlotComponent::AttributeModifiers(..) => todo!(),
+			SlotComponent::CustomModelData(a, b, c, d) => vec![
+				a.into_iter().flat_map(crate::serialize::float).collect::<Vec<u8>>(),
+				b.into_iter().flat_map(crate::serialize::boolean).collect(),
+				c.into_iter().flat_map(|x| crate::serialize::string(&x)).collect(),
+				d.into_iter().flat_map(crate::serialize::int).collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::TooltipDisplay(a, b) => {
+				vec![crate::serialize::boolean(a), b.into_iter().flat_map(crate::serialize::varint).collect()].into_iter().flatten().collect()
+			}
+			SlotComponent::RepairCost(a) => crate::serialize::varint(a),
+			SlotComponent::CreativeSlotLock => vec![],
+			SlotComponent::EnchantmentGlintOverride(a) => crate::serialize::boolean(a),
+			SlotComponent::IntangibleProjectile(a) => crate::serialize::nbt_network(a),
+			SlotComponent::Food(a, b, c) => {
+				vec![crate::serialize::varint(a), crate::serialize::float(b), crate::serialize::boolean(c)].into_iter().flatten().collect()
+			}
+			SlotComponent::Consumable(..) => todo!(),
+			SlotComponent::UseRemainder(a) => serialize_slot(a.as_ref()),
+			SlotComponent::UseCooldown(a, b) => vec![
+				crate::serialize::float(a),
+				if let Some(b) = b { vec![vec![1], crate::serialize::string(&b)].into_iter().flatten().collect() } else { vec![0] },
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::DamageResistant(a) => crate::serialize::string(&a),
+			SlotComponent::Tool(..) => todo!(),
+			SlotComponent::Weapon(a, b) => vec![crate::serialize::varint(a), crate::serialize::float(b)].into_iter().flatten().collect(),
+			SlotComponent::Enchantable(a) => crate::serialize::varint(a),
+			SlotComponent::Equippable(..) => todo!(),
+			SlotComponent::Repairable(..) => todo!(),
+			SlotComponent::Glider => vec![],
+			SlotComponent::TooltipStyle(a) => crate::serialize::string(&a),
+			SlotComponent::DeathProtection(..) => todo!(),
+			SlotComponent::BlockAttacks(..) => todo!(),
+			SlotComponent::StoredEnchantments(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::DyedColor(a) => crate::serialize::int(a),
+			SlotComponent::MapColor(a) => crate::serialize::int(a),
+			SlotComponent::MapId(a) => crate::serialize::varint(a),
+			SlotComponent::MapDecorations(a) => crate::serialize::nbt_network(a),
+			SlotComponent::MapPostProcessing(a) => vec![a],
+			SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
+			SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
+			SlotComponent::PotionContents(..) => todo!(),
+			SlotComponent::PotionDurationScale(a) => crate::serialize::float(a),
+			SlotComponent::SuspiciousStewEffects(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::WritableBookContent(a) => a
+				.into_iter()
+				.flat_map(|(x, y)| {
+					vec![
+						crate::serialize::string(&x),
+						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
+					]
+				})
+				.flatten()
+				.collect(),
+			SlotComponent::WrittenBookContent(a) => a
+				.into_iter()
+				.flat_map(|(x, y)| {
+					vec![
+						crate::serialize::string(&x),
+						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
+					]
+				})
+				.flatten()
+				.collect(),
+			SlotComponent::Trim(..) => todo!(),
+			SlotComponent::DebugStickState(a) => crate::serialize::nbt_network(a),
+			SlotComponent::EntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BucketEntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BlockEntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::Instrument(..) => todo!(),
+			SlotComponent::ProvidesTrimMaterial(..) => todo!(),
+			SlotComponent::OminousBottleAmplifier(a) => vec![a],
+			SlotComponent::JukeboxPlayable(..) => todo!(),
+			SlotComponent::ProvidesBannerPatterns(a) => crate::serialize::string(&a),
+			SlotComponent::Recipes(a) => crate::serialize::nbt_network(a),
+			SlotComponent::LodestoneTracker(a, b, c, d) => {
+				vec![crate::serialize::boolean(a), crate::serialize::string(&b), crate::serialize::position(&c), crate::serialize::boolean(d)]
+					.into_iter()
+					.flatten()
+					.collect()
+			}
+			SlotComponent::FireworkExplosion(..) => todo!(),
+			SlotComponent::Fireworks(..) => todo!(),
+			SlotComponent::Profile(a, b, c) => vec![
+				if let Some(a) = a { vec![vec![0x01], crate::serialize::string(&a)].into_iter().flatten().collect() } else { vec![0x00] },
+				if let Some(b) = b { vec![vec![0x01], crate::serialize::uuid(&b)].into_iter().flatten().collect() } else { vec![0x00] },
+				c.into_iter()
+					.flat_map(|(x, y, z)| {
+						vec![
+							crate::serialize::string(&x),
+							crate::serialize::string(&y),
+							if let Some(z) = z { vec![vec![0x01], crate::serialize::string(&z)].into_iter().flatten().collect() } else { vec![0x00] },
+						]
+					})
+					.flatten()
+					.collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::NoteblockSound(a) => crate::serialize::string(&a),
+			SlotComponent::BannerPatterns(..) => todo!(),
+			SlotComponent::BaseColor(a) => vec![a],
+			SlotComponent::PotDecorations(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
+			SlotComponent::Container(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
+			SlotComponent::BlockState(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::string(&x), crate::serialize::string(&y)]).flatten().collect()
+			}
+			SlotComponent::Bees(a) => a
+				.into_iter()
+				.flat_map(|(x, y, z)| vec![crate::serialize::nbt_network(x), crate::serialize::varint(y), crate::serialize::varint(z)])
+				.flatten()
+				.collect(),
+			SlotComponent::Lock(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ContainerLoot(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BreakSound(..) => todo!(),
+			SlotComponent::VillagerVariant(..) => todo!(),
+			SlotComponent::WolfVariant(..) => todo!(),
+			SlotComponent::WolfSoundVariant(..) => todo!(),
+			SlotComponent::WolfCollar(a) => vec![a],
+			SlotComponent::FoxVariant(a) => vec![a],
+			SlotComponent::SalmonSize(a) => vec![a],
+			SlotComponent::ParrotVariant(a) => crate::serialize::varint(a),
+			SlotComponent::TropicalFishPattern(a) => vec![a],
+			SlotComponent::TropicalFishBaseColor(a) => vec![a],
+			SlotComponent::TropicalFishPatternColor(a) => vec![a],
+			SlotComponent::MooshroomVariant(a) => vec![a],
+			SlotComponent::RabbitVariant(a) => vec![a],
+			SlotComponent::PigVariant(a) => vec![a],
+			SlotComponent::CowVariant(a) => vec![a],
+			SlotComponent::ChickenVariant(..) => todo!(),
+			SlotComponent::FrogVariant(a) => crate::serialize::varint(a),
+			SlotComponent::HorseVariant(a) => vec![a],
+			SlotComponent::PaintingVariant(..) => todo!(),
+			SlotComponent::LlamaVariant(a) => vec![a],
+			SlotComponent::AxolotlVariant(a) => vec![a],
+			SlotComponent::CatVariant(a) => crate::serialize::varint(a),
+			SlotComponent::CatCollar(a) => vec![a],
+			SlotComponent::SheepColor(a) => vec![a],
+			SlotComponent::ShulkerColor(a) => vec![a],
+		});
+	}
+
+	for component_to_remove in &input.components_to_remove {
+		output.append(&mut crate::serialize::varint(*component_to_remove));
+	}
+
+	return output;
+}
+
+
+pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
+	let has_item = crate::deserialize::boolean(data)?;
+
+	if !has_item {
+		return Ok(None);
+	}
+
+	let item_id = crate::deserialize::varint(data)?;
+	let item_count = crate::deserialize::varint(data)?;
+
+	let components_to_add_len = crate::deserialize::varint(data)?;
+	let mut components_to_add: Vec<(i32, i32)> = Vec::new(); //(varint, int)
+	for _ in 0..components_to_add_len {
+		components_to_add.push((crate::deserialize::varint(data)?, crate::deserialize::int(data)?));
+	}
+
+	let components_to_remove_len = crate::deserialize::varint(data)?;
+	let mut components_to_remove: Vec<i32> = Vec::new();
+	for _ in 0..components_to_remove_len {
+		components_to_remove.push(crate::deserialize::varint(data)?);
+	}
+
+	//might have to do something about the components_to_add but probably not(?)
+	return Ok(Some(Slot {
+		item_count,
+		item_id,
+		components_to_add: Vec::new(),
+		components_to_remove,
+	}));
+}
+
+pub fn serialize_hashed_slot(input: Option<&Slot>) -> Vec<u8> {
+	let mut output: Vec<u8> = Vec::new();
+
+	let Some(input) = input else {
+		output.append(&mut crate::serialize::boolean(false));
+		return output;
+	};
+
+	if input.item_count == 0 {
+		output.append(&mut crate::serialize::boolean(false));
+		return output;
+	}
+
+	output.append(&mut crate::serialize::varint(input.item_count));
+	output.append(&mut crate::serialize::varint(input.item_id));
+	output.append(&mut crate::serialize::varint(input.components_to_add.len() as i32));
+	for component in &input.components_to_add {
+		output.append(&mut crate::serialize::varint(component.into()));
+		output.append(&mut crate::serialize::int(0)); //there should be a CRC32C calculation of some sorts here... https://minecraft.wiki/w/Java_Edition_protocol/Slot_data#Hashed_Format
+	}
+	output.append(&mut crate::serialize::varint(input.components_to_remove.len() as i32));
+	for component in &input.components_to_remove {
+		output.append(&mut crate::serialize::varint(*component));
+	}
+
+	return output;
 }

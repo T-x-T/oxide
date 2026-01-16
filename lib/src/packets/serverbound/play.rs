@@ -201,9 +201,9 @@ impl TryFrom<ClickContainer> for Vec<u8> {
 		result.append(&mut crate::serialize::varint(value.changed_slots.len() as i32));
 		for changed_slot in value.changed_slots {
 			result.append(&mut crate::serialize::short(changed_slot.0));
-			result.append(&mut crate::serialize::hashed_slot(changed_slot.1.as_ref()));
+			result.append(&mut crate::slot::serialize_hashed_slot(changed_slot.1.as_ref()));
 		}
-		result.append(&mut crate::serialize::hashed_slot(value.carried_item.as_ref()));
+		result.append(&mut crate::slot::serialize_hashed_slot(value.carried_item.as_ref()));
 
 		return Ok(result);
 	}
@@ -222,9 +222,9 @@ impl TryFrom<Vec<u8>> for ClickContainer {
 		let changed_slots_len = crate::deserialize::varint(&mut value)?;
 		let mut changed_slots: Vec<(i16, Option<Slot>)> = Vec::new();
 		for _ in 0..changed_slots_len {
-			changed_slots.push((crate::deserialize::short(&mut value)?, crate::deserialize::hashed_slot(&mut value)?));
+			changed_slots.push((crate::deserialize::short(&mut value)?, crate::slot::deserialize_hashed_slot(&mut value)?));
 		}
-		let carried_item = crate::deserialize::hashed_slot(&mut value)?;
+		let carried_item = crate::slot::deserialize_hashed_slot(&mut value)?;
 
 		return Ok(ClickContainer {
 			window_id,
@@ -725,7 +725,7 @@ impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
 		let mut result: Vec<u8> = Vec::new();
 
 		result.append(&mut crate::serialize::short(value.slot));
-		result.append(&mut crate::serialize::slot(value.item.as_ref()));
+		result.append(&mut crate::slot::serialize_hashed_slot(value.item.as_ref()));
 
 		return Ok(result);
 	}
@@ -737,7 +737,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::short(&mut value)?,
-			item: crate::deserialize::slot(&mut value)?,
+			item: crate::slot::deserialize_hashed_slot(&mut value)?,
 		});
 	}
 }

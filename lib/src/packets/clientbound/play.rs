@@ -423,8 +423,8 @@ impl TryFrom<SetContainerContent> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.window_id));
 		output.append(&mut crate::serialize::varint(value.state_id));
 		output.append(&mut crate::serialize::varint(value.slot_data.len() as i32));
-		value.slot_data.iter().for_each(|x| output.append(&mut crate::serialize::slot(x.as_ref())));
-		output.append(&mut crate::serialize::slot(value.carried_item.as_ref()));
+		value.slot_data.iter().for_each(|x| output.append(&mut crate::slot::serialize_slot(x.as_ref())));
+		output.append(&mut crate::slot::serialize_slot(value.carried_item.as_ref()));
 
 		return Ok(output);
 	}
@@ -437,8 +437,8 @@ impl TryFrom<Vec<u8>> for SetContainerContent {
 		let window_id = crate::deserialize::varint(&mut value)?;
 		let state_id = crate::deserialize::varint(&mut value)?;
 		let slot_data_len = crate::deserialize::varint(&mut value)?;
-		let slot_data = (0..slot_data_len).map(|_| crate::deserialize::slot(&mut value).unwrap()).collect();
-		let carried_item = crate::deserialize::slot(&mut value)?;
+		let slot_data = (0..slot_data_len).map(|_| crate::slot::deserialize_slot(&mut value).unwrap()).collect();
+		let carried_item = crate::slot::deserialize_slot(&mut value)?;
 
 		return Ok(Self {
 			window_id,
@@ -527,7 +527,7 @@ impl TryFrom<SetContainerSlot> for Vec<u8> {
 		output.append(&mut crate::serialize::varint(value.window_id));
 		output.append(&mut crate::serialize::varint(value.state_id));
 		output.append(&mut crate::serialize::short(value.slot));
-		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
+		output.append(&mut crate::slot::serialize_slot(value.slot_data.as_ref()));
 
 		return Ok(output);
 	}
@@ -541,7 +541,7 @@ impl TryFrom<Vec<u8>> for SetContainerSlot {
 			window_id: crate::deserialize::varint(&mut value)?,
 			state_id: crate::deserialize::varint(&mut value)?,
 			slot: crate::deserialize::short(&mut value)?,
-			slot_data: crate::deserialize::slot(&mut value)?,
+			slot_data: crate::slot::deserialize_slot(&mut value)?,
 		});
 	}
 }
@@ -2490,7 +2490,7 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 						output.push(0x00);
 					}
 				},
-				EntityMetadataValue::Slot(a) => output.append(&mut crate::serialize::slot(Some(&a))),
+				EntityMetadataValue::Slot(a) => output.append(&mut crate::slot::serialize_slot(Some(&a))),
 				EntityMetadataValue::Boolean(a) => output.append(&mut crate::serialize::boolean(a)),
 				EntityMetadataValue::Rotations(a, b, c) => {
 					output.append(&mut crate::serialize::float(a));
@@ -2587,7 +2587,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					let nbt = if nbt_present { Some(crate::deserialize::nbt_network(&mut value)?) } else { None };
 					EntityMetadataValue::OptionalTextComponent(nbt)
 				}
-				7 => EntityMetadataValue::Slot(crate::deserialize::slot(&mut value)?.unwrap_or(Slot {
+				7 => EntityMetadataValue::Slot(crate::slot::deserialize_slot(&mut value)?.unwrap_or(Slot {
 					item_count: 0,
 					item_id: 0,
 					components_to_add: Vec::new(),
@@ -2689,7 +2689,7 @@ impl TryFrom<SetEquipment> for Vec<u8> {
 		value.equipment.iter().enumerate().for_each(|x| {
 			let mask = if x.0 < value.equipment.len() - 1 { 0b1000_0000 } else { 0b0000_0000 };
 			output.push(x.1.0 + mask);
-			output.append(&mut crate::serialize::slot(x.1.1.as_ref()));
+			output.append(&mut crate::slot::serialize_slot(x.1.1.as_ref()));
 		});
 
 		return Ok(output);
@@ -2705,7 +2705,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 
 		loop {
 			let slot = value.remove(0);
-			let item = crate::deserialize::slot(&mut value)?;
+			let item = crate::slot::deserialize_slot(&mut value)?;
 			equipment.push((slot, item));
 
 			if slot & 0b1000_0000 == 0b1000_0000 {
@@ -2788,7 +2788,7 @@ impl TryFrom<SetPlayerInventorySlot> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 
 		output.append(&mut crate::serialize::varint(value.slot));
-		output.append(&mut crate::serialize::slot(value.slot_data.as_ref()));
+		output.append(&mut crate::slot::serialize_slot(value.slot_data.as_ref()));
 
 		return Ok(output);
 	}
@@ -2800,7 +2800,7 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::varint(&mut value)?,
-			slot_data: crate::deserialize::slot(&mut value)?,
+			slot_data: crate::slot::deserialize_slot(&mut value)?,
 		});
 	}
 }
