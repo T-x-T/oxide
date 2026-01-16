@@ -172,11 +172,11 @@ impl From<Item> for Option<Slot> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockPredicate {
-	blocks: Vec<String>,
+	blocks: Option<IdSet>,
 	properties: Vec<BlockPredicateProperty>,
 	nbt: Option<NbtTag>,
-	data_components: Vec<NbtTag>,
-	partial_data_component_predicates: Vec<NbtTag>,
+	data_components: Vec<SlotComponent>,
+	partial_data_component_predicates: Vec<SlotComponent>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -191,15 +191,15 @@ pub struct BlockPredicateProperty {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConsumeEffect {
 	ApplyEffects(Vec<PotionEffect>, f32),
-	RemoveEffects(Vec<IdSet>),
+	RemoveEffects(IdSet),
 	ClearAllEffects,
 	TeleportRandomly(f32),
-	PlaySound(String, bool, Option<f32>), //sound_name, has_fixed_range?, fixed_range //the bool is probably unneccessary?
+	PlaySound(String, Option<f32>), //sound_name, fixed_range
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum IdSet {
-	ByName(Option<String>),
+	ByName(String),
 	ById(Vec<i32>),
 }
 
@@ -211,7 +211,7 @@ pub struct PotionEffect {
 	ambient: bool,
 	show_particles: bool,
 	show_icon: bool,
-	hidden_effect: Option<(i32, i32, bool, bool, bool)>,
+	hidden_effect: Option<Box<PotionEffect>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -308,8 +308,8 @@ pub enum SlotComponent {
 	ContainerLoot(NbtTag),
 	BreakSound(String),
 	VillagerVariant(String),
-	WolfVariant(String),
-	WolfSoundVariant(String),
+	WolfVariant(i32),
+	WolfSoundVariant(i32),
 	WolfCollar(u8),
 	FoxVariant(u8),
 	SalmonSize(u8),
@@ -444,22 +444,131 @@ impl Into<i32> for SlotComponent {
 	}
 }
 
+impl TryFrom<&mut Vec<u8>> for BlockPredicate {
+	type Error = Box<dyn Error>;
 
-pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
-	let item_count = crate::deserialize::varint(data)?;
-
-	if item_count == 0 {
-		return Ok(None);
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		return Ok(Self {
+			blocks: if value.remove(0) == 1 { Some(IdSet::try_from(&mut *value)?) } else { None },
+			properties: if value.remove(0) == 1 {
+				(0..crate::deserialize::varint(value)?).map(|_| BlockPredicateProperty::try_from(&mut *value).unwrap()).collect()
+			} else {
+				Vec::new()
+			},
+			nbt: if value.remove(0) == 1 { Some(crate::deserialize::nbt_network(value)?) } else { None },
+			data_components: (0..crate::deserialize::varint(value)?).map(|_| SlotComponent::try_from(&mut *value).unwrap()).collect(),
+			partial_data_component_predicates: (0..crate::deserialize::varint(value)?)
+				.map(|_| SlotComponent::try_from(&mut *value).unwrap())
+				.collect(),
+		});
 	}
+}
 
-	let item_id = crate::deserialize::varint(data)?;
-	let number_of_components_to_add = crate::deserialize::varint(data)?;
-	let number_of_components_to_remove = crate::deserialize::varint(data)?;
+impl TryFrom<&mut Vec<u8>> for BlockPredicateProperty {
+	type Error = Box<dyn Error>;
 
-	let mut components_to_add: Vec<SlotComponent> = Vec::new();
-	for _ in 0..number_of_components_to_add {
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		return Ok(Self {
+			name: crate::deserialize::string(value)?,
+			is_exact_match: crate::deserialize::boolean(value)?,
+			exact_value: if value.remove(0) == 1 { Some(crate::deserialize::string(value)?) } else { None },
+			min_value: if value.remove(0) == 1 { Some(crate::deserialize::string(value)?) } else { None },
+			max_value: if value.remove(0) == 1 { Some(crate::deserialize::string(value)?) } else { None },
+		});
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for IdSet {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		let type_value = value.remove(0);
+		if type_value == 0 {
+			return Ok(Self::ByName(crate::deserialize::string(value)?));
+		} else {
+			return Ok(Self::ById((0..type_value).map(|_| crate::deserialize::varint(value).unwrap()).collect()));
+		}
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for ConsumeEffect {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		let type_id = crate::deserialize::varint(value)?;
+		return Ok(match type_id {
+			0 => Self::ApplyEffects(
+				(0..crate::deserialize::varint(value)?).map(|_| PotionEffect::try_from(&mut *value).unwrap()).collect(),
+				crate::deserialize::float(value)?,
+			),
+			1 => Self::RemoveEffects(IdSet::try_from(&mut *value)?),
+			2 => Self::ClearAllEffects,
+			3 => Self::TeleportRandomly(crate::deserialize::float(value)?),
+			4 => Self::PlaySound(
+				crate::deserialize::string(value)?,
+				if value.remove(0) == 1 { Some(crate::deserialize::float(value)?) } else { None },
+			),
+			_ => return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("cant parse ConsumeEffect with ID {type_id}")))),
+		});
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for PotionEffect {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		return Ok(Self {
+			type_id: crate::deserialize::varint(value)?,
+			amplifier: crate::deserialize::varint(value)?,
+			duration: crate::deserialize::varint(value)?,
+			ambient: crate::deserialize::boolean(value)?,
+			show_particles: crate::deserialize::boolean(value)?,
+			show_icon: crate::deserialize::boolean(value)?,
+			hidden_effect: if value.remove(0) == 1 {
+				value.insert(0, 0);
+				Some(Box::new(Self::try_from(&mut *value)?))
+			} else {
+				None
+			},
+		});
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for FireworkExplosion {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		return Ok(Self {
+			shape: FireworkExplosionShape::try_from(&mut *value)?,
+			colors: (0..crate::deserialize::varint(value)?).map(|_| crate::deserialize::int(value).unwrap()).collect(),
+			fade_colors: (0..crate::deserialize::varint(value)?).map(|_| crate::deserialize::int(value).unwrap()).collect(),
+			has_trail: crate::deserialize::boolean(value)?,
+			has_twinkle: crate::deserialize::boolean(value)?,
+		});
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for FireworkExplosionShape {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: &mut Vec<u8>) -> Result<Self, Self::Error> {
+		return Ok(match value.remove(0) {
+			0 => Self::SmallBall,
+			1 => Self::LargeBall,
+			2 => Self::Star,
+			3 => Self::Creeper,
+			4 => Self::Burst,
+			x => return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("cant parse ConsumeEffect with ID {x}")))),
+		});
+	}
+}
+
+impl TryFrom<&mut Vec<u8>> for SlotComponent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(data: &mut Vec<u8>) -> Result<Self, Self::Error> {
 		let component_id = crate::deserialize::varint(data)?;
-		components_to_add.push(match component_id {
+		let result = match component_id {
 			0 => SlotComponent::CustomData(crate::deserialize::nbt_network(data)?),
 			1 => SlotComponent::MaxStackSize(crate::deserialize::varint(data)?),
 			2 => SlotComponent::MaxDamage(crate::deserialize::varint(data)?),
@@ -475,9 +584,25 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 					.map(|_| (crate::deserialize::varint(data).unwrap(), crate::deserialize::varint(data).unwrap()))
 					.collect(),
 			),
-			//11 => todo!(), //SlotComponent::CanPlaceOn,
-			//12 => todo!(), //SlotComponent::CanBreak,
-			//13 => todo!(), //SlotComponent::AttributeModifiers,
+			11 => {
+				SlotComponent::CanPlaceOn((0..crate::deserialize::varint(data)?).map(|_| BlockPredicate::try_from(&mut *data).unwrap()).collect())
+			}
+			12 => {
+				SlotComponent::CanBreak((0..crate::deserialize::varint(data)?).map(|_| BlockPredicate::try_from(&mut *data).unwrap()).collect())
+			}
+			13 => SlotComponent::AttributeModifiers(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::varint(data).unwrap(),
+							crate::deserialize::string(data).unwrap(),
+							crate::deserialize::double(data).unwrap(),
+							crate::deserialize::varint(data).unwrap(),
+							crate::deserialize::varint(data).unwrap(),
+						)
+					})
+					.collect(),
+			),
 			14 => SlotComponent::CustomModelData(
 				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::float(data).unwrap()).collect(),
 				(0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::boolean(data).unwrap()).collect(),
@@ -493,22 +618,71 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 			18 => SlotComponent::EnchantmentGlintOverride(crate::deserialize::boolean(data)?),
 			19 => SlotComponent::IntangibleProjectile(crate::deserialize::nbt_network(data)?),
 			20 => SlotComponent::Food(crate::deserialize::varint(data)?, crate::deserialize::float(data)?, crate::deserialize::boolean(data)?),
-			//21 => todo!(), //SlotComponent::Consumable,
+			21 => SlotComponent::Consumable(
+				crate::deserialize::float(data)?,
+				crate::deserialize::varint(data)?,
+				crate::deserialize::string(data)?,
+				crate::deserialize::boolean(data)?,
+				(0..crate::deserialize::varint(data)?).map(|_| ConsumeEffect::try_from(&mut *data).unwrap()).collect(),
+			),
 			22 => SlotComponent::UseRemainder(deserialize_slot(data)?),
 			23 => SlotComponent::UseCooldown(
 				crate::deserialize::float(data)?,
 				if crate::deserialize::boolean(data)? { Some(crate::deserialize::string(data)?) } else { None },
 			),
 			24 => SlotComponent::DamageResistant(crate::deserialize::string(data)?),
-			//25 => todo!(), //SlotComponent::Tool,
+			25 => SlotComponent::Tool(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							IdSet::try_from(&mut *data).unwrap(),
+							if data.remove(0) == 1 { Some(crate::deserialize::float(data).unwrap()) } else { None },
+							if data.remove(0) == 1 { Some(crate::deserialize::boolean(data).unwrap()) } else { None },
+						)
+					})
+					.collect(),
+				crate::deserialize::float(data)?,
+				crate::deserialize::varint(data)?,
+				crate::deserialize::boolean(data)?,
+			),
 			26 => SlotComponent::Weapon(crate::deserialize::varint(data)?, crate::deserialize::float(data)?),
 			27 => SlotComponent::Enchantable(crate::deserialize::varint(data)?),
-			//28 => todo!(), //SlotComponent::Equippable,
-			//29 => todo!(), //SlotComponent::Repairable,
+			28 => SlotComponent::Equippable(
+				crate::deserialize::varint(data)?,
+				crate::deserialize::string(data)?,
+				if data.remove(0) == 1 { Some(crate::deserialize::string(data)?) } else { None },
+				if data.remove(0) == 1 { Some(crate::deserialize::string(data)?) } else { None },
+				if data.remove(0) == 1 { Some(IdSet::try_from(&mut *data)?) } else { None },
+				crate::deserialize::boolean(data)?,
+				crate::deserialize::boolean(data)?,
+				crate::deserialize::boolean(data)?,
+			),
+			29 => SlotComponent::Repairable(IdSet::try_from(&mut *data)?),
 			30 => SlotComponent::Glider,
 			31 => SlotComponent::TooltipStyle(crate::deserialize::string(data)?),
-			//32 => todo!(), //SlotComponent::DeathProtection,
-			//33 => todo!(), //SlotComponent::BlockAttacks,
+			32 => SlotComponent::DeathProtection(
+				(0..crate::deserialize::varint(data)?).map(|_| ConsumeEffect::try_from(&mut *data).unwrap()).collect(),
+			),
+			33 => SlotComponent::BlockAttacks(
+				crate::deserialize::float(data)?,
+				crate::deserialize::float(data)?,
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| {
+						(
+							crate::deserialize::float(data).unwrap(),
+							if data.remove(0) == 1 { Some(IdSet::try_from(&mut *data).unwrap()) } else { None },
+							crate::deserialize::float(data).unwrap(),
+							crate::deserialize::float(data).unwrap(),
+						)
+					})
+					.collect(),
+				crate::deserialize::float(data)?,
+				crate::deserialize::float(data)?,
+				crate::deserialize::float(data)?,
+				if data.remove(0) == 1 { Some(crate::deserialize::string(data)?) } else { None },
+				if data.remove(0) == 1 { Some(crate::deserialize::string(data)?) } else { None },
+				if data.remove(0) == 1 { Some(crate::deserialize::string(data)?) } else { None },
+			),
 			34 => SlotComponent::StoredEnchantments(
 				(0..crate::deserialize::varint(data)?)
 					.map(|_| (crate::deserialize::varint(data).unwrap(), crate::deserialize::varint(data).unwrap()))
@@ -521,7 +695,12 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 			39 => SlotComponent::MapPostProcessing(data.remove(0)),
 			40 => SlotComponent::ChargedProjectiles((0..crate::deserialize::varint(data)?).map(|_| deserialize_slot(data).unwrap()).collect()),
 			41 => SlotComponent::BundleContents((0..crate::deserialize::varint(data)?).map(|_| deserialize_slot(data).unwrap()).collect()),
-			//42 => todo!(), //SlotComponent::PotionContents,
+			42 => SlotComponent::PotionContents(
+				if data.remove(0) == 1 { Some(crate::deserialize::varint(data)?) } else { None },
+				if data.remove(0) == 1 { Some(crate::deserialize::int(data)?) } else { None },
+				(0..crate::deserialize::varint(data)?).map(|_| PotionEffect::try_from(&mut *data).unwrap()).collect(),
+				crate::deserialize::string(data)?,
+			),
 			43 => SlotComponent::PotionDurationScale(crate::deserialize::float(data)?),
 			44 => SlotComponent::SuspiciousStewEffects(
 				(0..crate::deserialize::varint(data)?)
@@ -548,15 +727,15 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 					})
 					.collect(),
 			),
-			//47 => todo!(), //SlotComponent::Trim,
+			47 => SlotComponent::Trim(crate::deserialize::string(data)?, crate::deserialize::string(data)?),
 			48 => SlotComponent::DebugStickState(crate::deserialize::nbt_network(data)?),
 			49 => SlotComponent::EntityData(crate::deserialize::nbt_network(data)?),
 			50 => SlotComponent::BucketEntityData(crate::deserialize::nbt_network(data)?),
 			51 => SlotComponent::BlockEntityData(crate::deserialize::nbt_network(data)?),
-			//52 => todo!(), //SlotComponent::Instrument,
-			//53 => todo!(), //SlotComponent::ProvidesTrimMaterial,
+			52 => SlotComponent::Instrument(crate::deserialize::string(data)?),
+			53 => SlotComponent::ProvidesTrimMaterial(data.remove(0), crate::deserialize::string(data)?),
 			54 => SlotComponent::OminousBottleAmplifier(data.remove(0)),
-			//55 => todo!(), //SlotComponent::JukeboxPlayable,
+			55 => SlotComponent::JukeboxPlayable(data.remove(0), crate::deserialize::string(data)?),
 			56 => SlotComponent::ProvidesBannerPatterns(crate::deserialize::string(data)?),
 			57 => SlotComponent::Recipes(crate::deserialize::nbt_network(data)?),
 			58 => SlotComponent::LodestoneTracker(
@@ -565,8 +744,11 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 				crate::deserialize::position(data)?,
 				crate::deserialize::boolean(data)?,
 			),
-			//59 => todo!(), //SlotComponent::FireworkExplosion,
-			//60 => todo!(), //SlotComponent::Fireworks,
+			59 => SlotComponent::FireworkExplosion(FireworkExplosion::try_from(&mut *data)?),
+			60 => SlotComponent::Fireworks(
+				crate::deserialize::varint(data)?,
+				(0..crate::deserialize::varint(data)?).map(|_| FireworkExplosion::try_from(&mut *data).unwrap()).collect(),
+			),
 			61 => SlotComponent::Profile(
 				if crate::deserialize::boolean(data)? { Some(crate::deserialize::string(data)?) } else { None },
 				if crate::deserialize::boolean(data)? { Some(crate::deserialize::uuid(data)?) } else { None },
@@ -581,7 +763,11 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 					.collect(),
 			),
 			62 => SlotComponent::NoteblockSound(crate::deserialize::string(data)?),
-			//63 => todo!(), //SlotComponent::BannerPatterns,
+			63 => SlotComponent::BannerPatterns(
+				(0..crate::deserialize::varint(data)?)
+					.map(|_| (crate::deserialize::string(data).unwrap(), crate::deserialize::varint(data).unwrap()))
+					.collect(),
+			),
 			64 => SlotComponent::BaseColor(data.remove(0)),
 			65 => {
 				SlotComponent::PotDecorations((0..crate::deserialize::varint(data)?).map(|_| crate::deserialize::varint(data).unwrap()).collect())
@@ -605,10 +791,10 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 			),
 			69 => SlotComponent::Lock(crate::deserialize::nbt_network(data)?),
 			70 => SlotComponent::ContainerLoot(crate::deserialize::nbt_network(data)?),
-			//71 => todo!(), //SlotComponent::BreakSound,
-			//72 => todo!(), //SlotComponent::VillagerVariant,
-			//73 => todo!(), //SlotComponent::WolfVariant,
-			//74 => todo!(), //SlotComponent::WolfSoundVariant,
+			71 => SlotComponent::BreakSound(crate::deserialize::string(data)?),
+			72 => SlotComponent::VillagerVariant(crate::deserialize::string(data)?),
+			73 => SlotComponent::WolfVariant(crate::deserialize::varint(data)?),
+			74 => SlotComponent::WolfSoundVariant(crate::deserialize::varint(data)?),
 			75 => SlotComponent::WolfCollar(data.remove(0)),
 			76 => SlotComponent::FoxVariant(data.remove(0)),
 			77 => SlotComponent::SalmonSize(data.remove(0)),
@@ -620,10 +806,16 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 			83 => SlotComponent::RabbitVariant(data.remove(0)),
 			84 => SlotComponent::PigVariant(data.remove(0)),
 			85 => SlotComponent::CowVariant(data.remove(0)),
-			//86 => todo!(), //SlotComponent::ChickenVariant,
+			86 => SlotComponent::ChickenVariant(data.remove(0), crate::deserialize::string(data)?),
 			87 => SlotComponent::FrogVariant(crate::deserialize::varint(data)?),
 			88 => SlotComponent::HorseVariant(data.remove(0)),
-			//89 => todo!(), //SlotComponent::PaintingVariant,
+			89 => SlotComponent::PaintingVariant(
+				crate::deserialize::int(data)?,
+				crate::deserialize::int(data)?,
+				crate::deserialize::string(data)?,
+				if data.remove(0) == 1 { Some(crate::deserialize::nbt_network(data)?) } else { None },
+				if data.remove(0) == 1 { Some(crate::deserialize::nbt_network(data)?) } else { None },
+			),
 			90 => SlotComponent::LlamaVariant(data.remove(0)),
 			91 => SlotComponent::AxolotlVariant(data.remove(0)),
 			92 => SlotComponent::CatVariant(crate::deserialize::varint(data)?),
@@ -631,10 +823,30 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 			94 => SlotComponent::SheepColor(data.remove(0)),
 			95 => SlotComponent::ShulkerColor(data.remove(0)),
 			x => {
-				println!("I cant deserialize the SlotComponent with id {x}, because I dont know it");
-				return Ok(None);
+				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!(
+					"I cant deserialize the SlotComponent with id {x}, because I dont know it"
+				))));
 			}
-		});
+		};
+		return Ok(result);
+	}
+}
+
+
+pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
+	let item_count = crate::deserialize::varint(data)?;
+
+	if item_count == 0 {
+		return Ok(None);
+	}
+
+	let item_id = crate::deserialize::varint(data)?;
+	let number_of_components_to_add = crate::deserialize::varint(data)?;
+	let number_of_components_to_remove = crate::deserialize::varint(data)?;
+
+	let mut components_to_add: Vec<SlotComponent> = Vec::new();
+	for _ in 0..number_of_components_to_add {
+		components_to_add.push(SlotComponent::try_from(&mut *data)?);
 	}
 	let mut components_to_remove: Vec<i32> = Vec::new();
 	for _ in 0..number_of_components_to_remove {
