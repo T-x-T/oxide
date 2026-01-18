@@ -56,7 +56,7 @@ jobs:
       - name: Check formatting
         run: |
           rustup component add rustfmt
-          cargo fmt --check -q
+          cargo fmt --check
 
   push_server:
     runs-on: vm
