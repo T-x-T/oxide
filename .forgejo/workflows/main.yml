@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Test server
+      - name: Run tests
         run: cargo test
 
   clippy:
@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Run clippy on server
+      - name: Run clippy
         run: |
           rustup component add --toolchain nightly clippy
           cargo clippy
@@ -53,8 +53,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Run clippy on server
+      - name: Check formatting
         run: |
+          rustup component add rustfmt
           cargo fmt --check -q
 
   push_server:
