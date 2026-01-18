@@ -215,11 +215,7 @@ checksum = "17ab85f84ca42c5ec520e6f3c9966ba1fd62909ce260f8837e248857d2560509"
 
 [[package]]
 name = "lib"
-<<<<<<< HEAD
-version = "0.3.1"
-=======
 version = "0.4.0"
->>>>>>> 0.4.0
 dependencies = [
  "dashmap",
  "data",
@@ -290,11 +286,7 @@ dependencies = [
 
 [[package]]
 name = "proxy"
-<<<<<<< HEAD
-version = "0.3.1"
-=======
 version = "0.4.0"
->>>>>>> 0.4.0
 dependencies = [
  "lib",
 ]
