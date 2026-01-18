@@ -3,10 +3,9 @@ use super::*;
 pub fn generate() {
 	let mut output = String::new();
 
-	let registries_file = fs::read_to_string("../official_server/generated/reports/registries.json")
-		.expect("failed to read registries.json report");
-	let registries_json = jzon::parse(&registries_file)
-		.expect("failed to parse registries.json report");
+	let registries_file =
+		fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
+	let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
 	let registry = registries_json.as_object().unwrap()["minecraft:entity_type"]["entries"].as_object().unwrap();
 
 	output += "#![allow(clippy::needless_return)]\n";

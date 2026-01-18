@@ -151,12 +151,7 @@ fn get_blocks_add_functions() {
 		} else {
 			String::new()
 		};
-		let default_state = block["states"]
-			.as_array()
-			.unwrap()
-			.iter()
-			.position(|x| x.as_object().unwrap()["default"].is_boolean())
-			.unwrap();
+		let default_state = block["states"].as_array().unwrap().iter().position(|x| x.as_object().unwrap()["default"].is_boolean()).unwrap();
 		outputs[output_index] +=
 			format!("pub fn add_{}(map: &mut HashMap<String, Block>) {{\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
 		outputs[output_index] +=
@@ -614,7 +609,7 @@ fn impl_type() -> String {
 	}
 }
 "#
-		.to_string();
+	.to_string();
 }
 
 fn structs() -> String {
@@ -632,5 +627,5 @@ pub struct State {
 	pub properties: Vec<Property>,
 }
 "#
-		.to_string();
+	.to_string();
 }

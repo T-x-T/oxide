@@ -3,14 +3,11 @@ use super::*;
 pub fn generate() {
 	let mut output = String::new();
 
-	let items_file = fs::read_to_string("../official_server/generated/reports/items.json")
-		.expect("failed to read items.json report");
-	let items_json = jzon::parse(&items_file)
-		.expect("failed to parse items.json report");
-	let registries_file = fs::read_to_string("../official_server/generated/reports/registries.json")
-		.expect("failed to read registries.json report");
-	let registries_json = jzon::parse(&registries_file)
-		.expect("failed to parse registries.json report");
+	let items_file = fs::read_to_string("../official_server/generated/reports/items.json").expect("failed to read items.json report");
+	let items_json = jzon::parse(&items_file).expect("failed to parse items.json report");
+	let registries_file =
+		fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
+	let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
 	let items_registry = registries_json.as_object().unwrap()["minecraft:item"]["entries"].as_object().unwrap();
 
 	output += r#"#![allow(clippy::needless_return)]
