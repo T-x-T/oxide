@@ -307,7 +307,7 @@ pub enum SlotComponent {
 	Lock(NbtTag),
 	ContainerLoot(NbtTag),
 	BreakSound(String),
-	VillagerVariant(String),
+	VillagerVariant(i32),
 	WolfVariant(i32),
 	WolfSoundVariant(i32),
 	WolfCollar(u8),
@@ -464,6 +464,48 @@ impl TryFrom<&mut Vec<u8>> for BlockPredicate {
 	}
 }
 
+impl From<BlockPredicate> for Vec<u8> {
+	fn from(value: BlockPredicate) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		if let Some(blocks) = value.blocks {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut blocks.into());
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+
+		if value.properties.is_empty() {
+			output.append(&mut crate::serialize::boolean(false));
+		} else {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::varint(value.properties.len() as i32));
+			for property in value.properties {
+				output.append(&mut property.into());
+			}
+		}
+
+		if let Some(nbt) = value.nbt {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::nbt_network(nbt));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+
+		output.append(&mut crate::serialize::varint(value.data_components.len() as i32));
+		for data_component in value.data_components {
+			output.append(&mut data_component.into());
+		}
+
+		output.append(&mut crate::serialize::varint(value.partial_data_component_predicates.len() as i32));
+		for partial_data_component_predicates in value.partial_data_component_predicates {
+			output.append(&mut partial_data_component_predicates.into());
+		}
+
+		return output;
+	}
+}
+
 impl TryFrom<&mut Vec<u8>> for BlockPredicateProperty {
 	type Error = Box<dyn Error>;
 
@@ -478,6 +520,35 @@ impl TryFrom<&mut Vec<u8>> for BlockPredicateProperty {
 	}
 }
 
+impl From<BlockPredicateProperty> for Vec<u8> {
+	fn from(value: BlockPredicateProperty) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::string(&value.name));
+		output.append(&mut crate::serialize::boolean(value.is_exact_match));
+		if let Some(exact_value) = value.exact_value {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::string(&exact_value));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+		if let Some(min_value) = value.min_value {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::string(&min_value));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+		if let Some(max_value) = value.max_value {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::string(&max_value));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+
+		return output;
+	}
+}
+
 impl TryFrom<&mut Vec<u8>> for IdSet {
 	type Error = Box<dyn Error>;
 
@@ -488,6 +559,27 @@ impl TryFrom<&mut Vec<u8>> for IdSet {
 		} else {
 			return Ok(Self::ById((0..type_value).map(|_| crate::deserialize::varint(value).unwrap()).collect()));
 		}
+	}
+}
+
+impl From<IdSet> for Vec<u8> {
+	fn from(value: IdSet) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		match value {
+			IdSet::ByName(name) => {
+				output.push(0);
+				output.append(&mut crate::serialize::string(&name));
+			}
+			IdSet::ById(items) => {
+				output.push(items.len() as u8);
+				for item in items {
+					output.append(&mut crate::serialize::varint(item));
+				}
+			}
+		}
+
+		return output;
 	}
 }
 
@@ -513,6 +605,45 @@ impl TryFrom<&mut Vec<u8>> for ConsumeEffect {
 	}
 }
 
+impl From<ConsumeEffect> for Vec<u8> {
+	fn from(value: ConsumeEffect) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		match value {
+			ConsumeEffect::ApplyEffects(potion_effects, probability) => {
+				output.append(&mut crate::serialize::varint(0));
+				output.append(&mut crate::serialize::varint(potion_effects.len() as i32));
+				for potion_effect in potion_effects {
+					output.append(&mut potion_effect.into());
+				}
+				output.append(&mut crate::serialize::float(probability));
+			}
+			ConsumeEffect::RemoveEffects(id_set) => {
+				output.append(&mut id_set.into());
+			}
+			ConsumeEffect::ClearAllEffects => {
+				output.append(&mut crate::serialize::varint(2));
+			}
+			ConsumeEffect::TeleportRandomly(diameter) => {
+				output.append(&mut crate::serialize::varint(3));
+				output.append(&mut crate::serialize::float(diameter));
+			}
+			ConsumeEffect::PlaySound(sound, fixed_range) => {
+				output.append(&mut crate::serialize::varint(4));
+				output.append(&mut crate::serialize::string(&sound));
+				if let Some(fixed_range) = fixed_range {
+					output.append(&mut crate::serialize::boolean(true));
+					output.append(&mut crate::serialize::float(fixed_range));
+				} else {
+					output.append(&mut crate::serialize::boolean(false));
+				}
+			}
+		}
+
+		return output;
+	}
+}
+
 impl TryFrom<&mut Vec<u8>> for PotionEffect {
 	type Error = Box<dyn Error>;
 
@@ -534,6 +665,29 @@ impl TryFrom<&mut Vec<u8>> for PotionEffect {
 	}
 }
 
+impl From<PotionEffect> for Vec<u8> {
+	fn from(value: PotionEffect) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		if value.type_id != -1 {
+			output.append(&mut crate::serialize::varint(value.type_id));
+		}
+		output.append(&mut crate::serialize::varint(value.amplifier));
+		output.append(&mut crate::serialize::varint(value.duration));
+		output.append(&mut crate::serialize::boolean(value.ambient));
+		output.append(&mut crate::serialize::boolean(value.show_particles));
+		if let Some(mut hidden_effect) = value.hidden_effect {
+			output.append(&mut crate::serialize::boolean(true));
+			hidden_effect.type_id = -1;
+			output.append(&mut (*hidden_effect).into());
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+
+		return output;
+	}
+}
+
 impl TryFrom<&mut Vec<u8>> for FireworkExplosion {
 	type Error = Box<dyn Error>;
 
@@ -545,6 +699,30 @@ impl TryFrom<&mut Vec<u8>> for FireworkExplosion {
 			has_trail: crate::deserialize::boolean(value)?,
 			has_twinkle: crate::deserialize::boolean(value)?,
 		});
+	}
+}
+
+impl From<FireworkExplosion> for Vec<u8> {
+	fn from(value: FireworkExplosion) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut value.shape.into());
+
+		output.append(&mut crate::serialize::varint(value.colors.len() as i32));
+		for color in value.colors {
+			output.append(&mut crate::serialize::int(color));
+		}
+
+		output.append(&mut crate::serialize::varint(value.fade_colors.len() as i32));
+		for fade_color in value.fade_colors {
+			output.append(&mut crate::serialize::int(fade_color));
+		}
+
+		output.append(&mut crate::serialize::boolean(value.has_trail));
+		output.append(&mut crate::serialize::boolean(value.has_twinkle));
+
+
+		return output;
 	}
 }
 
@@ -560,6 +738,12 @@ impl TryFrom<&mut Vec<u8>> for FireworkExplosionShape {
 			4 => Self::Burst,
 			x => return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("cant parse ConsumeEffect with ID {x}")))),
 		});
+	}
+}
+
+impl From<FireworkExplosionShape> for Vec<u8> {
+	fn from(value: FireworkExplosionShape) -> Self {
+		return crate::serialize::varint(value as i32);
 	}
 }
 
@@ -792,7 +976,7 @@ impl TryFrom<&mut Vec<u8>> for SlotComponent {
 			69 => SlotComponent::Lock(crate::deserialize::nbt_network(data)?),
 			70 => SlotComponent::ContainerLoot(crate::deserialize::nbt_network(data)?),
 			71 => SlotComponent::BreakSound(crate::deserialize::string(data)?),
-			72 => SlotComponent::VillagerVariant(crate::deserialize::string(data)?),
+			72 => SlotComponent::VillagerVariant(crate::deserialize::varint(data)?),
 			73 => SlotComponent::WolfVariant(crate::deserialize::varint(data)?),
 			74 => SlotComponent::WolfSoundVariant(crate::deserialize::varint(data)?),
 			75 => SlotComponent::WolfCollar(data.remove(0)),
@@ -829,6 +1013,373 @@ impl TryFrom<&mut Vec<u8>> for SlotComponent {
 			}
 		};
 		return Ok(result);
+	}
+}
+
+impl From<SlotComponent> for Vec<u8> {
+	fn from(value: SlotComponent) -> Self {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.clone().into()));
+		output.append(&mut match value {
+			SlotComponent::CustomData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::MaxStackSize(a) => crate::serialize::varint(a),
+			SlotComponent::MaxDamage(a) => crate::serialize::varint(a),
+			SlotComponent::Damage(a) => crate::serialize::varint(a),
+			SlotComponent::Unbreakable => vec![],
+			SlotComponent::CustomName(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ItemName(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ItemModel(a) => crate::serialize::string(&a),
+			SlotComponent::Lore(a) => a.into_iter().flat_map(crate::serialize::nbt_network).collect(),
+			SlotComponent::Rarity(a) => vec![a],
+			SlotComponent::Enchantments(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::CanPlaceOn(block_predicates) => {
+				vec![crate::serialize::varint(block_predicates.len() as i32), block_predicates.into_iter().flat_map(Vec::<u8>::from).collect()]
+					.into_iter()
+					.flatten()
+					.collect()
+			}
+			SlotComponent::CanBreak(block_predicates) => {
+				vec![crate::serialize::varint(block_predicates.len() as i32), block_predicates.into_iter().flat_map(Vec::<u8>::from).collect()]
+					.into_iter()
+					.flatten()
+					.collect()
+			}
+			SlotComponent::AttributeModifiers(attribute_modifier) => vec![
+				crate::serialize::varint(attribute_modifier.len() as i32),
+				attribute_modifier
+					.into_iter()
+					.flat_map(|x| {
+						vec![
+							crate::serialize::varint(x.0),
+							crate::serialize::string(&x.1),
+							crate::serialize::double(x.2),
+							crate::serialize::varint(x.3),
+							crate::serialize::varint(x.4),
+						]
+					})
+					.flatten()
+					.collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::CustomModelData(a, b, c, d) => vec![
+				a.into_iter().flat_map(crate::serialize::float).collect::<Vec<u8>>(),
+				b.into_iter().flat_map(crate::serialize::boolean).collect(),
+				c.into_iter().flat_map(|x| crate::serialize::string(&x)).collect(),
+				d.into_iter().flat_map(crate::serialize::int).collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::TooltipDisplay(a, b) => {
+				vec![crate::serialize::boolean(a), b.into_iter().flat_map(crate::serialize::varint).collect()].into_iter().flatten().collect()
+			}
+			SlotComponent::RepairCost(a) => crate::serialize::varint(a),
+			SlotComponent::CreativeSlotLock => vec![],
+			SlotComponent::EnchantmentGlintOverride(a) => crate::serialize::boolean(a),
+			SlotComponent::IntangibleProjectile(a) => crate::serialize::nbt_network(a),
+			SlotComponent::Food(a, b, c) => {
+				vec![crate::serialize::varint(a), crate::serialize::float(b), crate::serialize::boolean(c)].into_iter().flatten().collect()
+			}
+			SlotComponent::Consumable(consume_seconds, animation, sound, has_comsume_particles, effects) => vec![
+				crate::serialize::float(consume_seconds),
+				crate::serialize::varint(animation),
+				crate::serialize::string(&sound),
+				crate::serialize::boolean(has_comsume_particles),
+				crate::serialize::varint(effects.len() as i32),
+				effects.into_iter().flat_map(Vec::<u8>::from).collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::UseRemainder(a) => serialize_slot(a.as_ref()),
+			SlotComponent::UseCooldown(a, b) => vec![
+				crate::serialize::float(a),
+				if let Some(b) = b { vec![vec![1], crate::serialize::string(&b)].into_iter().flatten().collect() } else { vec![0] },
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::DamageResistant(a) => crate::serialize::string(&a),
+			SlotComponent::Tool(rule, default_mining_speed, damage_per_block, can_destroy_blocks_in_creative) => vec![
+				crate::serialize::varint(rule.len() as i32),
+				rule
+					.into_iter()
+					.flat_map(|(blocks, speed, correct_drop_for_blocks)| {
+						vec![
+							Vec::<u8>::from(blocks),
+							if let Some(speed) = speed { vec![vec![1], crate::serialize::float(speed)].into_iter().flatten().collect() } else { vec![0] },
+							if let Some(correct_drop_for_blocks) = correct_drop_for_blocks {
+								vec![vec![1], crate::serialize::boolean(correct_drop_for_blocks)].into_iter().flatten().collect()
+							} else {
+								vec![0]
+							},
+						]
+					})
+					.flatten()
+					.collect(),
+				crate::serialize::float(default_mining_speed),
+				crate::serialize::varint(damage_per_block),
+				crate::serialize::boolean(can_destroy_blocks_in_creative),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::Weapon(a, b) => vec![crate::serialize::varint(a), crate::serialize::float(b)].into_iter().flatten().collect(),
+			SlotComponent::Enchantable(a) => crate::serialize::varint(a),
+			SlotComponent::Equippable(slot, equip_sound, model, camera_overlay, allowed_entities, dispensable, swappable, damage_on_hurt) => {
+				vec![
+					crate::serialize::varint(slot),
+					crate::serialize::string(&equip_sound),
+					if let Some(model) = model { vec![vec![1], crate::serialize::string(&model)].into_iter().flatten().collect() } else { vec![0] },
+					if let Some(camera_overlay) = camera_overlay {
+						vec![vec![1], crate::serialize::string(&camera_overlay)].into_iter().flatten().collect()
+					} else {
+						vec![0]
+					},
+					if let Some(allowed_entities) = allowed_entities {
+						vec![vec![1], Vec::<u8>::from(allowed_entities)].into_iter().flatten().collect()
+					} else {
+						vec![0]
+					},
+					crate::serialize::boolean(dispensable),
+					crate::serialize::boolean(swappable),
+					crate::serialize::boolean(damage_on_hurt),
+				]
+				.into_iter()
+				.flatten()
+				.collect()
+			}
+			SlotComponent::Repairable(items) => Vec::<u8>::from(items),
+			SlotComponent::Glider => vec![],
+			SlotComponent::TooltipStyle(a) => crate::serialize::string(&a),
+			SlotComponent::DeathProtection(effects) => {
+				vec![crate::serialize::varint(effects.len() as i32), effects.into_iter().flat_map(Vec::<u8>::from).collect()]
+					.into_iter()
+					.flatten()
+					.collect()
+			}
+			SlotComponent::BlockAttacks(
+				block_delay_seonds,
+				disable_cooldown_scale,
+				damage_reductions,
+				item_damage_threshold,
+				item_damage_base,
+				item_damage_factor,
+				bypassed_by,
+				block_sound,
+				disable_sound,
+			) => vec![
+				crate::serialize::float(block_delay_seonds),
+				crate::serialize::float(disable_cooldown_scale),
+				crate::serialize::varint(damage_reductions.len() as i32),
+				damage_reductions
+					.into_iter()
+					.flat_map(|(horizontal_blocking_angle, type_name, base, factor)| {
+						vec![
+							crate::serialize::float(horizontal_blocking_angle),
+							if let Some(type_name) = type_name {
+								vec![vec![1], Vec::<u8>::from(type_name)].into_iter().flatten().collect()
+							} else {
+								vec![0]
+							},
+							crate::serialize::float(base),
+							crate::serialize::float(factor),
+						]
+					})
+					.flatten()
+					.collect(),
+				crate::serialize::float(item_damage_threshold),
+				crate::serialize::float(item_damage_base),
+				crate::serialize::float(item_damage_factor),
+				if let Some(bypassed_by) = bypassed_by {
+					vec![vec![1], crate::serialize::string(&bypassed_by)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+				if let Some(block_sound) = block_sound {
+					vec![vec![1], crate::serialize::string(&block_sound)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+				if let Some(disable_sound) = disable_sound {
+					vec![vec![1], crate::serialize::string(&disable_sound)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::StoredEnchantments(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::DyedColor(a) => crate::serialize::int(a),
+			SlotComponent::MapColor(a) => crate::serialize::int(a),
+			SlotComponent::MapId(a) => crate::serialize::varint(a),
+			SlotComponent::MapDecorations(a) => crate::serialize::nbt_network(a),
+			SlotComponent::MapPostProcessing(a) => vec![a],
+			SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
+			SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
+			SlotComponent::PotionContents(potion_id, custom_color, custom_effects, custom_name) => vec![
+				if let Some(potion_id) = potion_id {
+					vec![vec![1], crate::serialize::varint(potion_id)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+				if let Some(custom_color) = custom_color {
+					vec![vec![1], crate::serialize::int(custom_color)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+				crate::serialize::varint(custom_effects.len() as i32),
+				custom_effects.into_iter().flat_map(Vec::<u8>::from).collect(),
+				crate::serialize::string(&custom_name),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::PotionDurationScale(a) => crate::serialize::float(a),
+			SlotComponent::SuspiciousStewEffects(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
+			}
+			SlotComponent::WritableBookContent(a) => a
+				.into_iter()
+				.flat_map(|(x, y)| {
+					vec![
+						crate::serialize::string(&x),
+						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
+					]
+				})
+				.flatten()
+				.collect(),
+			SlotComponent::WrittenBookContent(a) => a
+				.into_iter()
+				.flat_map(|(x, y)| {
+					vec![
+						crate::serialize::string(&x),
+						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
+					]
+				})
+				.flatten()
+				.collect(),
+			SlotComponent::Trim(material, pattern) => {
+				vec![crate::serialize::string(&material), crate::serialize::string(&pattern)].into_iter().flatten().collect()
+			}
+			SlotComponent::DebugStickState(a) => crate::serialize::nbt_network(a),
+			SlotComponent::EntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BucketEntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BlockEntityData(a) => crate::serialize::nbt_network(a),
+			SlotComponent::Instrument(instrument) => crate::serialize::string(&instrument),
+			SlotComponent::ProvidesTrimMaterial(mode, material) => {
+				vec![vec![mode], crate::serialize::string(&material)].into_iter().flatten().collect()
+			}
+			SlotComponent::OminousBottleAmplifier(a) => vec![a],
+			SlotComponent::JukeboxPlayable(mode, song) => vec![vec![mode], crate::serialize::string(&song)].into_iter().flatten().collect(),
+			SlotComponent::ProvidesBannerPatterns(a) => crate::serialize::string(&a),
+			SlotComponent::Recipes(a) => crate::serialize::nbt_network(a),
+			SlotComponent::LodestoneTracker(a, b, c, d) => {
+				vec![crate::serialize::boolean(a), crate::serialize::string(&b), crate::serialize::position(&c), crate::serialize::boolean(d)]
+					.into_iter()
+					.flatten()
+					.collect()
+			}
+			SlotComponent::FireworkExplosion(explosion) => Vec::<u8>::from(explosion),
+			SlotComponent::Fireworks(flight_duration, explosions) => vec![
+				crate::serialize::varint(flight_duration),
+				crate::serialize::varint(explosions.len() as i32),
+				explosions.into_iter().flat_map(Vec::<u8>::from).collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::Profile(a, b, c) => vec![
+				if let Some(a) = a { vec![vec![0x01], crate::serialize::string(&a)].into_iter().flatten().collect() } else { vec![0x00] },
+				if let Some(b) = b { vec![vec![0x01], crate::serialize::uuid(&b)].into_iter().flatten().collect() } else { vec![0x00] },
+				c.into_iter()
+					.flat_map(|(x, y, z)| {
+						vec![
+							crate::serialize::string(&x),
+							crate::serialize::string(&y),
+							if let Some(z) = z { vec![vec![0x01], crate::serialize::string(&z)].into_iter().flatten().collect() } else { vec![0x00] },
+						]
+					})
+					.flatten()
+					.collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::NoteblockSound(a) => crate::serialize::string(&a),
+			SlotComponent::BannerPatterns(layers) => vec![
+				crate::serialize::varint(layers.len() as i32),
+				layers
+					.into_iter()
+					.flat_map(|(pattern_type, color)| vec![crate::serialize::string(&pattern_type), crate::serialize::varint(color)])
+					.flatten()
+					.collect(),
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::BaseColor(a) => vec![a],
+			SlotComponent::PotDecorations(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
+			SlotComponent::Container(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
+			SlotComponent::BlockState(a) => {
+				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::string(&x), crate::serialize::string(&y)]).flatten().collect()
+			}
+			SlotComponent::Bees(a) => a
+				.into_iter()
+				.flat_map(|(x, y, z)| vec![crate::serialize::nbt_network(x), crate::serialize::varint(y), crate::serialize::varint(z)])
+				.flatten()
+				.collect(),
+			SlotComponent::Lock(a) => crate::serialize::nbt_network(a),
+			SlotComponent::ContainerLoot(a) => crate::serialize::nbt_network(a),
+			SlotComponent::BreakSound(sound) => crate::serialize::string(&sound),
+			SlotComponent::VillagerVariant(variant) => crate::serialize::varint(variant),
+			SlotComponent::WolfVariant(variant) => crate::serialize::varint(variant),
+			SlotComponent::WolfSoundVariant(variant) => crate::serialize::varint(variant),
+			SlotComponent::WolfCollar(a) => vec![a],
+			SlotComponent::FoxVariant(a) => vec![a],
+			SlotComponent::SalmonSize(a) => vec![a],
+			SlotComponent::ParrotVariant(a) => crate::serialize::varint(a),
+			SlotComponent::TropicalFishPattern(a) => vec![a],
+			SlotComponent::TropicalFishBaseColor(a) => vec![a],
+			SlotComponent::TropicalFishPatternColor(a) => vec![a],
+			SlotComponent::MooshroomVariant(a) => vec![a],
+			SlotComponent::RabbitVariant(a) => vec![a],
+			SlotComponent::PigVariant(a) => vec![a],
+			SlotComponent::CowVariant(a) => vec![a],
+			SlotComponent::ChickenVariant(mode, variant) => vec![vec![mode], crate::serialize::string(&variant)].into_iter().flatten().collect(),
+			SlotComponent::FrogVariant(a) => crate::serialize::varint(a),
+			SlotComponent::HorseVariant(a) => vec![a],
+			SlotComponent::PaintingVariant(width, height, asset_id, title, author) => vec![
+				crate::serialize::int(width),
+				crate::serialize::int(height),
+				crate::serialize::string(&asset_id),
+				if let Some(title) = title { vec![vec![1], crate::serialize::nbt_network(title)].into_iter().flatten().collect() } else { vec![0] },
+				if let Some(author) = author {
+					vec![vec![1], crate::serialize::nbt_network(author)].into_iter().flatten().collect()
+				} else {
+					vec![0]
+				},
+			]
+			.into_iter()
+			.flatten()
+			.collect(),
+			SlotComponent::LlamaVariant(a) => vec![a],
+			SlotComponent::AxolotlVariant(a) => vec![a],
+			SlotComponent::CatVariant(a) => crate::serialize::varint(a),
+			SlotComponent::CatCollar(a) => vec![a],
+			SlotComponent::SheepColor(a) => vec![a],
+			SlotComponent::ShulkerColor(a) => vec![a],
+		});
+
+		return output;
 	}
 }
 
@@ -879,174 +1430,7 @@ pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
 	output.append(&mut crate::serialize::varint(input.components_to_add.len() as i32));
 	output.append(&mut crate::serialize::varint(input.components_to_remove.len() as i32));
 	for component_to_add in &input.components_to_add {
-		output.append(&mut crate::serialize::varint(component_to_add.into()));
-		output.append(&mut match component_to_add.clone() {
-			SlotComponent::CustomData(a) => crate::serialize::nbt_network(a),
-			SlotComponent::MaxStackSize(a) => crate::serialize::varint(a),
-			SlotComponent::MaxDamage(a) => crate::serialize::varint(a),
-			SlotComponent::Damage(a) => crate::serialize::varint(a),
-			SlotComponent::Unbreakable => vec![],
-			SlotComponent::CustomName(a) => crate::serialize::nbt_network(a),
-			SlotComponent::ItemName(a) => crate::serialize::nbt_network(a),
-			SlotComponent::ItemModel(a) => crate::serialize::string(&a),
-			SlotComponent::Lore(a) => a.into_iter().flat_map(crate::serialize::nbt_network).collect(),
-			SlotComponent::Rarity(a) => vec![a],
-			SlotComponent::Enchantments(a) => {
-				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
-			}
-			SlotComponent::CanPlaceOn(..) => todo!(),
-			SlotComponent::CanBreak(..) => todo!(),
-			SlotComponent::AttributeModifiers(..) => todo!(),
-			SlotComponent::CustomModelData(a, b, c, d) => vec![
-				a.into_iter().flat_map(crate::serialize::float).collect::<Vec<u8>>(),
-				b.into_iter().flat_map(crate::serialize::boolean).collect(),
-				c.into_iter().flat_map(|x| crate::serialize::string(&x)).collect(),
-				d.into_iter().flat_map(crate::serialize::int).collect(),
-			]
-			.into_iter()
-			.flatten()
-			.collect(),
-			SlotComponent::TooltipDisplay(a, b) => {
-				vec![crate::serialize::boolean(a), b.into_iter().flat_map(crate::serialize::varint).collect()].into_iter().flatten().collect()
-			}
-			SlotComponent::RepairCost(a) => crate::serialize::varint(a),
-			SlotComponent::CreativeSlotLock => vec![],
-			SlotComponent::EnchantmentGlintOverride(a) => crate::serialize::boolean(a),
-			SlotComponent::IntangibleProjectile(a) => crate::serialize::nbt_network(a),
-			SlotComponent::Food(a, b, c) => {
-				vec![crate::serialize::varint(a), crate::serialize::float(b), crate::serialize::boolean(c)].into_iter().flatten().collect()
-			}
-			SlotComponent::Consumable(..) => todo!(),
-			SlotComponent::UseRemainder(a) => serialize_slot(a.as_ref()),
-			SlotComponent::UseCooldown(a, b) => vec![
-				crate::serialize::float(a),
-				if let Some(b) = b { vec![vec![1], crate::serialize::string(&b)].into_iter().flatten().collect() } else { vec![0] },
-			]
-			.into_iter()
-			.flatten()
-			.collect(),
-			SlotComponent::DamageResistant(a) => crate::serialize::string(&a),
-			SlotComponent::Tool(..) => todo!(),
-			SlotComponent::Weapon(a, b) => vec![crate::serialize::varint(a), crate::serialize::float(b)].into_iter().flatten().collect(),
-			SlotComponent::Enchantable(a) => crate::serialize::varint(a),
-			SlotComponent::Equippable(..) => todo!(),
-			SlotComponent::Repairable(..) => todo!(),
-			SlotComponent::Glider => vec![],
-			SlotComponent::TooltipStyle(a) => crate::serialize::string(&a),
-			SlotComponent::DeathProtection(..) => todo!(),
-			SlotComponent::BlockAttacks(..) => todo!(),
-			SlotComponent::StoredEnchantments(a) => {
-				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
-			}
-			SlotComponent::DyedColor(a) => crate::serialize::int(a),
-			SlotComponent::MapColor(a) => crate::serialize::int(a),
-			SlotComponent::MapId(a) => crate::serialize::varint(a),
-			SlotComponent::MapDecorations(a) => crate::serialize::nbt_network(a),
-			SlotComponent::MapPostProcessing(a) => vec![a],
-			SlotComponent::ChargedProjectiles(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
-			SlotComponent::BundleContents(a) => a.into_iter().flat_map(|x| serialize_slot(x.as_ref())).collect(),
-			SlotComponent::PotionContents(..) => todo!(),
-			SlotComponent::PotionDurationScale(a) => crate::serialize::float(a),
-			SlotComponent::SuspiciousStewEffects(a) => {
-				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::varint(x), crate::serialize::varint(y)]).flatten().collect()
-			}
-			SlotComponent::WritableBookContent(a) => a
-				.into_iter()
-				.flat_map(|(x, y)| {
-					vec![
-						crate::serialize::string(&x),
-						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
-					]
-				})
-				.flatten()
-				.collect(),
-			SlotComponent::WrittenBookContent(a) => a
-				.into_iter()
-				.flat_map(|(x, y)| {
-					vec![
-						crate::serialize::string(&x),
-						if let Some(y) = y { vec![vec![0x01], crate::serialize::string(&y)].into_iter().flatten().collect() } else { vec![0x00] },
-					]
-				})
-				.flatten()
-				.collect(),
-			SlotComponent::Trim(..) => todo!(),
-			SlotComponent::DebugStickState(a) => crate::serialize::nbt_network(a),
-			SlotComponent::EntityData(a) => crate::serialize::nbt_network(a),
-			SlotComponent::BucketEntityData(a) => crate::serialize::nbt_network(a),
-			SlotComponent::BlockEntityData(a) => crate::serialize::nbt_network(a),
-			SlotComponent::Instrument(..) => todo!(),
-			SlotComponent::ProvidesTrimMaterial(..) => todo!(),
-			SlotComponent::OminousBottleAmplifier(a) => vec![a],
-			SlotComponent::JukeboxPlayable(..) => todo!(),
-			SlotComponent::ProvidesBannerPatterns(a) => crate::serialize::string(&a),
-			SlotComponent::Recipes(a) => crate::serialize::nbt_network(a),
-			SlotComponent::LodestoneTracker(a, b, c, d) => {
-				vec![crate::serialize::boolean(a), crate::serialize::string(&b), crate::serialize::position(&c), crate::serialize::boolean(d)]
-					.into_iter()
-					.flatten()
-					.collect()
-			}
-			SlotComponent::FireworkExplosion(..) => todo!(),
-			SlotComponent::Fireworks(..) => todo!(),
-			SlotComponent::Profile(a, b, c) => vec![
-				if let Some(a) = a { vec![vec![0x01], crate::serialize::string(&a)].into_iter().flatten().collect() } else { vec![0x00] },
-				if let Some(b) = b { vec![vec![0x01], crate::serialize::uuid(&b)].into_iter().flatten().collect() } else { vec![0x00] },
-				c.into_iter()
-					.flat_map(|(x, y, z)| {
-						vec![
-							crate::serialize::string(&x),
-							crate::serialize::string(&y),
-							if let Some(z) = z { vec![vec![0x01], crate::serialize::string(&z)].into_iter().flatten().collect() } else { vec![0x00] },
-						]
-					})
-					.flatten()
-					.collect(),
-			]
-			.into_iter()
-			.flatten()
-			.collect(),
-			SlotComponent::NoteblockSound(a) => crate::serialize::string(&a),
-			SlotComponent::BannerPatterns(..) => todo!(),
-			SlotComponent::BaseColor(a) => vec![a],
-			SlotComponent::PotDecorations(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
-			SlotComponent::Container(a) => a.into_iter().flat_map(crate::serialize::varint).collect(),
-			SlotComponent::BlockState(a) => {
-				a.into_iter().flat_map(|(x, y)| vec![crate::serialize::string(&x), crate::serialize::string(&y)]).flatten().collect()
-			}
-			SlotComponent::Bees(a) => a
-				.into_iter()
-				.flat_map(|(x, y, z)| vec![crate::serialize::nbt_network(x), crate::serialize::varint(y), crate::serialize::varint(z)])
-				.flatten()
-				.collect(),
-			SlotComponent::Lock(a) => crate::serialize::nbt_network(a),
-			SlotComponent::ContainerLoot(a) => crate::serialize::nbt_network(a),
-			SlotComponent::BreakSound(..) => todo!(),
-			SlotComponent::VillagerVariant(..) => todo!(),
-			SlotComponent::WolfVariant(..) => todo!(),
-			SlotComponent::WolfSoundVariant(..) => todo!(),
-			SlotComponent::WolfCollar(a) => vec![a],
-			SlotComponent::FoxVariant(a) => vec![a],
-			SlotComponent::SalmonSize(a) => vec![a],
-			SlotComponent::ParrotVariant(a) => crate::serialize::varint(a),
-			SlotComponent::TropicalFishPattern(a) => vec![a],
-			SlotComponent::TropicalFishBaseColor(a) => vec![a],
-			SlotComponent::TropicalFishPatternColor(a) => vec![a],
-			SlotComponent::MooshroomVariant(a) => vec![a],
-			SlotComponent::RabbitVariant(a) => vec![a],
-			SlotComponent::PigVariant(a) => vec![a],
-			SlotComponent::CowVariant(a) => vec![a],
-			SlotComponent::ChickenVariant(..) => todo!(),
-			SlotComponent::FrogVariant(a) => crate::serialize::varint(a),
-			SlotComponent::HorseVariant(a) => vec![a],
-			SlotComponent::PaintingVariant(..) => todo!(),
-			SlotComponent::LlamaVariant(a) => vec![a],
-			SlotComponent::AxolotlVariant(a) => vec![a],
-			SlotComponent::CatVariant(a) => crate::serialize::varint(a),
-			SlotComponent::CatCollar(a) => vec![a],
-			SlotComponent::SheepColor(a) => vec![a],
-			SlotComponent::ShulkerColor(a) => vec![a],
-		});
+		output.append(&mut component_to_add.clone().into());
 	}
 
 	for component_to_remove in &input.components_to_remove {
