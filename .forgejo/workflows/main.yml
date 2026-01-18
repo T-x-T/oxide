@@ -1,7 +1,6 @@
 name: Build, test and push
 
-on:
-  push
+on: push
 
 jobs:
   build_server_docker_image:
@@ -32,7 +31,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Test server
+      - name: Run tests
         run: cargo test
 
   clippy:
@@ -42,14 +41,22 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Run clippy on server
+      - name: Run clippy
         run: |
           rustup component add --toolchain nightly clippy
           cargo clippy
 
-
-
-
+  formatting:
+    runs-on: vm
+    container:
+      image: git.thetxt.io/thetxt/runner-base:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check formatting
+        run: |
+          rustup component add rustfmt
+          cargo fmt --check
 
   push_server:
     runs-on: vm
@@ -59,6 +66,7 @@ jobs:
       - build_server_docker_image
       - test
       - clippy
+      - formatting
     steps:
       - name: Login to forgejo registry
         uses: docker/login-action@v3

@@ -1,10 +1,10 @@
 use super::*;
 
 use std::error::Error;
-use std::collections::HashMap;
-use std::net::{SocketAddr, TcpStream};
+use std::net::TcpStream;
+use std::sync::Arc;
 
-type CommandExecFn = fn(String, Option<&mut TcpStream>, &mut Game, &mut HashMap<SocketAddr, TcpStream>, &mut HashMap<SocketAddr, Connection>) -> Result<(), Box<dyn Error>>;
+type CommandExecFn = fn(String, Option<&mut TcpStream>, Arc<Game>) -> Result<(), Box<dyn Error>>;
 
 #[derive(Debug, Clone)]
 pub struct Command {
@@ -92,65 +92,65 @@ pub enum ParserProperty {
 }
 
 impl From<ParserProperty> for i32 {
-  fn from(value: ParserProperty) -> Self {
-  	return match value {
-	    ParserProperty::Bool => 0,
-	    ParserProperty::Float(_, _, _) => 1,
-	    ParserProperty::Double(_, _, _) => 2,
-	    ParserProperty::Integer(_, _, _) => 3,
-	    ParserProperty::Long(_, _, _) => 4,
-	    ParserProperty::String(_) => 5,
-	    ParserProperty::Entity(_) => 6,
-	    ParserProperty::GameProfile => 7,
-	    ParserProperty::BlockPos => 8,
-	    ParserProperty::ColumnPos => 9,
-	    ParserProperty::Vec3 => 10,
-	    ParserProperty::Vec2 => 11,
-	    ParserProperty::BlockState => 12,
-	    ParserProperty::BlockPredicate => 13,
-	    ParserProperty::ItemStack => 14,
-	    ParserProperty::ItemPredicate => 15,
-	    ParserProperty::Color => 16,
-	    ParserProperty::Component => 17,
-	    ParserProperty::Style => 18,
-	    ParserProperty::Message => 19,
-	    ParserProperty::Nbt => 20,
-	    ParserProperty::NbtTag => 21,
-	    ParserProperty::NbtPath => 22,
-	    ParserProperty::Objective => 23,
-	    ParserProperty::ObjectiveCriteria => 24,
-	    ParserProperty::Operation => 25,
-	    ParserProperty::Particle => 26,
-	    ParserProperty::Angle => 27,
-	    ParserProperty::Rotation => 28,
-	    ParserProperty::ScoreboardSlot => 29,
-	    ParserProperty::ScoreHolder(_) => 30,
-	    ParserProperty::Swizzle => 31,
-	    ParserProperty::Team => 32,
-	    ParserProperty::ItemSlot => 33,
-	    ParserProperty::ItemSlots => 34,
-	    ParserProperty::ResourceLocation => 35,
-	    ParserProperty::Function => 36,
-	    ParserProperty::EntityAnchor => 37,
-	    ParserProperty::IntRange => 38,
-	    ParserProperty::FloatRange => 39,
-	    ParserProperty::Dimension => 40,
-	    ParserProperty::Gamemode => 41,
-	    ParserProperty::Time(_) => 42,
-	    ParserProperty::ResourceOrTag(_) => 43,
-	    ParserProperty::ResourceOrTagKey(_) => 44,
-	    ParserProperty::Resource(_) => 45,
-	    ParserProperty::ResourceKey(_) => 46,
-	    ParserProperty::ResourceSelector(_) => 47,
-	    ParserProperty::TemplateMirror => 48,
-	    ParserProperty::TemplateRotation => 49,
-	    ParserProperty::Heightmap => 50,
-	    ParserProperty::LootTable => 51,
-	    ParserProperty::LootPredicate => 52,
-	    ParserProperty::LootModifier => 53,
-	    ParserProperty::Uuid => 54,
+	fn from(value: ParserProperty) -> Self {
+		return match value {
+			ParserProperty::Bool => 0,
+			ParserProperty::Float(_, _, _) => 1,
+			ParserProperty::Double(_, _, _) => 2,
+			ParserProperty::Integer(_, _, _) => 3,
+			ParserProperty::Long(_, _, _) => 4,
+			ParserProperty::String(_) => 5,
+			ParserProperty::Entity(_) => 6,
+			ParserProperty::GameProfile => 7,
+			ParserProperty::BlockPos => 8,
+			ParserProperty::ColumnPos => 9,
+			ParserProperty::Vec3 => 10,
+			ParserProperty::Vec2 => 11,
+			ParserProperty::BlockState => 12,
+			ParserProperty::BlockPredicate => 13,
+			ParserProperty::ItemStack => 14,
+			ParserProperty::ItemPredicate => 15,
+			ParserProperty::Color => 16,
+			ParserProperty::Component => 17,
+			ParserProperty::Style => 18,
+			ParserProperty::Message => 19,
+			ParserProperty::Nbt => 20,
+			ParserProperty::NbtTag => 21,
+			ParserProperty::NbtPath => 22,
+			ParserProperty::Objective => 23,
+			ParserProperty::ObjectiveCriteria => 24,
+			ParserProperty::Operation => 25,
+			ParserProperty::Particle => 26,
+			ParserProperty::Angle => 27,
+			ParserProperty::Rotation => 28,
+			ParserProperty::ScoreboardSlot => 29,
+			ParserProperty::ScoreHolder(_) => 30,
+			ParserProperty::Swizzle => 31,
+			ParserProperty::Team => 32,
+			ParserProperty::ItemSlot => 33,
+			ParserProperty::ItemSlots => 34,
+			ParserProperty::ResourceLocation => 35,
+			ParserProperty::Function => 36,
+			ParserProperty::EntityAnchor => 37,
+			ParserProperty::IntRange => 38,
+			ParserProperty::FloatRange => 39,
+			ParserProperty::Dimension => 40,
+			ParserProperty::Gamemode => 41,
+			ParserProperty::Time(_) => 42,
+			ParserProperty::ResourceOrTag(_) => 43,
+			ParserProperty::ResourceOrTagKey(_) => 44,
+			ParserProperty::Resource(_) => 45,
+			ParserProperty::ResourceKey(_) => 46,
+			ParserProperty::ResourceSelector(_) => 47,
+			ParserProperty::TemplateMirror => 48,
+			ParserProperty::TemplateRotation => 49,
+			ParserProperty::Heightmap => 50,
+			ParserProperty::LootTable => 51,
+			ParserProperty::LootPredicate => 52,
+			ParserProperty::LootModifier => 53,
+			ParserProperty::Uuid => 54,
 		};
-  }
+	}
 }
 
 impl TryFrom<CommandNode> for Vec<u8> {
@@ -179,7 +179,7 @@ impl TryFrom<CommandNode> for Vec<u8> {
 					if flags & 0x02 == 0x02 {
 						output.append(&mut crate::serialize::float(max.unwrap()));
 					}
-				},
+				}
 				ParserProperty::Double(flags, min, max) => {
 					output.push(flags);
 					if flags & 0x01 == 0x01 {
@@ -188,7 +188,7 @@ impl TryFrom<CommandNode> for Vec<u8> {
 					if flags & 0x02 == 0x02 {
 						output.append(&mut crate::serialize::double(max.unwrap()));
 					}
-				},
+				}
 				ParserProperty::Integer(flags, min, max) => {
 					output.push(flags);
 					if flags & 0x01 == 0x01 {
@@ -197,7 +197,7 @@ impl TryFrom<CommandNode> for Vec<u8> {
 					if flags & 0x02 == 0x02 {
 						output.append(&mut crate::serialize::int(max.unwrap()));
 					}
-				},
+				}
 				ParserProperty::Long(flags, min, max) => {
 					output.push(flags);
 					if flags & 0x01 == 0x01 {
@@ -206,34 +206,34 @@ impl TryFrom<CommandNode> for Vec<u8> {
 					if flags & 0x02 == 0x02 {
 						output.append(&mut crate::serialize::long(max.unwrap()));
 					}
-				},
+				}
 				ParserProperty::String(behavior) => {
 					output.append(&mut crate::serialize::varint(behavior));
-				},
+				}
 				ParserProperty::Entity(flags) => {
 					output.push(flags);
-				},
+				}
 				ParserProperty::ScoreHolder(flags) => {
 					output.push(flags);
-				},
+				}
 				ParserProperty::Time(min) => {
 					output.append(&mut crate::serialize::int(min));
-				},
+				}
 				ParserProperty::ResourceOrTag(registry) => {
 					output.append(&mut crate::serialize::string(&registry));
-				},
+				}
 				ParserProperty::ResourceOrTagKey(registry) => {
 					output.append(&mut crate::serialize::string(&registry));
-				},
+				}
 				ParserProperty::Resource(registry) => {
 					output.append(&mut crate::serialize::string(&registry));
-				},
+				}
 				ParserProperty::ResourceKey(registry) => {
 					output.append(&mut crate::serialize::string(&registry));
-				},
+				}
 				ParserProperty::ResourceSelector(registry) => {
 					output.append(&mut crate::serialize::string(&registry));
-				},
+				}
 				_ => (),
 			}
 		}
@@ -252,44 +252,36 @@ impl TryFrom<&mut Vec<u8>> for CommandNode {
 		let flags = value.remove(0);
 		let children_len = crate::deserialize::varint(value)?;
 		let children: Vec<i32> = (0..children_len).map(|_| crate::deserialize::varint(value).unwrap()).collect();
-		let redirect_node = if flags & 0x08 == 0x08 {
-			Some(crate::deserialize::varint(value)?)
-		} else {
-			None
-		};
-		let name = if flags & 0x03 == 1 || flags & 0x03 == 2 {
-			Some(crate::deserialize::string(value)?)
-		} else {
-			None
-		};
+		let redirect_node = if flags & 0x08 == 0x08 { Some(crate::deserialize::varint(value)?) } else { None };
+		let name = if flags & 0x03 == 1 || flags & 0x03 == 2 { Some(crate::deserialize::string(value)?) } else { None };
 		let properties = if flags & 0x03 == 2 {
 			let properties_id = crate::deserialize::varint(value)?;
 			Some(match properties_id {
 				0 => ParserProperty::Bool,
 				1 => {
 					let flags = value.remove(0);
-					let min = if flags & 0x01 == 0x01 {	Some(crate::deserialize::float(value)?) } else { None };
-					let max = if flags & 0x02 == 0x02 {	Some(crate::deserialize::float(value)?) } else { None };
+					let min = if flags & 0x01 == 0x01 { Some(crate::deserialize::float(value)?) } else { None };
+					let max = if flags & 0x02 == 0x02 { Some(crate::deserialize::float(value)?) } else { None };
 					ParserProperty::Float(flags, min, max)
-				},
+				}
 				2 => {
 					let flags = value.remove(0);
-					let min = if flags & 0x01 == 0x01 {	Some(crate::deserialize::double(value)?) } else {	None };
-					let max = if flags & 0x02 == 0x02 {	Some(crate::deserialize::double(value)?) } else { None };
+					let min = if flags & 0x01 == 0x01 { Some(crate::deserialize::double(value)?) } else { None };
+					let max = if flags & 0x02 == 0x02 { Some(crate::deserialize::double(value)?) } else { None };
 					ParserProperty::Double(flags, min, max)
-				},
+				}
 				3 => {
 					let flags = value.remove(0);
-					let min = if flags & 0x01 == 0x01 {	Some(crate::deserialize::int(value)?) } else { None };
-					let max = if flags & 0x02 == 0x02 {	Some(crate::deserialize::int(value)?) } else { None };
+					let min = if flags & 0x01 == 0x01 { Some(crate::deserialize::int(value)?) } else { None };
+					let max = if flags & 0x02 == 0x02 { Some(crate::deserialize::int(value)?) } else { None };
 					ParserProperty::Integer(flags, min, max)
-				},
+				}
 				4 => {
 					let flags = value.remove(0);
-					let min = if flags & 0x01 == 0x01 {	Some(crate::deserialize::long(value)?) } else {	None };
-					let max = if flags & 0x02 == 0x02 {	Some(crate::deserialize::long(value)?) } else { None };
+					let min = if flags & 0x01 == 0x01 { Some(crate::deserialize::long(value)?) } else { None };
+					let max = if flags & 0x02 == 0x02 { Some(crate::deserialize::long(value)?) } else { None };
 					ParserProperty::Long(flags, min, max)
-				},
+				}
 				5 => ParserProperty::String(crate::deserialize::varint(value)?),
 				6 => ParserProperty::Entity(value.remove(0)),
 				7 => ParserProperty::GameProfile,
@@ -345,11 +337,7 @@ impl TryFrom<&mut Vec<u8>> for CommandNode {
 		} else {
 			None
 		};
-		let suggestions_type = if flags & 0x10 == 0x10 {
-			Some(crate::deserialize::string(value)?)
-		} else {
-			None
-		};
+		let suggestions_type = if flags & 0x10 == 0x10 { Some(crate::deserialize::string(value)?) } else { None };
 
 		return Ok(Self {
 			flags,
@@ -359,5 +347,5 @@ impl TryFrom<&mut Vec<u8>> for CommandNode {
 			properties,
 			suggestions_type,
 		});
-  }
+	}
 }

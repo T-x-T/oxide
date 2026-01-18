@@ -12,8 +12,12 @@ pub struct ConfirmTeleportation {
 
 impl Packet for ConfirmTeleportation {
 	const PACKET_ID: u8 = 0x00;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ConfirmTeleportation> for Vec<u8> {
@@ -34,7 +38,7 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(ConfirmTeleportation {
 			teleport_id: crate::deserialize::varint(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -49,8 +53,12 @@ pub struct ChatCommand {
 
 impl Packet for ChatCommand {
 	const PACKET_ID: u8 = 0x06;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ChatCommand> for Vec<u8> {
@@ -71,7 +79,7 @@ impl TryFrom<Vec<u8>> for ChatCommand {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(ChatCommand {
 			command: crate::deserialize::string(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -92,8 +100,12 @@ pub struct ChatMessage {
 
 impl Packet for ChatMessage {
 	const PACKET_ID: u8 = 0x08;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ChatMessage> for Vec<u8> {
@@ -106,11 +118,11 @@ impl TryFrom<ChatMessage> for Vec<u8> {
 		result.append(&mut crate::serialize::long(value.timestamp));
 		result.append(&mut crate::serialize::long(value.salt));
 		if value.signature.is_empty() {
-      result.append(&mut crate::serialize::boolean(false));
+			result.append(&mut crate::serialize::boolean(false));
 		} else {
-      result.append(&mut crate::serialize::boolean(true));
-      result.append(&mut crate::serialize::varint(value.signature.len() as i32));
-      value.signature.iter().for_each(|x| result.push(*x));
+			result.append(&mut crate::serialize::boolean(true));
+			result.append(&mut crate::serialize::varint(value.signature.len() as i32));
+			value.signature.iter().for_each(|x| result.push(*x));
 		}
 		result.append(&mut crate::serialize::varint(value.message_count));
 		value.acknowledged.iter().for_each(|x| result.push(*x));
@@ -124,28 +136,28 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-	  let message = crate::deserialize::string(&mut value)?;
-	  let timestamp = crate::deserialize::long(&mut value)?;
-	  let salt = crate::deserialize::long(&mut value)?;
+		let message = crate::deserialize::string(&mut value)?;
+		let timestamp = crate::deserialize::long(&mut value)?;
+		let salt = crate::deserialize::long(&mut value)?;
 		let has_signature = crate::deserialize::boolean(&mut value)?;
 		let signature: Vec<u8> = if has_signature {
-		  let signature_length = crate::deserialize::varint(&mut value)?;
-		  (0..signature_length).map(|_| value.remove(0)).collect()
+			let signature_length = crate::deserialize::varint(&mut value)?;
+			(0..signature_length).map(|_| value.remove(0)).collect()
 		} else {
-      vec![]
+			vec![]
 		};
-	  let message_count = crate::deserialize::varint(&mut value)?;
+		let message_count = crate::deserialize::varint(&mut value)?;
 		let acknowledged: Vec<u8> = (0..3).map(|_| value.remove(0)).collect();
-	  let checksum = value.remove(0);
+		let checksum = value.remove(0);
 
 		return Ok(Self {
-      message,
-      timestamp,
-      salt,
-      signature,
-      message_count,
-      acknowledged,
-      checksum,
+			message,
+			timestamp,
+			salt,
+			signature,
+			message_count,
+			acknowledged,
+			checksum,
 		});
 	}
 }
@@ -154,7 +166,7 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 // MARK: 0x11 click container
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ClickContainer {
 	pub window_id: i32,
 	pub state_id: i32,
@@ -162,13 +174,17 @@ pub struct ClickContainer {
 	pub button: u8,
 	pub mode: i32,
 	pub changed_slots: Vec<(i16, Option<Slot>)>, //This is actually a *hashed* slot (god why??)
-	pub carried_item: Option<Slot>, //Again actually **hashed**
+	pub carried_item: Option<Slot>,              //Again actually **hashed**
 }
 
 impl Packet for ClickContainer {
 	const PACKET_ID: u8 = 0x11;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<ClickContainer> for Vec<u8> {
@@ -184,10 +200,10 @@ impl TryFrom<ClickContainer> for Vec<u8> {
 		result.append(&mut crate::serialize::varint(value.mode));
 		result.append(&mut crate::serialize::varint(value.changed_slots.len() as i32));
 		for changed_slot in value.changed_slots {
-		  result.append(&mut crate::serialize::short(changed_slot.0));
-		  result.append(&mut crate::serialize::hashed_slot(changed_slot.1.as_ref()));
+			result.append(&mut crate::serialize::short(changed_slot.0));
+			result.append(&mut crate::slot::serialize_hashed_slot(changed_slot.1.as_ref()));
 		}
-	  result.append(&mut crate::serialize::hashed_slot(value.carried_item.as_ref()));
+		result.append(&mut crate::slot::serialize_hashed_slot(value.carried_item.as_ref()));
 
 		return Ok(result);
 	}
@@ -206,21 +222,18 @@ impl TryFrom<Vec<u8>> for ClickContainer {
 		let changed_slots_len = crate::deserialize::varint(&mut value)?;
 		let mut changed_slots: Vec<(i16, Option<Slot>)> = Vec::new();
 		for _ in 0..changed_slots_len {
-      changed_slots.push((
-        crate::deserialize::short(&mut value)?,
-        crate::deserialize::hashed_slot(&mut value)?
-      ));
+			changed_slots.push((crate::deserialize::short(&mut value)?, crate::slot::deserialize_hashed_slot(&mut value)?));
 		}
-    let carried_item = crate::deserialize::hashed_slot(&mut value)?;
+		let carried_item = crate::slot::deserialize_hashed_slot(&mut value)?;
 
-	  return Ok(ClickContainer {
-      window_id,
-      state_id,
-      slot,
-      button,
-      mode,
-      changed_slots,
-      carried_item,
+		return Ok(ClickContainer {
+			window_id,
+			state_id,
+			slot,
+			button,
+			mode,
+			changed_slots,
+			carried_item,
 		});
 	}
 }
@@ -236,8 +249,12 @@ pub struct CloseContainer {
 
 impl Packet for CloseContainer {
 	const PACKET_ID: u8 = 0x12;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<CloseContainer> for Vec<u8> {
@@ -257,8 +274,8 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let window_id = crate::deserialize::varint(&mut value)?;
-	  return Ok(CloseContainer {
-      window_id,
+		return Ok(CloseContainer {
+			window_id,
 		});
 	}
 }
@@ -267,7 +284,7 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 // MARK: 0x19 interact
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Interact {
 	pub entity_id: i32,
 	pub interact_type: i32,
@@ -280,8 +297,12 @@ pub struct Interact {
 
 impl Packet for Interact {
 	const PACKET_ID: u8 = 0x19;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<Interact> for Vec<u8> {
@@ -293,12 +314,12 @@ impl TryFrom<Interact> for Vec<u8> {
 		result.append(&mut crate::serialize::varint(value.entity_id));
 		result.append(&mut crate::serialize::varint(value.interact_type));
 		if value.interact_type == 2 {
-		  result.append(&mut crate::serialize::float(value.target_x.unwrap()));
-		  result.append(&mut crate::serialize::float(value.target_y.unwrap()));
-		  result.append(&mut crate::serialize::float(value.target_z.unwrap()));
+			result.append(&mut crate::serialize::float(value.target_x.unwrap()));
+			result.append(&mut crate::serialize::float(value.target_y.unwrap()));
+			result.append(&mut crate::serialize::float(value.target_z.unwrap()));
 		}
 		if value.interact_type == 0 || value.interact_type == 2 {
-      result.append(&mut crate::serialize::varint(value.hand.unwrap()));
+			result.append(&mut crate::serialize::varint(value.hand.unwrap()));
 		}
 		result.append(&mut crate::serialize::boolean(value.sneak_key_pressed));
 
@@ -310,38 +331,22 @@ impl TryFrom<Vec<u8>> for Interact {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-	  let entity_id: i32 = crate::deserialize::varint(&mut value)?;
-	  let interact_type: i32 = crate::deserialize::varint(&mut value)?;
-		let target_x: Option<f32> = if interact_type == 2 {
-		  Some(crate::deserialize::float(&mut value)?)
-		} else {
-		  None
-		};
-		let target_y: Option<f32> = if interact_type == 2 {
-		  Some(crate::deserialize::float(&mut value)?)
-		} else {
-		  None
-		};
-		let target_z: Option<f32> = if interact_type == 2 {
-		  Some(crate::deserialize::float(&mut value)?)
-		} else {
-		  None
-		};
-		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 {
-		  Some(crate::deserialize::varint(&mut value)?)
-		} else {
-		  None
-		};
+		let entity_id: i32 = crate::deserialize::varint(&mut value)?;
+		let interact_type: i32 = crate::deserialize::varint(&mut value)?;
+		let target_x: Option<f32> = if interact_type == 2 { Some(crate::deserialize::float(&mut value)?) } else { None };
+		let target_y: Option<f32> = if interact_type == 2 { Some(crate::deserialize::float(&mut value)?) } else { None };
+		let target_z: Option<f32> = if interact_type == 2 { Some(crate::deserialize::float(&mut value)?) } else { None };
+		let hand: Option<i32> = if interact_type == 0 || interact_type == 2 { Some(crate::deserialize::varint(&mut value)?) } else { None };
 		let sneak_key_pressed: bool = crate::deserialize::boolean(&mut value)?;
 
-	  return Ok(Interact {
-      entity_id,
-      interact_type,
-      target_x,
-      target_y,
-      target_z,
-      hand,
-      sneak_key_pressed,
+		return Ok(Interact {
+			entity_id,
+			interact_type,
+			target_x,
+			target_y,
+			target_z,
+			hand,
+			sneak_key_pressed,
 		});
 	}
 }
@@ -360,8 +365,12 @@ pub struct SetPlayerPosition {
 
 impl Packet for SetPlayerPosition {
 	const PACKET_ID: u8 = 0x1d;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetPlayerPosition> for Vec<u8> {
@@ -388,7 +397,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPosition {
 			y: crate::deserialize::double(&mut value)?,
 			z: crate::deserialize::double(&mut value)?,
 			flags: value.remove(0),
-		})
+		});
 	}
 }
 
@@ -408,8 +417,12 @@ pub struct SetPlayerPositionAndRotation {
 
 impl Packet for SetPlayerPositionAndRotation {
 	const PACKET_ID: u8 = 0x1e;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetPlayerPositionAndRotation> for Vec<u8> {
@@ -440,7 +453,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPositionAndRotation {
 			yaw: crate::deserialize::float(&mut value)?,
 			pitch: crate::deserialize::float(&mut value)?,
 			flags: value.remove(0),
-		})
+		});
 	}
 }
 
@@ -457,8 +470,12 @@ pub struct SetPlayerRotation {
 
 impl Packet for SetPlayerRotation {
 	const PACKET_ID: u8 = 0x1f;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetPlayerRotation> for Vec<u8> {
@@ -483,7 +500,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 			yaw: crate::deserialize::float(&mut value)?,
 			pitch: crate::deserialize::float(&mut value)?,
 			flags: value.remove(0),
-		})
+		});
 	}
 }
 
@@ -499,8 +516,12 @@ pub struct PickItemFromBlock {
 
 impl Packet for PickItemFromBlock {
 	const PACKET_ID: u8 = 0x23;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<PickItemFromBlock> for Vec<u8> {
@@ -523,7 +544,7 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 		return Ok(Self {
 			location: crate::deserialize::position(&mut value)?,
 			include_data: crate::deserialize::boolean(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -533,16 +554,20 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
-  pub status: i32,
-  pub location: crate::BlockPosition,
-  pub face: u8,
-  pub sequence: i32,
+	pub status: i32,
+	pub location: crate::BlockPosition,
+	pub face: u8,
+	pub sequence: i32,
 }
 
 impl Packet for PlayerAction {
 	const PACKET_ID: u8 = 0x28;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<PlayerAction> for Vec<u8> {
@@ -569,7 +594,7 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 			location: crate::deserialize::position(&mut value)?,
 			face: value.remove(0),
 			sequence: crate::deserialize::varint(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -577,21 +602,25 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 // MARK: 0x2A player input
 //
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PlayerInput {
-  pub forward: bool,
-  pub backward: bool,
-  pub left: bool,
-  pub right: bool,
-  pub jump: bool,
-  pub sneak: bool,
-  pub sprint: bool,
+	pub forward: bool,
+	pub backward: bool,
+	pub left: bool,
+	pub right: bool,
+	pub jump: bool,
+	pub sneak: bool,
+	pub sprint: bool,
 }
 
 impl Packet for PlayerInput {
 	const PACKET_ID: u8 = 0x2a;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<PlayerInput> for Vec<u8> {
@@ -599,13 +628,13 @@ impl TryFrom<PlayerInput> for Vec<u8> {
 
 	fn try_from(value: PlayerInput) -> Result<Self, Box<dyn Error>> {
 		return Ok(vec![
-		  value.forward as u8 |
-			(value.backward as u8) << 1 |
-			(value.left as u8) << 2 |
-			(value.right as u8) << 3 |
-			(value.jump as u8) << 4 |
-			(value.sneak as u8) << 5 |
-			(value.sprint as u8) << 6
+			value.forward as u8
+				| (value.backward as u8) << 1
+				| (value.left as u8) << 2
+				| (value.right as u8) << 3
+				| (value.jump as u8) << 4
+				| (value.sneak as u8) << 5
+				| (value.sprint as u8) << 6,
 		]);
 	}
 }
@@ -614,7 +643,7 @@ impl TryFrom<Vec<u8>> for PlayerInput {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-	  let flags = value.pop().unwrap();
+		let flags = value.pop().unwrap();
 
 		return Ok(Self {
 			forward: flags & 0x01 == 0x01,
@@ -624,7 +653,7 @@ impl TryFrom<Vec<u8>> for PlayerInput {
 			jump: flags & 0x10 == 0x10,
 			sneak: flags & 0x20 == 0x20,
 			sprint: flags & 0x40 == 0x40,
-		})
+		});
 	}
 }
 
@@ -634,13 +663,17 @@ impl TryFrom<Vec<u8>> for PlayerInput {
 
 #[derive(Debug, Clone)]
 pub struct SetHandItem {
-  pub slot: i16,
+	pub slot: i16,
 }
 
 impl Packet for SetHandItem {
 	const PACKET_ID: u8 = 0x34;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetHandItem> for Vec<u8> {
@@ -661,7 +694,7 @@ impl TryFrom<Vec<u8>> for SetHandItem {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::short(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -671,14 +704,18 @@ impl TryFrom<Vec<u8>> for SetHandItem {
 
 #[derive(Debug, Clone)]
 pub struct SetCreativeModeSlot {
-  pub slot: i16,
-  pub item: Option<Slot>,
+	pub slot: i16,
+	pub item: Option<Slot>,
 }
 
 impl Packet for SetCreativeModeSlot {
 	const PACKET_ID: u8 = 0x37;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
@@ -688,7 +725,7 @@ impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
 		let mut result: Vec<u8> = Vec::new();
 
 		result.append(&mut crate::serialize::short(value.slot));
-		result.append(&mut crate::serialize::slot(value.item.as_ref()));
+		result.append(&mut crate::slot::serialize_hashed_slot(value.item.as_ref()));
 
 		return Ok(result);
 	}
@@ -700,8 +737,8 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::short(&mut value)?,
-			item: crate::deserialize::slot(&mut value)?,
-		})
+			item: crate::slot::deserialize_hashed_slot(&mut value)?,
+		});
 	}
 }
 
@@ -711,18 +748,22 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 
 #[derive(Debug, Clone)]
 pub struct UpdateSign {
-  pub location: BlockPosition,
-  pub is_front_text: bool,
-  pub line_1: String,
-  pub line_2: String,
-  pub line_3: String,
-  pub line_4: String,
+	pub location: BlockPosition,
+	pub is_front_text: bool,
+	pub line_1: String,
+	pub line_2: String,
+	pub line_3: String,
+	pub line_4: String,
 }
 
 impl Packet for UpdateSign {
 	const PACKET_ID: u8 = 0x3b;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<UpdateSign> for Vec<u8> {
@@ -753,7 +794,7 @@ impl TryFrom<Vec<u8>> for UpdateSign {
 			line_2: crate::deserialize::string(&mut value)?,
 			line_3: crate::deserialize::string(&mut value)?,
 			line_4: crate::deserialize::string(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -763,13 +804,17 @@ impl TryFrom<Vec<u8>> for UpdateSign {
 
 #[derive(Debug, Clone)]
 pub struct SwingArm {
-  pub hand: i32,
+	pub hand: i32,
 }
 
 impl Packet for SwingArm {
 	const PACKET_ID: u8 = 0x3c;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<SwingArm> for Vec<u8> {
@@ -790,7 +835,7 @@ impl TryFrom<Vec<u8>> for SwingArm {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			hand: crate::deserialize::varint(&mut value)?,
-		})
+		});
 	}
 }
 
@@ -800,21 +845,25 @@ impl TryFrom<Vec<u8>> for SwingArm {
 
 #[derive(Debug, Clone)]
 pub struct UseItemOn {
-  pub hand: i32,
-  pub location: crate::BlockPosition,
-  pub face: u8,
-  pub cursor_position_x: f32,
-  pub cursor_position_y: f32,
-  pub cursor_position_z: f32,
-  pub inside_block: bool,
-  pub world_border_hit: bool,
-  pub sequence: i32,
+	pub hand: i32,
+	pub location: crate::BlockPosition,
+	pub face: u8,
+	pub cursor_position_x: f32,
+	pub cursor_position_y: f32,
+	pub cursor_position_z: f32,
+	pub inside_block: bool,
+	pub world_border_hit: bool,
+	pub sequence: i32,
 }
 
 impl Packet for UseItemOn {
 	const PACKET_ID: u8 = 0x3f;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Play }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
 }
 
 impl TryFrom<UseItemOn> for Vec<u8> {
@@ -851,6 +900,6 @@ impl TryFrom<Vec<u8>> for UseItemOn {
 			inside_block: crate::deserialize::boolean(&mut value)?,
 			world_border_hit: crate::deserialize::boolean(&mut value)?,
 			sequence: crate::deserialize::varint(&mut value)?,
-		})
+		});
 	}
 }

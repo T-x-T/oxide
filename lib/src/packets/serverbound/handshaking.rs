@@ -10,8 +10,12 @@ pub struct Handshake {
 
 impl Packet for Handshake {
 	const PACKET_ID: u8 = 0x00;
-  fn get_target() -> PacketTarget { PacketTarget::Server }
-  fn get_state() -> ConnectionState { ConnectionState::Handshaking }
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Handshaking
+	}
 }
 
 #[derive(Debug, Clone)]
@@ -53,7 +57,7 @@ impl TryFrom<Vec<u8>> for Handshake {
 			server_address: crate::deserialize::string(&mut value)?,
 			sever_port: crate::deserialize::unsigned_short(&mut value)?,
 			next_state: crate::deserialize::varint(&mut value)?.try_into()?,
-		})
+		});
 	}
 }
 

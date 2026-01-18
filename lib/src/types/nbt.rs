@@ -67,7 +67,7 @@ impl NbtTag {
 					}
 				}
 				return None;
-			},
+			}
 			NbtTag::Root(p) => {
 				for tag in p {
 					if tag.get_description() == description {
@@ -75,7 +75,7 @@ impl NbtTag {
 					}
 				}
 				return None;
-			},
+			}
 			_ => return None,
 		}
 	}
@@ -89,7 +89,7 @@ impl NbtTag {
 					}
 				}
 				return None;
-			},
+			}
 			NbtTag::Root(p) => {
 				for tag in p {
 					if tag.get_description() == description {
@@ -97,25 +97,25 @@ impl NbtTag {
 					}
 				}
 				return None;
-			},
+			}
 			_ => return None,
 		}
 	}
 
 	pub fn get_description(&self) -> &str {
 		return match self {
-	    NbtTag::Byte(d, _) => d,
-	    NbtTag::Short(d, _) => d,
-	    NbtTag::Int(d, _) => d,
-	    NbtTag::Long(d, _) => d,
-	    NbtTag::Float(d, _) => d,
-	    NbtTag::Double(d, _) => d,
-	    NbtTag::ByteArray(d, _) => d,
-	    NbtTag::String(d, _) => d,
-	    NbtTag::List(d, _) => d,
-	    NbtTag::TagCompound(d, _) => d,
-	    NbtTag::IntArray(d, _) => d,
-	    NbtTag::LongArray(d, _) => d,
+			NbtTag::Byte(d, _) => d,
+			NbtTag::Short(d, _) => d,
+			NbtTag::Int(d, _) => d,
+			NbtTag::Long(d, _) => d,
+			NbtTag::Float(d, _) => d,
+			NbtTag::Double(d, _) => d,
+			NbtTag::ByteArray(d, _) => d,
+			NbtTag::String(d, _) => d,
+			NbtTag::List(d, _) => d,
+			NbtTag::TagCompound(d, _) => d,
+			NbtTag::IntArray(d, _) => d,
+			NbtTag::LongArray(d, _) => d,
 			NbtTag::Root(_) => "",
 		};
 	}
@@ -244,7 +244,7 @@ impl NbtListTag {
 					}
 				}
 				return None;
-			},
+			}
 			_ => return None,
 		}
 	}
@@ -258,7 +258,7 @@ impl NbtListTag {
 					}
 				}
 				return None;
-			},
+			}
 			_ => return None,
 		}
 	}

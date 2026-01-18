@@ -1,4 +1,5 @@
-use std::{error::Error};
+use std::error::Error;
+use std::sync::Arc;
 
 use data::blocks::Type;
 
@@ -7,843 +8,560 @@ use crate::packets::Packet;
 use super::*;
 
 #[derive(Debug, Clone)]
-pub struct BlockEntity {
-  pub id: BlockEntityId,
-  pub position: BlockPosition, //global position, NOT within the chunk
-  pub components: Option<Vec<SlotComponent>>, //At least I think so?
-  pub data: BlockEntityData,
-  pub needs_ticking: bool,
+pub enum BlockEntity {
+	Banner(crate::blockentities::banner::Banner),
+	Barrel(crate::blockentities::barrel::Barrel),
+	Beacon(crate::blockentities::beacon::Beacon),
+	Bed(crate::blockentities::bed::Bed),
+	Beehive(crate::blockentities::beehive::Beehive),
+	Bell(crate::blockentities::bell::Bell),
+	BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace),
+	BrewingStand(crate::blockentities::brewing_stand::BrewingStand),
+	BrushableBlock(crate::blockentities::brushable_block::BrushableBlock),
+	CalibratedSculkSensor(crate::blockentities::calibrated_sculk_sensor::CalibratedSculkSensor),
+	Campfire(crate::blockentities::campfire::Campfire),
+	Chest(crate::blockentities::chest::Chest),
+	ChiseledBookshelf(crate::blockentities::chiseled_bookshelf::ChiseledBookshelf),
+	CommandBlock(crate::blockentities::command_block::CommandBlock),
+	Comparator(crate::blockentities::comparator::Comparator),
+	Conduit(crate::blockentities::conduit::Conduit),
+	Crafter(crate::blockentities::crafter::Crafter),
+	CreakingHeart(crate::blockentities::creaking_heart::CreakingHeart),
+	DaylightDetector(crate::blockentities::daylight_detector::DaylightDetector),
+	DecoratedPot(crate::blockentities::decorated_pot::DecoratedPot),
+	Dispenser(crate::blockentities::dispenser::Dispenser),
+	Dropper(crate::blockentities::dropper::Dropper),
+	EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable),
+	EndGateway(crate::blockentities::end_gateway::EndGateway),
+	EndPortal(crate::blockentities::end_portal::EndPortal),
+	EnderChest(crate::blockentities::ender_chest::EnderChest),
+	Furnace(crate::blockentities::furnace::Furnace),
+	HangingSign(crate::blockentities::hanging_sign::HangingSign),
+	Hopper(crate::blockentities::hopper::Hopper),
+	Jigsaw(crate::blockentities::jigsaw::Jigsaw),
+	Jukebox(crate::blockentities::jukebox::Jukebox),
+	Lectern(crate::blockentities::lectern::Lectern),
+	MobSpawner(crate::blockentities::mob_spawner::MobSpawner),
+	Piston(crate::blockentities::piston::Piston),
+	SculkCatalyst(crate::blockentities::sculk_catalyst::SculkCatalyst),
+	SculkSensor(crate::blockentities::sculk_sensor::SculkSensor),
+	SculkShrieker(crate::blockentities::sculk_shrieker::SculkShrieker),
+	ShulkerBox(crate::blockentities::shulker_box::ShulkerBox),
+	Sign(crate::blockentities::sign::Sign),
+	Skull(crate::blockentities::skull::Skull),
+	Smoker(crate::blockentities::smoker::Smoker),
+	SoulCampfire(crate::blockentities::soul_campfire::SoulCampfire),
+	StructureBlock(crate::blockentities::structure_block::StructureBlock),
+	TrappedChest(crate::blockentities::trapped_chest::TrappedChest),
+	TrialSpawner(crate::blockentities::trial_spawner::TrialSpawner),
+	Vault(crate::blockentities::vault::Vault),
+}
+
+pub trait CommonBlockEntity {
+	fn tick(&mut self, players: &[Player], game: Arc<Game>);
+	fn new(position: BlockPosition) -> Self;
+	fn get_contained_items_mut(&mut self) -> &mut [Item];
+	fn get_contained_items_owned(&self) -> Vec<Item>;
 }
 
 impl BlockEntity {
-  pub fn tick(&mut self, players: &[Player]) {
-    match self.id {
-      BlockEntityId::Furnace => {
-        if self.needs_ticking {
-          if let BlockEntityData::Furnace(data, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) = &mut self.data {
-            if data[0].count == 0 {
-              self.needs_ticking = false;
+	pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
+		match self {
+			BlockEntity::Furnace(furnace) => furnace.tick(players, game),
+			BlockEntity::Chest(chest) => chest.tick(players, game),
+			BlockEntity::Sign(sign) => sign.tick(players, game),
+			BlockEntity::Barrel(barrel) => barrel.tick(players, game),
+			BlockEntity::Bed(bed) => bed.tick(players, game),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, game),
+			BlockEntity::Beacon(beacon) => beacon.tick(players, game),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, game),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, game),
+			BlockEntity::CommandBlock(command_block) => command_block.tick(players, game),
+			BlockEntity::Crafter(crafter) => crafter.tick(players, game),
+			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, game),
+			BlockEntity::Dropper(dropper) => dropper.tick(players, game),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, game),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, game),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, game),
+			BlockEntity::Hopper(hopper) => hopper.tick(players, game),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, game),
+			BlockEntity::Smoker(smoker) => smoker.tick(players, game),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, game),
+			BlockEntity::Banner(banner) => banner.tick(players, game),
+			BlockEntity::Beehive(beehive) => beehive.tick(players, game),
+			BlockEntity::Bell(bell) => bell.tick(players, game),
+			BlockEntity::BrushableBlock(brushable_block) => brushable_block.tick(players, game),
+			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.tick(players, game),
+			BlockEntity::Campfire(campfire) => campfire.tick(players, game),
+			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.tick(players, game),
+			BlockEntity::Comparator(comperator) => comperator.tick(players, game),
+			BlockEntity::Conduit(conduit) => conduit.tick(players, game),
+			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.tick(players, game),
+			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.tick(players, game),
+			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.tick(players, game),
+			BlockEntity::EndGateway(end_gateway) => end_gateway.tick(players, game),
+			BlockEntity::EndPortal(end_portal) => end_portal.tick(players, game),
+			BlockEntity::Jukebox(jukebox) => jukebox.tick(players, game),
+			BlockEntity::Lectern(lectern) => lectern.tick(players, game),
+			BlockEntity::Piston(piston) => piston.tick(players, game),
+			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.tick(players, game),
+			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.tick(players, game),
+			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.tick(players, game),
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.tick(players, game),
+			BlockEntity::Skull(skull) => skull.tick(players, game),
+			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.tick(players, game),
+			BlockEntity::StructureBlock(structure_block) => structure_block.tick(players, game),
+			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.tick(players, game),
+			BlockEntity::Vault(vault) => vault.tick(players, game),
+		}
+	}
 
-              *lit_time_remaining = 0;
-              *cooking_time_spent = 0;
-              *cooking_total_time = 0;
-              *lit_total_time = 0;
+	pub fn new_from_block(block_type: data::blocks::Type, position: BlockPosition) -> Option<Self> {
+		return match block_type {
+			Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
+			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
+			Type::WallSign | Type::StandingSign => Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position))),
+			Type::Barrel => Some(BlockEntity::Barrel(crate::blockentities::barrel::Barrel::new(position))),
+			Type::Bed => Some(BlockEntity::Bed(crate::blockentities::bed::Bed::new(position))),
+			Type::Spawner => Some(BlockEntity::MobSpawner(crate::blockentities::mob_spawner::MobSpawner::new(position))),
+			Type::Beacon => Some(BlockEntity::Beacon(crate::blockentities::beacon::Beacon::new(position))),
+			Type::BlastFurnace => Some(BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::new(position))),
+			Type::BrewingStand => Some(BlockEntity::BrewingStand(crate::blockentities::brewing_stand::BrewingStand::new(position))),
+			Type::Command => Some(BlockEntity::CommandBlock(crate::blockentities::command_block::CommandBlock::new(position))),
+			Type::Crafter => Some(BlockEntity::Crafter(crate::blockentities::crafter::Crafter::new(position))),
+			Type::Dispenser => Some(BlockEntity::Dispenser(crate::blockentities::dispenser::Dispenser::new(position))),
+			Type::Dropper => Some(BlockEntity::Dropper(crate::blockentities::dropper::Dropper::new(position))),
+			Type::EnchantmentTable => Some(BlockEntity::EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable::new(position))),
+			Type::EnderChest => Some(BlockEntity::EnderChest(crate::blockentities::ender_chest::EnderChest::new(position))),
+			Type::WallHangingSign | Type::CeilingHangingSign => {
+				Some(BlockEntity::HangingSign(crate::blockentities::hanging_sign::HangingSign::new(position)))
+			}
+			Type::Hopper => Some(BlockEntity::Hopper(crate::blockentities::hopper::Hopper::new(position))),
+			Type::Jigsaw => Some(BlockEntity::Jigsaw(crate::blockentities::jigsaw::Jigsaw::new(position))),
+			Type::Smoker => Some(BlockEntity::Smoker(crate::blockentities::smoker::Smoker::new(position))),
+			Type::TrappedChest => Some(BlockEntity::TrappedChest(crate::blockentities::trapped_chest::TrappedChest::new(position))),
+			Type::Banner | Type::WallBanner => Some(BlockEntity::Banner(crate::blockentities::banner::Banner::new(position))),
+			Type::Beehive => Some(BlockEntity::Beehive(crate::blockentities::beehive::Beehive::new(position))),
+			Type::Bell => Some(BlockEntity::Bell(crate::blockentities::bell::Bell::new(position))),
+			Type::Brushable => Some(BlockEntity::BrushableBlock(crate::blockentities::brushable_block::BrushableBlock::new(position))),
+			Type::CalibratedSculkSensor => {
+				Some(BlockEntity::CalibratedSculkSensor(crate::blockentities::calibrated_sculk_sensor::CalibratedSculkSensor::new(position)))
+			}
+			Type::Campfire => Some(BlockEntity::Campfire(crate::blockentities::campfire::Campfire::new(position))), //TODO: check if this is a soul campfire
+			Type::ChiseledBookShelf => {
+				Some(BlockEntity::ChiseledBookshelf(crate::blockentities::chiseled_bookshelf::ChiseledBookshelf::new(position)))
+			}
+			Type::Comparator => Some(BlockEntity::Comparator(crate::blockentities::comparator::Comparator::new(position))),
+			Type::Conduit => Some(BlockEntity::Conduit(crate::blockentities::conduit::Conduit::new(position))),
+			Type::CreakingHeart => Some(BlockEntity::CreakingHeart(crate::blockentities::creaking_heart::CreakingHeart::new(position))),
+			Type::DaylightDetector => {
+				Some(BlockEntity::DaylightDetector(crate::blockentities::daylight_detector::DaylightDetector::new(position)))
+			}
+			Type::DecoratedPot => Some(BlockEntity::DecoratedPot(crate::blockentities::decorated_pot::DecoratedPot::new(position))),
+			Type::EndGateway => Some(BlockEntity::EndGateway(crate::blockentities::end_gateway::EndGateway::new(position))),
+			Type::EndPortal => Some(BlockEntity::EndPortal(crate::blockentities::end_portal::EndPortal::new(position))),
+			Type::Jukebox => Some(BlockEntity::Jukebox(crate::blockentities::jukebox::Jukebox::new(position))),
+			Type::Lectern => Some(BlockEntity::Lectern(crate::blockentities::lectern::Lectern::new(position))),
+			Type::MovingPiston => Some(BlockEntity::Piston(crate::blockentities::piston::Piston::new(position))),
+			Type::SculkCatalyst => Some(BlockEntity::SculkCatalyst(crate::blockentities::sculk_catalyst::SculkCatalyst::new(position))),
+			Type::SculkSensor => Some(BlockEntity::SculkSensor(crate::blockentities::sculk_sensor::SculkSensor::new(position))),
+			Type::SculkShrieker => Some(BlockEntity::SculkShrieker(crate::blockentities::sculk_shrieker::SculkShrieker::new(position))),
+			Type::ShulkerBox => Some(BlockEntity::ShulkerBox(crate::blockentities::shulker_box::ShulkerBox::new(position))),
+			Type::Skull | Type::WallSkull => Some(BlockEntity::Skull(crate::blockentities::skull::Skull::new(position))),
+			Type::Structure => Some(BlockEntity::StructureBlock(crate::blockentities::structure_block::StructureBlock::new(position))),
+			Type::TrialSpawner => Some(BlockEntity::TrialSpawner(crate::blockentities::trial_spawner::TrialSpawner::new(position))),
+			Type::Vault => Some(BlockEntity::Vault(crate::blockentities::vault::Vault::new(position))),
+			_ => None,
+		};
+	}
 
-              players.iter()
-                .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
-                .for_each(|x| {
-                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                    window_id: 1,
-                    property: 0, //fuel left
-                    value: *lit_time_remaining, //ticks of fuel left
-                  }.try_into().unwrap()).unwrap();
+	pub fn get_position(&self) -> BlockPosition {
+		return match self {
+			BlockEntity::Furnace(furnace) => furnace.position,
+			BlockEntity::Chest(chest) => chest.position,
+			BlockEntity::Sign(sign) => sign.position,
+			BlockEntity::Barrel(barrel) => barrel.position,
+			BlockEntity::Bed(bed) => bed.position,
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.position,
+			BlockEntity::Beacon(beacon) => beacon.position,
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.position,
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.position,
+			BlockEntity::CommandBlock(command_block) => command_block.position,
+			BlockEntity::Crafter(crafter) => crafter.position,
+			BlockEntity::Dispenser(dispenser) => dispenser.position,
+			BlockEntity::Dropper(dropper) => dropper.position,
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.position,
+			BlockEntity::EnderChest(ender_chest) => ender_chest.position,
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.position,
+			BlockEntity::Hopper(hopper) => hopper.position,
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.position,
+			BlockEntity::Smoker(smoker) => smoker.position,
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.position,
+			BlockEntity::Banner(banner) => banner.position,
+			BlockEntity::Beehive(beehive) => beehive.position,
+			BlockEntity::Bell(bell) => bell.position,
+			BlockEntity::BrushableBlock(brushable_block) => brushable_block.position,
+			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.position,
+			BlockEntity::Campfire(campfire) => campfire.position,
+			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.position,
+			BlockEntity::Comparator(comparator) => comparator.position,
+			BlockEntity::Conduit(conduit) => conduit.position,
+			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.position,
+			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.position,
+			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.position,
+			BlockEntity::EndGateway(end_gateway) => end_gateway.position,
+			BlockEntity::EndPortal(end_portal) => end_portal.position,
+			BlockEntity::Jukebox(jukebox) => jukebox.position,
+			BlockEntity::Lectern(lectern) => lectern.position,
+			BlockEntity::Piston(piston) => piston.position,
+			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.position,
+			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.position,
+			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.position,
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.position,
+			BlockEntity::Skull(skull) => skull.position,
+			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.position,
+			BlockEntity::StructureBlock(structure_block) => structure_block.position,
+			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.position,
+			BlockEntity::Vault(vault) => vault.position,
+		};
+	}
 
-                  crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                    window_id: 1,
-                    property: 2, //progress
-                    value: *cooking_time_spent, //progress from 0-200
-                  }.try_into().unwrap()).unwrap();
-                });
+	pub fn get_id(&self) -> String {
+		match self {
+			BlockEntity::Furnace(_) => "minecraft:furnace".to_string(),
+			BlockEntity::Chest(_) => "minecraft:chest".to_string(),
+			BlockEntity::Sign(_) => "minecraft:sign".to_string(),
+			BlockEntity::Barrel(_) => "minecraft:barrel".to_string(),
+			BlockEntity::Bed(_) => "minecraft:bed".to_string(),
+			BlockEntity::MobSpawner(_) => "minecraft:mob_spawner".to_string(),
+			BlockEntity::Beacon(_) => "minecraft:beacon".to_string(),
+			BlockEntity::BlastFurnace(_) => "minecraft:blast_furnace".to_string(),
+			BlockEntity::BrewingStand(_) => "minecraft:brewing_stand".to_string(),
+			BlockEntity::CommandBlock(_) => "minecraft:command_block".to_string(),
+			BlockEntity::Crafter(_) => "minecraft:crafter".to_string(),
+			BlockEntity::Dispenser(_) => "minecraft:dispenser".to_string(),
+			BlockEntity::Dropper(_) => "minecraft:dropper".to_string(),
+			BlockEntity::EnchantingTable(_) => "minecraft:enchanting_table".to_string(),
+			BlockEntity::EnderChest(_) => "minecraft:ender_chest".to_string(),
+			BlockEntity::HangingSign(_) => "minecraft:hanging_sign".to_string(),
+			BlockEntity::Hopper(_) => "minecraft:hopper".to_string(),
+			BlockEntity::Jigsaw(_) => "minecraft:jigsaw".to_string(),
+			BlockEntity::Smoker(_) => "minecraft:smoker".to_string(),
+			BlockEntity::TrappedChest(_) => "minecraft:trapped_chest".to_string(),
+			BlockEntity::Banner(_) => "minecraft:banner".to_string(),
+			BlockEntity::Beehive(_) => "minecraft:beehive".to_string(),
+			BlockEntity::Bell(_) => "minecraft:bell".to_string(),
+			BlockEntity::BrushableBlock(_) => "minecraft:brushable_block".to_string(),
+			BlockEntity::CalibratedSculkSensor(_) => "minecraft:calibrated_sculk_sensor".to_string(),
+			BlockEntity::Campfire(_) => "minecraft:campfire".to_string(),
+			BlockEntity::ChiseledBookshelf(_) => "minecraft:chiseled_bookshelf".to_string(),
+			BlockEntity::Comparator(_) => "minecraft:comparator".to_string(),
+			BlockEntity::Conduit(_) => "minecraft:conduit".to_string(),
+			BlockEntity::CreakingHeart(_) => "minecraft:creaking_heart".to_string(),
+			BlockEntity::DaylightDetector(_) => "minecraft:daylight_detector".to_string(),
+			BlockEntity::DecoratedPot(_) => "minecraft:decorated_pot".to_string(),
+			BlockEntity::EndGateway(_) => "minecraft:end_gateway".to_string(),
+			BlockEntity::EndPortal(_) => "minecraft:end_portal".to_string(),
+			BlockEntity::Jukebox(_) => "minecraft:jukebox".to_string(),
+			BlockEntity::Lectern(_) => "minecraft:lectern".to_string(),
+			BlockEntity::Piston(_) => "minecraft:piston".to_string(),
+			BlockEntity::SculkCatalyst(_) => "minecraft:sculk_catalyst".to_string(),
+			BlockEntity::SculkSensor(_) => "minecraft:sculk_sensor".to_string(),
+			BlockEntity::SculkShrieker(_) => "minecraft:sculk_shrieker".to_string(),
+			BlockEntity::ShulkerBox(_) => "minecraft:shulker_box".to_string(),
+			BlockEntity::Skull(_) => "minecraft:skull".to_string(),
+			BlockEntity::SoulCampfire(_) => "minecraft:soul_campfire".to_string(),
+			BlockEntity::StructureBlock(_) => "minecraft:structure_block".to_string(),
+			BlockEntity::TrialSpawner(_) => "minecraft:trial_spawner".to_string(),
+			BlockEntity::Vault(_) => "minecraft:vault".to_string(),
+		}
+	}
 
-              return;
-            }
+	pub fn get_contained_items_owned(&self) -> Vec<Item> {
+		return match self {
+			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
+			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),
+			BlockEntity::Barrel(barrel) => barrel.get_contained_items_owned(),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.get_contained_items_owned(),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.get_contained_items_owned(),
+			BlockEntity::Crafter(crafter) => crafter.get_contained_items_owned(),
+			BlockEntity::Dispenser(dispenser) => dispenser.get_contained_items_owned(),
+			BlockEntity::Dropper(dropper) => dropper.get_contained_items_owned(),
+			BlockEntity::Hopper(hopper) => hopper.get_contained_items_owned(),
+			BlockEntity::Smoker(smoker) => smoker.get_contained_items_owned(),
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.get_contained_items_owned(),
+			_ => Vec::new(),
+		};
+	}
 
-            if (data[1].id != "minecraft:coal" && *lit_time_remaining == 0) || data[0].id != "minecraft:raw_iron" {
-              self.needs_ticking = false;
-              return;
-            }
+	pub fn remove_self(&self, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World, game: Arc<Game>) {
+		let items = self.get_contained_items_owned();
 
-            let mut can_cook = true;
-            if *lit_time_remaining == 0 {
-              if data[1].count > 0 {
-                data[1] = Item { count: data[1].count - 1, ..data[1].clone() };
-                *lit_time_remaining = 1600;
-              } else {
-                *cooking_time_spent = 0;
-                can_cook = false;
-              }
-            }
+		let mut entities: Vec<Entity> = Vec::new();
+		for item in items {
+			let new_entity = item.get_entity(self.get_position().into(), entity_id_manager.get_new());
+			let spawn_packet = new_entity.to_spawn_entity_packet();
 
-            if can_cook {
-              if *cooking_time_spent == 0 {
-                *cooking_time_spent = 1;
-              } else if *cooking_time_spent == 200 {
-                *cooking_time_spent = 0;
+			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+				entity_id: new_entity.get_common_entity_data().entity_id,
+				metadata: new_entity.get_metadata(),
+			};
 
-                if data[2].id == "minecraft:iron_ingot" {
-                  data[2] = Item { count: data[2].count + 1, ..data[2].clone() };
-                } else {
-                  data[2] = Item { count: 1, id: "minecraft:iron_ingot".to_string(), components: Vec::new() };
-                }
-                data[0] = Item { count: data[0].count - 1, ..data[0].clone() };
-              } else {
-                *cooking_time_spent += 1;
-              }
+			entities.push(Entity::Item(new_entity));
 
-              *lit_time_remaining -= 1;
-            }
+			players.iter().for_each(|x| {
+				game.send_packet(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet.clone().try_into().unwrap(),
+				);
+				game.send_packet(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+					metadata_packet.clone().try_into().unwrap(),
+				);
+			});
+		}
 
-            players.iter()
-              .filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
-              .for_each(|x| {
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerContent::PACKET_ID, crate::packets::clientbound::play::SetContainerContent {
-                  window_id: 1,
-                  state_id: 1,
-                  slot_data: data.iter().cloned().map(|x| x.into()).collect(),
-                  carried_item: None,
-                }.try_into().unwrap()).unwrap();
+		world.dimensions.get_mut("minecraft:overworld").unwrap().add_entities(entities);
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                  window_id: 1,
-                  property: 0, //fuel left
-                  value: *lit_time_remaining, //ticks of fuel left
-                }.try_into().unwrap()).unwrap();
+		world
+			.dimensions
+			.get_mut("minecraft:overworld")
+			.unwrap()
+			.get_chunk_from_position_mut(self.get_position())
+			.unwrap()
+			.block_entities
+			.retain(|be| be.get_position() != self.get_position());
+		players
+			.iter_mut()
+			.filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == self.get_position()))
+			.for_each(|x| x.close_inventory(game.clone()).unwrap());
+	}
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                  window_id: 1,
-                  property: 1, //max fuel burn time
-                  value: 1600, //ticks fuel should burn for
-                }.try_into().unwrap()).unwrap();
+	pub fn set_needs_ticking(&mut self, new_needs_ticking: bool) {
+		#[allow(clippy::single_match)]
+		match self {
+			BlockEntity::Furnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+			_ => (),
+		}
+	}
 
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                  window_id: 1,
-                  property: 3, //max progress
-                  value: 200, //progress from 0-200
-                }.try_into().unwrap()).unwrap();
-
-                crate::utils::send_packet(&x.connection_stream, crate::packets::clientbound::play::SetContainerProperty::PACKET_ID, crate::packets::clientbound::play::SetContainerProperty {
-                  window_id: 1,
-                  property: 2, //progress
-                  value: *cooking_time_spent, //progress from 0-200
-                }.try_into().unwrap()).unwrap();
-              });
-          };
-        } else {
-          println!("Im a furnace that doesnt need ticking, but got ticked regardless");
-        }
-      },
-      BlockEntityId::BlastFurnace => (),
-      BlockEntityId::Smoker => (),
-      _ => (),
-    }
-  }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum BlockEntityId {
-  Banner,
-  Barrel,
-  Beacon,
-  Bed,
-  Beehive,
-  Bell,
-  BlastFurnace,
-  BrewingStand,
-  BrushableBlock,
-  CalibratedSculkSensor,
-  Campfire,
-  Chest,
-  ChiseledBookshelf,
-  Comperator,
-  CommandBlock,
-  Conduit,
-  Crafter,
-  CreakingHeart,
-  DaylightDetector,
-  DecoratedPot,
-  Dispenser,
-  Dropper,
-  EnchantingTable,
-  EnderChest,
-  EndGateway,
-  EndPortal,
-  Furnace,
-  HangingSign,
-  Hopper,
-  Jigsaw,
-  Jukebox,
-  Lectern,
-  MobSpawner,
-  Piston,
-  ShulkerBox,
-  Sign,
-  Skull,
-  SculkCatalyst,
-  SculkSensor,
-  SculkShrieker,
-  Smoker,
-  SoulCampfire,
-  StructureBlock,
-  TrappedChest,
-  TrialSpawner,
-  Vault,
-}
-
-impl From<BlockEntityId> for &str {
-  fn from(value: BlockEntityId) -> Self {
-    match value {
-      BlockEntityId::Banner => "minecraft:banner",
-      BlockEntityId::Barrel => "minecraft:barrel",
-      BlockEntityId::Beacon => "minecraft:beacon",
-      BlockEntityId::Bed => "minecraft:bed",
-      BlockEntityId::Beehive => "minecraft:beehive",
-      BlockEntityId::Bell => "minecraft:bell",
-      BlockEntityId::BlastFurnace => "minecraft:blast_furnace",
-      BlockEntityId::BrewingStand => "minecraft:brewing_stand",
-      BlockEntityId::BrushableBlock => "minecraft:brushable_block",
-      BlockEntityId::CalibratedSculkSensor => "minecraft:calibrated_sculk_sensor",
-      BlockEntityId::Campfire => "minecraft:campfire",
-      BlockEntityId::Chest => "minecraft:chest",
-      BlockEntityId::ChiseledBookshelf => "minecraft:chiseled_bookshelf",
-      BlockEntityId::Comperator => "minecraft:comperator",
-      BlockEntityId::CommandBlock => "minecraft:command_block",
-      BlockEntityId::Conduit => "minecraft:conduit",
-      BlockEntityId::Crafter => "minecraft:crafter",
-      BlockEntityId::CreakingHeart => "minecraft:creaking_heart",
-      BlockEntityId::DaylightDetector => "minecraft:daylight_detector",
-      BlockEntityId::DecoratedPot => "minecraft:decorated_pot",
-      BlockEntityId::Dispenser => "minecraft:dispenser",
-      BlockEntityId::Dropper => "minecraft:dropper",
-      BlockEntityId::EnchantingTable => "minecraft:enchanting_table",
-      BlockEntityId::EnderChest => "minecraft:ender_chest",
-      BlockEntityId::EndGateway => "minecraft:end_gateway",
-      BlockEntityId::EndPortal => "minecraft:end_portal",
-      BlockEntityId::Furnace => "minecraft:furnace",
-      BlockEntityId::HangingSign => "minecraft:hanging_sign",
-      BlockEntityId::Hopper => "minecraft:hopper",
-      BlockEntityId::Jigsaw => "minecraft:jigsaw",
-      BlockEntityId::Jukebox => "minecraft:jukebox",
-      BlockEntityId::Lectern => "minecraft:lectern",
-      BlockEntityId::MobSpawner => "minecraft:mob_spawner",
-      BlockEntityId::Piston => "minecraft:piston",
-      BlockEntityId::ShulkerBox => "minecraft:shulker_box",
-      BlockEntityId::Sign => "minecraft:sign",
-      BlockEntityId::Skull => "minecraft:skull",
-      BlockEntityId::SculkCatalyst => "minecraft:sculk_catalyst",
-      BlockEntityId::SculkSensor => "minecraft:sculk_sensor",
-      BlockEntityId::SculkShrieker => "minecraft:sculk_shrieker",
-      BlockEntityId::Smoker => "minecraft:smoker",
-      BlockEntityId::SoulCampfire => "minecraft:soul_campfire",
-      BlockEntityId::StructureBlock => "minecraft:structure_block",
-      BlockEntityId::TrappedChest => "minecraft:trapped_chest",
-      BlockEntityId::TrialSpawner => "minecraft:trial_spawner",
-      BlockEntityId::Vault => "minecraft:vault",
-    }
-  }
-}
-
-impl TryFrom<&str> for BlockEntityId {
-  type Error = Box<dyn Error>;
-
-  fn try_from(value: &str) -> Result<Self, Box<dyn Error>> {
-    match value {
-       "minecraft:banner" => Ok(BlockEntityId::Banner),
-       "minecraft:barrel" => Ok(BlockEntityId::Barrel),
-       "minecraft:beacon" => Ok(BlockEntityId::Beacon),
-       "minecraft:bed" => Ok(BlockEntityId::Bed),
-       "minecraft:beehive" => Ok(BlockEntityId::Beehive),
-       "minecraft:bell" => Ok(BlockEntityId::Bell),
-       "minecraft:blast_furnace" => Ok(BlockEntityId::BlastFurnace),
-       "minecraft:brewing_stand" => Ok(BlockEntityId::BrewingStand),
-       "minecraft:brushable_block" => Ok(BlockEntityId::BrushableBlock),
-       "minecraft:calibrated_sculk_sensor" => Ok(BlockEntityId::CalibratedSculkSensor),
-       "minecraft:campfire" => Ok(BlockEntityId::Campfire),
-       "minecraft:chest" => Ok(BlockEntityId::Chest),
-       "minecraft:chiseled_bookshelf" => Ok(BlockEntityId::ChiseledBookshelf),
-       "minecraft:comperator" => Ok(BlockEntityId::Comperator),
-       "minecraft:command_block" => Ok(BlockEntityId::CommandBlock),
-       "minecraft:conduit" => Ok(BlockEntityId::Conduit),
-       "minecraft:crafter" => Ok(BlockEntityId::Crafter),
-       "minecraft:creaking_heart" => Ok(BlockEntityId::CreakingHeart),
-       "minecraft:daylight_detector" => Ok(BlockEntityId::DaylightDetector),
-       "minecraft:decorated_pot" => Ok(BlockEntityId::DecoratedPot),
-       "minecraft:dispenser" => Ok(BlockEntityId::Dispenser),
-       "minecraft:dropper" => Ok(BlockEntityId::Dropper),
-       "minecraft:enchanting_table" => Ok(BlockEntityId::EnchantingTable),
-       "minecraft:ender_chest" => Ok(BlockEntityId::EnderChest),
-       "minecraft:end_gateway" => Ok(BlockEntityId::EndGateway),
-       "minecraft:end_portal" => Ok(BlockEntityId::EndPortal),
-       "minecraft:furnace" => Ok(BlockEntityId::Furnace),
-       "minecraft:hanging_sign" => Ok(BlockEntityId::HangingSign),
-       "minecraft:hopper" => Ok(BlockEntityId::Hopper),
-       "minecraft:jigsaw" => Ok(BlockEntityId::Jigsaw),
-       "minecraft:jukebox" => Ok(BlockEntityId::Jukebox),
-       "minecraft:lectern" => Ok(BlockEntityId::Lectern),
-       "minecraft:mob_spawner" => Ok(BlockEntityId::MobSpawner),
-       "minecraft:piston" => Ok(BlockEntityId::Piston),
-       "minecraft:shulker_box" => Ok(BlockEntityId::ShulkerBox),
-       "minecraft:sign" => Ok(BlockEntityId::Sign),
-       "minecraft:skull" => Ok(BlockEntityId::Skull),
-       "minecraft:sculk_catalyst" => Ok(BlockEntityId::SculkCatalyst),
-       "minecraft:sculk_sensor" => Ok(BlockEntityId::SculkSensor),
-       "minecraft:sculk_shrieker" => Ok(BlockEntityId::SculkShrieker),
-       "minecraft:smoker" => Ok(BlockEntityId::Smoker),
-       "minecraft:soul_campfire" => Ok(BlockEntityId::SoulCampfire),
-       "minecraft:structure_block" => Ok(BlockEntityId::StructureBlock),
-       "minecraft:trapped_chest" => Ok(BlockEntityId::TrappedChest),
-       "minecraft:trial_spawner" => Ok(BlockEntityId::TrialSpawner),
-       "minecraft:vault" => Ok(BlockEntityId::Vault),
-      _ => Err(Box::new(crate::CustomError::InvalidInput(value.to_string())))
-    }
-  }
-}
-
-#[derive(Debug, Clone, Default)]
-pub enum BlockEntityData {
-  Banner(Vec<(String, String)>), //patterns: <pattern, color>
-  Chest(Vec<Item>),
-  Furnace(Vec<Item>, i16, i16, i16, i16), //0: item being smelted 1: fuel 2: result; lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time
-  BrewingStand(Vec<Item>), //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
-  Crafter(Vec<Item>), //len 9
-  Dispenser(Vec<Item>), //len 9
-  Hopper(Vec<Item>), //len 5
-  Beacon(Option<String>, Option<String>), //Primary and Secondary effect as potion ID
-  Beehive(Vec<Bee>, Vec<i32>), //Int vec is 3 long and stores flower_pos
-  Brushable(Option<Item>),
-  Campfire(Vec<i32>, Vec<i32>, Vec<Item>), //CookingTimes, CookingTotalTimes, Items
-  ChiseledBookShelf(Vec<Item>, i32), //i32 is the index of the last selected slot or -1; valid slots go from 0-5
-  Comparator(i32), //OutputSignal
-  Conduit(Option<Vec<i32>>), //may have 4 four ints representing UUID of mob that gets currently attacked
-  CreakingHeart(Vec<i32>), //has 4 four ints for the UUID of the associated creaking
-  DecoratedPot(Vec<String>, Item), //Vector of items IDs for each side or something
-  EndGateway(i64, u8, Vec<i32>), //Age, ExactTeleport, exit_portal (coords in 3 ints)
-  Sign(u8, NbtTag, NbtTag), //is_waxed, front_text, back_text
-  JukeBox(Item, i64), //RecordItem, ticks_since_song_started
-  Lectern(Option<Item>, Option<i32>), //Book, Page
-  #[default]
-  NoData,
-}
-
-#[derive(Debug, Clone)]
-pub struct Bee {
-  entity_data: Vec<NbtTag>,
-  min_ticks_in_hive: i32,
-  ticks_in_hive: i32,
-}
-
-impl From<BlockEntity> for NbtListTag {
-  fn from(value: BlockEntity) -> Self {
-    let mut items: Vec<NbtTag> = vec![
-      NbtTag::String("id".to_string(), Into::<&str>::into(value.id).to_string()),
-      NbtTag::Int("x".to_string(), value.position.x),
-      NbtTag::Int("y".to_string(), value.position.y as i32),
-      NbtTag::Int("z".to_string(), value.position.z),
-    ];
-
-    items.append(&mut value.data.into());
-
-    return NbtListTag::TagCompound(items);
-  }
-}
-
-impl From<BlockEntityData> for Vec<NbtTag> {
-  fn from(value: BlockEntityData) -> Self {
-    return match value {
-      BlockEntityData::Banner(data) => vec![
-        NbtTag::List(
-          "patterns".to_string(),
-          data.iter().map(|x| NbtListTag::TagCompound(
-            vec![
-              NbtTag::String("color".to_string(), x.1.clone()),
-              NbtTag::String("pattern".to_string(), x.0.clone())
-            ]
-          )).collect()
-        )
-      ],
-      BlockEntityData::Chest(block_entity_data_items) => {
-        vec![
-          block_entity_data_items.into(),
-        ]
-      },
-      BlockEntityData::Furnace(block_entity_data_items, lit_time_remaining, cooking_time_spent, cooking_total_time, lit_total_time) => {
-        vec![
-          block_entity_data_items.into(),
-          NbtTag::Short("lit_time_remaining".to_string(), lit_time_remaining),
-          NbtTag::Short("cooking_time_spent".to_string(), cooking_time_spent),
-          NbtTag::Short("cooking_total_time".to_string(), cooking_total_time),
-          NbtTag::Short("lit_total_time".to_string(), lit_total_time),
-        ]
-      },
-      BlockEntityData::BrewingStand(block_entity_data_items) => {
-        vec![
-          block_entity_data_items.into(),
-        ]
-      },
-      BlockEntityData::Crafter(block_entity_data_items) => {
-        vec![
-          block_entity_data_items.into(),
-        ]
-      },
-      BlockEntityData::Dispenser(block_entity_data_items) => {
-        vec![
-          block_entity_data_items.into(),
-        ]
-      },
-      BlockEntityData::Hopper(block_entity_data_items) => {
-        vec![
-          block_entity_data_items.into(),
-        ]
-      },
-      BlockEntityData::Beacon(primary_effect, secondary_effect) => {
-        let mut output: Vec<NbtTag> = Vec::new();
-
-        if let Some(primary_effect) = primary_effect {
-          output.push(NbtTag::String("primary_effect".to_string(), primary_effect));
-        }
-        if let Some(secondary_effect) = secondary_effect {
-          output.push(NbtTag::String("secondary_effect".to_string(), secondary_effect));
-        }
-
-        output
-      },
-      BlockEntityData::Beehive(bees, flower_pos) => {
-        vec![
-          NbtTag::List("bees".to_string(), bees.into_iter().map(|bee| {
-            NbtListTag::TagCompound(vec![
-              NbtTag::TagCompound("entity_data".to_string(), bee.entity_data),
-              NbtTag::Int("min_ticks_in_hive".to_string(), bee.min_ticks_in_hive),
-              NbtTag::Int("ticks_in_hive".to_string(), bee.ticks_in_hive),
-            ])
-          }).collect()),
-          NbtTag::IntArray("flower_pos".to_string(), flower_pos),
-        ]
-      },
-      BlockEntityData::Brushable(item) => {
-        let mut output: Vec<NbtTag> = Vec::new();
-
-        if let Some(item) = item {
-          output.push(NbtTag::TagCompound("item".to_string(), vec![
-            NbtTag::Byte("Slot".to_string(), 0),
-            NbtTag::String("id".to_string(), item.id.clone()),
-            NbtTag::Int("count".to_string(), item.count as i32),
-            NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
-          ]));
-        }
-
-        return output;
-      },
-      BlockEntityData::Campfire(cooking_times, cooking_total_times, items) => {
-        vec![
-          items.into(),
-          NbtTag::IntArray("CookingTimes".to_string(), cooking_times),
-          NbtTag::IntArray("CookingTotalTimes".to_string(), cooking_total_times),
-        ]
-      },
-      BlockEntityData::ChiseledBookShelf(items, last_interacted_slot) => {
-        vec![
-          items.into(),
-          NbtTag::Int("last_interacted_slot".to_string(), last_interacted_slot),
-        ]
-      },
-      BlockEntityData::Comparator(output_signal) => {
-        vec![
-          NbtTag::Int("OutputSignal".to_string(), output_signal),
-        ]
-      },
-      BlockEntityData::Conduit(mob) => {
-        if let Some(mob) = mob {
-          vec![
-            NbtTag::IntArray("Target".to_string(), mob)
-          ]
-        } else {
-          Vec::new()
-        }
-      },
-      BlockEntityData::CreakingHeart(creaking) => {
-        vec![
-          NbtTag::IntArray("Target".to_string(), creaking)
-        ]
-      },
-      BlockEntityData::DecoratedPot(sherds, item) => {
-        vec![
-          NbtTag::List("sherds".to_string(), sherds.into_iter().map(NbtListTag::String).collect()),
-          NbtTag::TagCompound("item".to_string(), vec![
-            NbtTag::String("id".to_string(), item.id.clone()),
-            NbtTag::Int("count".to_string(), item.count as i32),
-            NbtTag::TagCompound("components".to_string(), Vec::new()),
-          ])
-        ]
-      },
-      BlockEntityData::EndGateway(age, exact_teleport, exit_portal) => {
-        vec![
-          NbtTag::Long("Age".to_string(), age),
-          NbtTag::Byte("ExactTeleport".to_string(), exact_teleport),
-          NbtTag::IntArray("exit_portal".to_string(), exit_portal),
-        ]
-      },
-      BlockEntityData::Sign(is_waxed, front_text, back_text) => {
-        vec![
-          NbtTag::Byte("is_waxed".to_string(), is_waxed),
-          front_text,
-          back_text,
-        ]
-      },
-      BlockEntityData::JukeBox(record_item, ticks_since_song_started) => {
-        vec![
-          NbtTag::TagCompound("RecordItem".to_string(), vec![
-            NbtTag::String("id".to_string(), record_item.id.clone()),
-            NbtTag::Int("count".to_string(), record_item.count as i32),
-            NbtTag::TagCompound("components".to_string(), Vec::new()),
-          ]),
-          NbtTag::Long("ticks_since_song_started".to_string(), ticks_since_song_started),
-        ]
-      },
-      BlockEntityData::Lectern(book, page) => {
-        let mut output: Vec<NbtTag> = Vec::new();
-
-        if let Some(book) = book {
-          output.push(NbtTag::TagCompound("Book".to_string(), vec![
-            NbtTag::String("id".to_string(), book.id.clone()),
-            NbtTag::Int("count".to_string(), book.count as i32),
-            NbtTag::TagCompound("components".to_string(), Vec::new()),
-          ]));
-          output.push(NbtTag::Int("Page".to_string(), page.unwrap()));
-        };
-
-        output
-      },
-      BlockEntityData::NoData => Vec::new(),
-    };
-  }
-}
-
-pub fn get_blockentity_for_placed_block(position_global: BlockPosition, block_state_id: u16) -> Option<BlockEntity> {
-  return match data::blocks::get_type_from_block_state_id(block_state_id, &data::blocks::get_blocks()) { //maybe pass the blocks in from somewhere at some point, recomputing this on every placed block is not _that_ ideal
-    Type::Chest => Some(BlockEntity { id: BlockEntityId::Chest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
-    Type::TrappedChest => Some(BlockEntity { id: BlockEntityId::TrappedChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
-    Type::Barrel => Some(BlockEntity { id: BlockEntityId::Barrel, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
-    Type::Banner => Some(BlockEntity { id: BlockEntityId::Banner, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Banner(Vec::new()) }),
-    Type::WallBanner => Some(BlockEntity { id: BlockEntityId::Banner, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Banner(Vec::new()) }),
-    Type::Beacon => Some(BlockEntity { id: BlockEntityId::Beacon, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Beacon(None, None) }),
-    Type::Bed => Some(BlockEntity { id: BlockEntityId::Bed, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Beehive => Some(BlockEntity { id: BlockEntityId::Beehive, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Beehive(Vec::new(), Vec::new()) }),
-    Type::Bell => Some(BlockEntity { id: BlockEntityId::Bell, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::BlastFurnace => Some(BlockEntity { id: BlockEntityId::BlastFurnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
-    Type::BrewingStand => Some(BlockEntity { id: BlockEntityId::BrewingStand, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::BrewingStand(vec![Item::default();5]) }),
-    Type::Brushable => Some(BlockEntity { id: BlockEntityId::BrushableBlock, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Brushable(None) }),
-    Type::CalibratedSculkSensor => Some(BlockEntity { id: BlockEntityId::CalibratedSculkSensor, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Campfire => Some(BlockEntity { id: BlockEntityId::Campfire, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Campfire(Vec::new(), Vec::new(), Vec::new()) }), //could technically also be a soulcampfire, but probably doesn't matter
-    Type::ChiseledBookShelf => Some(BlockEntity { id: BlockEntityId::ChiseledBookshelf, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::ChiseledBookShelf(Vec::new(), -1) }),
-    Type::Comparator => Some(BlockEntity { id: BlockEntityId::Comperator, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Comparator(0) }),
-    Type::Command => Some(BlockEntity { id: BlockEntityId::CommandBlock, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Conduit => Some(BlockEntity { id: BlockEntityId::Conduit, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Conduit(None) }),
-    Type::Crafter => Some(BlockEntity { id: BlockEntityId::Crafter, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Crafter(vec![Item::default();9]) }),
-    Type::CreakingHeart => Some(BlockEntity { id: BlockEntityId::CreakingHeart, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::CreakingHeart(Vec::new()) }), //is supposed to spawn a creaking or something???
-    Type::DaylightDetector => Some(BlockEntity { id: BlockEntityId::DaylightDetector, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::DecoratedPot => Some(BlockEntity { id: BlockEntityId::DecoratedPot, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::DecoratedPot(Vec::new(), Item::default()) }),
-    Type::Dispenser => Some(BlockEntity { id: BlockEntityId::Dispenser, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Dispenser(vec![Item::default();9]) }),
-    Type::Dropper => Some(BlockEntity { id: BlockEntityId::Dropper, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Dispenser(vec![Item::default();9]) }),
-    Type::EnchantmentTable => Some(BlockEntity { id: BlockEntityId::EnchantingTable, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::EnderChest => Some(BlockEntity { id: BlockEntityId::EnderChest, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::EndGateway => Some(BlockEntity { id: BlockEntityId::EndGateway, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::EndGateway(0, 0, vec![0, 100, 0]) }),
-    Type::EndPortal => Some(BlockEntity { id: BlockEntityId::EndPortal, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Furnace => Some(BlockEntity { id: BlockEntityId::Furnace, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
-    Type::WallHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
-    Type::CeilingHangingSign => Some(BlockEntity { id: BlockEntityId::HangingSign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
-    Type::Hopper => Some(BlockEntity { id: BlockEntityId::Hopper, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Hopper(vec![Item::default();5]) }),
-    Type::Jigsaw => Some(BlockEntity { id: BlockEntityId::Jigsaw, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Jukebox => Some(BlockEntity { id: BlockEntityId::Jukebox, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::JukeBox(Item::default(), 0) }),
-    Type::Lectern => Some(BlockEntity { id: BlockEntityId::Lectern, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Lectern(None, None) }),
-    Type::Spawner => Some(BlockEntity { id: BlockEntityId::MobSpawner, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }), //Will implement once entities are implemented
-    Type::MovingPiston => Some(BlockEntity { id: BlockEntityId::Piston, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }), //Implement when doing redstone
-    Type::ShulkerBox => Some(BlockEntity { id: BlockEntityId::ShulkerBox, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Chest(vec![Item::default();27]) }),
-    Type::WallSign => Some(BlockEntity { id: BlockEntityId::Sign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
-    Type::StandingSign => Some(BlockEntity { id: BlockEntityId::Sign, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Sign(0, NbtTag::TagCompound("front_text".to_string(), Vec::new()), NbtTag::TagCompound("back_text".to_string(), Vec::new())) }),
-    Type::Skull => Some(BlockEntity { id: BlockEntityId::Skull, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::WallSkull => Some(BlockEntity { id: BlockEntityId::Skull, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::SculkCatalyst => Some(BlockEntity { id: BlockEntityId::SculkCatalyst, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::SculkSensor => Some(BlockEntity { id: BlockEntityId::SculkSensor, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::SculkShrieker => Some(BlockEntity { id: BlockEntityId::SculkShrieker, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Smoker => Some(BlockEntity { id: BlockEntityId::Smoker, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::Furnace(vec![Item::default();3], 0, 0, 0, 0) }),
-    Type::Structure => Some(BlockEntity { id: BlockEntityId::StructureBlock, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::TrialSpawner => Some(BlockEntity { id: BlockEntityId::TrialSpawner, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    Type::Vault => Some(BlockEntity { id: BlockEntityId::Vault, needs_ticking: false, position: position_global, components: None, data: BlockEntityData::NoData }),
-    _ => None,
-  };
+	pub fn get_needs_ticking(&self) -> bool {
+		return match self {
+			BlockEntity::Furnace(furnace) => furnace.needs_ticking,
+			_ => false,
+		};
+	}
 }
 
 impl TryFrom<NbtListTag> for BlockEntity {
-  type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-  fn try_from(value: NbtListTag) -> Result<Self, Self::Error> {
-    let id: BlockEntityId = value.get_child("id").unwrap().as_string().try_into()?;
-    let x = value.get_child("x").unwrap().as_int();
-    let y = value.get_child("y").unwrap().as_int() as i16;
-    let z = value.get_child("z").unwrap().as_int();
-    let position = BlockPosition { x, y, z };
+	fn try_from(value: NbtListTag) -> Result<Self, Self::Error> {
+		let id: BlockEntityId = value.get_child("id").unwrap().as_string().try_into()?;
 
-    let data: BlockEntityData = match id {
-      BlockEntityId::Banner => {
-        let mut data: Vec<(String, String)> = Vec::new();
+		return Ok(match id {
+			BlockEntityId::Barrel => BlockEntity::Barrel(crate::blockentities::barrel::Barrel::try_from(value)?),
+			BlockEntityId::Beacon => BlockEntity::Beacon(crate::blockentities::beacon::Beacon::try_from(value)?),
+			BlockEntityId::Bed => BlockEntity::Bed(crate::blockentities::bed::Bed::try_from(value)?),
+			BlockEntityId::BlastFurnace => BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::try_from(value)?),
+			BlockEntityId::BrewingStand => BlockEntity::BrewingStand(crate::blockentities::brewing_stand::BrewingStand::try_from(value)?),
+			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
+			BlockEntityId::CommandBlock => BlockEntity::CommandBlock(crate::blockentities::command_block::CommandBlock::try_from(value)?),
+			BlockEntityId::Crafter => BlockEntity::Crafter(crate::blockentities::crafter::Crafter::try_from(value)?),
+			BlockEntityId::Dispenser => BlockEntity::Dispenser(crate::blockentities::dispenser::Dispenser::try_from(value)?),
+			BlockEntityId::Dropper => BlockEntity::Dropper(crate::blockentities::dropper::Dropper::try_from(value)?),
+			BlockEntityId::EnchantingTable => {
+				BlockEntity::EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable::try_from(value)?)
+			}
+			BlockEntityId::EnderChest => BlockEntity::EnderChest(crate::blockentities::ender_chest::EnderChest::try_from(value)?),
+			BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
+			BlockEntityId::HangingSign => BlockEntity::HangingSign(crate::blockentities::hanging_sign::HangingSign::try_from(value)?),
+			BlockEntityId::Hopper => BlockEntity::Hopper(crate::blockentities::hopper::Hopper::try_from(value)?),
+			BlockEntityId::Jigsaw => BlockEntity::Jigsaw(crate::blockentities::jigsaw::Jigsaw::try_from(value)?),
+			BlockEntityId::MobSpawner => BlockEntity::MobSpawner(crate::blockentities::mob_spawner::MobSpawner::try_from(value)?),
+			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
+			BlockEntityId::Smoker => BlockEntity::Smoker(crate::blockentities::smoker::Smoker::try_from(value)?),
+			BlockEntityId::TrappedChest => BlockEntity::TrappedChest(crate::blockentities::trapped_chest::TrappedChest::try_from(value)?),
+			_ => {
+				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}"))));
+			}
+		});
+	}
+}
 
-        if let Some(patterns) = value.get_child("patterns") {
-          for entry in patterns.as_list() {
-            data.push((
-              entry.get_child("color").unwrap().as_string().to_string(),
-              entry.get_child("pattern").unwrap().as_string().to_string(),
-            ));
-          }
-        }
+impl From<BlockEntity> for Vec<NbtTag> {
+	fn from(value: BlockEntity) -> Self {
+		return match value {
+			BlockEntity::Furnace(furnace) => furnace.into(),
+			BlockEntity::Chest(chest) => chest.into(),
+			BlockEntity::Sign(sign) => sign.into(),
+			BlockEntity::Barrel(barrel) => barrel.into(),
+			BlockEntity::Bed(bed) => bed.into(),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.into(),
+			BlockEntity::Beacon(beacon) => beacon.into(),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.into(),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.into(),
+			BlockEntity::CommandBlock(command_block) => command_block.into(),
+			BlockEntity::Crafter(crafter) => crafter.into(),
+			BlockEntity::Dispenser(dispenser) => dispenser.into(),
+			BlockEntity::Dropper(dropper) => dropper.into(),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.into(),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.into(),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.into(),
+			BlockEntity::Hopper(hopper) => hopper.into(),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.into(),
+			BlockEntity::Smoker(smoker) => smoker.into(),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.into(),
+			BlockEntity::Banner(banner) => banner.into(),
+			BlockEntity::Beehive(beehive) => beehive.into(),
+			BlockEntity::Bell(bell) => bell.into(),
+			BlockEntity::BrushableBlock(brushable_block) => brushable_block.into(),
+			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.into(),
+			BlockEntity::Campfire(campfire) => campfire.into(),
+			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.into(),
+			BlockEntity::Comparator(comparator) => comparator.into(),
+			BlockEntity::Conduit(conduit) => conduit.into(),
+			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.into(),
+			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.into(),
+			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.into(),
+			BlockEntity::EndGateway(end_gateway) => end_gateway.into(),
+			BlockEntity::EndPortal(end_portal) => end_portal.into(),
+			BlockEntity::Jukebox(jukebox) => jukebox.into(),
+			BlockEntity::Lectern(lectern) => lectern.into(),
+			BlockEntity::Piston(piston) => piston.into(),
+			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.into(),
+			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.into(),
+			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.into(),
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.into(),
+			BlockEntity::Skull(skull) => skull.into(),
+			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.into(),
+			BlockEntity::StructureBlock(structure_block) => structure_block.into(),
+			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.into(),
+			BlockEntity::Vault(vault) => vault.into(),
+		};
+	}
+}
 
-        BlockEntityData::Banner(data)
-      },
-      BlockEntityId::Barrel | BlockEntityId::Chest | BlockEntityId::TrappedChest => {
-        let mut data = vec![Item::default(); 27];
+impl From<BlockEntity> for NbtListTag {
+	fn from(value: BlockEntity) -> Self {
+		let mut items: Vec<NbtTag> = vec![
+			NbtTag::String("id".to_string(), Into::<&str>::into(value.get_id().as_str()).to_string()),
+			NbtTag::Int("x".to_string(), value.get_position().x),
+			NbtTag::Int("y".to_string(), value.get_position().y as i32),
+			NbtTag::Int("z".to_string(), value.get_position().z),
+		];
 
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
+		items.append(&mut value.into());
 
-        BlockEntityData::Chest(data)
-      },
-      BlockEntityId::Furnace | BlockEntityId::BlastFurnace | BlockEntityId::Smoker => {
-        let mut data = vec![Item::default(); 3];
+		return NbtListTag::TagCompound(items);
+	}
+}
 
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
 
-        BlockEntityData::Furnace(
-          data,
-          value.get_child("lit_time_remaining").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
-          value.get_child("cooking_time_spent").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
-          value.get_child("cooking_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
-          value.get_child("lit_total_time").unwrap_or(&NbtTag::Short("".to_string(), 0)).as_short(),
-        )
-      },
-      BlockEntityId::BrewingStand => {
-        let mut data = vec![Item::default(); 5];
+#[derive(Debug, Clone, Copy)]
+pub enum BlockEntityId {
+	Banner,
+	Barrel,
+	Beacon,
+	Bed,
+	Beehive,
+	Bell,
+	BlastFurnace,
+	BrewingStand,
+	BrushableBlock,
+	CalibratedSculkSensor,
+	Campfire,
+	Chest,
+	ChiseledBookshelf,
+	Comperator,
+	CommandBlock,
+	Conduit,
+	Crafter,
+	CreakingHeart,
+	DaylightDetector,
+	DecoratedPot,
+	Dispenser,
+	Dropper,
+	EnchantingTable,
+	EnderChest,
+	EndGateway,
+	EndPortal,
+	Furnace,
+	HangingSign,
+	Hopper,
+	Jigsaw,
+	Jukebox,
+	Lectern,
+	MobSpawner,
+	Piston,
+	ShulkerBox,
+	Sign,
+	Skull,
+	SculkCatalyst,
+	SculkSensor,
+	SculkShrieker,
+	Smoker,
+	SoulCampfire,
+	StructureBlock,
+	TrappedChest,
+	TrialSpawner,
+	Vault,
+}
 
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
+impl TryFrom<&str> for BlockEntityId {
+	type Error = Box<dyn Error>;
 
-        BlockEntityData::BrewingStand(data)
-      },
-      BlockEntityId::Crafter => {
-        let mut data = vec![Item::default(); 9];
-
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
-
-        BlockEntityData::Crafter(data)
-      },
-      BlockEntityId::Dispenser | BlockEntityId::Dropper => {
-        let mut data = vec![Item::default(); 9];
-
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
-
-        BlockEntityData::Dispenser(data)
-      },
-      BlockEntityId::Hopper => {
-        let mut data = vec![Item::default(); 5];
-
-        if let Some(items) = value.get_child("Items") {
-          for entry in items.as_list() {
-            data[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-              id: entry.get_child("id").unwrap().as_string().to_string(),
-              count: entry.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            };
-          }
-        }
-
-        BlockEntityData::Hopper(data)
-      },
-      BlockEntityId::Beacon => {
-        BlockEntityData::Beacon(
-          value.get_child("primary_effect").map(|x| x.as_string().to_string()),
-          value.get_child("secondary_effect").map(|x| x.as_string().to_string()),
-        )
-      },
-      BlockEntityId::Beehive => {
-        BlockEntityData::Beehive(
-          value.get_child("bees").unwrap().as_list().into_iter().map(|x| {
-            Bee {
-              entity_data: x.get_child("entity_data").unwrap().as_tag_compound(),
-              min_ticks_in_hive: x.get_child("min_ticks_in_hive").unwrap().as_int(),
-              ticks_in_hive: x.get_child("ticks_in_hive").unwrap().as_int(),
-            }
-          }).collect(),
-          value.get_child("flower_pos").unwrap_or(&NbtTag::IntArray(String::new(), vec![])).as_int_array()
-        )
-      },
-      BlockEntityId::BrushableBlock => {
-        if let Some(item) = value.get_child("item") {
-          BlockEntityData::Brushable(Some(
-            Item {
-              id: item.get_child("id").unwrap().as_string().to_string(),
-              count: item.get_child("count").unwrap().as_int() as u8,
-              components: Vec::new()
-            }
-          ))
-        } else {
-          BlockEntityData::Brushable(None)
-        }
-      },
-      BlockEntityId::Campfire | BlockEntityId::SoulCampfire => {
-        let items: Vec<Item> = value.get_child("Items").unwrap().as_list().iter().map(|entry| {
-          Item {
-            id: entry.get_child("id").unwrap().as_string().to_string(),
-            count: entry.get_child("count").unwrap().as_int() as u8,
-            components: Vec::new()
-          }
-        }).collect();
-
-        BlockEntityData::Campfire(
-          value.get_child("CookingTimes").unwrap().as_int_array(),
-          value.get_child("CookingTotalTimes").unwrap().as_int_array(),
-          items
-        )
-      },
-      BlockEntityId::ChiseledBookshelf => {
-        let items: Vec<Item> = value.get_child("Items").unwrap().as_list().iter().map(|entry| {
-          Item {
-            id: entry.get_child("id").unwrap().as_string().to_string(),
-            count: entry.get_child("count").unwrap().as_int() as u8,
-            components: Vec::new()
-          }
-        }).collect();
-
-        BlockEntityData::ChiseledBookShelf(
-          items,
-          value.get_child("last_interacted_slot").unwrap().as_int()
-        )
-      },
-      BlockEntityId::Comperator => {
-        BlockEntityData::Comparator(
-          value.get_child("OutputSignal").unwrap().as_int()
-        )
-      },
-      BlockEntityId::Conduit => {
-        BlockEntityData::Conduit(
-          value.get_child("Target").map(|x| x.as_int_array())
-        )
-      },
-      BlockEntityId::CreakingHeart => {
-        BlockEntityData::CreakingHeart(
-          value.get_child("Target").unwrap().as_int_array()
-        )
-      },
-      BlockEntityId::DecoratedPot => {
-        BlockEntityData::DecoratedPot(
-          value.get_child("sherds").unwrap_or(&NbtTag::List(String::new(), Vec::new())).as_list().iter().map(|x| x.as_string().to_string()).collect(),
-          if value.get_child("item").is_some() {
-            Item {
-              id: value.get_child("item").unwrap().get_child("id").unwrap().as_string().to_string(),
-              count: value.get_child("item").unwrap().get_child("count").unwrap().as_int() as u8,
-              components: Vec::new(),
-            }
-          } else {
-           Item {
-             id: "minecraft:air".to_string(),
-             count: 0,
-             components: Vec::new(),
-           }
-          }
-        )
-      },
-      BlockEntityId::EndGateway => {
-        BlockEntityData::EndGateway(
-          value.get_child("Age").unwrap().as_long(),
-          value.get_child("ExactTeleport").unwrap().as_byte(),
-          value.get_child("exit_portal").unwrap().as_int_array()
-        )
-      },
-      BlockEntityId::Sign | BlockEntityId::HangingSign => {
-        BlockEntityData::Sign(
-          value.get_child("is_waxed").unwrap().as_byte(),
-          value.get_child("front_text").unwrap().clone(),
-          value.get_child("back_text").unwrap().clone(),
-        )
-      },
-      BlockEntityId::Jukebox => {
-        BlockEntityData::JukeBox(
-          Item {
-            id: value.get_child("RecordItem").unwrap().get_child("id").unwrap().as_string().to_string(),
-            count: value.get_child("RecordItem").unwrap().get_child("count").unwrap().as_int() as u8,
-            components: Vec::new(),
-          },
-          value.get_child("ticks_since_song_started").unwrap().as_long(),
-        )
-      },
-      BlockEntityId::Lectern => {
-        if value.get_child("Book").is_some() {
-          BlockEntityData::Lectern(
-            Some(Item {
-              id: value.get_child("Book").unwrap().get_child("id").unwrap().as_string().to_string(),
-              count: value.get_child("Book").unwrap().get_child("count").unwrap().as_int() as u8,
-              components: Vec::new(),
-            }),
-            Some(value.get_child("Page").unwrap().as_int())
-          )
-        } else {
-          BlockEntityData::Lectern(None, None)
-        }
-      },
-
-      BlockEntityId::Bed
-      | BlockEntityId::Bell
-      | BlockEntityId::CalibratedSculkSensor
-      | BlockEntityId::CommandBlock
-      | BlockEntityId::DaylightDetector
-      | BlockEntityId::EnchantingTable
-      | BlockEntityId::EnderChest
-      | BlockEntityId::EndPortal
-      | BlockEntityId::Jigsaw
-      | BlockEntityId::MobSpawner
-      | BlockEntityId::Piston
-      | BlockEntityId::ShulkerBox
-      | BlockEntityId::Skull
-      | BlockEntityId::SculkCatalyst
-      | BlockEntityId::SculkSensor
-      | BlockEntityId::SculkShrieker
-      | BlockEntityId::StructureBlock
-      | BlockEntityId::TrialSpawner
-      | BlockEntityId::Vault => BlockEntityData::NoData,
-    };
-
-    return Ok(
-      BlockEntity {
-        id,
-        position,
-        components: None,
-        data,
-        needs_ticking: false,
-      }
-    )
-  }
+	fn try_from(value: &str) -> Result<Self, Box<dyn Error>> {
+		match value {
+			"minecraft:banner" => Ok(BlockEntityId::Banner),
+			"minecraft:barrel" => Ok(BlockEntityId::Barrel),
+			"minecraft:beacon" => Ok(BlockEntityId::Beacon),
+			"minecraft:bed" => Ok(BlockEntityId::Bed),
+			"minecraft:beehive" => Ok(BlockEntityId::Beehive),
+			"minecraft:bell" => Ok(BlockEntityId::Bell),
+			"minecraft:blast_furnace" => Ok(BlockEntityId::BlastFurnace),
+			"minecraft:brewing_stand" => Ok(BlockEntityId::BrewingStand),
+			"minecraft:brushable_block" => Ok(BlockEntityId::BrushableBlock),
+			"minecraft:calibrated_sculk_sensor" => Ok(BlockEntityId::CalibratedSculkSensor),
+			"minecraft:campfire" => Ok(BlockEntityId::Campfire),
+			"minecraft:chest" => Ok(BlockEntityId::Chest),
+			"minecraft:chiseled_bookshelf" => Ok(BlockEntityId::ChiseledBookshelf),
+			"minecraft:comperator" => Ok(BlockEntityId::Comperator),
+			"minecraft:command_block" => Ok(BlockEntityId::CommandBlock),
+			"minecraft:conduit" => Ok(BlockEntityId::Conduit),
+			"minecraft:crafter" => Ok(BlockEntityId::Crafter),
+			"minecraft:creaking_heart" => Ok(BlockEntityId::CreakingHeart),
+			"minecraft:daylight_detector" => Ok(BlockEntityId::DaylightDetector),
+			"minecraft:decorated_pot" => Ok(BlockEntityId::DecoratedPot),
+			"minecraft:dispenser" => Ok(BlockEntityId::Dispenser),
+			"minecraft:dropper" => Ok(BlockEntityId::Dropper),
+			"minecraft:enchanting_table" => Ok(BlockEntityId::EnchantingTable),
+			"minecraft:ender_chest" => Ok(BlockEntityId::EnderChest),
+			"minecraft:end_gateway" => Ok(BlockEntityId::EndGateway),
+			"minecraft:end_portal" => Ok(BlockEntityId::EndPortal),
+			"minecraft:furnace" => Ok(BlockEntityId::Furnace),
+			"minecraft:hanging_sign" => Ok(BlockEntityId::HangingSign),
+			"minecraft:hopper" => Ok(BlockEntityId::Hopper),
+			"minecraft:jigsaw" => Ok(BlockEntityId::Jigsaw),
+			"minecraft:jukebox" => Ok(BlockEntityId::Jukebox),
+			"minecraft:lectern" => Ok(BlockEntityId::Lectern),
+			"minecraft:mob_spawner" => Ok(BlockEntityId::MobSpawner),
+			"minecraft:piston" => Ok(BlockEntityId::Piston),
+			"minecraft:shulker_box" => Ok(BlockEntityId::ShulkerBox),
+			"minecraft:sign" => Ok(BlockEntityId::Sign),
+			"minecraft:skull" => Ok(BlockEntityId::Skull),
+			"minecraft:sculk_catalyst" => Ok(BlockEntityId::SculkCatalyst),
+			"minecraft:sculk_sensor" => Ok(BlockEntityId::SculkSensor),
+			"minecraft:sculk_shrieker" => Ok(BlockEntityId::SculkShrieker),
+			"minecraft:smoker" => Ok(BlockEntityId::Smoker),
+			"minecraft:soul_campfire" => Ok(BlockEntityId::SoulCampfire),
+			"minecraft:structure_block" => Ok(BlockEntityId::StructureBlock),
+			"minecraft:trapped_chest" => Ok(BlockEntityId::TrappedChest),
+			"minecraft:trial_spawner" => Ok(BlockEntityId::TrialSpawner),
+			"minecraft:vault" => Ok(BlockEntityId::Vault),
+			_ => Err(Box::new(crate::CustomError::InvalidInput(value.to_string()))),
+		}
+	}
 }
