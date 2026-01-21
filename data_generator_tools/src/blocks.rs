@@ -36,7 +36,7 @@ fn get_blocks() {
 
 	let mut cargo_toml_contents = "[package]
 name = \"block_get_blocks\"
-version = \"0.4.0\"
+version = \"0.5.0\"
 edition = \"2024\"
 description = \"\"
 
@@ -194,7 +194,7 @@ fn get_blocks_add_functions() {
 		let cargo_toml_contents = format!(
 			"[package]
 name = \"blocks_add_fn_{i}\"
-version = \"0.4.0\"
+version = \"0.5.0\"
 edition = \"2024\"
 description = \"\"
 
