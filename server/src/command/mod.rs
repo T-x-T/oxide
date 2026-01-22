@@ -1,3 +1,4 @@
+mod gamemode;
 mod give;
 mod hi;
 mod panic;
@@ -24,6 +25,7 @@ pub fn init(game: &mut Game) {
 	saveall::init(game);
 	summon::init(game);
 	give::init(game);
+	gamemode::init(game);
 }
 
 
