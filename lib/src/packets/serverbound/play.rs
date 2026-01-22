@@ -725,7 +725,7 @@ impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
 		let mut result: Vec<u8> = Vec::new();
 
 		result.append(&mut crate::serialize::short(value.slot));
-		result.append(&mut crate::slot::serialize_hashed_slot(value.item.as_ref()));
+		result.append(&mut crate::slot::serialize_slot(value.item.as_ref()));
 
 		return Ok(result);
 	}
@@ -737,7 +737,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::short(&mut value)?,
-			item: crate::slot::deserialize_hashed_slot(&mut value)?,
+			item: crate::slot::deserialize_slot(&mut value)?,
 		});
 	}
 }
