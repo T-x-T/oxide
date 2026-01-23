@@ -17,6 +17,7 @@ pub mod utils;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 pub const VIEW_DISTANCE: i8 = 10;
+pub const DEFAULT_GAMEMODE: Gamemode = Gamemode::Creative;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {

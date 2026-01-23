@@ -1,4 +1,5 @@
 use super::*;
+use crate::DEFAULT_GAMEMODE;
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
@@ -72,7 +73,7 @@ impl Clone for Player {
 			cursor_item: self.cursor_item.clone(),
 			is_sneaking: self.is_sneaking,
 			chat_message_index: self.chat_message_index,
-			gamemode: Gamemode::Creative,
+			gamemode: self.gamemode,
 		}
 	}
 }
@@ -163,7 +164,7 @@ impl Player {
 				cursor_item: None,
 				is_sneaking: false,
 				chat_message_index: 0,
-				gamemode: Gamemode::Creative,
+				gamemode: DEFAULT_GAMEMODE,
 			};
 
 			return player;
@@ -232,6 +233,17 @@ impl Player {
 			}
 		}
 
+		let mut parsed_gamemode = DEFAULT_GAMEMODE;
+		if let Some(gamemode) = player_data.get_child("playerGameType") {
+			match gamemode.as_int() {
+				0 => parsed_gamemode = Gamemode::Survival,
+				1 => parsed_gamemode = Gamemode::Creative,
+				2 => parsed_gamemode = Gamemode::Adventure,
+				3 => parsed_gamemode = Gamemode::Spectator,
+				_ => (),
+			};
+		};
+
 		let entity_id = game.entity_id_manager.get_new();
 		let player = Self {
 			x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -254,7 +266,7 @@ impl Player {
 			cursor_item: None,
 			is_sneaking: false,
 			chat_message_index: 0,
-			gamemode: Gamemode::Creative,
+			gamemode: parsed_gamemode,
 		};
 
 		return player;
@@ -278,6 +290,7 @@ impl Player {
 			NbtTag::List("Pos".to_string(), vec![NbtListTag::Double(self.x), NbtListTag::Double(self.y), NbtListTag::Double(self.z)]),
 			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.yaw), NbtListTag::Float(self.pitch)]),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
+			NbtTag::Int("playerGameType".to_string(), self.gamemode as u8 as i32),
 			NbtTag::List(
 				"Inventory".to_string(),
 				self

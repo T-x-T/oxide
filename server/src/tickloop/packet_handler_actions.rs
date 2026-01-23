@@ -1025,7 +1025,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						dimension_type: 0,
 						dimension_name: "minecraft:overworld".to_string(),
 						hashed_seed: 1,
-						game_mode: 1,
+						game_mode: new_player.gamemode as u8,
 						previous_game_mode: -1,
 						is_debug: false,
 						is_flat: false,
@@ -1123,6 +1123,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let new_player_inventory = new_player.get_inventory().clone();
 				let new_player_selected_slot = new_player.get_selected_slot();
 				let new_player_entity_metadata = new_player.get_metadata();
+				let new_player_gamemode = new_player.gamemode;
 
 				//send player list to newly connected player
 				game.send_packet(
@@ -1138,7 +1139,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 									vec![
 										lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
 										lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-										lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+										lib::packets::clientbound::play::PlayerAction::UpdateGameMode(new_player_gamemode as u8 as i32),
 										lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
 										lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
 										lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
@@ -1167,7 +1168,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 								vec![
 									lib::packets::clientbound::play::PlayerAction::AddPlayer(new_player_display_name.clone(), vec![]),
 									lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-									lib::packets::clientbound::play::PlayerAction::UpdateGameMode(1),
+									lib::packets::clientbound::play::PlayerAction::UpdateGameMode(new_player_gamemode as u8 as i32),
 									lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
 									lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
 									lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
