@@ -46,10 +46,11 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	};
 
 	let game_clone = game.clone();
+	let players_clone = game.players.lock().unwrap().clone();
 	let mut players = game_clone.players.try_lock().unwrap();
 	let player = players.iter_mut().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
 
-	player.set_gamemode(parsed_gamemode, game)?;
+	player.set_gamemode(parsed_gamemode, players_clone.as_slice(), game)?;
 
 	return Ok(());
 }

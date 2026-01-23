@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::CommonEntity;
-use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
+use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
 use data::blocks::Block;
 use flate2::Compression;
@@ -827,7 +827,7 @@ impl Player {
 		};
 	}
 
-	pub fn set_gamemode(&mut self, gamemode: Gamemode, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 		self.gamemode = gamemode;
 
 		game.send_packet(
@@ -839,6 +839,19 @@ impl Player {
 			}
 			.try_into()?,
 		);
+
+		players.iter().for_each(|player| {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
+				crate::packets::clientbound::play::PlayerInfoUpdate {
+					actions: 0x04,
+					players: vec![(self.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
+				}
+				.try_into()
+				.unwrap(),
+			);
+		});
 
 		return Ok(());
 	}
