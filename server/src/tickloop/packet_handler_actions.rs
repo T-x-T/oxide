@@ -1072,6 +1072,17 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				game.send_packet(
 					&peer_addr,
+					lib::packets::clientbound::play::EntityEvent::PACKET_ID,
+					lib::packets::clientbound::play::EntityEvent {
+						entity_id: new_player.entity_id,
+						entity_status: 28, //set op permission level 4
+					}
+					.try_into()
+					.unwrap(),
+				);
+
+				game.send_packet(
+					&peer_addr,
 					lib::packets::clientbound::play::SetContainerContent::PACKET_ID,
 					lib::packets::clientbound::play::SetContainerContent {
 						window_id: 0,
@@ -1378,6 +1389,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					.try_into()
 					.unwrap(),
 				);
+			}
+			PacketHandlerAction::UpdateGamemode(peer_addr, gamemode) => {
+				let players_clone = game.players.lock().unwrap().clone();
+				let mut players = game.players.lock().unwrap();
+				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				player.set_gamemode(gamemode, &players_clone, game.clone()).unwrap();
 			}
 		}
 	}

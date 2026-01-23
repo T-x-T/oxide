@@ -43,6 +43,54 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 }
 
 //
+// MARK: 0x04 change game mode
+//
+
+#[derive(Debug, Clone)]
+pub struct ChangeGamemode {
+	pub gamemode: Gamemode,
+}
+
+impl Packet for ChangeGamemode {
+	const PACKET_ID: u8 = 0x04;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ChangeGamemode> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ChangeGamemode) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.gamemode as u8 as i32));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChangeGamemode {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let gamemode = match crate::deserialize::varint(&mut value)? {
+			0 => Gamemode::Survival,
+			1 => Gamemode::Creative,
+			2 => Gamemode::Adventure,
+			3 => Gamemode::Spectator,
+			x => return Err(Box::new(crate::CustomError::InvalidInput(format!("{x} is not a valid gamemode")))),
+		};
+		return Ok(ChangeGamemode {
+			gamemode,
+		});
+	}
+}
+
+//
 // MARK: 0x06 chat command
 //
 
