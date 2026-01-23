@@ -15,6 +15,15 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum Gamemode {
+	Survival = 0,
+	Creative = 1,
+	Adventure = 2,
+	Spectator = 3,
+}
+
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
@@ -37,6 +46,7 @@ pub struct Player {
 	pub cursor_item: Option<Slot>,
 	is_sneaking: bool,
 	pub chat_message_index: i32,
+	pub gamemode: Gamemode,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -62,6 +72,7 @@ impl Clone for Player {
 			cursor_item: self.cursor_item.clone(),
 			is_sneaking: self.is_sneaking,
 			chat_message_index: self.chat_message_index,
+			gamemode: Gamemode::Creative,
 		}
 	}
 }
@@ -152,6 +163,7 @@ impl Player {
 				cursor_item: None,
 				is_sneaking: false,
 				chat_message_index: 0,
+				gamemode: Gamemode::Creative,
 			};
 
 			return player;
@@ -242,6 +254,7 @@ impl Player {
 			cursor_item: None,
 			is_sneaking: false,
 			chat_message_index: 0,
+			gamemode: Gamemode::Creative,
 		};
 
 		return player;
@@ -812,5 +825,21 @@ impl Player {
 			yaw: self.yaw,
 			pitch: self.pitch,
 		};
+	}
+
+	pub fn set_gamemode(&mut self, gamemode: Gamemode, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+		self.gamemode = gamemode;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::GameEvent::PACKET_ID,
+			crate::packets::clientbound::play::GameEvent {
+				event: 3,
+				value: self.gamemode as u8 as f32,
+			}
+			.try_into()?,
+		);
+
+		return Ok(());
 	}
 }
