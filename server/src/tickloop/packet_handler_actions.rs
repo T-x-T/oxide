@@ -207,6 +207,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let mut players = game.players.lock().unwrap();
 				let mut world = game.world.lock().unwrap();
 
+				let player_clone = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().clone();
+
 				let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
 				let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &game.block_state_data);
 
@@ -277,6 +279,50 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						.unwrap();
 					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
 					block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
+				}
+
+				if player_clone.gamemode == Gamemode::Survival {
+					let new_entity = lib::entity::ItemEntity {
+						common: lib::entity::CommonEntity {
+							position: location.into(),
+							velocity: EntityPosition::default(),
+							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+							entity_id: game.entity_id_manager.get_new(),
+							..Default::default()
+						},
+						age: 0,
+						health: 5,
+						item: Item {
+							id: old_block.block_name.to_string(),
+							count: 1,
+							components: Vec::new(),
+						},
+						owner: player_clone.uuid,
+						pickup_delay: 0,
+						thrower: player_clone.uuid,
+					};
+
+					let packet = new_entity.to_spawn_entity_packet();
+
+					let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+						entity_id: new_entity.get_common_entity_data().entity_id,
+						metadata: new_entity.get_metadata(),
+					};
+
+					world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
+
+					players.iter().for_each(|x| {
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+							packet.clone().try_into().unwrap(),
+						);
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+							metadata_packet.clone().try_into().unwrap(),
+						);
+					});
 				}
 
 				players

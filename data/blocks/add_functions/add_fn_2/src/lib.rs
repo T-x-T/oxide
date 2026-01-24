@@ -1,7 +1,7 @@
 use block_types::*;
 use std::collections::HashMap;
 pub fn add_acaciafence(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31, block_name: "minecraft:acacia_fence" };
 	block.states.push(State { id: 13666, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::True),] });
 	block.states.push(State { id: 13667, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::False),] });
 	block.states.push(State { id: 13668, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),] });
@@ -37,7 +37,7 @@ pub fn add_acaciafence(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:acacia_fence".to_string(), block);
 }
 pub fn add_acaciashelf(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:acacia_shelf" };
 	block.states.push(State { id: 2399, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
 	block.states.push(State { id: 2400, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::False),] });
 	block.states.push(State { id: 2401, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
@@ -105,7 +105,7 @@ pub fn add_acaciashelf(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:acacia_shelf".to_string(), block);
 }
 pub fn add_activatorrail(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::PoweredRail, properties: vec![Property::PoweredRailPowered(PoweredRailPowered::True),Property::PoweredRailPowered(PoweredRailPowered::False),Property::PoweredRailShape(PoweredRailShape::NorthSouth),Property::PoweredRailShape(PoweredRailShape::EastWest),Property::PoweredRailShape(PoweredRailShape::AscendingEast),Property::PoweredRailShape(PoweredRailShape::AscendingWest),Property::PoweredRailShape(PoweredRailShape::AscendingNorth),Property::PoweredRailShape(PoweredRailShape::AscendingSouth),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::True),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::False),], states: vec![], default_state: 13 };
+	let mut block = Block { block_type: Type::PoweredRail, properties: vec![Property::PoweredRailPowered(PoweredRailPowered::True),Property::PoweredRailPowered(PoweredRailPowered::False),Property::PoweredRailShape(PoweredRailShape::NorthSouth),Property::PoweredRailShape(PoweredRailShape::EastWest),Property::PoweredRailShape(PoweredRailShape::AscendingEast),Property::PoweredRailShape(PoweredRailShape::AscendingWest),Property::PoweredRailShape(PoweredRailShape::AscendingNorth),Property::PoweredRailShape(PoweredRailShape::AscendingSouth),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::True),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::False),], states: vec![], default_state: 13, block_name: "minecraft:activator_rail" };
 	block.states.push(State { id: 11206, properties: vec![ Property::PoweredRailPowered(PoweredRailPowered::True),Property::PoweredRailShape(PoweredRailShape::NorthSouth),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::True),] });
 	block.states.push(State { id: 11207, properties: vec![ Property::PoweredRailPowered(PoweredRailPowered::True),Property::PoweredRailShape(PoweredRailShape::NorthSouth),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::False),] });
 	block.states.push(State { id: 11208, properties: vec![ Property::PoweredRailPowered(PoweredRailPowered::True),Property::PoweredRailShape(PoweredRailShape::EastWest),Property::PoweredRailWaterlogged(PoweredRailWaterlogged::True),] });
@@ -133,7 +133,7 @@ pub fn add_activatorrail(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:activator_rail".to_string(), block);
 }
 pub fn add_andesitestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:andesite_stairs" };
 	block.states.push(State { id: 15894, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 15895, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 15896, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -217,7 +217,7 @@ pub fn add_andesitestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:andesite_stairs".to_string(), block);
 }
 pub fn add_bamboo(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::BambooStalk, properties: vec![Property::BambooStalkAge(BambooStalkAge::Num0),Property::BambooStalkAge(BambooStalkAge::Num1),Property::BambooStalkLeaves(BambooStalkLeaves::None),Property::BambooStalkLeaves(BambooStalkLeaves::Small),Property::BambooStalkLeaves(BambooStalkLeaves::Large),Property::BambooStalkStage(BambooStalkStage::Num0),Property::BambooStalkStage(BambooStalkStage::Num1),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::BambooStalk, properties: vec![Property::BambooStalkAge(BambooStalkAge::Num0),Property::BambooStalkAge(BambooStalkAge::Num1),Property::BambooStalkLeaves(BambooStalkLeaves::None),Property::BambooStalkLeaves(BambooStalkLeaves::Small),Property::BambooStalkLeaves(BambooStalkLeaves::Large),Property::BambooStalkStage(BambooStalkStage::Num0),Property::BambooStalkStage(BambooStalkStage::Num1),], states: vec![], default_state: 0, block_name: "minecraft:bamboo" };
 	block.states.push(State { id: 15077, properties: vec![ Property::BambooStalkAge(BambooStalkAge::Num0),Property::BambooStalkLeaves(BambooStalkLeaves::None),Property::BambooStalkStage(BambooStalkStage::Num0),] });
 	block.states.push(State { id: 15078, properties: vec![ Property::BambooStalkAge(BambooStalkAge::Num0),Property::BambooStalkLeaves(BambooStalkLeaves::None),Property::BambooStalkStage(BambooStalkStage::Num1),] });
 	block.states.push(State { id: 15079, properties: vec![ Property::BambooStalkAge(BambooStalkAge::Num0),Property::BambooStalkLeaves(BambooStalkLeaves::Small),Property::BambooStalkStage(BambooStalkStage::Num0),] });
@@ -233,7 +233,7 @@ pub fn add_bamboo(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:bamboo".to_string(), block);
 }
 pub fn add_bamboomosaicslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:bamboo_mosaic_slab" };
 	block.states.push(State { id: 13188, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 13189, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 13190, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -243,7 +243,7 @@ pub fn add_bamboomosaicslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:bamboo_mosaic_slab".to_string(), block);
 }
 pub fn add_bamboostairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:bamboo_stairs" };
 	block.states.push(State { id: 12170, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 12171, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 12172, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -327,12 +327,12 @@ pub fn add_bamboostairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:bamboo_stairs".to_string(), block);
 }
 pub fn add_bedrock(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:bedrock" };
 	block.states.push(State { id: 85, properties: vec![ ] });
 	map.insert("minecraft:bedrock".to_string(), block);
 }
 pub fn add_birchdoor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Door, properties: vec![Property::DoorFacing(DoorFacing::North),Property::DoorFacing(DoorFacing::South),Property::DoorFacing(DoorFacing::West),Property::DoorFacing(DoorFacing::East),Property::DoorHalf(DoorHalf::Upper),Property::DoorHalf(DoorHalf::Lower),Property::DoorHinge(DoorHinge::Left),Property::DoorHinge(DoorHinge::Right),Property::DoorOpen(DoorOpen::True),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),Property::DoorPowered(DoorPowered::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Door, properties: vec![Property::DoorFacing(DoorFacing::North),Property::DoorFacing(DoorFacing::South),Property::DoorFacing(DoorFacing::West),Property::DoorFacing(DoorFacing::East),Property::DoorHalf(DoorHalf::Upper),Property::DoorHalf(DoorHalf::Lower),Property::DoorHinge(DoorHinge::Left),Property::DoorHinge(DoorHinge::Right),Property::DoorOpen(DoorOpen::True),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),Property::DoorPowered(DoorPowered::False),], states: vec![], default_state: 11, block_name: "minecraft:birch_door" };
 	block.states.push(State { id: 13922, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::True),Property::DoorPowered(DoorPowered::True),] });
 	block.states.push(State { id: 13923, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::True),Property::DoorPowered(DoorPowered::False),] });
 	block.states.push(State { id: 13924, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),] });
@@ -400,20 +400,20 @@ pub fn add_birchdoor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:birch_door".to_string(), block);
 }
 pub fn add_birchsapling(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Sapling, properties: vec![Property::SaplingStage(SaplingStage::Num0),Property::SaplingStage(SaplingStage::Num1),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Sapling, properties: vec![Property::SaplingStage(SaplingStage::Num0),Property::SaplingStage(SaplingStage::Num1),], states: vec![], default_state: 0, block_name: "minecraft:birch_sapling" };
 	block.states.push(State { id: 33, properties: vec![ Property::SaplingStage(SaplingStage::Num0),] });
 	block.states.push(State { id: 34, properties: vec![ Property::SaplingStage(SaplingStage::Num1),] });
 	map.insert("minecraft:birch_sapling".to_string(), block);
 }
 pub fn add_birchwood(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:birch_wood" };
 	block.states.push(State { id: 207, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 208, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 209, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:birch_wood".to_string(), block);
 }
 pub fn add_blackglazedterracotta(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::GlazedTerracotta, properties: vec![Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::GlazedTerracotta, properties: vec![Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:black_glazed_terracotta" };
 	block.states.push(State { id: 14824, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),] });
 	block.states.push(State { id: 14825, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),] });
 	block.states.push(State { id: 14826, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),] });
@@ -421,7 +421,7 @@ pub fn add_blackglazedterracotta(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:black_glazed_terracotta".to_string(), block);
 }
 pub fn add_blackstoneslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:blackstone_slab" };
 	block.states.push(State { id: 22034, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 22035, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 22036, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -431,12 +431,12 @@ pub fn add_blackstoneslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:blackstone_slab".to_string(), block);
 }
 pub fn add_bluecarpet(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:blue_carpet" };
 	block.states.push(State { id: 12705, properties: vec![ ] });
 	map.insert("minecraft:blue_carpet".to_string(), block);
 }
 pub fn add_bluestainedglasspane(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31, block_name: "minecraft:blue_stained_glass_pane" };
 	block.states.push(State { id: 11610, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
 	block.states.push(State { id: 11611, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),] });
 	block.states.push(State { id: 11612, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
@@ -472,13 +472,13 @@ pub fn add_bluestainedglasspane(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:blue_stained_glass_pane".to_string(), block);
 }
 pub fn add_braincoralfan(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CoralFan, properties: vec![Property::CoralFanWaterlogged(CoralFanWaterlogged::True),Property::CoralFanWaterlogged(CoralFanWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::CoralFan, properties: vec![Property::CoralFanWaterlogged(CoralFanWaterlogged::True),Property::CoralFanWaterlogged(CoralFanWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:brain_coral_fan" };
 	block.states.push(State { id: 14977, properties: vec![ Property::CoralFanWaterlogged(CoralFanWaterlogged::True),] });
 	block.states.push(State { id: 14978, properties: vec![ Property::CoralFanWaterlogged(CoralFanWaterlogged::False),] });
 	map.insert("minecraft:brain_coral_fan".to_string(), block);
 }
 pub fn add_brownbed(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Bed, properties: vec![Property::BedFacing(BedFacing::North),Property::BedFacing(BedFacing::South),Property::BedFacing(BedFacing::West),Property::BedFacing(BedFacing::East),Property::BedOccupied(BedOccupied::True),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),Property::BedPart(BedPart::Foot),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Bed, properties: vec![Property::BedFacing(BedFacing::North),Property::BedFacing(BedFacing::South),Property::BedFacing(BedFacing::West),Property::BedFacing(BedFacing::East),Property::BedOccupied(BedOccupied::True),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),Property::BedPart(BedPart::Foot),], states: vec![], default_state: 3, block_name: "minecraft:brown_bed" };
 	block.states.push(State { id: 1923, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::True),Property::BedPart(BedPart::Head),] });
 	block.states.push(State { id: 1924, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::True),Property::BedPart(BedPart::Foot),] });
 	block.states.push(State { id: 1925, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),] });
@@ -498,7 +498,7 @@ pub fn add_brownbed(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:brown_bed".to_string(), block);
 }
 pub fn add_brownmushroomblock(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::HugeMushroom, properties: vec![Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomDown(HugeMushroomDown::False),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomEast(HugeMushroomEast::False),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomNorth(HugeMushroomNorth::False),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomSouth(HugeMushroomSouth::False),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),Property::HugeMushroomWest(HugeMushroomWest::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::HugeMushroom, properties: vec![Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomDown(HugeMushroomDown::False),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomEast(HugeMushroomEast::False),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomNorth(HugeMushroomNorth::False),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomSouth(HugeMushroomSouth::False),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),Property::HugeMushroomWest(HugeMushroomWest::False),], states: vec![], default_state: 0, block_name: "minecraft:brown_mushroom_block" };
 	block.states.push(State { id: 7565, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomWest(HugeMushroomWest::True),] });
 	block.states.push(State { id: 7566, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomWest(HugeMushroomWest::False),] });
 	block.states.push(State { id: 7567, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),] });
@@ -566,13 +566,13 @@ pub fn add_brownmushroomblock(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:brown_mushroom_block".to_string(), block);
 }
 pub fn add_bubblecoral(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:bubble_coral" };
 	block.states.push(State { id: 14959, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),] });
 	block.states.push(State { id: 14960, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),] });
 	map.insert("minecraft:bubble_coral".to_string(), block);
 }
 pub fn add_cake(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Cake, properties: vec![Property::CakeBites(CakeBites::Num0),Property::CakeBites(CakeBites::Num1),Property::CakeBites(CakeBites::Num2),Property::CakeBites(CakeBites::Num3),Property::CakeBites(CakeBites::Num4),Property::CakeBites(CakeBites::Num5),Property::CakeBites(CakeBites::Num6),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Cake, properties: vec![Property::CakeBites(CakeBites::Num0),Property::CakeBites(CakeBites::Num1),Property::CakeBites(CakeBites::Num2),Property::CakeBites(CakeBites::Num3),Property::CakeBites(CakeBites::Num4),Property::CakeBites(CakeBites::Num5),Property::CakeBites(CakeBites::Num6),], states: vec![], default_state: 0, block_name: "minecraft:cake" };
 	block.states.push(State { id: 6826, properties: vec![ Property::CakeBites(CakeBites::Num0),] });
 	block.states.push(State { id: 6827, properties: vec![ Property::CakeBites(CakeBites::Num1),] });
 	block.states.push(State { id: 6828, properties: vec![ Property::CakeBites(CakeBites::Num2),] });
@@ -583,7 +583,7 @@ pub fn add_cake(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cake".to_string(), block);
 }
 pub fn add_carvedpumpkin(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::JackOLantern, properties: vec![Property::JackOLanternFacing(JackOLanternFacing::North),Property::JackOLanternFacing(JackOLanternFacing::South),Property::JackOLanternFacing(JackOLanternFacing::West),Property::JackOLanternFacing(JackOLanternFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::JackOLantern, properties: vec![Property::JackOLanternFacing(JackOLanternFacing::North),Property::JackOLanternFacing(JackOLanternFacing::South),Property::JackOLanternFacing(JackOLanternFacing::West),Property::JackOLanternFacing(JackOLanternFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:carved_pumpkin" };
 	block.states.push(State { id: 6818, properties: vec![ Property::JackOLanternFacing(JackOLanternFacing::North),] });
 	block.states.push(State { id: 6819, properties: vec![ Property::JackOLanternFacing(JackOLanternFacing::South),] });
 	block.states.push(State { id: 6820, properties: vec![ Property::JackOLanternFacing(JackOLanternFacing::West),] });
@@ -591,7 +591,7 @@ pub fn add_carvedpumpkin(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:carved_pumpkin".to_string(), block);
 }
 pub fn add_cherryfence(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31, block_name: "minecraft:cherry_fence" };
 	block.states.push(State { id: 13698, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::True),] });
 	block.states.push(State { id: 13699, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::False),] });
 	block.states.push(State { id: 13700, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),] });
@@ -627,7 +627,7 @@ pub fn add_cherryfence(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cherry_fence".to_string(), block);
 }
 pub fn add_cherryshelf(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:cherry_shelf" };
 	block.states.push(State { id: 2591, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
 	block.states.push(State { id: 2592, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::False),] });
 	block.states.push(State { id: 2593, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
@@ -695,7 +695,7 @@ pub fn add_cherryshelf(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cherry_shelf".to_string(), block);
 }
 pub fn add_chest(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Chest, properties: vec![Property::ChestType(ChestType::Single),Property::ChestType(ChestType::Left),Property::ChestType(ChestType::Right),Property::ChestFacing(ChestFacing::North),Property::ChestFacing(ChestFacing::South),Property::ChestFacing(ChestFacing::West),Property::ChestFacing(ChestFacing::East),Property::ChestWaterlogged(ChestWaterlogged::True),Property::ChestWaterlogged(ChestWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::Chest, properties: vec![Property::ChestType(ChestType::Single),Property::ChestType(ChestType::Left),Property::ChestType(ChestType::Right),Property::ChestFacing(ChestFacing::North),Property::ChestFacing(ChestFacing::South),Property::ChestFacing(ChestFacing::West),Property::ChestFacing(ChestFacing::East),Property::ChestWaterlogged(ChestWaterlogged::True),Property::ChestWaterlogged(ChestWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:chest" };
 	block.states.push(State { id: 3786, properties: vec![ Property::ChestType(ChestType::Single),Property::ChestFacing(ChestFacing::North),Property::ChestWaterlogged(ChestWaterlogged::True),] });
 	block.states.push(State { id: 3787, properties: vec![ Property::ChestType(ChestType::Single),Property::ChestFacing(ChestFacing::North),Property::ChestWaterlogged(ChestWaterlogged::False),] });
 	block.states.push(State { id: 3788, properties: vec![ Property::ChestType(ChestType::Left),Property::ChestFacing(ChestFacing::North),Property::ChestWaterlogged(ChestWaterlogged::True),] });
@@ -723,17 +723,17 @@ pub fn add_chest(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:chest".to_string(), block);
 }
 pub fn add_chiseledredsandstone(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:chiseled_red_sandstone" };
 	block.states.push(State { id: 13046, properties: vec![ ] });
 	map.insert("minecraft:chiseled_red_sandstone".to_string(), block);
 }
 pub fn add_clay(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:clay" };
 	block.states.push(State { id: 6745, properties: vec![ ] });
 	map.insert("minecraft:clay".to_string(), block);
 }
 pub fn add_cobbleddeepslatewall(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3, block_name: "minecraft:cobbled_deepslate_wall" };
 	block.states.push(State { id: 27811, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::None),] });
 	block.states.push(State { id: 27812, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Low),] });
 	block.states.push(State { id: 27813, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Tall),] });
@@ -1061,7 +1061,7 @@ pub fn add_cobbleddeepslatewall(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cobbled_deepslate_wall".to_string(), block);
 }
 pub fn add_comparator(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Comparator, properties: vec![Property::ComparatorFacing(ComparatorFacing::North),Property::ComparatorFacing(ComparatorFacing::South),Property::ComparatorFacing(ComparatorFacing::West),Property::ComparatorFacing(ComparatorFacing::East),Property::ComparatorMode(ComparatorMode::Compare),Property::ComparatorMode(ComparatorMode::Subtract),Property::ComparatorPowered(ComparatorPowered::True),Property::ComparatorPowered(ComparatorPowered::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::Comparator, properties: vec![Property::ComparatorFacing(ComparatorFacing::North),Property::ComparatorFacing(ComparatorFacing::South),Property::ComparatorFacing(ComparatorFacing::West),Property::ComparatorFacing(ComparatorFacing::East),Property::ComparatorMode(ComparatorMode::Compare),Property::ComparatorMode(ComparatorMode::Subtract),Property::ComparatorPowered(ComparatorPowered::True),Property::ComparatorPowered(ComparatorPowered::False),], states: vec![], default_state: 1, block_name: "minecraft:comparator" };
 	block.states.push(State { id: 11061, properties: vec![ Property::ComparatorFacing(ComparatorFacing::North),Property::ComparatorMode(ComparatorMode::Compare),Property::ComparatorPowered(ComparatorPowered::True),] });
 	block.states.push(State { id: 11062, properties: vec![ Property::ComparatorFacing(ComparatorFacing::North),Property::ComparatorMode(ComparatorMode::Compare),Property::ComparatorPowered(ComparatorPowered::False),] });
 	block.states.push(State { id: 11063, properties: vec![ Property::ComparatorFacing(ComparatorFacing::North),Property::ComparatorMode(ComparatorMode::Subtract),Property::ComparatorPowered(ComparatorPowered::True),] });
@@ -1081,7 +1081,7 @@ pub fn add_comparator(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:comparator".to_string(), block);
 }
 pub fn add_copperdoor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperDoor, properties: vec![Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::South),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::West),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::East),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Lower),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Right),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::WeatheringCopperDoor, properties: vec![Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::South),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::West),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::East),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Lower),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Right),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),], states: vec![], default_state: 11, block_name: "minecraft:copper_door" };
 	block.states.push(State { id: 25821, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),] });
 	block.states.push(State { id: 25822, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),] });
 	block.states.push(State { id: 25823, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),] });
@@ -1149,12 +1149,12 @@ pub fn add_copperdoor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:copper_door".to_string(), block);
 }
 pub fn add_cornflower(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Flower, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Flower, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:cornflower" };
 	block.states.push(State { id: 2132, properties: vec![ ] });
 	map.insert("minecraft:cornflower".to_string(), block);
 }
 pub fn add_creakingheart(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CreakingHeart, properties: vec![Property::CreakingHeartAxis(CreakingHeartAxis::X),Property::CreakingHeartAxis(CreakingHeartAxis::Y),Property::CreakingHeartAxis(CreakingHeartAxis::Z),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Uprooted),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Dormant),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Awake),Property::CreakingHeartNatural(CreakingHeartNatural::True),Property::CreakingHeartNatural(CreakingHeartNatural::False),], states: vec![], default_state: 7 };
+	let mut block = Block { block_type: Type::CreakingHeart, properties: vec![Property::CreakingHeartAxis(CreakingHeartAxis::X),Property::CreakingHeartAxis(CreakingHeartAxis::Y),Property::CreakingHeartAxis(CreakingHeartAxis::Z),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Uprooted),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Dormant),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Awake),Property::CreakingHeartNatural(CreakingHeartNatural::True),Property::CreakingHeartNatural(CreakingHeartNatural::False),], states: vec![], default_state: 7, block_name: "minecraft:creaking_heart" };
 	block.states.push(State { id: 3688, properties: vec![ Property::CreakingHeartAxis(CreakingHeartAxis::X),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Uprooted),Property::CreakingHeartNatural(CreakingHeartNatural::True),] });
 	block.states.push(State { id: 3689, properties: vec![ Property::CreakingHeartAxis(CreakingHeartAxis::X),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Uprooted),Property::CreakingHeartNatural(CreakingHeartNatural::False),] });
 	block.states.push(State { id: 3690, properties: vec![ Property::CreakingHeartAxis(CreakingHeartAxis::X),Property::CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState::Dormant),Property::CreakingHeartNatural(CreakingHeartNatural::True),] });
@@ -1176,7 +1176,7 @@ pub fn add_creakingheart(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:creaking_heart".to_string(), block);
 }
 pub fn add_crimsonhangingsign(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CeilingHangingSign, properties: vec![Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignAttached(CeilingHangingSignAttached::False),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num2),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num3),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num4),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num5),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num6),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num7),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num8),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num9),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num10),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num11),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num12),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num13),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num14),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num15),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),], states: vec![], default_state: 33 };
+	let mut block = Block { block_type: Type::CeilingHangingSign, properties: vec![Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignAttached(CeilingHangingSignAttached::False),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num2),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num3),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num4),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num5),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num6),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num7),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num8),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num9),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num10),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num11),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num12),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num13),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num14),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num15),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),], states: vec![], default_state: 33, block_name: "minecraft:crimson_hanging_sign" };
 	block.states.push(State { id: 6218, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),] });
 	block.states.push(State { id: 6219, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),] });
 	block.states.push(State { id: 6220, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),] });
@@ -1244,7 +1244,7 @@ pub fn add_crimsonhangingsign(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:crimson_hanging_sign".to_string(), block);
 }
 pub fn add_crimsonslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:crimson_slab" };
 	block.states.push(State { id: 20832, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 20833, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 20834, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -1254,7 +1254,7 @@ pub fn add_crimsonslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:crimson_slab".to_string(), block);
 }
 pub fn add_cutcopperslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperSlab, properties: vec![Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Top),Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Bottom),Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::True),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::WeatheringCopperSlab, properties: vec![Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Top),Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Bottom),Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::True),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:cut_copper_slab" };
 	block.states.push(State { id: 25463, properties: vec![ Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Top),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::True),] });
 	block.states.push(State { id: 25464, properties: vec![ Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Top),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::False),] });
 	block.states.push(State { id: 25465, properties: vec![ Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Bottom),Property::WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged::True),] });
@@ -1264,7 +1264,7 @@ pub fn add_cutcopperslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cut_copper_slab".to_string(), block);
 }
 pub fn add_cyancandle(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:cyan_candle" };
 	block.states.push(State { id: 23054, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::True),] });
 	block.states.push(State { id: 23055, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::False),] });
 	block.states.push(State { id: 23056, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),] });
@@ -1284,7 +1284,7 @@ pub fn add_cyancandle(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cyan_candle".to_string(), block);
 }
 pub fn add_cyanstainedglasspane(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31, block_name: "minecraft:cyan_stained_glass_pane" };
 	block.states.push(State { id: 11546, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
 	block.states.push(State { id: 11547, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),] });
 	block.states.push(State { id: 11548, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
@@ -1320,7 +1320,7 @@ pub fn add_cyanstainedglasspane(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:cyan_stained_glass_pane".to_string(), block);
 }
 pub fn add_darkoakfence(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31, block_name: "minecraft:dark_oak_fence" };
 	block.states.push(State { id: 13730, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::True),] });
 	block.states.push(State { id: 13731, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::False),] });
 	block.states.push(State { id: 13732, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),] });
@@ -1356,7 +1356,7 @@ pub fn add_darkoakfence(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:dark_oak_fence".to_string(), block);
 }
 pub fn add_darkoakshelf(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:dark_oak_shelf" };
 	block.states.push(State { id: 2719, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
 	block.states.push(State { id: 2720, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::False),] });
 	block.states.push(State { id: 2721, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
@@ -1424,18 +1424,18 @@ pub fn add_darkoakshelf(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:dark_oak_shelf".to_string(), block);
 }
 pub fn add_darkprismarine(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:dark_prismarine" };
 	block.states.push(State { id: 12431, properties: vec![ ] });
 	map.insert("minecraft:dark_prismarine".to_string(), block);
 }
 pub fn add_deadbubblecoral(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::BaseCoralPlant, properties: vec![Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::True),Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::BaseCoralPlant, properties: vec![Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::True),Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:dead_bubble_coral" };
 	block.states.push(State { id: 14949, properties: vec![ Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::True),] });
 	block.states.push(State { id: 14950, properties: vec![ Property::BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged::False),] });
 	map.insert("minecraft:dead_bubble_coral".to_string(), block);
 }
 pub fn add_deadfirecoralwallfan(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::BaseCoralWallFan, properties: vec![Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::West),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::East),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::BaseCoralWallFan, properties: vec![Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::West),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::East),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:dead_fire_coral_wall_fan" };
 	block.states.push(State { id: 15009, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),] });
 	block.states.push(State { id: 15010, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),] });
 	block.states.push(State { id: 15011, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),] });
@@ -1447,7 +1447,7 @@ pub fn add_deadfirecoralwallfan(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:dead_fire_coral_wall_fan".to_string(), block);
 }
 pub fn add_deadtubecoralwallfan(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::BaseCoralWallFan, properties: vec![Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::West),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::East),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::BaseCoralWallFan, properties: vec![Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::West),Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::East),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:dead_tube_coral_wall_fan" };
 	block.states.push(State { id: 14985, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),] });
 	block.states.push(State { id: 14986, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::North),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::False),] });
 	block.states.push(State { id: 14987, properties: vec![ Property::BaseCoralWallFanFacing(BaseCoralWallFanFacing::South),Property::BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged::True),] });
@@ -1459,12 +1459,12 @@ pub fn add_deadtubecoralwallfan(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:dead_tube_coral_wall_fan".to_string(), block);
 }
 pub fn add_deepslatecopperore(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::DropExperience, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::DropExperience, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:deepslate_copper_ore" };
 	block.states.push(State { id: 25112, properties: vec![ ] });
 	map.insert("minecraft:deepslate_copper_ore".to_string(), block);
 }
 pub fn add_deepslatetilestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:deepslate_tile_stairs" };
 	block.states.push(State { id: 28547, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 28548, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 28549, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -1548,7 +1548,7 @@ pub fn add_deepslatetilestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:deepslate_tile_stairs".to_string(), block);
 }
 pub fn add_dioritestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:diorite_stairs" };
 	block.states.push(State { id: 16134, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 16135, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 16136, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -1632,7 +1632,7 @@ pub fn add_dioritestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:diorite_stairs".to_string(), block);
 }
 pub fn add_driedghast(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::DriedGhast, properties: vec![Property::DriedGhastFacing(DriedGhastFacing::North),Property::DriedGhastFacing(DriedGhastFacing::South),Property::DriedGhastFacing(DriedGhastFacing::West),Property::DriedGhastFacing(DriedGhastFacing::East),Property::DriedGhastHydration(DriedGhastHydration::Num0),Property::DriedGhastHydration(DriedGhastHydration::Num1),Property::DriedGhastHydration(DriedGhastHydration::Num2),Property::DriedGhastHydration(DriedGhastHydration::Num3),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::True),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::DriedGhast, properties: vec![Property::DriedGhastFacing(DriedGhastFacing::North),Property::DriedGhastFacing(DriedGhastFacing::South),Property::DriedGhastFacing(DriedGhastFacing::West),Property::DriedGhastFacing(DriedGhastFacing::East),Property::DriedGhastHydration(DriedGhastHydration::Num0),Property::DriedGhastHydration(DriedGhastHydration::Num1),Property::DriedGhastHydration(DriedGhastHydration::Num2),Property::DriedGhastHydration(DriedGhastHydration::Num3),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::True),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:dried_ghast" };
 	block.states.push(State { id: 14903, properties: vec![ Property::DriedGhastFacing(DriedGhastFacing::North),Property::DriedGhastHydration(DriedGhastHydration::Num0),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::True),] });
 	block.states.push(State { id: 14904, properties: vec![ Property::DriedGhastFacing(DriedGhastFacing::North),Property::DriedGhastHydration(DriedGhastHydration::Num0),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::False),] });
 	block.states.push(State { id: 14905, properties: vec![ Property::DriedGhastFacing(DriedGhastFacing::North),Property::DriedGhastHydration(DriedGhastHydration::Num1),Property::DriedGhastWaterlogged(DriedGhastWaterlogged::True),] });
@@ -1668,12 +1668,12 @@ pub fn add_driedghast(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:dried_ghast".to_string(), block);
 }
 pub fn add_endportal(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::EndPortal, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::EndPortal, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:end_portal" };
 	block.states.push(State { id: 9267, properties: vec![ ] });
 	map.insert("minecraft:end_portal".to_string(), block);
 }
 pub fn add_enderchest(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::EnderChest, properties: vec![Property::EnderChestFacing(EnderChestFacing::North),Property::EnderChestFacing(EnderChestFacing::South),Property::EnderChestFacing(EnderChestFacing::West),Property::EnderChestFacing(EnderChestFacing::East),Property::EnderChestWaterlogged(EnderChestWaterlogged::True),Property::EnderChestWaterlogged(EnderChestWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::EnderChest, properties: vec![Property::EnderChestFacing(EnderChestFacing::North),Property::EnderChestFacing(EnderChestFacing::South),Property::EnderChestFacing(EnderChestFacing::West),Property::EnderChestFacing(EnderChestFacing::East),Property::EnderChestWaterlogged(EnderChestWaterlogged::True),Property::EnderChestWaterlogged(EnderChestWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:ender_chest" };
 	block.states.push(State { id: 9374, properties: vec![ Property::EnderChestFacing(EnderChestFacing::North),Property::EnderChestWaterlogged(EnderChestWaterlogged::True),] });
 	block.states.push(State { id: 9375, properties: vec![ Property::EnderChestFacing(EnderChestFacing::North),Property::EnderChestWaterlogged(EnderChestWaterlogged::False),] });
 	block.states.push(State { id: 9376, properties: vec![ Property::EnderChestFacing(EnderChestFacing::South),Property::EnderChestWaterlogged(EnderChestWaterlogged::True),] });
@@ -1685,7 +1685,7 @@ pub fn add_enderchest(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:ender_chest".to_string(), block);
 }
 pub fn add_exposedcoppergolemstatue(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperGolemStatue, properties: vec![Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Standing),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Sitting),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Running),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Star),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::North),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::South),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::West),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::East),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::True),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::WeatheringCopperGolemStatue, properties: vec![Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Standing),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Sitting),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Running),Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Star),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::North),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::South),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::West),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::East),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::True),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:exposed_copper_golem_statue" };
 	block.states.push(State { id: 27117, properties: vec![ Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Standing),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::North),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::True),] });
 	block.states.push(State { id: 27118, properties: vec![ Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Standing),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::North),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::False),] });
 	block.states.push(State { id: 27119, properties: vec![ Property::WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose::Standing),Property::WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing::South),Property::WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged::True),] });
@@ -1721,7 +1721,7 @@ pub fn add_exposedcoppergolemstatue(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:exposed_copper_golem_statue".to_string(), block);
 }
 pub fn add_farmland(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Farm, properties: vec![Property::FarmMoisture(FarmMoisture::Num0),Property::FarmMoisture(FarmMoisture::Num1),Property::FarmMoisture(FarmMoisture::Num2),Property::FarmMoisture(FarmMoisture::Num3),Property::FarmMoisture(FarmMoisture::Num4),Property::FarmMoisture(FarmMoisture::Num5),Property::FarmMoisture(FarmMoisture::Num6),Property::FarmMoisture(FarmMoisture::Num7),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Farm, properties: vec![Property::FarmMoisture(FarmMoisture::Num0),Property::FarmMoisture(FarmMoisture::Num1),Property::FarmMoisture(FarmMoisture::Num2),Property::FarmMoisture(FarmMoisture::Num3),Property::FarmMoisture(FarmMoisture::Num4),Property::FarmMoisture(FarmMoisture::Num5),Property::FarmMoisture(FarmMoisture::Num6),Property::FarmMoisture(FarmMoisture::Num7),], states: vec![], default_state: 0, block_name: "minecraft:farmland" };
 	block.states.push(State { id: 5118, properties: vec![ Property::FarmMoisture(FarmMoisture::Num0),] });
 	block.states.push(State { id: 5119, properties: vec![ Property::FarmMoisture(FarmMoisture::Num1),] });
 	block.states.push(State { id: 5120, properties: vec![ Property::FarmMoisture(FarmMoisture::Num2),] });
@@ -1733,17 +1733,17 @@ pub fn add_farmland(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:farmland".to_string(), block);
 }
 pub fn add_fletchingtable(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:fletching_table" };
 	block.states.push(State { id: 20569, properties: vec![ ] });
 	map.insert("minecraft:fletching_table".to_string(), block);
 }
 pub fn add_glass(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Transparent, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Transparent, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:glass" };
 	block.states.push(State { id: 562, properties: vec![ ] });
 	map.insert("minecraft:glass".to_string(), block);
 }
 pub fn add_granitestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:granite_stairs" };
 	block.states.push(State { id: 15814, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 15815, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 15816, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -1827,12 +1827,12 @@ pub fn add_granitestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:granite_stairs".to_string(), block);
 }
 pub fn add_graycarpet(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:gray_carpet" };
 	block.states.push(State { id: 12701, properties: vec![ ] });
 	map.insert("minecraft:gray_carpet".to_string(), block);
 }
 pub fn add_graywallbanner(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:gray_wall_banner" };
 	block.states.push(State { id: 13009, properties: vec![ Property::WallBannerFacing(WallBannerFacing::North),] });
 	block.states.push(State { id: 13010, properties: vec![ Property::WallBannerFacing(WallBannerFacing::South),] });
 	block.states.push(State { id: 13011, properties: vec![ Property::WallBannerFacing(WallBannerFacing::West),] });
@@ -1840,12 +1840,12 @@ pub fn add_graywallbanner(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:gray_wall_banner".to_string(), block);
 }
 pub fn add_greenconcretepowder(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::ConcretePowder, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::ConcretePowder, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:green_concrete_powder" };
 	block.states.push(State { id: 14857, properties: vec![ ] });
 	map.insert("minecraft:green_concrete_powder".to_string(), block);
 }
 pub fn add_grindstone(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Grindstone, properties: vec![Property::GrindstoneFace(GrindstoneFace::Floor),Property::GrindstoneFace(GrindstoneFace::Wall),Property::GrindstoneFace(GrindstoneFace::Ceiling),Property::GrindstoneFacing(GrindstoneFacing::North),Property::GrindstoneFacing(GrindstoneFacing::South),Property::GrindstoneFacing(GrindstoneFacing::West),Property::GrindstoneFacing(GrindstoneFacing::East),], states: vec![], default_state: 4 };
+	let mut block = Block { block_type: Type::Grindstone, properties: vec![Property::GrindstoneFace(GrindstoneFace::Floor),Property::GrindstoneFace(GrindstoneFace::Wall),Property::GrindstoneFace(GrindstoneFace::Ceiling),Property::GrindstoneFacing(GrindstoneFacing::North),Property::GrindstoneFacing(GrindstoneFacing::South),Property::GrindstoneFacing(GrindstoneFacing::West),Property::GrindstoneFacing(GrindstoneFacing::East),], states: vec![], default_state: 4, block_name: "minecraft:grindstone" };
 	block.states.push(State { id: 20570, properties: vec![ Property::GrindstoneFace(GrindstoneFace::Floor),Property::GrindstoneFacing(GrindstoneFacing::North),] });
 	block.states.push(State { id: 20571, properties: vec![ Property::GrindstoneFace(GrindstoneFace::Floor),Property::GrindstoneFacing(GrindstoneFacing::South),] });
 	block.states.push(State { id: 20572, properties: vec![ Property::GrindstoneFace(GrindstoneFace::Floor),Property::GrindstoneFacing(GrindstoneFacing::West),] });
@@ -1861,25 +1861,25 @@ pub fn add_grindstone(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:grindstone".to_string(), block);
 }
 pub fn add_horncoral(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:horn_coral" };
 	block.states.push(State { id: 14963, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),] });
 	block.states.push(State { id: 14964, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),] });
 	map.insert("minecraft:horn_coral".to_string(), block);
 }
 pub fn add_infesteddeepslate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::InfestedRotatedPillar, properties: vec![Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::X),Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Y),Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::InfestedRotatedPillar, properties: vec![Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::X),Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Y),Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:infested_deepslate" };
 	block.states.push(State { id: 29371, properties: vec![ Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::X),] });
 	block.states.push(State { id: 29372, properties: vec![ Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Y),] });
 	block.states.push(State { id: 29373, properties: vec![ Property::InfestedRotatedPillarAxis(InfestedRotatedPillarAxis::Z),] });
 	map.insert("minecraft:infested_deepslate".to_string(), block);
 }
 pub fn add_ironore(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::DropExperience, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::DropExperience, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:iron_ore" };
 	block.states.push(State { id: 131, properties: vec![ ] });
 	map.insert("minecraft:iron_ore".to_string(), block);
 }
 pub fn add_junglefencegate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7 };
+	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7, block_name: "minecraft:jungle_fence_gate" };
 	block.states.push(State { id: 13346, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::True),] });
 	block.states.push(State { id: 13347, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::False),] });
 	block.states.push(State { id: 13348, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),] });
@@ -1915,7 +1915,7 @@ pub fn add_junglefencegate(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:jungle_fence_gate".to_string(), block);
 }
 pub fn add_junglesign(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:jungle_sign" };
 	block.states.push(State { id: 5294, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
 	block.states.push(State { id: 5295, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),] });
 	block.states.push(State { id: 5296, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
@@ -1951,38 +1951,38 @@ pub fn add_junglesign(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:jungle_sign".to_string(), block);
 }
 pub fn add_kelpplant(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::KelpPlant, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::KelpPlant, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:kelp_plant" };
 	block.states.push(State { id: 14886, properties: vec![ ] });
 	map.insert("minecraft:kelp_plant".to_string(), block);
 }
 pub fn add_lavacauldron(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::LavaCauldron, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::LavaCauldron, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:lava_cauldron" };
 	block.states.push(State { id: 9263, properties: vec![ ] });
 	map.insert("minecraft:lava_cauldron".to_string(), block);
 }
 pub fn add_lightbluecandlecake(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CandleCake, properties: vec![Property::CandleCakeLit(CandleCakeLit::True),Property::CandleCakeLit(CandleCakeLit::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::CandleCake, properties: vec![Property::CandleCakeLit(CandleCakeLit::True),Property::CandleCakeLit(CandleCakeLit::False),], states: vec![], default_state: 1, block_name: "minecraft:light_blue_candle_cake" };
 	block.states.push(State { id: 23174, properties: vec![ Property::CandleCakeLit(CandleCakeLit::True),] });
 	block.states.push(State { id: 23175, properties: vec![ Property::CandleCakeLit(CandleCakeLit::False),] });
 	map.insert("minecraft:light_blue_candle_cake".to_string(), block);
 }
 pub fn add_lightblueterracotta(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:light_blue_terracotta" };
 	block.states.push(State { id: 11245, properties: vec![ ] });
 	map.insert("minecraft:light_blue_terracotta".to_string(), block);
 }
 pub fn add_lightgrayconcrete(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:light_gray_concrete" };
 	block.states.push(State { id: 14836, properties: vec![ ] });
 	map.insert("minecraft:light_gray_concrete".to_string(), block);
 }
 pub fn add_lightgraywool(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:light_gray_wool" };
 	block.states.push(State { id: 2101, properties: vec![ ] });
 	map.insert("minecraft:light_gray_wool".to_string(), block);
 }
 pub fn add_limecandle(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:lime_candle" };
 	block.states.push(State { id: 22990, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::True),] });
 	block.states.push(State { id: 22991, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::False),] });
 	block.states.push(State { id: 22992, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),] });
@@ -2002,7 +2002,7 @@ pub fn add_limecandle(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:lime_candle".to_string(), block);
 }
 pub fn add_limestainedglasspane(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31, block_name: "minecraft:lime_stained_glass_pane" };
 	block.states.push(State { id: 11418, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
 	block.states.push(State { id: 11419, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),] });
 	block.states.push(State { id: 11420, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
@@ -2038,7 +2038,7 @@ pub fn add_limestainedglasspane(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:lime_stained_glass_pane".to_string(), block);
 }
 pub fn add_magentacandle(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Candle, properties: vec![Property::CandleCandles(CandleCandles::Num1),Property::CandleCandles(CandleCandles::Num2),Property::CandleCandles(CandleCandles::Num3),Property::CandleCandles(CandleCandles::Num4),Property::CandleLit(CandleLit::True),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),Property::CandleWaterlogged(CandleWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:magenta_candle" };
 	block.states.push(State { id: 22942, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::True),] });
 	block.states.push(State { id: 22943, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::True),Property::CandleWaterlogged(CandleWaterlogged::False),] });
 	block.states.push(State { id: 22944, properties: vec![ Property::CandleCandles(CandleCandles::Num1),Property::CandleLit(CandleLit::False),Property::CandleWaterlogged(CandleWaterlogged::True),] });
@@ -2058,7 +2058,7 @@ pub fn add_magentacandle(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:magenta_candle".to_string(), block);
 }
 pub fn add_magentastainedglasspane(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31, block_name: "minecraft:magenta_stained_glass_pane" };
 	block.states.push(State { id: 11322, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
 	block.states.push(State { id: 11323, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),] });
 	block.states.push(State { id: 11324, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
@@ -2094,7 +2094,7 @@ pub fn add_magentastainedglasspane(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:magenta_stained_glass_pane".to_string(), block);
 }
 pub fn add_mangrovefencegate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7 };
+	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7, block_name: "minecraft:mangrove_fence_gate" };
 	block.states.push(State { id: 13506, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::True),] });
 	block.states.push(State { id: 13507, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::False),] });
 	block.states.push(State { id: 13508, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),] });
@@ -2130,7 +2130,7 @@ pub fn add_mangrovefencegate(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:mangrove_fence_gate".to_string(), block);
 }
 pub fn add_mangroveshelf(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:mangrove_shelf" };
 	block.states.push(State { id: 2847, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
 	block.states.push(State { id: 2848, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::False),] });
 	block.states.push(State { id: 2849, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
@@ -2198,7 +2198,7 @@ pub fn add_mangroveshelf(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:mangrove_shelf".to_string(), block);
 }
 pub fn add_mediumamethystbud(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::AmethystCluster, properties: vec![Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterFacing(AmethystClusterFacing::South),Property::AmethystClusterFacing(AmethystClusterFacing::West),Property::AmethystClusterFacing(AmethystClusterFacing::Up),Property::AmethystClusterFacing(AmethystClusterFacing::Down),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::AmethystCluster, properties: vec![Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterFacing(AmethystClusterFacing::South),Property::AmethystClusterFacing(AmethystClusterFacing::West),Property::AmethystClusterFacing(AmethystClusterFacing::Up),Property::AmethystClusterFacing(AmethystClusterFacing::Down),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:medium_amethyst_bud" };
 	block.states.push(State { id: 23226, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),] });
 	block.states.push(State { id: 23227, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),] });
 	block.states.push(State { id: 23228, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),] });
@@ -2214,7 +2214,7 @@ pub fn add_mediumamethystbud(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:medium_amethyst_bud".to_string(), block);
 }
 pub fn add_mossycobblestonewall(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3, block_name: "minecraft:mossy_cobblestone_wall" };
 	block.states.push(State { id: 10104, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::None),] });
 	block.states.push(State { id: 10105, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Low),] });
 	block.states.push(State { id: 10106, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Tall),] });
@@ -2542,7 +2542,7 @@ pub fn add_mossycobblestonewall(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:mossy_cobblestone_wall".to_string(), block);
 }
 pub fn add_mudbrickstairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:mud_brick_stairs" };
 	block.states.push(State { id: 8637, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 8638, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 8639, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -2626,7 +2626,7 @@ pub fn add_mudbrickstairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:mud_brick_stairs".to_string(), block);
 }
 pub fn add_netherbrickstairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:nether_brick_stairs" };
 	block.states.push(State { id: 9166, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 9167, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 9168, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -2710,12 +2710,12 @@ pub fn add_netherbrickstairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:nether_brick_stairs".to_string(), block);
 }
 pub fn add_netherwartblock(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:nether_wart_block" };
 	block.states.push(State { id: 14644, properties: vec![ ] });
 	map.insert("minecraft:nether_wart_block".to_string(), block);
 }
 pub fn add_oakhangingsign(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CeilingHangingSign, properties: vec![Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignAttached(CeilingHangingSignAttached::False),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num2),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num3),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num4),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num5),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num6),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num7),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num8),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num9),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num10),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num11),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num12),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num13),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num14),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num15),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),], states: vec![], default_state: 33 };
+	let mut block = Block { block_type: Type::CeilingHangingSign, properties: vec![Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignAttached(CeilingHangingSignAttached::False),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num2),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num3),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num4),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num5),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num6),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num7),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num8),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num9),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num10),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num11),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num12),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num13),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num14),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num15),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),], states: vec![], default_state: 33, block_name: "minecraft:oak_hanging_sign" };
 	block.states.push(State { id: 5706, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),] });
 	block.states.push(State { id: 5707, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num0),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::False),] });
 	block.states.push(State { id: 5708, properties: vec![ Property::CeilingHangingSignAttached(CeilingHangingSignAttached::True),Property::CeilingHangingSignRotation(CeilingHangingSignRotation::Num1),Property::CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged::True),] });
@@ -2783,7 +2783,7 @@ pub fn add_oakhangingsign(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:oak_hanging_sign".to_string(), block);
 }
 pub fn add_oakslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:oak_slab" };
 	block.states.push(State { id: 13128, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 13129, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 13130, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -2793,24 +2793,24 @@ pub fn add_oakslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:oak_slab".to_string(), block);
 }
 pub fn add_ochrefroglight(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:ochre_froglight" };
 	block.states.push(State { id: 29380, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 29381, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 29382, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:ochre_froglight".to_string(), block);
 }
 pub fn add_orangeconcretepowder(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::ConcretePowder, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::ConcretePowder, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:orange_concrete_powder" };
 	block.states.push(State { id: 14845, properties: vec![ ] });
 	map.insert("minecraft:orange_concrete_powder".to_string(), block);
 }
 pub fn add_orangewool(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:orange_wool" };
 	block.states.push(State { id: 2094, properties: vec![ ] });
 	map.insert("minecraft:orange_wool".to_string(), block);
 }
 pub fn add_oxidizedcopperdoor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperDoor, properties: vec![Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::South),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::West),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::East),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Lower),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Right),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::WeatheringCopperDoor, properties: vec![Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::South),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::West),Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::East),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Lower),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Right),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),], states: vec![], default_state: 11, block_name: "minecraft:oxidized_copper_door" };
 	block.states.push(State { id: 25949, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),] });
 	block.states.push(State { id: 25950, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::True),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::False),] });
 	block.states.push(State { id: 25951, properties: vec![ Property::WeatheringCopperDoorFacing(WeatheringCopperDoorFacing::North),Property::WeatheringCopperDoorHalf(WeatheringCopperDoorHalf::Upper),Property::WeatheringCopperDoorHinge(WeatheringCopperDoorHinge::Left),Property::WeatheringCopperDoorOpen(WeatheringCopperDoorOpen::False),Property::WeatheringCopperDoorPowered(WeatheringCopperDoorPowered::True),] });
@@ -2878,7 +2878,7 @@ pub fn add_oxidizedcopperdoor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:oxidized_copper_door".to_string(), block);
 }
 pub fn add_oxidizedlightningrod(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringLightningRod, properties: vec![Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::North),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::East),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::South),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::West),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::Up),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::Down),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::True),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::False),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::True),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::False),], states: vec![], default_state: 19 };
+	let mut block = Block { block_type: Type::WeatheringLightningRod, properties: vec![Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::North),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::East),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::South),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::West),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::Up),Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::Down),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::True),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::False),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::True),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::False),], states: vec![], default_state: 19, block_name: "minecraft:oxidized_lightning_rod" };
 	block.states.push(State { id: 27413, properties: vec![ Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::North),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::True),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::True),] });
 	block.states.push(State { id: 27414, properties: vec![ Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::North),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::True),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::False),] });
 	block.states.push(State { id: 27415, properties: vec![ Property::WeatheringLightningRodFacing(WeatheringLightningRodFacing::North),Property::WeatheringLightningRodPowered(WeatheringLightningRodPowered::False),Property::WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged::True),] });
@@ -2906,7 +2906,7 @@ pub fn add_oxidizedlightningrod(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:oxidized_lightning_rod".to_string(), block);
 }
 pub fn add_paleoakfence(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::Fence, properties: vec![Property::FenceEast(FenceEast::True),Property::FenceEast(FenceEast::False),Property::FenceNorth(FenceNorth::True),Property::FenceNorth(FenceNorth::False),Property::FenceSouth(FenceSouth::True),Property::FenceSouth(FenceSouth::False),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),Property::FenceWest(FenceWest::False),], states: vec![], default_state: 31, block_name: "minecraft:pale_oak_fence" };
 	block.states.push(State { id: 13762, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::True),] });
 	block.states.push(State { id: 13763, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::True),Property::FenceWest(FenceWest::False),] });
 	block.states.push(State { id: 13764, properties: vec![ Property::FenceEast(FenceEast::True),Property::FenceNorth(FenceNorth::True),Property::FenceSouth(FenceSouth::True),Property::FenceWaterlogged(FenceWaterlogged::False),Property::FenceWest(FenceWest::True),] });
@@ -2942,7 +2942,7 @@ pub fn add_paleoakfence(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:pale_oak_fence".to_string(), block);
 }
 pub fn add_paleoakshelf(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::Shelf, properties: vec![Property::ShelfFacing(ShelfFacing::North),Property::ShelfFacing(ShelfFacing::South),Property::ShelfFacing(ShelfFacing::West),Property::ShelfFacing(ShelfFacing::East),Property::ShelfPowered(ShelfPowered::True),Property::ShelfPowered(ShelfPowered::False),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfSideChain(ShelfSideChain::Center),Property::ShelfSideChain(ShelfSideChain::Left),Property::ShelfWaterlogged(ShelfWaterlogged::True),Property::ShelfWaterlogged(ShelfWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:pale_oak_shelf" };
 	block.states.push(State { id: 2975, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
 	block.states.push(State { id: 2976, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Unconnected),Property::ShelfWaterlogged(ShelfWaterlogged::False),] });
 	block.states.push(State { id: 2977, properties: vec![ Property::ShelfFacing(ShelfFacing::North),Property::ShelfPowered(ShelfPowered::True),Property::ShelfSideChain(ShelfSideChain::Right),Property::ShelfWaterlogged(ShelfWaterlogged::True),] });
@@ -3010,20 +3010,20 @@ pub fn add_paleoakshelf(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:pale_oak_shelf".to_string(), block);
 }
 pub fn add_pearlescentfroglight(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:pearlescent_froglight" };
 	block.states.push(State { id: 29386, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 29387, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 29388, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:pearlescent_froglight".to_string(), block);
 }
 pub fn add_pinkcandlecake(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CandleCake, properties: vec![Property::CandleCakeLit(CandleCakeLit::True),Property::CandleCakeLit(CandleCakeLit::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::CandleCake, properties: vec![Property::CandleCakeLit(CandleCakeLit::True),Property::CandleCakeLit(CandleCakeLit::False),], states: vec![], default_state: 1, block_name: "minecraft:pink_candle_cake" };
 	block.states.push(State { id: 23180, properties: vec![ Property::CandleCakeLit(CandleCakeLit::True),] });
 	block.states.push(State { id: 23181, properties: vec![ Property::CandleCakeLit(CandleCakeLit::False),] });
 	map.insert("minecraft:pink_candle_cake".to_string(), block);
 }
 pub fn add_pinkstainedglasspane(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::StainedGlassPane, properties: vec![Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneEast(StainedGlassPaneEast::False),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::False),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::False),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),], states: vec![], default_state: 31, block_name: "minecraft:pink_stained_glass_pane" };
 	block.states.push(State { id: 11450, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
 	block.states.push(State { id: 11451, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::True),Property::StainedGlassPaneWest(StainedGlassPaneWest::False),] });
 	block.states.push(State { id: 11452, properties: vec![ Property::StainedGlassPaneEast(StainedGlassPaneEast::True),Property::StainedGlassPaneNorth(StainedGlassPaneNorth::True),Property::StainedGlassPaneSouth(StainedGlassPaneSouth::True),Property::StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged::False),Property::StainedGlassPaneWest(StainedGlassPaneWest::True),] });
@@ -3059,20 +3059,20 @@ pub fn add_pinkstainedglasspane(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:pink_stained_glass_pane".to_string(), block);
 }
 pub fn add_pitcherplant(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::DoublePlant, properties: vec![Property::DoublePlantHalf(DoublePlantHalf::Upper),Property::DoublePlantHalf(DoublePlantHalf::Lower),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::DoublePlant, properties: vec![Property::DoublePlantHalf(DoublePlantHalf::Upper),Property::DoublePlantHalf(DoublePlantHalf::Lower),], states: vec![], default_state: 1, block_name: "minecraft:pitcher_plant" };
 	block.states.push(State { id: 14607, properties: vec![ Property::DoublePlantHalf(DoublePlantHalf::Upper),] });
 	block.states.push(State { id: 14608, properties: vec![ Property::DoublePlantHalf(DoublePlantHalf::Lower),] });
 	map.insert("minecraft:pitcher_plant".to_string(), block);
 }
 pub fn add_polishedbasalt(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:polished_basalt" };
 	block.states.push(State { id: 6802, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 6803, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 6804, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:polished_basalt".to_string(), block);
 }
 pub fn add_polishedblackstoneslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:polished_blackstone_slab" };
 	block.states.push(State { id: 22535, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 22536, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 22537, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -3082,7 +3082,7 @@ pub fn add_polishedblackstoneslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:polished_blackstone_slab".to_string(), block);
 }
 pub fn add_polisheddioriteslab(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Slab, properties: vec![Property::SlabType(SlabType::Top),Property::SlabType(SlabType::Bottom),Property::SlabType(SlabType::Double),Property::SlabWaterlogged(SlabWaterlogged::True),Property::SlabWaterlogged(SlabWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:polished_diorite_slab" };
 	block.states.push(State { id: 16232, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::True),] });
 	block.states.push(State { id: 16233, properties: vec![ Property::SlabType(SlabType::Top),Property::SlabWaterlogged(SlabWaterlogged::False),] });
 	block.states.push(State { id: 16234, properties: vec![ Property::SlabType(SlabType::Bottom),Property::SlabWaterlogged(SlabWaterlogged::True),] });
@@ -3092,7 +3092,7 @@ pub fn add_polisheddioriteslab(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:polished_diorite_slab".to_string(), block);
 }
 pub fn add_polishedtuffwall(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Wall, properties: vec![Property::WallEast(WallEast::None),Property::WallEast(WallEast::Low),Property::WallEast(WallEast::Tall),Property::WallNorth(WallNorth::None),Property::WallNorth(WallNorth::Low),Property::WallNorth(WallNorth::Tall),Property::WallSouth(WallSouth::None),Property::WallSouth(WallSouth::Low),Property::WallSouth(WallSouth::Tall),Property::WallUp(WallUp::True),Property::WallUp(WallUp::False),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWaterlogged(WallWaterlogged::False),Property::WallWest(WallWest::None),Property::WallWest(WallWest::Low),Property::WallWest(WallWest::Tall),], states: vec![], default_state: 3, block_name: "minecraft:polished_tuff_wall" };
 	block.states.push(State { id: 23748, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::None),] });
 	block.states.push(State { id: 23749, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Low),] });
 	block.states.push(State { id: 23750, properties: vec![ Property::WallEast(WallEast::None),Property::WallNorth(WallNorth::None),Property::WallSouth(WallSouth::None),Property::WallUp(WallUp::True),Property::WallWaterlogged(WallWaterlogged::True),Property::WallWest(WallWest::Tall),] });
@@ -3420,32 +3420,32 @@ pub fn add_polishedtuffwall(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:polished_tuff_wall".to_string(), block);
 }
 pub fn add_pottedbirchsapling(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:potted_birch_sapling" };
 	block.states.push(State { id: 10432, properties: vec![ ] });
 	map.insert("minecraft:potted_birch_sapling".to_string(), block);
 }
 pub fn add_pottedcrimsonroots(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:potted_crimson_roots" };
 	block.states.push(State { id: 21626, properties: vec![ ] });
 	map.insert("minecraft:potted_crimson_roots".to_string(), block);
 }
 pub fn add_pottedmangrovepropagule(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:potted_mangrove_propagule" };
 	block.states.push(State { id: 10438, properties: vec![ ] });
 	map.insert("minecraft:potted_mangrove_propagule".to_string(), block);
 }
 pub fn add_pottedredmushroom(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::FlowerPot, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:potted_red_mushroom" };
 	block.states.push(State { id: 10453, properties: vec![ ] });
 	map.insert("minecraft:potted_red_mushroom".to_string(), block);
 }
 pub fn add_powdersnow(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::PowderSnow, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::PowderSnow, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:powder_snow" };
 	block.states.push(State { id: 24487, properties: vec![ ] });
 	map.insert("minecraft:powder_snow".to_string(), block);
 }
 pub fn add_prismarinestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:prismarine_stairs" };
 	block.states.push(State { id: 12432, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 12433, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 12434, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -3529,12 +3529,12 @@ pub fn add_prismarinestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:prismarine_stairs".to_string(), block);
 }
 pub fn add_purplecarpet(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:purple_carpet" };
 	block.states.push(State { id: 12704, properties: vec![ ] });
 	map.insert("minecraft:purple_carpet".to_string(), block);
 }
 pub fn add_purplewallbanner(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:purple_wall_banner" };
 	block.states.push(State { id: 13021, properties: vec![ Property::WallBannerFacing(WallBannerFacing::North),] });
 	block.states.push(State { id: 13022, properties: vec![ Property::WallBannerFacing(WallBannerFacing::South),] });
 	block.states.push(State { id: 13023, properties: vec![ Property::WallBannerFacing(WallBannerFacing::West),] });
@@ -3542,14 +3542,14 @@ pub fn add_purplewallbanner(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:purple_wall_banner".to_string(), block);
 }
 pub fn add_quartzpillar(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:quartz_pillar" };
 	block.states.push(State { id: 11123, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 11124, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 11125, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:quartz_pillar".to_string(), block);
 }
 pub fn add_redbed(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Bed, properties: vec![Property::BedFacing(BedFacing::North),Property::BedFacing(BedFacing::South),Property::BedFacing(BedFacing::West),Property::BedFacing(BedFacing::East),Property::BedOccupied(BedOccupied::True),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),Property::BedPart(BedPart::Foot),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Bed, properties: vec![Property::BedFacing(BedFacing::North),Property::BedFacing(BedFacing::South),Property::BedFacing(BedFacing::West),Property::BedFacing(BedFacing::East),Property::BedOccupied(BedOccupied::True),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),Property::BedPart(BedPart::Foot),], states: vec![], default_state: 3, block_name: "minecraft:red_bed" };
 	block.states.push(State { id: 1955, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::True),Property::BedPart(BedPart::Head),] });
 	block.states.push(State { id: 1956, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::True),Property::BedPart(BedPart::Foot),] });
 	block.states.push(State { id: 1957, properties: vec![ Property::BedFacing(BedFacing::North),Property::BedOccupied(BedOccupied::False),Property::BedPart(BedPart::Head),] });
@@ -3569,7 +3569,7 @@ pub fn add_redbed(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:red_bed".to_string(), block);
 }
 pub fn add_redmushroomblock(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::HugeMushroom, properties: vec![Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomDown(HugeMushroomDown::False),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomEast(HugeMushroomEast::False),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomNorth(HugeMushroomNorth::False),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomSouth(HugeMushroomSouth::False),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),Property::HugeMushroomWest(HugeMushroomWest::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::HugeMushroom, properties: vec![Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomDown(HugeMushroomDown::False),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomEast(HugeMushroomEast::False),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomNorth(HugeMushroomNorth::False),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomSouth(HugeMushroomSouth::False),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),Property::HugeMushroomWest(HugeMushroomWest::False),], states: vec![], default_state: 0, block_name: "minecraft:red_mushroom_block" };
 	block.states.push(State { id: 7629, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomWest(HugeMushroomWest::True),] });
 	block.states.push(State { id: 7630, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::True),Property::HugeMushroomWest(HugeMushroomWest::False),] });
 	block.states.push(State { id: 7631, properties: vec![ Property::HugeMushroomDown(HugeMushroomDown::True),Property::HugeMushroomEast(HugeMushroomEast::True),Property::HugeMushroomNorth(HugeMushroomNorth::True),Property::HugeMushroomSouth(HugeMushroomSouth::True),Property::HugeMushroomUp(HugeMushroomUp::False),Property::HugeMushroomWest(HugeMushroomWest::True),] });
@@ -3637,7 +3637,7 @@ pub fn add_redmushroomblock(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:red_mushroom_block".to_string(), block);
 }
 pub fn add_redsandstonestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:red_sandstone_stairs" };
 	block.states.push(State { id: 13048, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 13049, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 13050, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -3721,12 +3721,12 @@ pub fn add_redsandstonestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:red_sandstone_stairs".to_string(), block);
 }
 pub fn add_redwool(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:red_wool" };
 	block.states.push(State { id: 2107, properties: vec![ ] });
 	map.insert("minecraft:red_wool".to_string(), block);
 }
 pub fn add_repeater(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Repeater, properties: vec![Property::RepeaterDelay(RepeaterDelay::Num1),Property::RepeaterDelay(RepeaterDelay::Num2),Property::RepeaterDelay(RepeaterDelay::Num3),Property::RepeaterDelay(RepeaterDelay::Num4),Property::RepeaterFacing(RepeaterFacing::North),Property::RepeaterFacing(RepeaterFacing::South),Property::RepeaterFacing(RepeaterFacing::West),Property::RepeaterFacing(RepeaterFacing::East),Property::RepeaterLocked(RepeaterLocked::True),Property::RepeaterLocked(RepeaterLocked::False),Property::RepeaterPowered(RepeaterPowered::True),Property::RepeaterPowered(RepeaterPowered::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Repeater, properties: vec![Property::RepeaterDelay(RepeaterDelay::Num1),Property::RepeaterDelay(RepeaterDelay::Num2),Property::RepeaterDelay(RepeaterDelay::Num3),Property::RepeaterDelay(RepeaterDelay::Num4),Property::RepeaterFacing(RepeaterFacing::North),Property::RepeaterFacing(RepeaterFacing::South),Property::RepeaterFacing(RepeaterFacing::West),Property::RepeaterFacing(RepeaterFacing::East),Property::RepeaterLocked(RepeaterLocked::True),Property::RepeaterLocked(RepeaterLocked::False),Property::RepeaterPowered(RepeaterPowered::True),Property::RepeaterPowered(RepeaterPowered::False),], states: vec![], default_state: 3, block_name: "minecraft:repeater" };
 	block.states.push(State { id: 6833, properties: vec![ Property::RepeaterDelay(RepeaterDelay::Num1),Property::RepeaterFacing(RepeaterFacing::North),Property::RepeaterLocked(RepeaterLocked::True),Property::RepeaterPowered(RepeaterPowered::True),] });
 	block.states.push(State { id: 6834, properties: vec![ Property::RepeaterDelay(RepeaterDelay::Num1),Property::RepeaterFacing(RepeaterFacing::North),Property::RepeaterLocked(RepeaterLocked::True),Property::RepeaterPowered(RepeaterPowered::False),] });
 	block.states.push(State { id: 6835, properties: vec![ Property::RepeaterDelay(RepeaterDelay::Num1),Property::RepeaterFacing(RepeaterFacing::North),Property::RepeaterLocked(RepeaterLocked::False),Property::RepeaterPowered(RepeaterPowered::True),] });
@@ -3794,7 +3794,7 @@ pub fn add_repeater(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:repeater".to_string(), block);
 }
 pub fn add_respawnanchor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RespawnAnchor, properties: vec![Property::RespawnAnchorCharges(RespawnAnchorCharges::Num0),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num1),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num2),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num3),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num4),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::RespawnAnchor, properties: vec![Property::RespawnAnchorCharges(RespawnAnchorCharges::Num0),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num1),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num2),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num3),Property::RespawnAnchorCharges(RespawnAnchorCharges::Num4),], states: vec![], default_state: 0, block_name: "minecraft:respawn_anchor" };
 	block.states.push(State { id: 21619, properties: vec![ Property::RespawnAnchorCharges(RespawnAnchorCharges::Num0),] });
 	block.states.push(State { id: 21620, properties: vec![ Property::RespawnAnchorCharges(RespawnAnchorCharges::Num1),] });
 	block.states.push(State { id: 21621, properties: vec![ Property::RespawnAnchorCharges(RespawnAnchorCharges::Num2),] });
@@ -3803,7 +3803,7 @@ pub fn add_respawnanchor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:respawn_anchor".to_string(), block);
 }
 pub fn add_scaffolding(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Scaffolding, properties: vec![Property::ScaffoldingBottom(ScaffoldingBottom::True),Property::ScaffoldingBottom(ScaffoldingBottom::False),Property::ScaffoldingDistance(ScaffoldingDistance::Num0),Property::ScaffoldingDistance(ScaffoldingDistance::Num1),Property::ScaffoldingDistance(ScaffoldingDistance::Num2),Property::ScaffoldingDistance(ScaffoldingDistance::Num3),Property::ScaffoldingDistance(ScaffoldingDistance::Num4),Property::ScaffoldingDistance(ScaffoldingDistance::Num5),Property::ScaffoldingDistance(ScaffoldingDistance::Num6),Property::ScaffoldingDistance(ScaffoldingDistance::Num7),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::True),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::Scaffolding, properties: vec![Property::ScaffoldingBottom(ScaffoldingBottom::True),Property::ScaffoldingBottom(ScaffoldingBottom::False),Property::ScaffoldingDistance(ScaffoldingDistance::Num0),Property::ScaffoldingDistance(ScaffoldingDistance::Num1),Property::ScaffoldingDistance(ScaffoldingDistance::Num2),Property::ScaffoldingDistance(ScaffoldingDistance::Num3),Property::ScaffoldingDistance(ScaffoldingDistance::Num4),Property::ScaffoldingDistance(ScaffoldingDistance::Num5),Property::ScaffoldingDistance(ScaffoldingDistance::Num6),Property::ScaffoldingDistance(ScaffoldingDistance::Num7),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::True),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::False),], states: vec![], default_state: 31, block_name: "minecraft:scaffolding" };
 	block.states.push(State { id: 20504, properties: vec![ Property::ScaffoldingBottom(ScaffoldingBottom::True),Property::ScaffoldingDistance(ScaffoldingDistance::Num0),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::True),] });
 	block.states.push(State { id: 20505, properties: vec![ Property::ScaffoldingBottom(ScaffoldingBottom::True),Property::ScaffoldingDistance(ScaffoldingDistance::Num0),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::False),] });
 	block.states.push(State { id: 20506, properties: vec![ Property::ScaffoldingBottom(ScaffoldingBottom::True),Property::ScaffoldingDistance(ScaffoldingDistance::Num1),Property::ScaffoldingWaterlogged(ScaffoldingWaterlogged::True),] });
@@ -3839,12 +3839,12 @@ pub fn add_scaffolding(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:scaffolding".to_string(), block);
 }
 pub fn add_seagrass(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Seagrass, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Seagrass, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:seagrass" };
 	block.states.push(State { id: 2054, properties: vec![ ] });
 	map.insert("minecraft:seagrass".to_string(), block);
 }
 pub fn add_smallamethystbud(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::AmethystCluster, properties: vec![Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterFacing(AmethystClusterFacing::South),Property::AmethystClusterFacing(AmethystClusterFacing::West),Property::AmethystClusterFacing(AmethystClusterFacing::Up),Property::AmethystClusterFacing(AmethystClusterFacing::Down),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),], states: vec![], default_state: 9 };
+	let mut block = Block { block_type: Type::AmethystCluster, properties: vec![Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterFacing(AmethystClusterFacing::South),Property::AmethystClusterFacing(AmethystClusterFacing::West),Property::AmethystClusterFacing(AmethystClusterFacing::Up),Property::AmethystClusterFacing(AmethystClusterFacing::Down),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),], states: vec![], default_state: 9, block_name: "minecraft:small_amethyst_bud" };
 	block.states.push(State { id: 23238, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),] });
 	block.states.push(State { id: 23239, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::North),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::False),] });
 	block.states.push(State { id: 23240, properties: vec![ Property::AmethystClusterFacing(AmethystClusterFacing::East),Property::AmethystClusterWaterlogged(AmethystClusterWaterlogged::True),] });
@@ -3860,24 +3860,24 @@ pub fn add_smallamethystbud(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:small_amethyst_bud".to_string(), block);
 }
 pub fn add_smoothredsandstone(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:smooth_red_sandstone" };
 	block.states.push(State { id: 13281, properties: vec![ ] });
 	map.insert("minecraft:smooth_red_sandstone".to_string(), block);
 }
 pub fn add_snifferegg(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::SnifferEgg, properties: vec![Property::SnifferEggHatch(SnifferEggHatch::Num0),Property::SnifferEggHatch(SnifferEggHatch::Num1),Property::SnifferEggHatch(SnifferEggHatch::Num2),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::SnifferEgg, properties: vec![Property::SnifferEggHatch(SnifferEggHatch::Num0),Property::SnifferEggHatch(SnifferEggHatch::Num1),Property::SnifferEggHatch(SnifferEggHatch::Num2),], states: vec![], default_state: 0, block_name: "minecraft:sniffer_egg" };
 	block.states.push(State { id: 14900, properties: vec![ Property::SnifferEggHatch(SnifferEggHatch::Num0),] });
 	block.states.push(State { id: 14901, properties: vec![ Property::SnifferEggHatch(SnifferEggHatch::Num1),] });
 	block.states.push(State { id: 14902, properties: vec![ Property::SnifferEggHatch(SnifferEggHatch::Num2),] });
 	map.insert("minecraft:sniffer_egg".to_string(), block);
 }
 pub fn add_soultorch(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Torch, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Torch, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:soul_torch" };
 	block.states.push(State { id: 6805, properties: vec![ ] });
 	map.insert("minecraft:soul_torch".to_string(), block);
 }
 pub fn add_sprucefencegate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7 };
+	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7, block_name: "minecraft:spruce_fence_gate" };
 	block.states.push(State { id: 13282, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::True),] });
 	block.states.push(State { id: 13283, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGatePowered(FenceGatePowered::False),] });
 	block.states.push(State { id: 13284, properties: vec![ Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),] });
@@ -3913,7 +3913,7 @@ pub fn add_sprucefencegate(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:spruce_fence_gate".to_string(), block);
 }
 pub fn add_sprucesign(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:spruce_sign" };
 	block.states.push(State { id: 5166, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
 	block.states.push(State { id: 5167, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),] });
 	block.states.push(State { id: 5168, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
@@ -3949,12 +3949,12 @@ pub fn add_sprucesign(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:spruce_sign".to_string(), block);
 }
 pub fn add_stone(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:stone" };
 	block.states.push(State { id: 1, properties: vec![ ] });
 	map.insert("minecraft:stone".to_string(), block);
 }
 pub fn add_stonestairs(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Stair, properties: vec![Property::StairFacing(StairFacing::North),Property::StairFacing(StairFacing::South),Property::StairFacing(StairFacing::West),Property::StairFacing(StairFacing::East),Property::StairHalf(StairHalf::Top),Property::StairHalf(StairHalf::Bottom),Property::StairShape(StairShape::Straight),Property::StairShape(StairShape::InnerLeft),Property::StairShape(StairShape::InnerRight),Property::StairShape(StairShape::OuterLeft),Property::StairShape(StairShape::OuterRight),Property::StairWaterlogged(StairWaterlogged::True),Property::StairWaterlogged(StairWaterlogged::False),], states: vec![], default_state: 11, block_name: "minecraft:stone_stairs" };
 	block.states.push(State { id: 15574, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::True),] });
 	block.states.push(State { id: 15575, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::Straight),Property::StairWaterlogged(StairWaterlogged::False),] });
 	block.states.push(State { id: 15576, properties: vec![ Property::StairFacing(StairFacing::North),Property::StairHalf(StairHalf::Top),Property::StairShape(StairShape::InnerLeft),Property::StairWaterlogged(StairWaterlogged::True),] });
@@ -4038,62 +4038,62 @@ pub fn add_stonestairs(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:stone_stairs".to_string(), block);
 }
 pub fn add_strippedcherrywood(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:stripped_cherry_wood" };
 	block.states.push(State { id: 240, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 241, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 242, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:stripped_cherry_wood".to_string(), block);
 }
 pub fn add_strippedmangrovewood(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:stripped_mangrove_wood" };
 	block.states.push(State { id: 249, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 250, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 251, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:stripped_mangrove_wood".to_string(), block);
 }
 pub fn add_strippedwarpedstem(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:stripped_warped_stem" };
 	block.states.push(State { id: 20746, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 20747, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 20748, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:stripped_warped_stem".to_string(), block);
 }
 pub fn add_talldrygrass(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::TallDryGrass, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::TallDryGrass, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:tall_dry_grass" };
 	block.states.push(State { id: 2053, properties: vec![ ] });
 	map.insert("minecraft:tall_dry_grass".to_string(), block);
 }
 pub fn add_tnt(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Tnt, properties: vec![Property::TntUnstable(TntUnstable::True),Property::TntUnstable(TntUnstable::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::Tnt, properties: vec![Property::TntUnstable(TntUnstable::True),Property::TntUnstable(TntUnstable::False),], states: vec![], default_state: 1, block_name: "minecraft:tnt" };
 	block.states.push(State { id: 2140, properties: vec![ Property::TntUnstable(TntUnstable::True),] });
 	block.states.push(State { id: 2141, properties: vec![ Property::TntUnstable(TntUnstable::False),] });
 	map.insert("minecraft:tnt".to_string(), block);
 }
 pub fn add_tubecoral(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::CoralPlant, properties: vec![Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),], states: vec![], default_state: 0, block_name: "minecraft:tube_coral" };
 	block.states.push(State { id: 14955, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::True),] });
 	block.states.push(State { id: 14956, properties: vec![ Property::CoralPlantWaterlogged(CoralPlantWaterlogged::False),] });
 	map.insert("minecraft:tube_coral".to_string(), block);
 }
 pub fn add_tuffbricks(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:tuff_bricks" };
 	block.states.push(State { id: 24073, properties: vec![ ] });
 	map.insert("minecraft:tuff_bricks".to_string(), block);
 }
 pub fn add_verdantfroglight(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:verdant_froglight" };
 	block.states.push(State { id: 29383, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::X),] });
 	block.states.push(State { id: 29384, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Y),] });
 	block.states.push(State { id: 29385, properties: vec![ Property::RotatedPillarAxis(RotatedPillarAxis::Z),] });
 	map.insert("minecraft:verdant_froglight".to_string(), block);
 }
 pub fn add_warpedfungus(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Fungus, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Fungus, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:warped_fungus" };
 	block.states.push(State { id: 20756, properties: vec![ ] });
 	map.insert("minecraft:warped_fungus".to_string(), block);
 }
 pub fn add_warpedsign(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::StandingSign, properties: vec![Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignRotation(StandingSignRotation::Num2),Property::StandingSignRotation(StandingSignRotation::Num3),Property::StandingSignRotation(StandingSignRotation::Num4),Property::StandingSignRotation(StandingSignRotation::Num5),Property::StandingSignRotation(StandingSignRotation::Num6),Property::StandingSignRotation(StandingSignRotation::Num7),Property::StandingSignRotation(StandingSignRotation::Num8),Property::StandingSignRotation(StandingSignRotation::Num9),Property::StandingSignRotation(StandingSignRotation::Num10),Property::StandingSignRotation(StandingSignRotation::Num11),Property::StandingSignRotation(StandingSignRotation::Num12),Property::StandingSignRotation(StandingSignRotation::Num13),Property::StandingSignRotation(StandingSignRotation::Num14),Property::StandingSignRotation(StandingSignRotation::Num15),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:warped_sign" };
 	block.states.push(State { id: 21472, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
 	block.states.push(State { id: 21473, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num0),Property::StandingSignWaterlogged(StandingSignWaterlogged::False),] });
 	block.states.push(State { id: 21474, properties: vec![ Property::StandingSignRotation(StandingSignRotation::Num1),Property::StandingSignWaterlogged(StandingSignWaterlogged::True),] });
@@ -4129,7 +4129,7 @@ pub fn add_warpedsign(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:warped_sign".to_string(), block);
 }
 pub fn add_water(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Liquid, properties: vec![Property::LiquidLevel(LiquidLevel::Num0),Property::LiquidLevel(LiquidLevel::Num1),Property::LiquidLevel(LiquidLevel::Num2),Property::LiquidLevel(LiquidLevel::Num3),Property::LiquidLevel(LiquidLevel::Num4),Property::LiquidLevel(LiquidLevel::Num5),Property::LiquidLevel(LiquidLevel::Num6),Property::LiquidLevel(LiquidLevel::Num7),Property::LiquidLevel(LiquidLevel::Num8),Property::LiquidLevel(LiquidLevel::Num9),Property::LiquidLevel(LiquidLevel::Num10),Property::LiquidLevel(LiquidLevel::Num11),Property::LiquidLevel(LiquidLevel::Num12),Property::LiquidLevel(LiquidLevel::Num13),Property::LiquidLevel(LiquidLevel::Num14),Property::LiquidLevel(LiquidLevel::Num15),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Liquid, properties: vec![Property::LiquidLevel(LiquidLevel::Num0),Property::LiquidLevel(LiquidLevel::Num1),Property::LiquidLevel(LiquidLevel::Num2),Property::LiquidLevel(LiquidLevel::Num3),Property::LiquidLevel(LiquidLevel::Num4),Property::LiquidLevel(LiquidLevel::Num5),Property::LiquidLevel(LiquidLevel::Num6),Property::LiquidLevel(LiquidLevel::Num7),Property::LiquidLevel(LiquidLevel::Num8),Property::LiquidLevel(LiquidLevel::Num9),Property::LiquidLevel(LiquidLevel::Num10),Property::LiquidLevel(LiquidLevel::Num11),Property::LiquidLevel(LiquidLevel::Num12),Property::LiquidLevel(LiquidLevel::Num13),Property::LiquidLevel(LiquidLevel::Num14),Property::LiquidLevel(LiquidLevel::Num15),], states: vec![], default_state: 0, block_name: "minecraft:water" };
 	block.states.push(State { id: 86, properties: vec![ Property::LiquidLevel(LiquidLevel::Num0),] });
 	block.states.push(State { id: 87, properties: vec![ Property::LiquidLevel(LiquidLevel::Num1),] });
 	block.states.push(State { id: 88, properties: vec![ Property::LiquidLevel(LiquidLevel::Num2),] });
@@ -4149,7 +4149,7 @@ pub fn add_water(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:water".to_string(), block);
 }
 pub fn add_waxedcopperdoor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Door, properties: vec![Property::DoorFacing(DoorFacing::North),Property::DoorFacing(DoorFacing::South),Property::DoorFacing(DoorFacing::West),Property::DoorFacing(DoorFacing::East),Property::DoorHalf(DoorHalf::Upper),Property::DoorHalf(DoorHalf::Lower),Property::DoorHinge(DoorHinge::Left),Property::DoorHinge(DoorHinge::Right),Property::DoorOpen(DoorOpen::True),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),Property::DoorPowered(DoorPowered::False),], states: vec![], default_state: 11 };
+	let mut block = Block { block_type: Type::Door, properties: vec![Property::DoorFacing(DoorFacing::North),Property::DoorFacing(DoorFacing::South),Property::DoorFacing(DoorFacing::West),Property::DoorFacing(DoorFacing::East),Property::DoorHalf(DoorHalf::Upper),Property::DoorHalf(DoorHalf::Lower),Property::DoorHinge(DoorHinge::Left),Property::DoorHinge(DoorHinge::Right),Property::DoorOpen(DoorOpen::True),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),Property::DoorPowered(DoorPowered::False),], states: vec![], default_state: 11, block_name: "minecraft:waxed_copper_door" };
 	block.states.push(State { id: 26077, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::True),Property::DoorPowered(DoorPowered::True),] });
 	block.states.push(State { id: 26078, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::True),Property::DoorPowered(DoorPowered::False),] });
 	block.states.push(State { id: 26079, properties: vec![ Property::DoorFacing(DoorFacing::North),Property::DoorHalf(DoorHalf::Upper),Property::DoorHinge(DoorHinge::Left),Property::DoorOpen(DoorOpen::False),Property::DoorPowered(DoorPowered::True),] });
@@ -4217,34 +4217,34 @@ pub fn add_waxedcopperdoor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:waxed_copper_door".to_string(), block);
 }
 pub fn add_waxedexposedchiseledcopper(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:waxed_exposed_chiseled_copper" };
 	block.states.push(State { id: 25123, properties: vec![ ] });
 	map.insert("minecraft:waxed_exposed_chiseled_copper".to_string(), block);
 }
 pub fn add_waxedexposedcoppergrate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WaterloggedTransparent, properties: vec![Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::WaterloggedTransparent, properties: vec![Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:waxed_exposed_copper_grate" };
 	block.states.push(State { id: 26855, properties: vec![ Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),] });
 	block.states.push(State { id: 26856, properties: vec![ Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),] });
 	map.insert("minecraft:waxed_exposed_copper_grate".to_string(), block);
 }
 pub fn add_waxedoxidizedchiseledcopper(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:waxed_oxidized_chiseled_copper" };
 	block.states.push(State { id: 25121, properties: vec![ ] });
 	map.insert("minecraft:waxed_oxidized_chiseled_copper".to_string(), block);
 }
 pub fn add_waxedoxidizedcoppergrate(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WaterloggedTransparent, properties: vec![Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),], states: vec![], default_state: 1 };
+	let mut block = Block { block_type: Type::WaterloggedTransparent, properties: vec![Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),], states: vec![], default_state: 1, block_name: "minecraft:waxed_oxidized_copper_grate" };
 	block.states.push(State { id: 26859, properties: vec![ Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::True),] });
 	block.states.push(State { id: 26860, properties: vec![ Property::WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged::False),] });
 	map.insert("minecraft:waxed_oxidized_copper_grate".to_string(), block);
 }
 pub fn add_waxedweatheredcopper(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:waxed_weathered_copper" };
 	block.states.push(State { id: 25470, properties: vec![ ] });
 	map.insert("minecraft:waxed_weathered_copper".to_string(), block);
 }
 pub fn add_waxedweatheredcopperlantern(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Lantern, properties: vec![Property::LanternHanging(LanternHanging::True),Property::LanternHanging(LanternHanging::False),Property::LanternWaterlogged(LanternWaterlogged::True),Property::LanternWaterlogged(LanternWaterlogged::False),], states: vec![], default_state: 3 };
+	let mut block = Block { block_type: Type::Lantern, properties: vec![Property::LanternHanging(LanternHanging::True),Property::LanternHanging(LanternHanging::False),Property::LanternWaterlogged(LanternWaterlogged::True),Property::LanternWaterlogged(LanternWaterlogged::False),], states: vec![], default_state: 3, block_name: "minecraft:waxed_weathered_copper_lantern" };
 	block.states.push(State { id: 20667, properties: vec![ Property::LanternHanging(LanternHanging::True),Property::LanternWaterlogged(LanternWaterlogged::True),] });
 	block.states.push(State { id: 20668, properties: vec![ Property::LanternHanging(LanternHanging::True),Property::LanternWaterlogged(LanternWaterlogged::False),] });
 	block.states.push(State { id: 20669, properties: vec![ Property::LanternHanging(LanternHanging::False),Property::LanternWaterlogged(LanternWaterlogged::True),] });
@@ -4252,7 +4252,7 @@ pub fn add_waxedweatheredcopperlantern(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:waxed_weathered_copper_lantern".to_string(), block);
 }
 pub fn add_weatheredcopperbars(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperBar, properties: vec![Property::WeatheringCopperBarEast(WeatheringCopperBarEast::True),Property::WeatheringCopperBarEast(WeatheringCopperBarEast::False),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::True),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::False),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::True),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::False),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::True),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::False),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::True),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::False),], states: vec![], default_state: 31 };
+	let mut block = Block { block_type: Type::WeatheringCopperBar, properties: vec![Property::WeatheringCopperBarEast(WeatheringCopperBarEast::True),Property::WeatheringCopperBarEast(WeatheringCopperBarEast::False),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::True),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::False),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::True),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::False),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::True),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::False),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::True),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::False),], states: vec![], default_state: 31, block_name: "minecraft:weathered_copper_bars" };
 	block.states.push(State { id: 7853, properties: vec![ Property::WeatheringCopperBarEast(WeatheringCopperBarEast::True),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::True),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::True),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::True),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::True),] });
 	block.states.push(State { id: 7854, properties: vec![ Property::WeatheringCopperBarEast(WeatheringCopperBarEast::True),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::True),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::True),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::True),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::False),] });
 	block.states.push(State { id: 7855, properties: vec![ Property::WeatheringCopperBarEast(WeatheringCopperBarEast::True),Property::WeatheringCopperBarNorth(WeatheringCopperBarNorth::True),Property::WeatheringCopperBarSouth(WeatheringCopperBarSouth::True),Property::WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged::False),Property::WeatheringCopperBarWest(WeatheringCopperBarWest::True),] });
@@ -4288,7 +4288,7 @@ pub fn add_weatheredcopperbars(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:weathered_copper_bars".to_string(), block);
 }
 pub fn add_weatheredcoppertrapdoor(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WeatheringCopperTrapDoor, properties: vec![Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::North),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::South),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::West),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::East),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Top),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Bottom),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::True),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::False),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::True),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::False),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::True),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::False),], states: vec![], default_state: 15 };
+	let mut block = Block { block_type: Type::WeatheringCopperTrapDoor, properties: vec![Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::North),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::South),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::West),Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::East),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Top),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Bottom),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::True),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::False),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::True),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::False),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::True),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::False),], states: vec![], default_state: 15, block_name: "minecraft:weathered_copper_trapdoor" };
 	block.states.push(State { id: 26525, properties: vec![ Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::North),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Top),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::True),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::True),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::True),] });
 	block.states.push(State { id: 26526, properties: vec![ Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::North),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Top),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::True),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::True),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::False),] });
 	block.states.push(State { id: 26527, properties: vec![ Property::WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing::North),Property::WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf::Top),Property::WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen::True),Property::WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered::False),Property::WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged::True),] });
@@ -4356,7 +4356,7 @@ pub fn add_weatheredcoppertrapdoor(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:weathered_copper_trapdoor".to_string(), block);
 }
 pub fn add_wheat(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::Crop, properties: vec![Property::CropAge(CropAge::Num0),Property::CropAge(CropAge::Num1),Property::CropAge(CropAge::Num2),Property::CropAge(CropAge::Num3),Property::CropAge(CropAge::Num4),Property::CropAge(CropAge::Num5),Property::CropAge(CropAge::Num6),Property::CropAge(CropAge::Num7),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::Crop, properties: vec![Property::CropAge(CropAge::Num0),Property::CropAge(CropAge::Num1),Property::CropAge(CropAge::Num2),Property::CropAge(CropAge::Num3),Property::CropAge(CropAge::Num4),Property::CropAge(CropAge::Num5),Property::CropAge(CropAge::Num6),Property::CropAge(CropAge::Num7),], states: vec![], default_state: 0, block_name: "minecraft:wheat" };
 	block.states.push(State { id: 5110, properties: vec![ Property::CropAge(CropAge::Num0),] });
 	block.states.push(State { id: 5111, properties: vec![ Property::CropAge(CropAge::Num1),] });
 	block.states.push(State { id: 5112, properties: vec![ Property::CropAge(CropAge::Num2),] });
@@ -4368,7 +4368,7 @@ pub fn add_wheat(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:wheat".to_string(), block);
 }
 pub fn add_whiteglazedterracotta(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::GlazedTerracotta, properties: vec![Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::GlazedTerracotta, properties: vec![Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),Property::GlazedTerracottaFacing(GlazedTerracottaFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:white_glazed_terracotta" };
 	block.states.push(State { id: 14764, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::North),] });
 	block.states.push(State { id: 14765, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::South),] });
 	block.states.push(State { id: 14766, properties: vec![ Property::GlazedTerracottaFacing(GlazedTerracottaFacing::West),] });
@@ -4376,7 +4376,7 @@ pub fn add_whiteglazedterracotta(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:white_glazed_terracotta".to_string(), block);
 }
 pub fn add_wildflowers(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::FlowerBed, properties: vec![Property::FlowerBedFacing(FlowerBedFacing::North),Property::FlowerBedFacing(FlowerBedFacing::South),Property::FlowerBedFacing(FlowerBedFacing::West),Property::FlowerBedFacing(FlowerBedFacing::East),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::FlowerBed, properties: vec![Property::FlowerBedFacing(FlowerBedFacing::North),Property::FlowerBedFacing(FlowerBedFacing::South),Property::FlowerBedFacing(FlowerBedFacing::West),Property::FlowerBedFacing(FlowerBedFacing::East),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4),], states: vec![], default_state: 0, block_name: "minecraft:wildflowers" };
 	block.states.push(State { id: 27628, properties: vec![ Property::FlowerBedFacing(FlowerBedFacing::North),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1),] });
 	block.states.push(State { id: 27629, properties: vec![ Property::FlowerBedFacing(FlowerBedFacing::North),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2),] });
 	block.states.push(State { id: 27630, properties: vec![ Property::FlowerBedFacing(FlowerBedFacing::North),Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3),] });
@@ -4396,12 +4396,12 @@ pub fn add_wildflowers(map: &mut HashMap<String, Block>) {
 	map.insert("minecraft:wildflowers".to_string(), block);
 }
 pub fn add_yellowcarpet(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WoolCarpet, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:yellow_carpet" };
 	block.states.push(State { id: 12698, properties: vec![ ] });
 	map.insert("minecraft:yellow_carpet".to_string(), block);
 }
 pub fn add_yellowwallbanner(map: &mut HashMap<String, Block>) {
-	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0 };
+	let mut block = Block { block_type: Type::WallBanner, properties: vec![Property::WallBannerFacing(WallBannerFacing::North),Property::WallBannerFacing(WallBannerFacing::South),Property::WallBannerFacing(WallBannerFacing::West),Property::WallBannerFacing(WallBannerFacing::East),], states: vec![], default_state: 0, block_name: "minecraft:yellow_wall_banner" };
 	block.states.push(State { id: 12997, properties: vec![ Property::WallBannerFacing(WallBannerFacing::North),] });
 	block.states.push(State { id: 12998, properties: vec![ Property::WallBannerFacing(WallBannerFacing::South),] });
 	block.states.push(State { id: 12999, properties: vec![ Property::WallBannerFacing(WallBannerFacing::West),] });
