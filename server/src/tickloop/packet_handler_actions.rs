@@ -284,7 +284,13 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				if player_clone.gamemode == Gamemode::Survival {
 					let new_entity = lib::entity::ItemEntity {
 						common: lib::entity::CommonEntity {
-							position: location.into(),
+							position: EntityPosition {
+								x: location.x as f64 + 0.5,
+								y: location.y as f64,
+								z: location.z as f64 + 0.5,
+								yaw: 0.0,
+								pitch: 0.0,
+							},
 							velocity: EntityPosition::default(),
 							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 							entity_id: game.entity_id_manager.get_new(),
