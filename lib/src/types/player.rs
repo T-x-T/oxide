@@ -1,5 +1,4 @@
 use super::*;
-use crate::DEFAULT_GAMEMODE;
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
@@ -139,9 +138,15 @@ impl CommonEntityTrait for Player {
 }
 
 impl Player {
-	pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: Arc<Game>, connection_stream: TcpStream) -> Self {
+	pub fn new(
+		display_name: String,
+		uuid: u128,
+		peer_socket_address: SocketAddr,
+		game: Arc<Game>,
+		connection_stream: TcpStream,
+		default_spawn_location: BlockPosition,
+	) -> Self {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
-			let default_spawn_location = game.world.lock().unwrap().default_spawn_location;
 			let entity_id = game.entity_id_manager.get_new();
 			let player = Self {
 				x: default_spawn_location.x as f64,
@@ -164,7 +169,7 @@ impl Player {
 				cursor_item: None,
 				is_sneaking: false,
 				chat_message_index: 0,
-				gamemode: DEFAULT_GAMEMODE,
+				gamemode: game.default_gamemode,
 			};
 
 			return player;
@@ -233,7 +238,7 @@ impl Player {
 			}
 		}
 
-		let mut parsed_gamemode = DEFAULT_GAMEMODE;
+		let mut parsed_gamemode = game.default_gamemode;
 		if let Some(gamemode) = player_data.get_child("playerGameType") {
 			match gamemode.as_int() {
 				0 => parsed_gamemode = Gamemode::Survival,

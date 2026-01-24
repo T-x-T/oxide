@@ -1006,6 +1006,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					peer_addr,
 					game.clone(),
 					stream,
+					world.default_spawn_location,
 				);
 				let mut players = game.players.lock().unwrap();
 

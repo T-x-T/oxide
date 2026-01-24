@@ -29,6 +29,14 @@ fn initialize_server() {
 		path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
 	};
 
+	let default_gamemode = match std::env::var("OXIDE_DEFAULT_GAMEMODE").unwrap_or("survival".to_string()).as_str() {
+		"survival" => Gamemode::Survival,
+		"creative" => Gamemode::Creative,
+		"adventure" => Gamemode::Adventure,
+		"spectator" => Gamemode::Spectator,
+		_ => Gamemode::Survival,
+	};
+
 	let entity_id_manager = EntityIdManager::default();
 	let mut game = Game {
 		players: Mutex::new(Vec::new()),
@@ -41,6 +49,7 @@ fn initialize_server() {
 		connections: DashMap::new(),
 		packet_handler_actions: Mutex::new(Vec::new()),
 		packet_send_queues: DashMap::new(),
+		default_gamemode,
 	};
 
 	command::init(&mut game);

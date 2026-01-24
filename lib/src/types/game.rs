@@ -20,6 +20,7 @@ pub struct Game {
 	pub connections: DashMap<SocketAddr, Connection>,
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
 	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
+	pub default_gamemode: Gamemode,
 }
 
 impl Game {
