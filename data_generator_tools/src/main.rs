@@ -9,12 +9,14 @@ mod blockentity;
 mod blocks;
 mod entities;
 mod items;
+mod tags;
 
 fn main() {
 	blockentity::generate();
 	entities::generate();
 	items::generate();
 	blocks::generate();
+	tags::generate();
 }
 
 fn convert_to_upper_camel_case(input: &str) -> String {

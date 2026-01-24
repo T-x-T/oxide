@@ -11,3 +11,4 @@ blockentity = {path = "../blockentity", version = "*"}
 blocks = {path = "../blocks/main", version = "*"}
 entities = {path = "../entities", version = "*"}
 items = {path = "../items", version = "*"}
+tags = {path = "../tags", version = "*"}

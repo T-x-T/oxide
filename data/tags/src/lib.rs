@@ -1,0 +1,28 @@
+#![allow(clippy::needless_return)]
+use std::collections::HashMap;
+mod banner_pattern;
+pub use banner_pattern::*;
+mod worldgen;
+pub use worldgen::*;
+mod painting_variant;
+pub use painting_variant::*;
+mod enchantment;
+pub use enchantment::*;
+mod damage_type;
+pub use damage_type::*;
+mod instrument;
+pub use instrument::*;
+mod entity_type;
+pub use entity_type::*;
+mod point_of_interest_type;
+pub use point_of_interest_type::*;
+mod fluid;
+pub use fluid::*;
+mod dialog;
+pub use dialog::*;
+mod item;
+pub use item::*;
+mod game_event;
+pub use game_event::*;
+mod block;
+pub use block::*;

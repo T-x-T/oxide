@@ -1,0 +1,38 @@
+use super::*;
+pub fn get_damage_type() -> HashMap<&'static str, Vec<&'static str>> {
+	let mut output: HashMap<&'static str, Vec<&'static str>> = HashMap::new();
+	output.insert("avoids_guardian_thorns", vec!["minecraft:bad_respawn_point", "minecraft:explosion", "minecraft:fireworks", "minecraft:magic", "minecraft:player_explosion", "minecraft:thorns"]);
+	output.insert("is_drowning", vec!["minecraft:drown"]);
+	output.insert("is_fall", vec!["minecraft:ender_pearl", "minecraft:fall", "minecraft:stalagmite"]);
+	output.insert("is_lightning", vec!["minecraft:lightning_bolt"]);
+	output.insert("can_break_armor_stand", vec!["minecraft:mace_smash", "minecraft:player_attack", "minecraft:player_explosion"]);
+	output.insert("panic_environmental_causes", vec!["minecraft:cactus", "minecraft:freeze", "minecraft:hot_floor", "minecraft:in_fire", "minecraft:lava", "minecraft:lightning_bolt", "minecraft:on_fire"]);
+	output.insert("wither_immune_to", vec!["minecraft:drown"]);
+	output.insert("bypasses_effects", vec!["minecraft:starve"]);
+	output.insert("bypasses_armor", vec!["minecraft:cramming", "minecraft:dragon_breath", "minecraft:drown", "minecraft:ender_pearl", "minecraft:fall", "minecraft:fly_into_wall", "minecraft:freeze", "minecraft:generic", "minecraft:generic_kill", "minecraft:in_wall", "minecraft:indirect_magic", "minecraft:magic", "minecraft:on_fire", "minecraft:out_of_world", "minecraft:outside_border", "minecraft:sonic_boom", "minecraft:stalagmite", "minecraft:starve", "minecraft:wither"]);
+	output.insert("burns_armor_stands", vec!["minecraft:on_fire"]);
+	output.insert("burn_from_stepping", vec!["minecraft:campfire", "minecraft:hot_floor"]);
+	output.insert("mace_smash", vec!["minecraft:mace_smash"]);
+	output.insert("bypasses_invulnerability", vec!["minecraft:generic_kill", "minecraft:out_of_world"]);
+	output.insert("damages_helmet", vec!["minecraft:falling_anvil", "minecraft:falling_block", "minecraft:falling_stalactite"]);
+	output.insert("no_anger", vec!["minecraft:mob_attack_no_aggro"]);
+	output.insert("ignites_armor_stands", vec!["minecraft:campfire", "minecraft:in_fire"]);
+	output.insert("no_knockback", vec!["minecraft:bad_respawn_point", "minecraft:cactus", "minecraft:campfire", "minecraft:cramming", "minecraft:dragon_breath", "minecraft:drown", "minecraft:dry_out", "minecraft:ender_pearl", "minecraft:explosion", "minecraft:fall", "minecraft:fly_into_wall", "minecraft:freeze", "minecraft:generic", "minecraft:generic_kill", "minecraft:hot_floor", "minecraft:in_fire", "minecraft:in_wall", "minecraft:lava", "minecraft:lightning_bolt", "minecraft:magic", "minecraft:on_fire", "minecraft:out_of_world", "minecraft:outside_border", "minecraft:player_explosion", "minecraft:stalagmite", "minecraft:starve", "minecraft:sweet_berry_bush", "minecraft:wither"]);
+	output.insert("witch_resistant_to", vec!["minecraft:indirect_magic", "minecraft:magic", "minecraft:sonic_boom", "minecraft:thorns"]);
+	output.insert("bypasses_wolf_armor", vec!["minecraft:cramming", "minecraft:drown", "minecraft:dry_out", "minecraft:freeze", "minecraft:generic_kill", "minecraft:in_wall", "minecraft:indirect_magic", "minecraft:magic", "minecraft:out_of_world", "minecraft:outside_border", "minecraft:starve", "minecraft:thorns", "minecraft:wither"]);
+	output.insert("always_most_significant_fall", vec!["minecraft:out_of_world"]);
+	output.insert("is_player_attack", vec!["minecraft:mace_smash", "minecraft:player_attack"]);
+	output.insert("bypasses_shield", vec!["minecraft:cactus", "minecraft:campfire", "minecraft:cramming", "minecraft:dragon_breath", "minecraft:drown", "minecraft:dry_out", "minecraft:ender_pearl", "minecraft:fall", "minecraft:falling_anvil", "minecraft:falling_stalactite", "minecraft:fly_into_wall", "minecraft:freeze", "minecraft:generic", "minecraft:generic_kill", "minecraft:hot_floor", "minecraft:in_fire", "minecraft:in_wall", "minecraft:indirect_magic", "minecraft:lava", "minecraft:lightning_bolt", "minecraft:magic", "minecraft:on_fire", "minecraft:out_of_world", "minecraft:outside_border", "minecraft:sonic_boom", "minecraft:stalagmite", "minecraft:starve", "minecraft:sweet_berry_bush", "minecraft:wither"]);
+	output.insert("bypasses_enchantments", vec!["minecraft:sonic_boom"]);
+	output.insert("always_kills_armor_stands", vec!["minecraft:arrow", "minecraft:fireball", "minecraft:trident", "minecraft:wind_charge", "minecraft:wither_skull"]);
+	output.insert("always_hurts_ender_dragons", vec!["minecraft:bad_respawn_point", "minecraft:explosion", "minecraft:fireworks", "minecraft:player_explosion"]);
+	output.insert("bypasses_resistance", vec!["minecraft:generic_kill", "minecraft:out_of_world"]);
+	output.insert("is_freezing", vec!["minecraft:freeze"]);
+	output.insert("is_fire", vec!["minecraft:campfire", "minecraft:fireball", "minecraft:hot_floor", "minecraft:in_fire", "minecraft:lava", "minecraft:on_fire", "minecraft:unattributed_fireball"]);
+	output.insert("panic_causes", vec!["minecraft:arrow", "minecraft:cactus", "minecraft:dragon_breath", "minecraft:explosion", "minecraft:fireball", "minecraft:fireworks", "minecraft:freeze", "minecraft:hot_floor", "minecraft:in_fire", "minecraft:indirect_magic", "minecraft:lava", "minecraft:lightning_bolt", "minecraft:mace_smash", "minecraft:magic", "minecraft:mob_attack", "minecraft:mob_projectile", "minecraft:on_fire", "minecraft:player_attack", "minecraft:player_explosion", "minecraft:sonic_boom", "minecraft:sting", "minecraft:thrown", "minecraft:trident", "minecraft:unattributed_fireball", "minecraft:wind_charge", "minecraft:wither", "minecraft:wither_skull"]);
+	output.insert("always_triggers_silverfish", vec!["minecraft:magic"]);
+	output.insert("is_projectile", vec!["minecraft:arrow", "minecraft:fireball", "minecraft:mob_projectile", "minecraft:thrown", "minecraft:trident", "minecraft:unattributed_fireball", "minecraft:wind_charge", "minecraft:wither_skull"]);
+	output.insert("no_impact", vec!["minecraft:drown"]);
+	output.insert("is_explosion", vec!["minecraft:bad_respawn_point", "minecraft:explosion", "minecraft:fireworks", "minecraft:player_explosion"]);
+	return output;
+}
