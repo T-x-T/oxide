@@ -132,6 +132,7 @@ pub fn update(
 		Type::IronBars => iron_bars::update(position, dimension, block_states),
 		Type::StainedGlassPane => stained_glass_pane::update(position, dimension, block_states),
 		Type::Fence => fence::update(position, dimension, block_states),
+		Type::Door => door::update(position, dimension, block_states),
 		_ => None,
 	};
 

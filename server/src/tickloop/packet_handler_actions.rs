@@ -213,59 +213,6 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
 				let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &game.block_state_data);
 
-				//TODO: move to a update function or similar
-				if old_block.block_type == data::blocks::Type::Door {
-					let block_state = data::blocks::get_block_state_from_block_state_id(old_block_id, &game.block_state_data);
-					let location: Option<BlockPosition> =
-						if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Upper)) {
-							Some(BlockPosition {
-								y: location.y - 1,
-								..location
-							})
-						} else if block_state.properties.iter().any(|x| x == &data::blocks::Property::DoorHalf(data::blocks::DoorHalf::Lower)) {
-							Some(BlockPosition {
-								y: location.y + 1,
-								..location
-							})
-						} else {
-							None
-						};
-
-					if let Some(location) = location {
-						world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
-
-						players
-							.iter()
-							.inspect(|x| {
-								game.send_packet(
-									&x.peer_socket_address,
-									lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-									lib::packets::clientbound::play::BlockUpdate {
-										location,
-										block_id: 0,
-									}
-									.try_into()
-									.unwrap(),
-								);
-							})
-							.filter(|x| x.peer_socket_address != peer_addr)
-							.for_each(|x| {
-								game.send_packet(
-									&x.peer_socket_address,
-									lib::packets::clientbound::play::WorldEvent::PACKET_ID,
-									lib::packets::clientbound::play::WorldEvent {
-										event: 2001,
-										location,
-										data: old_block_id as i32,
-									}
-									.try_into()
-									.unwrap(),
-								);
-							});
-					}
-				}
-
-
 				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
 				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
 					let block_entity = world

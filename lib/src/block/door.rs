@@ -201,6 +201,47 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Option<u16> {
+	let Ok(block_state_id) = dimension.get_block(position) else {
+		return None;
+	};
+
+	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+
+	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) {
+		let position_to_check = BlockPosition {
+			y: position.y + 1,
+			..position
+		};
+
+		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
+			return Some(0);
+		};
+
+		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
+		if block_type != Type::Door {
+			return Some(0);
+		}
+	}
+	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) {
+		let position_to_check = BlockPosition {
+			y: position.y - 1,
+			..position
+		};
+
+		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
+			return Some(0);
+		};
+
+		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
+		if block_type != Type::Door {
+			return Some(0);
+		}
+	}
+
+	return None;
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
