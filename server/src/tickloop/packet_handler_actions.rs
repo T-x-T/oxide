@@ -283,53 +283,80 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 
 				if player_clone.gamemode == Gamemode::Survival {
-					let new_entity = lib::entity::ItemEntity {
-						common: lib::entity::CommonEntity {
-							position: EntityPosition {
-								x: location.x as f64 + 0.5,
-								y: location.y as f64,
-								z: location.z as f64 + 0.5,
-								yaw: 0.0,
-								pitch: 0.0,
+					let all_items = data::items::get_items();
+					let hand_item = all_items
+						.get(data::items::get_item_name_by_id(player_clone.get_held_item(true).unwrap_or(&Slot::default()).item_id))
+						.unwrap_or(all_items.get("minecraft:air").unwrap());
+
+					let mut drop_item = true;
+
+					for rule in &hand_item.tool_rules {
+						for match_block in &rule.blocks {
+							if match_block.starts_with("#") {
+								for tag_match_block in
+									data::tags::get_block().get(match_block.replace("#minecraft:", "").as_str()).unwrap_or(&Vec::<&str>::new())
+								{
+									if *tag_match_block == old_block.block_name && !rule.correct_for_drops {
+										drop_item = false;
+									}
+								}
+							} else {
+								if *match_block == old_block.block_name && !rule.correct_for_drops {
+									drop_item = false;
+								}
+							}
+						}
+					}
+
+					if drop_item {
+						let new_entity = lib::entity::ItemEntity {
+							common: lib::entity::CommonEntity {
+								position: EntityPosition {
+									x: location.x as f64 + 0.5,
+									y: location.y as f64,
+									z: location.z as f64 + 0.5,
+									yaw: 0.0,
+									pitch: 0.0,
+								},
+								velocity: EntityPosition::default(),
+								uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+								entity_id: game.entity_id_manager.get_new(),
+								..Default::default()
 							},
-							velocity: EntityPosition::default(),
-							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-							entity_id: game.entity_id_manager.get_new(),
-							..Default::default()
-						},
-						age: 0,
-						health: 5,
-						item: Item {
-							id: old_block.block_name.to_string(),
-							count: 1,
-							components: Vec::new(),
-						},
-						owner: player_clone.uuid,
-						pickup_delay: 0,
-						thrower: player_clone.uuid,
-					};
+							age: 0,
+							health: 5,
+							item: Item {
+								id: old_block.block_name.to_string(),
+								count: 1,
+								components: Vec::new(),
+							},
+							owner: player_clone.uuid,
+							pickup_delay: 0,
+							thrower: player_clone.uuid,
+						};
 
-					let packet = new_entity.to_spawn_entity_packet();
+						let packet = new_entity.to_spawn_entity_packet();
 
-					let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-						entity_id: new_entity.get_common_entity_data().entity_id,
-						metadata: new_entity.get_metadata(),
-					};
+						let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+							entity_id: new_entity.get_common_entity_data().entity_id,
+							metadata: new_entity.get_metadata(),
+						};
 
-					world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
+						world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
 
-					players.iter().for_each(|x| {
-						game.send_packet(
-							&x.peer_socket_address,
-							lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-							packet.clone().try_into().unwrap(),
-						);
-						game.send_packet(
-							&x.peer_socket_address,
-							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-							metadata_packet.clone().try_into().unwrap(),
-						);
-					});
+						players.iter().for_each(|x| {
+							game.send_packet(
+								&x.peer_socket_address,
+								lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+								packet.clone().try_into().unwrap(),
+							);
+							game.send_packet(
+								&x.peer_socket_address,
+								lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+								metadata_packet.clone().try_into().unwrap(),
+							);
+						});
+					}
 				}
 
 				players

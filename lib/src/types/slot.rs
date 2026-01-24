@@ -4,7 +4,7 @@ use crate::entity::ItemEntity;
 
 use super::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Slot {
 	pub item_count: i32,
 	pub item_id: i32,

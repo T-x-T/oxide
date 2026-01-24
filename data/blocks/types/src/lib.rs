@@ -116,1297 +116,1297 @@ impl Type {
 	}
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DropperFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LecternPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallSkullFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SkullRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HangingRootsWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RailWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EndPortalFrameEye { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkSensorWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripWireHookPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangroveLeavesWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RotatedPillarAxis { 	X, 	Y, 	Z, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BedFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NoteInstrument { 	Harp, 	Basedrum, 	Snare, 	Hat, 	Bass, 	Flute, 	Bell, 	Guitar, 	Chime, 	Xylophone, 	IronXylophone, 	CowBell, 	Didgeridoo, 	Bit, 	Banjo, 	Pling, 	Zombie, 	Skeleton, 	Creeper, 	Dragon, 	WitherSkeleton, 	Piglin, 	CustomHead, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CandleCakeLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DecoratedPotCracked { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PiglinwallskullPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallSignWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CalibratedSculkSensorWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum JigsawOrientation { 	DownEast, 	DownNorth, 	DownSouth, 	DownWest, 	UpEast, 	UpNorth, 	UpSouth, 	UpWest, 	WestUp, 	EastUp, 	NorthUp, 	SouthUp, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PistonHeadFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangroveRootsWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TurtleEggEggs { 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWirePower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CoralWallFanWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangrovePropaguleAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BeetrootAge { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DaylightDetectorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBarNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrappedChestWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperGolemStatueCopperGolemPose { 	Standing, 	Sitting, 	Running, 	Star, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GrindstoneFace { 	Floor, 	Wall, 	Ceiling, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChestType { 	Single, 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UntintedParticleLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PointedDripstoneVerticalDirection { 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LiquidLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ButtonFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot4Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CalibratedSculkSensorSculkSensorPhase { 	Inactive, 	Active, 	Cooldown, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AmethystClusterFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantDown { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenDown { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IronBarsEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NoteNote { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShelfPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CaveVinesPlantBerries { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BaseCoralFanWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrapdoorWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BrewingStandHasBottle0 { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringLanternHanging { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LadderFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ObserverFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AmethystClusterWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CampfireLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBarWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RepeaterFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MossyCarpetEast { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShelfFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CactusAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StandingSignWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BannerRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CreakingHeartNatural { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BarrelFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FrostedIceAge { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HopperFacing { 	Down, 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceGateInWall { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BellPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BlastFurnaceFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperTrapDoorPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShelfSideChain { 	Unconnected, 	Right, 	Center, 	Left, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CaveVinesBerries { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EndRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot0Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LeverFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireAttached { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VaultFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BeehiveHoneyLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DetectorRailWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NotePowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PointedDripstoneThickness { 	TipMerge, 	Tip, 	Frustum, 	Middle, 	Base, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoorHalf { 	Upper, 	Lower, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PotatoAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWallTorchFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PoweredRailPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FlowerBedFlowerAmount { 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RepeaterDelay { 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StructureMode { 	Save, 	Load, 	Corner, 	Data, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AttachedStemFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BarrelOpen { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BambooStalkStage { 	Num0, 	Num1, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SaplingStage { 	Num0, 	Num1, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CeilingHangingSignRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperChestType { 	Single, 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ComparatorPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IronBarsSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperDoorHalf { 	Upper, 	Lower, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BaseCoralWallFanFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IronBarsWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWireNorth { 	Up, 	Side, 	None, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScaffoldingBottom { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperGolemStatueWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperBulbBlockLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot2Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoorHinge { 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum JackOLanternFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallSkullPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperTrapDoorOpen { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SeaPicklePickles { 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrapdoorOpen { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CandleWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StainedGlassPaneWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CommandFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkShriekerShrieking { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrappedChestType { 	Single, 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkSensorSculkSensorPhase { 	Inactive, 	Active, 	Cooldown, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CandleCandles { 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StainedGlassPaneNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StainedGlassPaneEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChestWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusFlowerAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperStairShape { 	Straight, 	InnerLeft, 	InnerRight, 	OuterLeft, 	OuterRight, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NetherPortalAxis { 	X, 	Z, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CoralFanWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StandingSignRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LecternHasBook { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MossyCarpetSouth { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ButtonFace { 	Floor, 	Wall, 	Ceiling, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CaveVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperStairWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceGateOpen { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BlastFurnaceLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DriedGhastHydration { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DropperTriggered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWallTorchLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScaffoldingWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TntUnstable { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallSignFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BrushableDusted { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallTorchFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FarmMoisture { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeightedPressurePlatePower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LecternFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperGolemStatueWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LightningRodWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LeafLitterFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LightWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TintedParticleLeavesWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrapdoorPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CandleLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HayAxis { 	X, 	Y, 	Z, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TintedParticleLeavesPersistent { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperGrateWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DaylightDetectorInverted { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PiglinwallskullFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PistonHeadType { 	Normal, 	Sticky, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallNorth { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StainedGlassPaneWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PitcherCropAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SweetBerryBushAge { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireDisarmed { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PistonHeadShort { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallSouth { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CrafterOrientation { 	DownEast, 	DownNorth, 	DownSouth, 	DownWest, 	UpEast, 	UpNorth, 	UpSouth, 	UpWest, 	WestUp, 	EastUp, 	NorthUp, 	SouthUp, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TwistingVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StairShape { 	Straight, 	InnerLeft, 	InnerRight, 	OuterLeft, 	OuterRight, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperBulbBlockPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkSensorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SmallDripleafHalf { 	Upper, 	Lower, }
+pub enum PressurePlatePowered { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SlabType { 	Top, 	Bottom, 	Double, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DetectorRailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DispenserTriggered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWireWest { 	Up, 	Side, 	None, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperTrapDoorHalf { 	Top, 	Bottom, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CampfireFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MossyCarpetNorth { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TintedParticleLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ObserverPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DriedGhastFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SnowLayerLayers { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BigDripleafFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChainWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperChestWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WitherSkullRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BellAttachment { 	Floor, 	Ceiling, 	SingleWall, 	DoubleWall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ComparatorMode { 	Compare, 	Subtract, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HangingMossTip { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallEast { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrapdoorFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperChestFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BigDripleafStemWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrapdoorHalf { 	Top, 	Bottom, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringLightningRodWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TallFlowerHalf { 	Upper, 	Lower, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PistonBaseFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PlayerWallHeadPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PistonBaseExtended { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallHangingSignFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot3Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BambooStalkAge { 	Num0, 	Num1, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GrindstoneFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DetectorRailPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangrovePropaguleWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FlowerBedFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneOreLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceDown { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripWireHookAttached { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperChestType { 	Single, 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TargetPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CrafterCrafting { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ComposterLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BaseCoralWallFanWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrialSpawnerOminous { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperTrapDoorWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HopperEnabled { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VineNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangroveLeavesPersistent { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VineWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MyceliumSnowy { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NetherWartAge { 	Num0, 	Num1, 	Num2, 	Num3, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlazedTerracottaFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MovingPistonType { 	Normal, 	Sticky, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperChainAxis { 	X, 	Y, 	Z, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrialSpawnerTrialSpawnerState { 	Inactive, 	WaitingForPlayers, 	Active, 	WaitingForRewardEjection, 	EjectingReward, 	Cooldown, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RepeaterPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum JukeboxHasRecord { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CakeBites { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShelfWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MovingPistonFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RepeaterLocked { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EnderChestWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FurnaceFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LanternWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BrewingStandHasBottle1 { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperDoorFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangroveLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CeilingHangingSignWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LightLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SnifferEggHatch { 	Num0, 	Num1, 	Num2, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UntintedParticleLeavesPersistent { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CalibratedSculkSensorFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceGateFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IronBarsNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneWireSouth { 	Up, 	Side, 	None, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CoralWallFanFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BedPart { 	Head, 	Foot, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RespawnAnchorCharges { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BaseCoralPlantWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBulbPowered { 	True, 	False, }
+pub enum NoteInstrument { 	Harp, 	Basedrum, 	Snare, 	Hat, 	Bass, 	Flute, 	Bell, 	Guitar, 	Chime, 	Xylophone, 	IronXylophone, 	CowBell, 	Didgeridoo, 	Bit, 	Banjo, 	Pling, 	Zombie, 	Skeleton, 	Creeper, 	Dragon, 	WitherSkeleton, 	Piglin, 	CustomHead, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CampfireSignalFire { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ConduitWaterlogged { 	True, 	False, }
+pub enum WeatheringCopperChestWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NotePowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BeehiveHoneyLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SculkVeinWest { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwirePowered { 	True, 	False, }
+pub enum SweetBerryBushAge { 	Num0, 	Num1, 	Num2, 	Num3, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperChestWaterlogged { 	True, 	False, }
+pub enum TrappedChestWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CampfireWaterlogged { 	True, 	False, }
+pub enum EndPortalFrameFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PitcherCropHalf { 	Upper, 	Lower, }
+pub enum FarmMoisture { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, 	SouthEast, 	SouthWest, 	NorthWest, 	NorthEast, }
+pub enum ChainWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoublePlantHalf { 	Upper, 	Lower, }
+pub enum WeepingVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LeafLitterSegmentAmount { 	Num1, 	Num2, 	Num3, 	Num4, }
+pub enum RotatedPillarAxis { 	X, 	Y, 	Z, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MultifaceEast { 	True, 	False, }
+pub enum FireAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkShriekerWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SmallDripleafFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PointedDripstoneWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LightningRodPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CropAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CoralPlantWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SeaPickleWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VaultVaultState { 	Inactive, 	Active, 	Unlocking, 	Ejecting, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BeehiveFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ComparatorFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot5Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ButtonPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperStairHalf { 	Top, 	Bottom, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperGolemStatueFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperGolemStatueCopperGolemPose { 	Standing, 	Sitting, 	Running, 	Star, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VineSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WaterloggedTransparentWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringLightningRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PlayerWallHeadFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VineEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChorusPlantEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallWest { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperDoorHinge { 	Left, 	Right, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoorPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FurnaceLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkCatalystBloom { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PoweredRailWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripWireHookFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AnvilFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireWest { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SlabWaterlogged { 	True, 	False, }
+pub enum WeatheringCopperChestType { 	Single, 	Left, 	Right, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WeatheringCopperBulbLit { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperDoorPowered { 	True, 	False, }
+pub enum WeatheringCopperTrapDoorPowered { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WitherSkullPowered { 	True, 	False, }
+pub enum BigDripleafFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperSlabType { 	Top, 	Bottom, 	Double, }
+pub enum GlowLichenUp { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkShriekerCanSummon { 	True, 	False, }
+pub enum TallFlowerHalf { 	Upper, 	Lower, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PressurePlatePowered { 	True, 	False, }
+pub enum FlowerBedFlowerAmount { 	Num1, 	Num2, 	Num3, 	Num4, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChainAxis { 	X, 	Y, 	Z, }
+pub enum LightningRodPowered { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PlayerHeadRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+pub enum CandleCakeLit { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DecoratedPotFacing { 	North, 	South, 	West, 	East, }
+pub enum WeatheringCopperBarEast { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringLightningRodPowered { 	True, 	False, }
+pub enum WeatheringCopperChestFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoorFacing { 	North, 	South, 	West, 	East, }
+pub enum BambooStalkLeaves { 	None, 	Small, 	Large, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CalibratedSculkSensorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+pub enum DecoratedPotWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceGatePowered { 	True, 	False, }
+pub enum PiglinwallskullFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum UntintedParticleLeavesWaterlogged { 	True, 	False, }
+pub enum TorchflowerCropAge { 	Num0, 	Num1, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LanternHanging { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StainedGlassPaneSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CommandConditional { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperSlabWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LeverFace { 	Floor, 	Wall, 	Ceiling, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BrewingStandHasBottle2 { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BigDripleafWaterlogged { 	True, 	False, }
+pub enum SculkShriekerShrieking { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CocoaFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenSouth { 	True, 	False, }
+pub enum WeatheringCopperGolemStatueFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StemAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+pub enum NetherWartAge { 	Num0, 	Num1, 	Num2, 	Num3, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LeverPowered { 	True, 	False, }
+pub enum WallTorchFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ButtonPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot5Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneTorchLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BeetrootAge { 	Num0, 	Num1, 	Num2, 	Num3, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HangingRootsWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlayerHeadPowered { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TestMode { 	Start, 	Log, 	Fail, 	Accept, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperGolemStatueCopperGolemPose { 	Standing, 	Sitting, 	Running, 	Star, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperChainAxis { 	X, 	Y, 	Z, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallSignWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CaveVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BigDripleafStemWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CampfireWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LecternHasBook { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceGatePowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PistonHeadFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BigDripleafWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WitherWallSkullFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CandleLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChestWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LanternHanging { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PointedDripstoneThickness { 	TipMerge, 	Tip, 	Frustum, 	Middle, 	Base, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CandleWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NoteNote { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TurtleEggEggs { 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CactusAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PiglinwallskullPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MyceliumSnowy { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangrovePropaguleAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ObserverFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PlayerWallHeadPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CeilingHangingSignRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SugarCaneAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperBarSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripWireHookPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperGolemStatueCopperGolemPose { 	Standing, 	Sitting, 	Running, 	Star, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkSensorWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperChestType { 	Single, 	Left, 	Right, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringLightningRodWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BannerRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StonecutterFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWireWest { 	Up, 	Side, 	None, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShelfSideChain { 	Unconnected, 	Right, 	Center, 	Left, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TwistingVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CoralFanWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ComposterLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScaffoldingWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CakeBites { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireDisarmed { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EndPortalFrameEye { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperGolemStatueFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantDown { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CreakingHeartNatural { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StainedGlassPaneNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SeaPickleWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FireSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWallTorchFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallHangingSignFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UntintedParticleLeavesPersistent { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperTrapDoorOpen { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PistonHeadShort { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LightLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShelfWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripWireHookFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CampfireFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TurtleEggHatch { 	Num0, 	Num1, 	Num2, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DropperFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VineNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LeafLitterFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoorHalf { 	Upper, 	Lower, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrapdoorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BigDripleafTilt { 	None, 	Unstable, 	Partial, 	Full, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LightningRodWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringLanternHanging { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrapdoorWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BellAttachment { 	Floor, 	Ceiling, 	SingleWall, 	DoubleWall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LecternPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TargetPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CropAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot2Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BubbleColumnDrag { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnderChestFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BigDripleafStemFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum InfestedRotatedPillarAxis { 	X, 	Y, 	Z, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWireNorth { 	Up, 	Side, 	None, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CocoaAge { 	Num0, 	Num1, 	Num2, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LadderFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperTrapDoorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StandingSignRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringLightningRodPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LightWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DetectorRailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BellFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CampfireLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FlowerBedFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoorPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenDown { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrappedChestFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IronBarsWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PitcherCropHalf { 	Upper, 	Lower, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VaultOminous { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireAttached { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StairWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IronBarsWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceGateFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CreakingHeartAxis { 	X, 	Y, 	Z, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MossyCarpetNorth { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkShriekerCanSummon { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperChestFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PoweredRailPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StainedGlassPaneEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DaylightDetectorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangrovePropaguleWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LightningRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BrewingStandHasBottle2 { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PoweredRailWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrialSpawnerOminous { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FrostedIceAge { 	Num0, 	Num1, 	Num2, 	Num3, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangroveLeavesPersistent { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwirePowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StandingSignWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ConduitWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WitherSkullRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SnowyDirtSnowy { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceDown { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BrewingStandHasBottle0 { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DecoratedPotCracked { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DetectorRailPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BambooStalkAge { 	Num0, 	Num1, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HangingMossTip { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WitherSkullPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeightedPressurePlatePower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperBulbBlockPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BaseCoralPlantWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AmethystClusterWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BarrelFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CarrotAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperSlabWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PotatoAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BeehiveFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CalibratedSculkSensorWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SeaPicklePickles { 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BrushableDusted { 	Num0, 	Num1, 	Num2, 	Num3, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWireSouth { 	Up, 	Side, 	None, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SnowLayerLayers { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallNorth { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VaultVaultState { 	Inactive, 	Active, 	Unlocking, 	Ejecting, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneOreLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangrovePropaguleHanging { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DriedGhastFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BaseCoralWallFanFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JukeboxHasRecord { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RedstoneWireEast { 	Up, 	Side, 	None, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ScaffoldingDistance { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+pub enum DriedGhastWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MossyCarpetEast { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperChestWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StainedGlassPaneWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinDown { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnderChestWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FireWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DropperTriggered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MovingPistonFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VaultFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot3Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot1Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CommandFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusFlowerAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum HeavyCoreWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MossyCarpetBottom { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BubbleColumnDrag { 	True, 	False, }
+pub enum SmallDripleafHalf { 	Upper, 	Lower, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperTrapDoorFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SmallDripleafWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TestMode { 	Start, 	Log, 	Fail, 	Accept, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SugarCaneAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireSouth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BarrierWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BigDripleafTilt { 	None, 	Unstable, 	Partial, 	Full, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallWaterlogged { 	True, 	False, }
+pub enum CrafterOrientation { 	DownEast, 	DownNorth, 	DownSouth, 	DownWest, 	UpEast, 	UpNorth, 	UpSouth, 	UpWest, 	WestUp, 	EastUp, 	NorthUp, 	SouthUp, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WeatheringCopperChainWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EnderChestFacing { 	North, 	South, 	West, 	East, }
+pub enum CommandConditional { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TurtleEggHatch { 	Num0, 	Num1, 	Num2, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VaultOminous { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum VineUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DoorOpen { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChestFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BambooStalkLeaves { 	None, 	Small, 	Large, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum InfestedRotatedPillarAxis { 	X, 	Y, 	Z, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneLampLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinDown { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomDown { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TrappedChestFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WitherWallSkullPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum PoweredRailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StairHalf { 	Top, 	Bottom, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangrovePropaguleStage { 	Num0, 	Num1, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MossyCarpetWest { 	None, 	Low, 	Tall, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperChestFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CopperGolemStatueFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SmokerLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum IronBarsWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DriedGhastWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RedstoneTorchLit { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GlowLichenNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StairWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LoomFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BedOccupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TallSeagrassHalf { 	Upper, 	Lower, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WitherWallSkullFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinUp { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SkullPowered { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ChiseledBookShelfSlot1Occupied { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBarEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum StonecutterFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CocoaAge { 	Num0, 	Num1, 	Num2, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallHangingSignWaterlogged { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BigDripleafStemFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FenceEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum BellFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum ShulkerBoxFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CarrotAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CreakingHeartCreakingHeartState { 	Uprooted, 	Dormant, 	Awake, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SmokerFacing { 	North, 	South, 	West, 	East, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DispenserFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SculkVeinNorth { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TorchflowerCropAge { 	Num0, 	Num1, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TripwireEast { 	True, 	False, }
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LightningRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+pub enum WeatheringCopperGolemStatueWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WeatheringCopperDoorOpen { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CeilingHangingSignAttached { 	True, 	False, }
+pub enum StructureMode { 	Save, 	Load, 	Corner, 	Data, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CreakingHeartAxis { 	X, 	Y, 	Z, }
+pub enum VineEast { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LayeredCauldronLevel { 	Num1, 	Num2, 	Num3, }
+pub enum CeilingHangingSignWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeepingVinesAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
+pub enum WeatheringCopperDoorHalf { 	Upper, 	Lower, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DecoratedPotWaterlogged { 	True, 	False, }
+pub enum PlayerWallHeadFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringLanternWaterlogged { 	True, 	False, }
+pub enum ButtonFace { 	Floor, 	Wall, 	Ceiling, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum MangrovePropaguleHanging { 	True, 	False, }
+pub enum WeatheringCopperStairWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WallBannerFacing { 	North, 	South, 	West, 	East, }
+pub enum WallSignFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperStairFacing { 	North, 	South, 	West, 	East, }
+pub enum FenceGateOpen { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBarWaterlogged { 	True, 	False, }
+pub enum TintedParticleLeavesWaterlogged { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CrafterTriggered { 	True, 	False, }
+pub enum WallSkullPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoublePlantHalf { 	Upper, 	Lower, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PistonHeadType { 	Normal, 	Sticky, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BedOccupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JigsawOrientation { 	DownEast, 	DownNorth, 	DownSouth, 	DownWest, 	UpEast, 	UpNorth, 	UpSouth, 	UpWest, 	WestUp, 	EastUp, 	NorthUp, 	SouthUp, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BellPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrapdoorHalf { 	Top, 	Bottom, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperBarNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SkullPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DaylightDetectorInverted { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ComparatorMode { 	Compare, 	Subtract, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CrafterCrafting { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperBarWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangrovePropaguleStage { 	Num0, 	Num1, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LoomFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWallTorchLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BlastFurnaceFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, 	SouthEast, 	SouthWest, 	NorthWest, 	NorthEast, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScaffoldingDistance { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VineWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperTrapDoorWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StairHalf { 	Top, 	Bottom, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StemAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringLightningRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShelfFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BlastFurnaceLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlazedTerracottaFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GrassSnowy { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum KelpAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
+pub enum AmethystClusterFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum HugeMushroomWest { 	True, 	False, }
+pub enum ChainAxis { 	X, 	Y, 	Z, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum WeatheringCopperBarSouth { 	True, 	False, }
+pub enum LeverFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LadderWaterlogged { 	True, 	False, }
+pub enum GrindstoneFace { 	Floor, 	Wall, 	Ceiling, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FireSouth { 	True, 	False, }
+pub enum CaveVinesPlantBerries { 	True, 	False, }
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum EndPortalFrameFacing { 	North, 	South, 	West, 	East, }
+pub enum PointedDripstoneVerticalDirection { 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShelfPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LanternWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PitcherCropAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DriedGhastHydration { 	Num0, 	Num1, 	Num2, 	Num3, }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StairFacing { 	North, 	South, 	West, 	East, }
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneWirePower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BaseCoralFanWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SlabWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SmallDripleafWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangroveLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrappedChestType { 	Single, 	Left, 	Right, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BarrelOpen { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StainedGlassPaneWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringLanternWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EndRodFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperBarWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UntintedParticleLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HayAxis { 	X, 	Y, 	Z, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceGateInWall { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TintedParticleLeavesDistance { 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BambooStalkStage { 	Num0, 	Num1, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CalibratedSculkSensorSculkSensorPhase { 	Inactive, 	Active, 	Cooldown, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperStairHalf { 	Top, 	Bottom, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperBulbPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LadderWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MossyCarpetWest { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AnvilFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LeverPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PistonBaseExtended { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RespawnAnchorCharges { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkSensorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomDown { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoorHinge { 	Left, 	Right, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SkullRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangroveRootsWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepeaterFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IronBarsSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum KelpAge { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, 	Num16, 	Num17, 	Num18, 	Num19, 	Num20, 	Num21, 	Num22, 	Num23, 	Num24, 	Num25, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepeaterLocked { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChestType { 	Single, 	Left, 	Right, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SmokerFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VineUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HopperFacing { 	Down, 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperSlabType { 	Top, 	Bottom, 	Double, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ComparatorPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TintedParticleLeavesPersistent { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StainedGlassPaneSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JackOLanternFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DetectorRailWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DecoratedPotFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FireUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IronBarsEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum IronBarsNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LiquidLevel { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CaveVinesBerries { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScaffoldingBottom { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TallSeagrassHalf { 	Upper, 	Lower, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RedstoneLampLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CreakingHeartCreakingHeartState { 	Uprooted, 	Dormant, 	Awake, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CandleCandles { 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripWireHookAttached { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TntUnstable { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BarrierWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FurnaceFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PoweredRailShape { 	NorthSouth, 	EastWest, 	AscendingEast, 	AscendingWest, 	AscendingNorth, 	AscendingSouth, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepeaterPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperBulbBlockLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BrewingStandHasBottle1 { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PointedDripstoneWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AttachedStemFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CeilingHangingSignAttached { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperDoorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChestFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FireEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HopperEnabled { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LeverFace { 	Floor, 	Wall, 	Ceiling, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NetherPortalAxis { 	X, 	Z, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkShriekerWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SmallDripleafFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrialSpawnerTrialSpawnerState { 	Inactive, 	WaitingForPlayers, 	Active, 	WaitingForRewardEjection, 	EjectingReward, 	Cooldown, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TripwireWest { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallBannerFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CalibratedSculkSensorPower { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GlowLichenWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkCatalystBloom { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VineSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BaseCoralWallFanWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkSensorSculkSensorPhase { 	Inactive, 	Active, 	Cooldown, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CoralPlantWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SaplingStage { 	Num0, 	Num1, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FenceSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum UntintedParticleLeavesWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperTrapDoorHalf { 	Top, 	Bottom, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepeaterDelay { 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot0Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MangroveLeavesWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopperGolemStatueWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum GrindstoneFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PistonBaseFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LeafLitterSegmentAmount { 	Num1, 	Num2, 	Num3, 	Num4, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PlayerHeadRotation { 	Num0, 	Num1, 	Num2, 	Num3, 	Num4, 	Num5, 	Num6, 	Num7, 	Num8, 	Num9, 	Num10, 	Num11, 	Num12, 	Num13, 	Num14, 	Num15, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BedPart { 	Head, 	Foot, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WitherWallSkullPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SmokerLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperStairShape { 	Straight, 	InnerLeft, 	InnerRight, 	OuterLeft, 	OuterRight, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfSlot4Occupied { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallEast { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ComparatorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperDoorHinge { 	Left, 	Right, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallSkullFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CalibratedSculkSensorFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ObserverPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BedFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RailWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SnifferEggHatch { 	Num0, 	Num1, 	Num2, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FurnaceLit { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DoorOpen { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StairShape { 	Straight, 	InnerLeft, 	InnerRight, 	OuterLeft, 	OuterRight, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MossyCarpetSouth { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HugeMushroomEast { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperStairFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChorusPlantNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DispenserFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SculkVeinSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WaterloggedTransparentWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ButtonFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CoralWallFanWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperDoorPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MultifaceSouth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DispenserTriggered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LecternFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CoralWallFanFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LayeredCauldronLevel { 	Num1, 	Num2, 	Num3, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShulkerBoxFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CrafterTriggered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrapdoorOpen { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ChiseledBookShelfFacing { 	North, 	South, 	West, 	East, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WeatheringCopperGrateWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FireNorth { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrapdoorPowered { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallWest { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallSouth { 	None, 	Low, 	Tall, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallHangingSignWaterlogged { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WallUp { 	True, 	False, }
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Property {
-	DropperFacing(DropperFacing),
-	ChorusPlantWest(ChorusPlantWest),
-	LecternPowered(LecternPowered),
-	WallSkullFacing(WallSkullFacing),
-	WallUp(WallUp),
-	FireWest(FireWest),
-	SkullRotation(SkullRotation),
-	HangingRootsWaterlogged(HangingRootsWaterlogged),
-	RailWaterlogged(RailWaterlogged),
-	EndPortalFrameEye(EndPortalFrameEye),
-	SculkSensorWaterlogged(SculkSensorWaterlogged),
-	SculkVeinWaterlogged(SculkVeinWaterlogged),
-	TripWireHookPowered(TripWireHookPowered),
-	MangroveLeavesWaterlogged(MangroveLeavesWaterlogged),
-	RotatedPillarAxis(RotatedPillarAxis),
-	ChorusPlantUp(ChorusPlantUp),
-	BedFacing(BedFacing),
-	NoteInstrument(NoteInstrument),
-	CandleCakeLit(CandleCakeLit),
-	DecoratedPotCracked(DecoratedPotCracked),
-	PiglinwallskullPowered(PiglinwallskullPowered),
-	WallSignWaterlogged(WallSignWaterlogged),
-	CalibratedSculkSensorWaterlogged(CalibratedSculkSensorWaterlogged),
-	JigsawOrientation(JigsawOrientation),
-	PistonHeadFacing(PistonHeadFacing),
-	MangroveRootsWaterlogged(MangroveRootsWaterlogged),
-	TurtleEggEggs(TurtleEggEggs),
-	RedstoneWirePower(RedstoneWirePower),
-	CoralWallFanWaterlogged(CoralWallFanWaterlogged),
-	MangrovePropaguleAge(MangrovePropaguleAge),
-	FenceWaterlogged(FenceWaterlogged),
-	BeetrootAge(BeetrootAge),
-	DaylightDetectorPower(DaylightDetectorPower),
-	WeatheringCopperBarNorth(WeatheringCopperBarNorth),
-	TrappedChestWaterlogged(TrappedChestWaterlogged),
-	WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose),
-	GrindstoneFace(GrindstoneFace),
-	ChestType(ChestType),
-	UntintedParticleLeavesDistance(UntintedParticleLeavesDistance),
-	PointedDripstoneVerticalDirection(PointedDripstoneVerticalDirection),
-	FireAge(FireAge),
-	LiquidLevel(LiquidLevel),
-	FenceNorth(FenceNorth),
-	ButtonFacing(ButtonFacing),
-	ChiseledBookShelfSlot4Occupied(ChiseledBookShelfSlot4Occupied),
-	CalibratedSculkSensorSculkSensorPhase(CalibratedSculkSensorSculkSensorPhase),
-	AmethystClusterFacing(AmethystClusterFacing),
-	ChorusPlantDown(ChorusPlantDown),
-	GlowLichenWest(GlowLichenWest),
-	GlowLichenDown(GlowLichenDown),
-	IronBarsEast(IronBarsEast),
-	NoteNote(NoteNote),
-	ShelfPowered(ShelfPowered),
-	CaveVinesPlantBerries(CaveVinesPlantBerries),
-	BaseCoralFanWaterlogged(BaseCoralFanWaterlogged),
-	ChorusPlantSouth(ChorusPlantSouth),
-	TrapdoorWaterlogged(TrapdoorWaterlogged),
-	BrewingStandHasBottle0(BrewingStandHasBottle0),
-	WeatheringLanternHanging(WeatheringLanternHanging),
-	LadderFacing(LadderFacing),
-	ObserverFacing(ObserverFacing),
-	AmethystClusterWaterlogged(AmethystClusterWaterlogged),
-	CampfireLit(CampfireLit),
-	WeatheringCopperBarWest(WeatheringCopperBarWest),
-	RepeaterFacing(RepeaterFacing),
-	MossyCarpetEast(MossyCarpetEast),
-	ShelfFacing(ShelfFacing),
-	CactusAge(CactusAge),
-	StandingSignWaterlogged(StandingSignWaterlogged),
-	BannerRotation(BannerRotation),
-	CreakingHeartNatural(CreakingHeartNatural),
-	BarrelFacing(BarrelFacing),
-	FrostedIceAge(FrostedIceAge),
-	HopperFacing(HopperFacing),
-	FenceGateInWall(FenceGateInWall),
-	BellPowered(BellPowered),
-	BlastFurnaceFacing(BlastFurnaceFacing),
-	WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered),
-	ShelfSideChain(ShelfSideChain),
-	GlowLichenUp(GlowLichenUp),
-	CaveVinesBerries(CaveVinesBerries),
-	EndRodFacing(EndRodFacing),
-	ChiseledBookShelfSlot0Occupied(ChiseledBookShelfSlot0Occupied),
-	LeverFacing(LeverFacing),
-	MultifaceWest(MultifaceWest),
-	TripwireAttached(TripwireAttached),
-	VaultFacing(VaultFacing),
-	BeehiveHoneyLevel(BeehiveHoneyLevel),
-	DetectorRailWaterlogged(DetectorRailWaterlogged),
-	FireEast(FireEast),
-	NotePowered(NotePowered),
-	PointedDripstoneThickness(PointedDripstoneThickness),
-	DoorHalf(DoorHalf),
-	PotatoAge(PotatoAge),
-	RedstoneWallTorchFacing(RedstoneWallTorchFacing),
-	MultifaceUp(MultifaceUp),
-	PoweredRailPowered(PoweredRailPowered),
-	FlowerBedFlowerAmount(FlowerBedFlowerAmount),
-	RepeaterDelay(RepeaterDelay),
-	StructureMode(StructureMode),
-	AttachedStemFacing(AttachedStemFacing),
-	BarrelOpen(BarrelOpen),
-	BambooStalkStage(BambooStalkStage),
-	SaplingStage(SaplingStage),
-	CeilingHangingSignRotation(CeilingHangingSignRotation),
-	WeatheringCopperChestType(WeatheringCopperChestType),
-	ComparatorPowered(ComparatorPowered),
-	IronBarsSouth(IronBarsSouth),
-	WeatheringCopperDoorHalf(WeatheringCopperDoorHalf),
-	BaseCoralWallFanFacing(BaseCoralWallFanFacing),
-	IronBarsWest(IronBarsWest),
-	RedstoneWireNorth(RedstoneWireNorth),
-	ScaffoldingBottom(ScaffoldingBottom),
-	WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged),
-	SculkVeinSouth(SculkVeinSouth),
-	CopperBulbBlockLit(CopperBulbBlockLit),
-	ChiseledBookShelfSlot2Occupied(ChiseledBookShelfSlot2Occupied),
-	DoorHinge(DoorHinge),
-	JackOLanternFacing(JackOLanternFacing),
-	WallSkullPowered(WallSkullPowered),
-	WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen),
-	SeaPicklePickles(SeaPicklePickles),
-	TrapdoorOpen(TrapdoorOpen),
-	CandleWaterlogged(CandleWaterlogged),
-	StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged),
-	CommandFacing(CommandFacing),
-	SculkShriekerShrieking(SculkShriekerShrieking),
-	TrappedChestType(TrappedChestType),
-	SculkSensorSculkSensorPhase(SculkSensorSculkSensorPhase),
-	CandleCandles(CandleCandles),
-	StainedGlassPaneNorth(StainedGlassPaneNorth),
-	StainedGlassPaneEast(StainedGlassPaneEast),
-	ChestWaterlogged(ChestWaterlogged),
-	ChorusFlowerAge(ChorusFlowerAge),
-	WeatheringCopperStairShape(WeatheringCopperStairShape),
-	NetherPortalAxis(NetherPortalAxis),
-	CoralFanWaterlogged(CoralFanWaterlogged),
-	StandingSignRotation(StandingSignRotation),
-	LecternHasBook(LecternHasBook),
-	MossyCarpetSouth(MossyCarpetSouth),
-	ButtonFace(ButtonFace),
-	CaveVinesAge(CaveVinesAge),
-	WeatheringCopperStairWaterlogged(WeatheringCopperStairWaterlogged),
-	FenceGateOpen(FenceGateOpen),
-	ChiseledBookShelfFacing(ChiseledBookShelfFacing),
-	BlastFurnaceLit(BlastFurnaceLit),
-	DriedGhastHydration(DriedGhastHydration),
-	DropperTriggered(DropperTriggered),
-	RedstoneWallTorchLit(RedstoneWallTorchLit),
-	ScaffoldingWaterlogged(ScaffoldingWaterlogged),
-	TntUnstable(TntUnstable),
-	SculkVeinEast(SculkVeinEast),
-	WallSignFacing(WallSignFacing),
-	BrushableDusted(BrushableDusted),
-	WallTorchFacing(WallTorchFacing),
-	FarmMoisture(FarmMoisture),
-	WeightedPressurePlatePower(WeightedPressurePlatePower),
-	LecternFacing(LecternFacing),
-	TripwireNorth(TripwireNorth),
-	CopperGolemStatueWaterlogged(CopperGolemStatueWaterlogged),
-	LightningRodWaterlogged(LightningRodWaterlogged),
-	LeafLitterFacing(LeafLitterFacing),
-	LightWaterlogged(LightWaterlogged),
-	TintedParticleLeavesWaterlogged(TintedParticleLeavesWaterlogged),
-	TrapdoorPowered(TrapdoorPowered),
-	CandleLit(CandleLit),
-	HayAxis(HayAxis),
-	TintedParticleLeavesPersistent(TintedParticleLeavesPersistent),
-	WeatheringCopperGrateWaterlogged(WeatheringCopperGrateWaterlogged),
-	DaylightDetectorInverted(DaylightDetectorInverted),
-	PiglinwallskullFacing(PiglinwallskullFacing),
-	PistonHeadType(PistonHeadType),
-	WallNorth(WallNorth),
-	StainedGlassPaneWest(StainedGlassPaneWest),
-	PitcherCropAge(PitcherCropAge),
-	SweetBerryBushAge(SweetBerryBushAge),
-	TripwireDisarmed(TripwireDisarmed),
-	PistonHeadShort(PistonHeadShort),
-	WallSouth(WallSouth),
-	CrafterOrientation(CrafterOrientation),
-	TwistingVinesAge(TwistingVinesAge),
-	StairShape(StairShape),
-	CopperBulbBlockPowered(CopperBulbBlockPowered),
-	SculkSensorPower(SculkSensorPower),
-	SmallDripleafHalf(SmallDripleafHalf),
-	SlabType(SlabType),
-	DetectorRailShape(DetectorRailShape),
-	DispenserTriggered(DispenserTriggered),
-	RedstoneWireWest(RedstoneWireWest),
-	WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf),
-	CampfireFacing(CampfireFacing),
-	MossyCarpetNorth(MossyCarpetNorth),
-	TintedParticleLeavesDistance(TintedParticleLeavesDistance),
-	MultifaceWaterlogged(MultifaceWaterlogged),
-	ObserverPowered(ObserverPowered),
-	DriedGhastFacing(DriedGhastFacing),
-	SnowLayerLayers(SnowLayerLayers),
-	BigDripleafFacing(BigDripleafFacing),
-	ChainWaterlogged(ChainWaterlogged),
-	CopperChestWaterlogged(CopperChestWaterlogged),
-	WitherSkullRotation(WitherSkullRotation),
-	BellAttachment(BellAttachment),
-	ComparatorMode(ComparatorMode),
-	HangingMossTip(HangingMossTip),
-	WallEast(WallEast),
-	TrapdoorFacing(TrapdoorFacing),
-	CopperChestFacing(CopperChestFacing),
-	BigDripleafStemWaterlogged(BigDripleafStemWaterlogged),
-	TrapdoorHalf(TrapdoorHalf),
-	WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged),
-	TallFlowerHalf(TallFlowerHalf),
-	PistonBaseFacing(PistonBaseFacing),
-	PlayerWallHeadPowered(PlayerWallHeadPowered),
-	PistonBaseExtended(PistonBaseExtended),
-	WallHangingSignFacing(WallHangingSignFacing),
-	ChiseledBookShelfSlot3Occupied(ChiseledBookShelfSlot3Occupied),
-	BambooStalkAge(BambooStalkAge),
-	GrindstoneFacing(GrindstoneFacing),
-	DetectorRailPowered(DetectorRailPowered),
-	MangrovePropaguleWaterlogged(MangrovePropaguleWaterlogged),
-	FlowerBedFacing(FlowerBedFacing),
-	RedstoneOreLit(RedstoneOreLit),
-	MultifaceDown(MultifaceDown),
-	TripWireHookAttached(TripWireHookAttached),
-	CopperChestType(CopperChestType),
-	ChorusPlantNorth(ChorusPlantNorth),
-	TargetPower(TargetPower),
-	CrafterCrafting(CrafterCrafting),
-	ComposterLevel(ComposterLevel),
-	BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged),
-	TrialSpawnerOminous(TrialSpawnerOminous),
-	WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged),
-	MultifaceNorth(MultifaceNorth),
-	HopperEnabled(HopperEnabled),
-	HugeMushroomEast(HugeMushroomEast),
-	VineNorth(VineNorth),
-	MangroveLeavesPersistent(MangroveLeavesPersistent),
-	VineWest(VineWest),
-	MyceliumSnowy(MyceliumSnowy),
-	NetherWartAge(NetherWartAge),
-	GlazedTerracottaFacing(GlazedTerracottaFacing),
-	MovingPistonType(MovingPistonType),
-	WeatheringCopperChainAxis(WeatheringCopperChainAxis),
-	TrialSpawnerTrialSpawnerState(TrialSpawnerTrialSpawnerState),
-	HugeMushroomSouth(HugeMushroomSouth),
-	RepeaterPowered(RepeaterPowered),
-	HugeMushroomNorth(HugeMushroomNorth),
-	JukeboxHasRecord(JukeboxHasRecord),
-	CakeBites(CakeBites),
-	ShelfWaterlogged(ShelfWaterlogged),
-	MovingPistonFacing(MovingPistonFacing),
-	RepeaterLocked(RepeaterLocked),
-	EnderChestWaterlogged(EnderChestWaterlogged),
-	FurnaceFacing(FurnaceFacing),
-	LanternWaterlogged(LanternWaterlogged),
-	BrewingStandHasBottle1(BrewingStandHasBottle1),
-	WeatheringCopperDoorFacing(WeatheringCopperDoorFacing),
-	MangroveLeavesDistance(MangroveLeavesDistance),
-	CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged),
-	LightLevel(LightLevel),
-	SnifferEggHatch(SnifferEggHatch),
-	UntintedParticleLeavesPersistent(UntintedParticleLeavesPersistent),
-	CalibratedSculkSensorFacing(CalibratedSculkSensorFacing),
-	FenceGateFacing(FenceGateFacing),
-	IronBarsNorth(IronBarsNorth),
-	RedstoneWireSouth(RedstoneWireSouth),
-	CoralWallFanFacing(CoralWallFanFacing),
-	BedPart(BedPart),
-	MultifaceSouth(MultifaceSouth),
-	RespawnAnchorCharges(RespawnAnchorCharges),
-	BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged),
-	WeatheringCopperBulbPowered(WeatheringCopperBulbPowered),
-	CampfireSignalFire(CampfireSignalFire),
-	ConduitWaterlogged(ConduitWaterlogged),
-	SculkVeinWest(SculkVeinWest),
-	TripwirePowered(TripwirePowered),
-	WeatheringCopperChestWaterlogged(WeatheringCopperChestWaterlogged),
-	CampfireWaterlogged(CampfireWaterlogged),
-	PitcherCropHalf(PitcherCropHalf),
-	RailShape(RailShape),
-	DoublePlantHalf(DoublePlantHalf),
-	LeafLitterSegmentAmount(LeafLitterSegmentAmount),
-	MultifaceEast(MultifaceEast),
-	SculkShriekerWaterlogged(SculkShriekerWaterlogged),
-	SmallDripleafFacing(SmallDripleafFacing),
-	PointedDripstoneWaterlogged(PointedDripstoneWaterlogged),
-	LightningRodPowered(LightningRodPowered),
-	CropAge(CropAge),
-	CoralPlantWaterlogged(CoralPlantWaterlogged),
-	SeaPickleWaterlogged(SeaPickleWaterlogged),
-	VaultVaultState(VaultVaultState),
-	BeehiveFacing(BeehiveFacing),
-	ComparatorFacing(ComparatorFacing),
-	FireUp(FireUp),
-	ChiseledBookShelfSlot5Occupied(ChiseledBookShelfSlot5Occupied),
-	ButtonPowered(ButtonPowered),
-	FenceWest(FenceWest),
-	WeatheringCopperStairHalf(WeatheringCopperStairHalf),
-	WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing),
-	CopperGolemStatueCopperGolemPose(CopperGolemStatueCopperGolemPose),
-	VineSouth(VineSouth),
-	WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged),
-	WeatheringLightningRodFacing(WeatheringLightningRodFacing),
-	PlayerWallHeadFacing(PlayerWallHeadFacing),
-	VineEast(VineEast),
-	GlowLichenWaterlogged(GlowLichenWaterlogged),
-	ChorusPlantEast(ChorusPlantEast),
-	WallWest(WallWest),
-	WeatheringCopperDoorHinge(WeatheringCopperDoorHinge),
-	DoorPowered(DoorPowered),
-	FurnaceLit(FurnaceLit),
-	SculkCatalystBloom(SculkCatalystBloom),
-	PoweredRailWaterlogged(PoweredRailWaterlogged),
-	TripWireHookFacing(TripWireHookFacing),
-	AnvilFacing(AnvilFacing),
-	FenceSouth(FenceSouth),
-	TripwireWest(TripwireWest),
-	SlabWaterlogged(SlabWaterlogged),
-	WeatheringCopperBulbLit(WeatheringCopperBulbLit),
-	WeatheringCopperDoorPowered(WeatheringCopperDoorPowered),
-	WitherSkullPowered(WitherSkullPowered),
-	WeatheringCopperSlabType(WeatheringCopperSlabType),
-	SculkShriekerCanSummon(SculkShriekerCanSummon),
 	PressurePlatePowered(PressurePlatePowered),
-	ChainAxis(ChainAxis),
-	PlayerHeadRotation(PlayerHeadRotation),
-	DecoratedPotFacing(DecoratedPotFacing),
-	WeatheringLightningRodPowered(WeatheringLightningRodPowered),
-	DoorFacing(DoorFacing),
-	CalibratedSculkSensorPower(CalibratedSculkSensorPower),
-	FenceGatePowered(FenceGatePowered),
-	UntintedParticleLeavesWaterlogged(UntintedParticleLeavesWaterlogged),
-	LanternHanging(LanternHanging),
-	StainedGlassPaneSouth(StainedGlassPaneSouth),
-	CommandConditional(CommandConditional),
-	WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged),
-	LeverFace(LeverFace),
-	BrewingStandHasBottle2(BrewingStandHasBottle2),
-	BigDripleafWaterlogged(BigDripleafWaterlogged),
+	SlabType(SlabType),
+	MovingPistonType(MovingPistonType),
+	NoteInstrument(NoteInstrument),
+	CampfireSignalFire(CampfireSignalFire),
+	WeatheringCopperChestWaterlogged(WeatheringCopperChestWaterlogged),
+	NotePowered(NotePowered),
+	BeehiveHoneyLevel(BeehiveHoneyLevel),
+	SculkVeinWest(SculkVeinWest),
+	SweetBerryBushAge(SweetBerryBushAge),
+	TrappedChestWaterlogged(TrappedChestWaterlogged),
+	EndPortalFrameFacing(EndPortalFrameFacing),
+	FarmMoisture(FarmMoisture),
+	ChainWaterlogged(ChainWaterlogged),
+	WeepingVinesAge(WeepingVinesAge),
+	RotatedPillarAxis(RotatedPillarAxis),
+	FireAge(FireAge),
+	WeatheringCopperChestType(WeatheringCopperChestType),
+	WeatheringCopperBulbLit(WeatheringCopperBulbLit),
+	WeatheringCopperTrapDoorPowered(WeatheringCopperTrapDoorPowered),
+	BigDripleafFacing(BigDripleafFacing),
+	GlowLichenUp(GlowLichenUp),
+	TallFlowerHalf(TallFlowerHalf),
+	FlowerBedFlowerAmount(FlowerBedFlowerAmount),
+	LightningRodPowered(LightningRodPowered),
+	CandleCakeLit(CandleCakeLit),
+	WeatheringCopperBarEast(WeatheringCopperBarEast),
+	WeatheringCopperChestFacing(WeatheringCopperChestFacing),
+	BambooStalkLeaves(BambooStalkLeaves),
+	DecoratedPotWaterlogged(DecoratedPotWaterlogged),
+	PiglinwallskullFacing(PiglinwallskullFacing),
+	TorchflowerCropAge(TorchflowerCropAge),
+	SculkShriekerShrieking(SculkShriekerShrieking),
 	CocoaFacing(CocoaFacing),
-	GlowLichenSouth(GlowLichenSouth),
-	StemAge(StemAge),
-	LeverPowered(LeverPowered),
+	WeatheringCopperGolemStatueFacing(WeatheringCopperGolemStatueFacing),
+	NetherWartAge(NetherWartAge),
+	WallTorchFacing(WallTorchFacing),
+	ButtonPowered(ButtonPowered),
+	ChiseledBookShelfSlot5Occupied(ChiseledBookShelfSlot5Occupied),
+	RedstoneTorchLit(RedstoneTorchLit),
+	BeetrootAge(BeetrootAge),
+	HangingRootsWaterlogged(HangingRootsWaterlogged),
 	PlayerHeadPowered(PlayerHeadPowered),
+	TestMode(TestMode),
+	CopperGolemStatueCopperGolemPose(CopperGolemStatueCopperGolemPose),
+	WeatheringCopperChainAxis(WeatheringCopperChainAxis),
+	WallSignWaterlogged(WallSignWaterlogged),
+	CaveVinesAge(CaveVinesAge),
+	BigDripleafStemWaterlogged(BigDripleafStemWaterlogged),
+	CampfireWaterlogged(CampfireWaterlogged),
+	LecternHasBook(LecternHasBook),
+	SculkVeinUp(SculkVeinUp),
+	FenceNorth(FenceNorth),
+	FenceGatePowered(FenceGatePowered),
+	PistonHeadFacing(PistonHeadFacing),
+	BigDripleafWaterlogged(BigDripleafWaterlogged),
+	WitherWallSkullFacing(WitherWallSkullFacing),
+	CandleLit(CandleLit),
+	ChestWaterlogged(ChestWaterlogged),
+	ChorusPlantUp(ChorusPlantUp),
+	WallWaterlogged(WallWaterlogged),
+	LanternHanging(LanternHanging),
+	PointedDripstoneThickness(PointedDripstoneThickness),
+	CandleWaterlogged(CandleWaterlogged),
+	NoteNote(NoteNote),
+	TurtleEggEggs(TurtleEggEggs),
+	TripwireNorth(TripwireNorth),
+	CactusAge(CactusAge),
+	PiglinwallskullPowered(PiglinwallskullPowered),
+	HugeMushroomSouth(HugeMushroomSouth),
+	MyceliumSnowy(MyceliumSnowy),
+	FenceEast(FenceEast),
+	MangrovePropaguleAge(MangrovePropaguleAge),
+	ObserverFacing(ObserverFacing),
+	PlayerWallHeadPowered(PlayerWallHeadPowered),
+	CeilingHangingSignRotation(CeilingHangingSignRotation),
+	SugarCaneAge(SugarCaneAge),
+	SculkVeinWaterlogged(SculkVeinWaterlogged),
+	WeatheringCopperBarSouth(WeatheringCopperBarSouth),
+	TripWireHookPowered(TripWireHookPowered),
+	WeatheringCopperGolemStatueCopperGolemPose(WeatheringCopperGolemStatueCopperGolemPose),
+	SculkSensorWaterlogged(SculkSensorWaterlogged),
+	CopperChestType(CopperChestType),
+	WeatheringLightningRodWaterlogged(WeatheringLightningRodWaterlogged),
+	BannerRotation(BannerRotation),
+	StonecutterFacing(StonecutterFacing),
+	RedstoneWireWest(RedstoneWireWest),
+	ShelfSideChain(ShelfSideChain),
+	TwistingVinesAge(TwistingVinesAge),
+	CoralFanWaterlogged(CoralFanWaterlogged),
+	ComposterLevel(ComposterLevel),
+	ScaffoldingWaterlogged(ScaffoldingWaterlogged),
+	MultifaceWest(MultifaceWest),
+	CakeBites(CakeBites),
+	TripwireDisarmed(TripwireDisarmed),
+	EndPortalFrameEye(EndPortalFrameEye),
+	CopperGolemStatueFacing(CopperGolemStatueFacing),
+	ChorusPlantDown(ChorusPlantDown),
+	CreakingHeartNatural(CreakingHeartNatural),
+	StainedGlassPaneNorth(StainedGlassPaneNorth),
+	SeaPickleWaterlogged(SeaPickleWaterlogged),
+	FireSouth(FireSouth),
+	RedstoneWallTorchFacing(RedstoneWallTorchFacing),
+	WallHangingSignFacing(WallHangingSignFacing),
+	UntintedParticleLeavesPersistent(UntintedParticleLeavesPersistent),
+	WeatheringCopperTrapDoorOpen(WeatheringCopperTrapDoorOpen),
+	PistonHeadShort(PistonHeadShort),
+	LightLevel(LightLevel),
+	ShelfWaterlogged(ShelfWaterlogged),
+	TripWireHookFacing(TripWireHookFacing),
+	DoorFacing(DoorFacing),
+	CampfireFacing(CampfireFacing),
+	TurtleEggHatch(TurtleEggHatch),
+	DropperFacing(DropperFacing),
+	VineNorth(VineNorth),
+	LeafLitterFacing(LeafLitterFacing),
+	DoorHalf(DoorHalf),
+	TrapdoorFacing(TrapdoorFacing),
+	BigDripleafTilt(BigDripleafTilt),
+	LightningRodWaterlogged(LightningRodWaterlogged),
+	WeatheringLanternHanging(WeatheringLanternHanging),
+	TrapdoorWaterlogged(TrapdoorWaterlogged),
+	BellAttachment(BellAttachment),
+	LecternPowered(LecternPowered),
+	SculkVeinNorth(SculkVeinNorth),
+	TargetPower(TargetPower),
+	CropAge(CropAge),
+	ChiseledBookShelfSlot2Occupied(ChiseledBookShelfSlot2Occupied),
+	BubbleColumnDrag(BubbleColumnDrag),
+	EnderChestFacing(EnderChestFacing),
+	BigDripleafStemFacing(BigDripleafStemFacing),
+	InfestedRotatedPillarAxis(InfestedRotatedPillarAxis),
+	RedstoneWireNorth(RedstoneWireNorth),
+	CocoaAge(CocoaAge),
+	LadderFacing(LadderFacing),
+	HugeMushroomUp(HugeMushroomUp),
+	WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing),
+	StandingSignRotation(StandingSignRotation),
+	WeatheringLightningRodPowered(WeatheringLightningRodPowered),
+	GlowLichenWest(GlowLichenWest),
+	LightWaterlogged(LightWaterlogged),
+	DetectorRailShape(DetectorRailShape),
+	BellFacing(BellFacing),
+	CampfireLit(CampfireLit),
+	FlowerBedFacing(FlowerBedFacing),
+	DoorPowered(DoorPowered),
+	GlowLichenDown(GlowLichenDown),
+	MultifaceEast(MultifaceEast),
+	TrappedChestFacing(TrappedChestFacing),
+	HugeMushroomNorth(HugeMushroomNorth),
+	IronBarsWaterlogged(IronBarsWaterlogged),
+	PitcherCropHalf(PitcherCropHalf),
+	VaultOminous(VaultOminous),
+	TripwireAttached(TripwireAttached),
+	StairWaterlogged(StairWaterlogged),
+	IronBarsWest(IronBarsWest),
+	FenceGateFacing(FenceGateFacing),
+	CreakingHeartAxis(CreakingHeartAxis),
+	MossyCarpetNorth(MossyCarpetNorth),
+	SculkShriekerCanSummon(SculkShriekerCanSummon),
+	CopperChestFacing(CopperChestFacing),
+	PoweredRailPowered(PoweredRailPowered),
+	StainedGlassPaneEast(StainedGlassPaneEast),
+	DaylightDetectorPower(DaylightDetectorPower),
+	MangrovePropaguleWaterlogged(MangrovePropaguleWaterlogged),
+	LightningRodFacing(LightningRodFacing),
+	BrewingStandHasBottle2(BrewingStandHasBottle2),
+	GlowLichenEast(GlowLichenEast),
+	PoweredRailWaterlogged(PoweredRailWaterlogged),
+	TrialSpawnerOminous(TrialSpawnerOminous),
+	FrostedIceAge(FrostedIceAge),
+	ChorusPlantSouth(ChorusPlantSouth),
+	MangroveLeavesPersistent(MangroveLeavesPersistent),
+	TripwirePowered(TripwirePowered),
+	StandingSignWaterlogged(StandingSignWaterlogged),
+	ConduitWaterlogged(ConduitWaterlogged),
+	WitherSkullRotation(WitherSkullRotation),
+	MultifaceWaterlogged(MultifaceWaterlogged),
 	SnowyDirtSnowy(SnowyDirtSnowy),
+	MultifaceDown(MultifaceDown),
+	TripwireSouth(TripwireSouth),
+	BrewingStandHasBottle0(BrewingStandHasBottle0),
+	DecoratedPotCracked(DecoratedPotCracked),
+	DetectorRailPowered(DetectorRailPowered),
+	BambooStalkAge(BambooStalkAge),
+	HangingMossTip(HangingMossTip),
+	WitherSkullPowered(WitherSkullPowered),
+	WeightedPressurePlatePower(WeightedPressurePlatePower),
+	CopperBulbBlockPowered(CopperBulbBlockPowered),
+	BaseCoralPlantWaterlogged(BaseCoralPlantWaterlogged),
+	AmethystClusterWaterlogged(AmethystClusterWaterlogged),
+	BarrelFacing(BarrelFacing),
+	CarrotAge(CarrotAge),
+	WeatheringCopperSlabWaterlogged(WeatheringCopperSlabWaterlogged),
+	PotatoAge(PotatoAge),
+	BeehiveFacing(BeehiveFacing),
+	GlowLichenNorth(GlowLichenNorth),
+	CalibratedSculkSensorWaterlogged(CalibratedSculkSensorWaterlogged),
+	SeaPicklePickles(SeaPicklePickles),
+	BrushableDusted(BrushableDusted),
+	SculkVeinEast(SculkVeinEast),
+	RedstoneWireSouth(RedstoneWireSouth),
+	SnowLayerLayers(SnowLayerLayers),
+	WallNorth(WallNorth),
+	VaultVaultState(VaultVaultState),
+	RedstoneOreLit(RedstoneOreLit),
+	MangrovePropaguleHanging(MangrovePropaguleHanging),
+	GlowLichenSouth(GlowLichenSouth),
+	DriedGhastFacing(DriedGhastFacing),
+	BaseCoralWallFanFacing(BaseCoralWallFanFacing),
+	JukeboxHasRecord(JukeboxHasRecord),
 	RedstoneWireEast(RedstoneWireEast),
-	ScaffoldingDistance(ScaffoldingDistance),
+	DriedGhastWaterlogged(DriedGhastWaterlogged),
+	MossyCarpetEast(MossyCarpetEast),
+	CopperChestWaterlogged(CopperChestWaterlogged),
+	StainedGlassPaneWaterlogged(StainedGlassPaneWaterlogged),
+	SculkVeinDown(SculkVeinDown),
+	EnderChestWaterlogged(EnderChestWaterlogged),
+	FireWest(FireWest),
+	DropperTriggered(DropperTriggered),
+	MovingPistonFacing(MovingPistonFacing),
+	VaultFacing(VaultFacing),
+	ChiseledBookShelfSlot3Occupied(ChiseledBookShelfSlot3Occupied),
+	ChiseledBookShelfSlot1Occupied(ChiseledBookShelfSlot1Occupied),
+	CommandFacing(CommandFacing),
+	ChorusFlowerAge(ChorusFlowerAge),
 	HeavyCoreWaterlogged(HeavyCoreWaterlogged),
 	MossyCarpetBottom(MossyCarpetBottom),
-	BubbleColumnDrag(BubbleColumnDrag),
-	WeatheringCopperTrapDoorFacing(WeatheringCopperTrapDoorFacing),
-	SmallDripleafWaterlogged(SmallDripleafWaterlogged),
-	TestMode(TestMode),
-	SugarCaneAge(SugarCaneAge),
-	TripwireSouth(TripwireSouth),
-	BarrierWaterlogged(BarrierWaterlogged),
-	BigDripleafTilt(BigDripleafTilt),
-	WallWaterlogged(WallWaterlogged),
+	SmallDripleafHalf(SmallDripleafHalf),
+	CrafterOrientation(CrafterOrientation),
 	WeatheringCopperChainWaterlogged(WeatheringCopperChainWaterlogged),
-	EnderChestFacing(EnderChestFacing),
-	TurtleEggHatch(TurtleEggHatch),
-	VaultOminous(VaultOminous),
-	VineUp(VineUp),
-	DoorOpen(DoorOpen),
-	ChestFacing(ChestFacing),
-	HugeMushroomUp(HugeMushroomUp),
-	GlowLichenEast(GlowLichenEast),
-	BambooStalkLeaves(BambooStalkLeaves),
-	InfestedRotatedPillarAxis(InfestedRotatedPillarAxis),
-	RedstoneLampLit(RedstoneLampLit),
-	SculkVeinDown(SculkVeinDown),
-	HugeMushroomDown(HugeMushroomDown),
-	TrappedChestFacing(TrappedChestFacing),
-	WitherWallSkullPowered(WitherWallSkullPowered),
-	PoweredRailShape(PoweredRailShape),
-	StairHalf(StairHalf),
-	MangrovePropaguleStage(MangrovePropaguleStage),
-	MossyCarpetWest(MossyCarpetWest),
-	WeatheringCopperChestFacing(WeatheringCopperChestFacing),
-	CopperGolemStatueFacing(CopperGolemStatueFacing),
-	SmokerLit(SmokerLit),
-	IronBarsWaterlogged(IronBarsWaterlogged),
-	DriedGhastWaterlogged(DriedGhastWaterlogged),
-	RedstoneTorchLit(RedstoneTorchLit),
-	GlowLichenNorth(GlowLichenNorth),
-	StairWaterlogged(StairWaterlogged),
-	LoomFacing(LoomFacing),
-	BedOccupied(BedOccupied),
-	TallSeagrassHalf(TallSeagrassHalf),
-	WitherWallSkullFacing(WitherWallSkullFacing),
-	SculkVeinUp(SculkVeinUp),
-	SkullPowered(SkullPowered),
-	ChiseledBookShelfSlot1Occupied(ChiseledBookShelfSlot1Occupied),
-	WeatheringCopperBarEast(WeatheringCopperBarEast),
-	StonecutterFacing(StonecutterFacing),
-	CocoaAge(CocoaAge),
-	WallHangingSignWaterlogged(WallHangingSignWaterlogged),
-	BigDripleafStemFacing(BigDripleafStemFacing),
-	FenceEast(FenceEast),
-	BellFacing(BellFacing),
-	ShulkerBoxFacing(ShulkerBoxFacing),
-	CarrotAge(CarrotAge),
-	CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState),
-	SmokerFacing(SmokerFacing),
-	DispenserFacing(DispenserFacing),
-	FireNorth(FireNorth),
-	SculkVeinNorth(SculkVeinNorth),
-	TorchflowerCropAge(TorchflowerCropAge),
-	TripwireEast(TripwireEast),
-	LightningRodFacing(LightningRodFacing),
+	CommandConditional(CommandConditional),
+	WeatheringCopperGolemStatueWaterlogged(WeatheringCopperGolemStatueWaterlogged),
 	WeatheringCopperDoorOpen(WeatheringCopperDoorOpen),
-	CeilingHangingSignAttached(CeilingHangingSignAttached),
-	CreakingHeartAxis(CreakingHeartAxis),
-	LayeredCauldronLevel(LayeredCauldronLevel),
-	WeepingVinesAge(WeepingVinesAge),
-	DecoratedPotWaterlogged(DecoratedPotWaterlogged),
-	WeatheringLanternWaterlogged(WeatheringLanternWaterlogged),
-	MangrovePropaguleHanging(MangrovePropaguleHanging),
-	WallBannerFacing(WallBannerFacing),
-	WeatheringCopperStairFacing(WeatheringCopperStairFacing),
-	WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged),
-	CrafterTriggered(CrafterTriggered),
+	StructureMode(StructureMode),
+	VineEast(VineEast),
+	CeilingHangingSignWaterlogged(CeilingHangingSignWaterlogged),
+	WeatheringCopperDoorHalf(WeatheringCopperDoorHalf),
+	PlayerWallHeadFacing(PlayerWallHeadFacing),
+	ButtonFace(ButtonFace),
+	WeatheringCopperStairWaterlogged(WeatheringCopperStairWaterlogged),
+	WallSignFacing(WallSignFacing),
+	FenceGateOpen(FenceGateOpen),
+	TintedParticleLeavesWaterlogged(TintedParticleLeavesWaterlogged),
+	WallSkullPowered(WallSkullPowered),
+	DoublePlantHalf(DoublePlantHalf),
+	PistonHeadType(PistonHeadType),
+	BedOccupied(BedOccupied),
+	JigsawOrientation(JigsawOrientation),
+	BellPowered(BellPowered),
+	TrapdoorHalf(TrapdoorHalf),
+	WeatheringCopperBarNorth(WeatheringCopperBarNorth),
+	SkullPowered(SkullPowered),
+	DaylightDetectorInverted(DaylightDetectorInverted),
+	ComparatorMode(ComparatorMode),
+	CrafterCrafting(CrafterCrafting),
+	WeatheringCopperBarWest(WeatheringCopperBarWest),
+	MangrovePropaguleStage(MangrovePropaguleStage),
+	LoomFacing(LoomFacing),
+	RedstoneWallTorchLit(RedstoneWallTorchLit),
+	BlastFurnaceFacing(BlastFurnaceFacing),
+	RailShape(RailShape),
+	ScaffoldingDistance(ScaffoldingDistance),
+	VineWest(VineWest),
+	WeatheringCopperTrapDoorWaterlogged(WeatheringCopperTrapDoorWaterlogged),
+	StairHalf(StairHalf),
+	StemAge(StemAge),
+	WeatheringLightningRodFacing(WeatheringLightningRodFacing),
+	ShelfFacing(ShelfFacing),
+	BlastFurnaceLit(BlastFurnaceLit),
+	FenceWaterlogged(FenceWaterlogged),
+	GlazedTerracottaFacing(GlazedTerracottaFacing),
 	GrassSnowy(GrassSnowy),
-	KelpAge(KelpAge),
-	HugeMushroomWest(HugeMushroomWest),
-	WeatheringCopperBarSouth(WeatheringCopperBarSouth),
-	LadderWaterlogged(LadderWaterlogged),
-	FireSouth(FireSouth),
-	EndPortalFrameFacing(EndPortalFrameFacing),
+	AmethystClusterFacing(AmethystClusterFacing),
+	ChainAxis(ChainAxis),
+	LeverFacing(LeverFacing),
+	GrindstoneFace(GrindstoneFace),
+	CaveVinesPlantBerries(CaveVinesPlantBerries),
+	PointedDripstoneVerticalDirection(PointedDripstoneVerticalDirection),
+	ShelfPowered(ShelfPowered),
+	LanternWaterlogged(LanternWaterlogged),
+	PitcherCropAge(PitcherCropAge),
+	DriedGhastHydration(DriedGhastHydration),
 	StairFacing(StairFacing),
+	RedstoneWirePower(RedstoneWirePower),
+	BaseCoralFanWaterlogged(BaseCoralFanWaterlogged),
+	SlabWaterlogged(SlabWaterlogged),
+	SmallDripleafWaterlogged(SmallDripleafWaterlogged),
+	MangroveLeavesDistance(MangroveLeavesDistance),
+	TrappedChestType(TrappedChestType),
+	BarrelOpen(BarrelOpen),
+	StainedGlassPaneWest(StainedGlassPaneWest),
+	WeatheringLanternWaterlogged(WeatheringLanternWaterlogged),
+	EndRodFacing(EndRodFacing),
+	WeatheringCopperBarWaterlogged(WeatheringCopperBarWaterlogged),
+	UntintedParticleLeavesDistance(UntintedParticleLeavesDistance),
+	HayAxis(HayAxis),
+	FenceGateInWall(FenceGateInWall),
+	TintedParticleLeavesDistance(TintedParticleLeavesDistance),
+	FenceWest(FenceWest),
+	BambooStalkStage(BambooStalkStage),
+	HugeMushroomWest(HugeMushroomWest),
+	CalibratedSculkSensorSculkSensorPhase(CalibratedSculkSensorSculkSensorPhase),
+	WeatheringCopperStairHalf(WeatheringCopperStairHalf),
+	WeatheringCopperBulbPowered(WeatheringCopperBulbPowered),
+	LadderWaterlogged(LadderWaterlogged),
+	MossyCarpetWest(MossyCarpetWest),
+	AnvilFacing(AnvilFacing),
+	LeverPowered(LeverPowered),
+	PistonBaseExtended(PistonBaseExtended),
+	MultifaceUp(MultifaceUp),
+	RespawnAnchorCharges(RespawnAnchorCharges),
+	ChorusPlantEast(ChorusPlantEast),
+	SculkSensorPower(SculkSensorPower),
+	HugeMushroomDown(HugeMushroomDown),
+	DoorHinge(DoorHinge),
+	SkullRotation(SkullRotation),
+	MangroveRootsWaterlogged(MangroveRootsWaterlogged),
+	RepeaterFacing(RepeaterFacing),
+	IronBarsSouth(IronBarsSouth),
+	KelpAge(KelpAge),
+	RepeaterLocked(RepeaterLocked),
+	ChestType(ChestType),
+	SmokerFacing(SmokerFacing),
+	VineUp(VineUp),
+	HopperFacing(HopperFacing),
+	WeatheringCopperSlabType(WeatheringCopperSlabType),
+	ComparatorPowered(ComparatorPowered),
+	TintedParticleLeavesPersistent(TintedParticleLeavesPersistent),
+	StainedGlassPaneSouth(StainedGlassPaneSouth),
+	ChorusPlantWest(ChorusPlantWest),
+	JackOLanternFacing(JackOLanternFacing),
+	DetectorRailWaterlogged(DetectorRailWaterlogged),
+	DecoratedPotFacing(DecoratedPotFacing),
+	FireUp(FireUp),
+	IronBarsEast(IronBarsEast),
+	IronBarsNorth(IronBarsNorth),
+	LiquidLevel(LiquidLevel),
+	CaveVinesBerries(CaveVinesBerries),
+	ScaffoldingBottom(ScaffoldingBottom),
+	TallSeagrassHalf(TallSeagrassHalf),
+	RedstoneLampLit(RedstoneLampLit),
+	CreakingHeartCreakingHeartState(CreakingHeartCreakingHeartState),
+	CandleCandles(CandleCandles),
+	TripwireEast(TripwireEast),
+	TripWireHookAttached(TripWireHookAttached),
+	TntUnstable(TntUnstable),
+	BarrierWaterlogged(BarrierWaterlogged),
+	FurnaceFacing(FurnaceFacing),
+	PoweredRailShape(PoweredRailShape),
+	RepeaterPowered(RepeaterPowered),
+	CopperBulbBlockLit(CopperBulbBlockLit),
+	BrewingStandHasBottle1(BrewingStandHasBottle1),
+	PointedDripstoneWaterlogged(PointedDripstoneWaterlogged),
+	AttachedStemFacing(AttachedStemFacing),
+	CeilingHangingSignAttached(CeilingHangingSignAttached),
+	WeatheringCopperDoorFacing(WeatheringCopperDoorFacing),
+	ChestFacing(ChestFacing),
+	FireEast(FireEast),
+	HopperEnabled(HopperEnabled),
+	LeverFace(LeverFace),
+	NetherPortalAxis(NetherPortalAxis),
+	SculkShriekerWaterlogged(SculkShriekerWaterlogged),
+	SmallDripleafFacing(SmallDripleafFacing),
+	TrialSpawnerTrialSpawnerState(TrialSpawnerTrialSpawnerState),
+	TripwireWest(TripwireWest),
+	WallBannerFacing(WallBannerFacing),
+	CalibratedSculkSensorPower(CalibratedSculkSensorPower),
+	GlowLichenWaterlogged(GlowLichenWaterlogged),
+	SculkCatalystBloom(SculkCatalystBloom),
+	VineSouth(VineSouth),
+	BaseCoralWallFanWaterlogged(BaseCoralWallFanWaterlogged),
+	SculkSensorSculkSensorPhase(SculkSensorSculkSensorPhase),
+	CoralPlantWaterlogged(CoralPlantWaterlogged),
+	SaplingStage(SaplingStage),
+	FenceSouth(FenceSouth),
+	UntintedParticleLeavesWaterlogged(UntintedParticleLeavesWaterlogged),
+	WeatheringCopperTrapDoorHalf(WeatheringCopperTrapDoorHalf),
+	RepeaterDelay(RepeaterDelay),
+	ChiseledBookShelfSlot0Occupied(ChiseledBookShelfSlot0Occupied),
+	MangroveLeavesWaterlogged(MangroveLeavesWaterlogged),
+	CopperGolemStatueWaterlogged(CopperGolemStatueWaterlogged),
+	GrindstoneFacing(GrindstoneFacing),
+	PistonBaseFacing(PistonBaseFacing),
+	LeafLitterSegmentAmount(LeafLitterSegmentAmount),
+	PlayerHeadRotation(PlayerHeadRotation),
+	BedPart(BedPart),
+	WitherWallSkullPowered(WitherWallSkullPowered),
+	SmokerLit(SmokerLit),
+	WeatheringCopperStairShape(WeatheringCopperStairShape),
+	ChiseledBookShelfSlot4Occupied(ChiseledBookShelfSlot4Occupied),
+	WallEast(WallEast),
+	ComparatorFacing(ComparatorFacing),
+	WeatheringCopperDoorHinge(WeatheringCopperDoorHinge),
+	WallSkullFacing(WallSkullFacing),
+	CalibratedSculkSensorFacing(CalibratedSculkSensorFacing),
+	ObserverPowered(ObserverPowered),
+	BedFacing(BedFacing),
+	RailWaterlogged(RailWaterlogged),
+	SnifferEggHatch(SnifferEggHatch),
+	FurnaceLit(FurnaceLit),
+	DoorOpen(DoorOpen),
+	StairShape(StairShape),
+	MossyCarpetSouth(MossyCarpetSouth),
+	HugeMushroomEast(HugeMushroomEast),
+	WeatheringCopperStairFacing(WeatheringCopperStairFacing),
+	ChorusPlantNorth(ChorusPlantNorth),
+	DispenserFacing(DispenserFacing),
+	MultifaceNorth(MultifaceNorth),
+	SculkVeinSouth(SculkVeinSouth),
+	WaterloggedTransparentWaterlogged(WaterloggedTransparentWaterlogged),
+	ButtonFacing(ButtonFacing),
+	CoralWallFanWaterlogged(CoralWallFanWaterlogged),
+	WeatheringCopperDoorPowered(WeatheringCopperDoorPowered),
+	MultifaceSouth(MultifaceSouth),
+	DispenserTriggered(DispenserTriggered),
+	LecternFacing(LecternFacing),
+	CoralWallFanFacing(CoralWallFanFacing),
+	LayeredCauldronLevel(LayeredCauldronLevel),
+	ShulkerBoxFacing(ShulkerBoxFacing),
+	CrafterTriggered(CrafterTriggered),
+	TrapdoorOpen(TrapdoorOpen),
+	ChiseledBookShelfFacing(ChiseledBookShelfFacing),
+	WeatheringCopperGrateWaterlogged(WeatheringCopperGrateWaterlogged),
+	FireNorth(FireNorth),
+	TrapdoorPowered(TrapdoorPowered),
+	WallWest(WallWest),
+	WallSouth(WallSouth),
+	WallHangingSignWaterlogged(WallHangingSignWaterlogged),
+	WallUp(WallUp),
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Type {
