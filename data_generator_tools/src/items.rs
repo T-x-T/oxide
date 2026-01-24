@@ -28,6 +28,14 @@ pub struct Item {
 	pub rarity: ItemRarity,
 	pub repair_cost: u8,
 	pub id: i32,
+	pub tool_rules: Vec<ToolRule>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ToolRule {
+	pub blocks: Vec<&'static str>,
+	pub correct_for_drops: bool,
+	pub speed: Option<f32>,
 }
 
 pub fn get_item_name_by_id(id: i32) -> &'static str {
@@ -53,8 +61,27 @@ pub fn get_items() -> HashMap<&'static str, Item> {
 		let repair_cost = components["minecraft:repair_cost"].as_i32().unwrap();
 		let id = items_registry[key]["protocol_id"].as_i32().unwrap();
 
+		let mut tool_rules = String::new();
+		tool_rules += "vec![";
+
+		if let Some(tool) = components["minecraft:tool"].as_object()
+			&& let Some(rules) = tool["rules"].as_array()
+		{
+			for rule in rules {
+				let blocks = if rule["blocks"].is_string() {
+					vec![rule["blocks"].as_str().unwrap().to_string()]
+				} else {
+					rule["blocks"].as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect()
+				};
+				let correct_for_drops = if !rule.has_key("correct_for_drops") { true } else { rule["correct_for_drops"].as_bool().unwrap() };
+				let speed: Option<f32> = if rule.has_key("speed") { rule["speed"].as_f32() } else { None };
+				tool_rules += format!("ToolRule {{blocks: vec!{blocks:?}, correct_for_drops: {correct_for_drops:?}, speed: {speed:?}}},").as_str();
+			}
+		}
+		tool_rules += "]";
+
 		output += format!(
-			"\titems.insert(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id} }});\n"
+			"\titems.insert(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id}, tool_rules: {tool_rules} }});\n"
 		)
 		.as_str();
 	}

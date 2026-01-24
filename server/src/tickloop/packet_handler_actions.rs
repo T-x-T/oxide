@@ -170,6 +170,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						rarity: data::items::ItemRarity::Common,
 						id: 0,
 						repair_cost: 0,
+						tool_rules: Vec::new(),
 					})
 					.id;
 
