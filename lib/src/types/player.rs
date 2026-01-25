@@ -11,7 +11,7 @@ use std::error::Error;
 use std::fs;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
-use std::net::{SocketAddr, TcpStream};
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -47,6 +47,8 @@ pub struct Player {
 	is_sneaking: bool,
 	pub chat_message_index: i32,
 	gamemode: Gamemode,
+	mining_for_ticks: u16,
+	is_mining: bool,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -73,6 +75,8 @@ impl Clone for Player {
 			is_sneaking: self.is_sneaking,
 			chat_message_index: self.chat_message_index,
 			gamemode: self.gamemode,
+			mining_for_ticks: self.mining_for_ticks,
+			is_mining: self.is_mining,
 		}
 	}
 }
@@ -135,6 +139,11 @@ impl CommonEntityTrait for Player {
 			},
 		);
 	}
+
+	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+		println!("{}, {}", self.is_mining, self.mining_for_ticks);
+		return EntityTickOutcome::None;
+	}
 }
 
 impl Player {
@@ -170,6 +179,8 @@ impl Player {
 				is_sneaking: false,
 				chat_message_index: 0,
 				gamemode: game.default_gamemode,
+				mining_for_ticks: 0,
+				is_mining: false,
 			};
 
 			return player;
@@ -272,6 +283,8 @@ impl Player {
 			is_sneaking: false,
 			chat_message_index: 0,
 			gamemode: parsed_gamemode,
+			mining_for_ticks: 0,
+			is_mining: false,
 		};
 
 		return player;
@@ -876,5 +889,23 @@ impl Player {
 
 	pub fn get_gamemode(&self) -> Gamemode {
 		return self.gamemode;
+	}
+
+	pub fn start_mining(&mut self) {
+		self.mining_for_ticks = 1;
+		self.is_mining = true;
+	}
+
+	pub fn finish_mining(&mut self) {
+		self.mining_for_ticks = 0;
+		self.is_mining = false;
+	}
+
+	pub fn get_mining_for_ticks(&self) -> u16 {
+		return self.mining_for_ticks;
+	}
+
+	pub fn get_is_mining(&self) -> bool {
+		return self.is_mining;
 	}
 }

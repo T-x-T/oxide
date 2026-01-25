@@ -204,7 +204,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					}
 				}
 			}
-			PacketHandlerAction::BreakBlock(peer_addr, _status, location, _face, sequence_id) => {
+			PacketHandlerAction::BreakBlock(peer_addr, status, location, _face, sequence_id) => {
 				let mut players = game.players.lock().unwrap();
 				let mut world = game.world.lock().unwrap();
 
@@ -212,23 +212,36 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
 
-				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
-				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-					let block_entity = world
-						.dimensions
-						.get("minecraft:overworld")
-						.unwrap()
-						.get_chunk_from_position(location)
-						.unwrap()
-						.block_entities
-						.iter()
-						.find(|x| x.get_position() == location)
-						.unwrap();
-					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-					block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
-				}
-
 				if player_clone.get_gamemode() == Gamemode::Survival {
+					let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
+					if status == 0 {
+						player.start_mining();
+						game.send_packet(
+							&peer_addr,
+							lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
+							lib::packets::clientbound::play::AcknowledgeBlockChange {
+								sequence_id,
+							}
+							.try_into()
+							.unwrap(),
+						);
+						return;
+					} else if status == 1 {
+						player.finish_mining();
+						game.send_packet(
+							&peer_addr,
+							lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
+							lib::packets::clientbound::play::AcknowledgeBlockChange {
+								sequence_id,
+							}
+							.try_into()
+							.unwrap(),
+						);
+						return;
+					} else if status == 2 {
+						player.finish_mining();
+					}
+
 					let all_items = data::items::get_items();
 					let hand_item = all_items
 						.get(data::items::get_item_name_by_id(player_clone.get_held_item(true).unwrap_or(&Slot::default()).item_id))
@@ -281,6 +294,22 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							);
 						});
 					}
+				}
+
+				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
+				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+					let block_entity = world
+						.dimensions
+						.get("minecraft:overworld")
+						.unwrap()
+						.get_chunk_from_position(location)
+						.unwrap()
+						.block_entities
+						.iter()
+						.find(|x| x.get_position() == location)
+						.unwrap();
+					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+					block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
 				}
 
 				players
