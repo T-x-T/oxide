@@ -211,7 +211,6 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let player_clone = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().clone();
 
 				let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
-				let old_block = data::blocks::get_block_from_block_state_id(old_block_id, &game.block_state_data);
 
 				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
 				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
@@ -235,27 +234,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						.get(data::items::get_item_name_by_id(player_clone.get_held_item(true).unwrap_or(&Slot::default()).item_id))
 						.unwrap_or(all_items.get("minecraft:air").unwrap());
 
-					let mut drop_item = true;
+					let item_to_drop = lib::block::get_item_drop(old_block_id, hand_item.id, &game.block_state_data);
 
-					for rule in &hand_item.tool_rules {
-						for match_block in &rule.blocks {
-							if match_block.starts_with("#") {
-								for tag_match_block in
-									data::tags::get_block().get(match_block.replace("#minecraft:", "").as_str()).unwrap_or(&Vec::<&str>::new())
-								{
-									if *tag_match_block == old_block.block_name && !rule.correct_for_drops {
-										drop_item = false;
-									}
-								}
-							} else {
-								if *match_block == old_block.block_name && !rule.correct_for_drops {
-									drop_item = false;
-								}
-							}
-						}
-					}
-
-					if drop_item {
+					if item_to_drop.id != "minecraft:air" {
 						let new_entity = lib::entity::ItemEntity {
 							common: lib::entity::CommonEntity {
 								position: EntityPosition {
@@ -272,11 +253,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							},
 							age: 0,
 							health: 5,
-							item: Item {
-								id: old_block.block_name.to_string(),
-								count: 1,
-								components: Vec::new(),
-							},
+							item: item_to_drop,
 							owner: player_clone.uuid,
 							pickup_delay: 0,
 							thrower: player_clone.uuid,
