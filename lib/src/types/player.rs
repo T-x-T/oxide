@@ -46,7 +46,7 @@ pub struct Player {
 	pub cursor_item: Option<Slot>,
 	is_sneaking: bool,
 	pub chat_message_index: i32,
-	pub gamemode: Gamemode,
+	gamemode: Gamemode,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -872,5 +872,9 @@ impl Player {
 		});
 
 		return Ok(());
+	}
+
+	pub fn get_gamemode(&self) -> Gamemode {
+		return self.gamemode;
 	}
 }

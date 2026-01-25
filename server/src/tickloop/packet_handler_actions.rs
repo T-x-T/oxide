@@ -228,7 +228,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
 				}
 
-				if player_clone.gamemode == Gamemode::Survival {
+				if player_clone.get_gamemode() == Gamemode::Survival {
 					let all_items = data::items::get_items();
 					let hand_item = all_items
 						.get(data::items::get_item_name_by_id(player_clone.get_held_item(true).unwrap_or(&Slot::default()).item_id))
@@ -1030,7 +1030,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						dimension_type: 0,
 						dimension_name: "minecraft:overworld".to_string(),
 						hashed_seed: 1,
-						game_mode: new_player.gamemode as u8,
+						game_mode: new_player.get_gamemode() as u8,
 						previous_game_mode: -1,
 						is_debug: false,
 						is_flat: false,
@@ -1128,7 +1128,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let new_player_inventory = new_player.get_inventory().clone();
 				let new_player_selected_slot = new_player.get_selected_slot();
 				let new_player_entity_metadata = new_player.get_metadata();
-				let new_player_gamemode = new_player.gamemode;
+				let new_player_gamemode = new_player.get_gamemode();
 
 				//send player list to newly connected player
 				game.send_packet(
