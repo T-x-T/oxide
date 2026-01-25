@@ -11,7 +11,7 @@ use std::error::Error;
 use std::fs;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, TcpStream};
+use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -138,11 +138,6 @@ impl CommonEntityTrait for Player {
 				pitch: self.pitch,
 			},
 		);
-	}
-
-	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
-		println!("{}, {}", self.is_mining, self.mining_for_ticks);
-		return EntityTickOutcome::None;
 	}
 }
 

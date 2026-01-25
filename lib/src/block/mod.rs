@@ -283,3 +283,14 @@ pub fn get_item_drop(block_id: u16, used_tool_id: i32, block_states: &HashMap<St
 		}
 	};
 }
+
+pub fn get_hardness(block_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	let block = data::blocks::get_block_from_block_state_id(block_id, block_states);
+
+	return match block.block_type {
+		Type::TallGrass => 0.0,
+		Type::TallDryGrass => 0.0,
+		Type::DoublePlant => 0.0,
+		_ => 1.0,
+	};
+}

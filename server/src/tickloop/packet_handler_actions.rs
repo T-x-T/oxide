@@ -214,7 +214,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				if player_clone.get_gamemode() == Gamemode::Survival {
 					let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
-					if status == 0 {
+					let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);
+					if status == 0 && block_hardness != 0.0 {
 						player.start_mining();
 						game.send_packet(
 							&peer_addr,
@@ -238,7 +239,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							.unwrap(),
 						);
 						return;
-					} else if status == 2 {
+					} else if status == 2 || (status == 0 && block_hardness == 0.0) {
 						player.finish_mining();
 					}
 
