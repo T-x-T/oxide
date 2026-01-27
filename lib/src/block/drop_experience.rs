@@ -28,3 +28,53 @@ pub fn get_item_drop(
 		_ => Item::default(),
 	}
 }
+
+
+#[cfg(test)]
+mod test {
+
+	#[test]
+	fn diamond_ore_drops_diamond_with_iron_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+
+		let res = super::get_item_drop(
+			block_states.get("minecraft:diamond_ore").unwrap().clone(),
+			all_items.get("minecraft:iron_pickaxe").unwrap(),
+			&block_states,
+		);
+
+		assert_eq!(res.id, "minecraft:diamond");
+		assert_eq!(res.count, 1);
+	}
+
+	#[test]
+	fn diamond_ore_drops_nothing_with_stone_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+
+		let res = super::get_item_drop(
+			block_states.get("minecraft:diamond_ore").unwrap().clone(),
+			all_items.get("minecraft:stone_pickaxe").unwrap(),
+			&block_states,
+		);
+
+		assert_eq!(res.id, "minecraft:air");
+		assert_eq!(res.count, 0);
+	}
+
+	#[test]
+	fn diamond_ore_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+
+		let res = super::get_item_drop(
+			block_states.get("minecraft:diamond_ore").unwrap().clone(),
+			all_items.get("minecraft:air").unwrap(),
+			&block_states,
+		);
+
+		assert_eq!(res.id, "minecraft:air");
+		assert_eq!(res.count, 0);
+	}
+}

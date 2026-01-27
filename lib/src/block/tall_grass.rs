@@ -18,3 +18,38 @@ pub fn get_item_drop(
 		return Item::default();
 	}
 }
+
+
+#[cfg(test)]
+mod test {
+
+	#[test]
+	fn short_grass_drops_self_with_shears() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+
+		let res = super::get_item_drop(
+			block_states.get("minecraft:short_grass").unwrap().clone(),
+			all_items.get("minecraft:shears").unwrap(),
+			&block_states,
+		);
+
+		assert_eq!(res.id, "minecraft:short_grass");
+		assert_eq!(res.count, 1);
+	}
+
+	#[test]
+	fn diamond_ore_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+
+		let res = super::get_item_drop(
+			block_states.get("minecraft:short_grass").unwrap().clone(),
+			all_items.get("minecraft:air").unwrap(),
+			&block_states,
+		);
+
+		assert_eq!(res.id, "minecraft:air");
+		assert_eq!(res.count, 0);
+	}
+}
