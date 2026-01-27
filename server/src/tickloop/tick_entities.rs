@@ -12,67 +12,6 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 		}
 		dimension.1.entities = entities;
-		for outcome in entity_tick_outcomes {
-			match outcome.1 {
-				EntityTickOutcome::SelfDied => {
-					let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
-						entity_id: outcome.0,
-						entity_status: 3,
-					};
-
-					for player in players_clone {
-						game.send_packet(
-							&player.peer_socket_address,
-							lib::packets::clientbound::play::EntityEvent::PACKET_ID,
-							entity_event_packet.clone().try_into().unwrap(),
-						);
-					}
-				}
-				EntityTickOutcome::RemoveSelf => {
-					let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
-						entity_ids: vec![outcome.0],
-					};
-
-					for player in players_clone {
-						game.send_packet(
-							&player.peer_socket_address,
-							lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-							remove_entities_packet.clone().try_into().unwrap(),
-						);
-					}
-
-					if let Some(chunk) = dimension.1.get_chunk_from_position_mut(
-						dimension
-							.1
-							.entities
-							.iter()
-							.find(|x| x.get_common_entity_data().entity_id == outcome.0)
-							.unwrap()
-							.get_common_entity_data()
-							.position
-							.into(),
-					) {
-						chunk.modified = true;
-					};
-					dimension.1.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
-				}
-				EntityTickOutcome::Updated => {
-					if let Some(chunk) = dimension.1.get_chunk_from_position_mut(
-						dimension
-							.1
-							.entities
-							.iter()
-							.find(|x| x.get_common_entity_data().entity_id == outcome.0)
-							.unwrap()
-							.get_common_entity_data()
-							.position
-							.into(),
-					) {
-						chunk.modified = true;
-					};
-				}
-				EntityTickOutcome::None => (),
-			}
-		}
+		super::process_entity_tick_outcome::process(entity_tick_outcomes, game.clone(), players_clone, dimension.1);
 	}
 }

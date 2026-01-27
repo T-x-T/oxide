@@ -139,6 +139,29 @@ impl CommonEntityTrait for Player {
 			},
 		);
 	}
+
+	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+		let own_position = self.get_position();
+		let entities_to_remove: Vec<i32> = dimension
+			.entities
+			.iter()
+			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
+			.filter_map(|x| {
+				if let Entity::Item(item) = x {
+					self.pickup_item(item.item.clone(), players, game.clone());
+					Some(item.get_common_entity_data().entity_id)
+				} else {
+					None
+				}
+			})
+			.collect();
+
+		if entities_to_remove.is_empty() {
+			return EntityTickOutcome::None;
+		} else {
+			return EntityTickOutcome::RemoveOthers(entities_to_remove);
+		}
+	}
 }
 
 impl Player {
@@ -902,5 +925,10 @@ impl Player {
 
 	pub fn get_is_mining(&self) -> bool {
 		return self.is_mining;
+	}
+
+	pub fn pickup_item(&mut self, item: Item, players: &[Player], game: Arc<Game>) {
+		let slot = Slot::from(item.clone());
+		self.set_selected_inventory_slot(Some(slot), players, game.clone());
 	}
 }

@@ -29,6 +29,7 @@ pub enum Entity {
 pub enum EntityTickOutcome {
 	SelfDied,
 	RemoveSelf,
+	RemoveOthers(Vec<i32>),
 	Updated,
 	None,
 }

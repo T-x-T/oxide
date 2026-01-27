@@ -6,6 +6,7 @@ use lib::packets::Packet;
 use lib::types::*;
 
 mod packet_handler_actions;
+mod process_entity_tick_outcome;
 mod send_keepalives;
 mod tick_blockentities;
 mod tick_entities;
@@ -54,6 +55,26 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	let now = std::time::Instant::now();
 	tick_entities::process(game.clone(), &players_clone);
 	let duration_tick_entities = std::time::Instant::now() - now;
+
+	let entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = game
+		.players
+		.lock()
+		.unwrap()
+		.iter_mut()
+		.map(|player| {
+			(
+				player.entity_id,
+				player.tick(game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap(), &players_clone, game.clone()),
+			)
+		})
+		.collect();
+
+	process_entity_tick_outcome::process(
+		entity_tick_outcomes,
+		game.clone(),
+		&players_clone,
+		game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap(),
+	);
 
 	return TickTimings {
 		save_all: duration_save_all,
