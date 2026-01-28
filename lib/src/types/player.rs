@@ -148,7 +148,7 @@ impl CommonEntityTrait for Player {
 			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
 			.filter_map(|x| {
 				if let Entity::Item(item) = x {
-					self.pickup_item(item.item.clone(), players, game.clone());
+					self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, game.clone());
 					Some(item.get_common_entity_data().entity_id)
 				} else {
 					None
@@ -927,7 +927,21 @@ impl Player {
 		return self.is_mining;
 	}
 
-	pub fn pickup_item(&mut self, item: Item, players: &[Player], game: Arc<Game>) {
+	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) {
+		let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
+			collected_entity_id: item_entity_id,
+			collector_entity_id: self.entity_id,
+			pickup_item_count: item.count as i32,
+		};
+
+		for player in players {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::PickupItem::PACKET_ID,
+				pickup_item_packet.clone().try_into().unwrap(),
+			);
+		}
+
 		let slot = Slot::from(item.clone());
 		self.set_selected_inventory_slot(Some(slot), players, game.clone());
 	}

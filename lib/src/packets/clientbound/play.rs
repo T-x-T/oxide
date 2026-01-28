@@ -2894,6 +2894,53 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 }
 
 //
+// MARK: 0x7a pickup item
+//
+
+#[derive(Debug, Clone)]
+pub struct PickupItem {
+	pub collected_entity_id: i32,
+	pub collector_entity_id: i32,
+	pub pickup_item_count: i32,
+}
+
+impl Packet for PickupItem {
+	const PACKET_ID: u8 = 0x7a;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<PickupItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PickupItem) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.collected_entity_id));
+		output.append(&mut crate::serialize::varint(value.collector_entity_id));
+		output.append(&mut crate::serialize::varint(value.pickup_item_count));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PickupItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			collected_entity_id: crate::deserialize::varint(&mut value)?,
+			collector_entity_id: crate::deserialize::varint(&mut value)?,
+			pickup_item_count: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x87 server links
 //
 
