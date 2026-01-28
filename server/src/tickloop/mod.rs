@@ -10,6 +10,7 @@ mod process_entity_tick_outcome;
 mod send_keepalives;
 mod tick_blockentities;
 mod tick_entities;
+mod tick_players;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -19,6 +20,7 @@ pub struct TickTimings {
 	pub send_keepalives: std::time::Duration,
 	pub tick_blockentities: std::time::Duration,
 	pub tick_entities: std::time::Duration,
+	pub tick_players: std::time::Duration,
 	pub packet_handler_actions: std::time::Duration,
 }
 
@@ -56,25 +58,9 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	tick_entities::process(game.clone(), &players_clone);
 	let duration_tick_entities = std::time::Instant::now() - now;
 
-	let entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = game
-		.players
-		.lock()
-		.unwrap()
-		.iter_mut()
-		.map(|player| {
-			(
-				player.entity_id,
-				player.tick(game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap(), &players_clone, game.clone()),
-			)
-		})
-		.collect();
-
-	process_entity_tick_outcome::process(
-		entity_tick_outcomes,
-		game.clone(),
-		&players_clone,
-		game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap(),
-	);
+	let now = std::time::Instant::now();
+	tick_players::process(game, &players_clone);
+	let duration_tick_players = std::time::Instant::now() - now;
 
 	return TickTimings {
 		save_all: duration_save_all,
@@ -82,6 +68,7 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 		send_keepalives: duration_send_keepalives,
 		tick_blockentities: duration_tick_blockentities,
 		tick_entities: duration_tick_entities,
+		tick_players: duration_tick_players,
 		packet_handler_actions: duration_packet_handler_actions,
 	};
 }
