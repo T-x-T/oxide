@@ -77,7 +77,7 @@ pub fn process(
 		);
 
 		//first part of the if tries to check if player just right clicked an item that doesnt place a block
-		if (!block_state_ids.is_empty() && !block_state_ids[0].0 == 0) && gamemode == Gamemode::Survival {
+		if !block_state_ids.is_empty() && block_state_ids[0].0 != 0 && gamemode == Gamemode::Survival {
 			let Some(hand_slot) = player.get_held_item(true) else {
 				return;
 			};
