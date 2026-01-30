@@ -148,8 +148,11 @@ impl CommonEntityTrait for Player {
 			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
 			.filter_map(|x| {
 				if let Entity::Item(item) = x {
-					self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, game.clone());
-					Some(item.get_common_entity_data().entity_id)
+					if self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, game.clone()) {
+						Some(item.get_common_entity_data().entity_id)
+					} else {
+						None
+					}
 				} else {
 					None
 				}
@@ -927,22 +930,63 @@ impl Player {
 		return self.is_mining;
 	}
 
-	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) {
-		let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
-			collected_entity_id: item_entity_id,
-			collector_entity_id: self.entity_id,
-			pickup_item_count: item.count as i32,
-		};
+	//returns true when item pickup was succesfull and false when not
+	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+		let slot = Slot::from(item.clone());
 
-		for player in players {
-			game.send_packet(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::PickupItem::PACKET_ID,
-				pickup_item_packet.clone().try_into().unwrap(),
-			);
+		let slot_indecies = [
+			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+			33, 34, 35,
+		];
+
+		let mut inventory = self.get_inventory().clone();
+		let mut inventory_updated = false;
+
+		//first check if we can stack up an existing slot
+		for slot_index in slot_indecies {
+			#[allow(clippy::collapsible_if)]
+			if let Some(inventory_slot) = &mut inventory[slot_index] {
+				if inventory_slot.item_id == slot.item_id
+					&& inventory_slot.item_count
+						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.item_id)).unwrap().max_stack_size as i32
+				{
+					inventory_slot.item_count += 1;
+					inventory_updated = true;
+
+					break;
+				}
+			}
 		}
 
-		let slot = Slot::from(item.clone());
-		self.set_selected_inventory_slot(Some(slot), players, game.clone());
+		//if the player doesnt have the item in its inventory, put it in the first free slot
+		if !inventory_updated {
+			for slot_index in slot_indecies {
+				if inventory[slot_index].as_ref().is_some_and(|x| x.item_count == 0) || inventory[slot_index].is_none() {
+					inventory[slot_index] = Some(slot.clone());
+					inventory_updated = true;
+					break;
+				}
+			}
+		}
+
+		if inventory_updated {
+			self.set_inventory(inventory, players, game.clone());
+
+			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
+				collected_entity_id: item_entity_id,
+				collector_entity_id: self.entity_id,
+				pickup_item_count: item.count as i32,
+			};
+
+			for player in players {
+				game.send_packet(
+					&player.peer_socket_address,
+					crate::packets::clientbound::play::PickupItem::PACKET_ID,
+					pickup_item_packet.clone().try_into().unwrap(),
+				);
+			}
+		}
+
+		return inventory_updated;
 	}
 }
