@@ -105,7 +105,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				send_command::process(peer_addr, command_string, game.clone());
 			}
 			PacketHandlerAction::ClickContainer(peer_addr, parsed_packet) => {
-				click_container::process(peer_addr, parsed_packet, game.clone());
+				click_container::process(peer_addr, parsed_packet, game.clone(), players_clone);
 			}
 			PacketHandlerAction::CloseContainer(peer_addr, window_id) => {
 				close_container::process(peer_addr, window_id, game.clone());

@@ -2,12 +2,24 @@ use lib::packets::serverbound::play::ClickContainer;
 
 use super::*;
 
-pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>) {
+pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>, players_clone: &[Player]) {
+	println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 
 	let Some(position) = player.opened_inventory_at else {
-		println!("player doesn't seems to have a container opened at the moment");
+		if player.get_gamemode() != Gamemode::Creative && parsed_packet.window_id == 0 {
+			let mut inventory: Vec<Item> =
+				player.get_inventory().clone().into_iter().map(|x| x.map(Item::from)).map(|x| x.unwrap_or_default()).collect();
+
+			lib::containerclick::handle(parsed_packet, &mut inventory, player.uuid, game.clone(), Vec::new());
+
+			let inventory_to_set: Vec<Option<Slot>> =
+				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
+			player.set_inventory(inventory_to_set, players_clone, game.clone());
+		} else {
+			println!("player doesn't seems to have a container opened at the moment");
+		}
 		return;
 	};
 
