@@ -1,6 +1,13 @@
 use super::*;
 
 pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, players_clone: &[Player]) {
+	let mut players = game.players.lock().unwrap();
+	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
+	if player.get_gamemode() != Gamemode::Creative {
+		return;
+	}
+
 	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
 	let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
 	let item_id = data::items::get_items()
@@ -13,9 +20,6 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, 
 			tool_rules: Vec::new(),
 		})
 		.id;
-
-	let mut players = game.players.lock().unwrap();
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 
 	let new_slot_data = Slot {
 		item_count: 1,
