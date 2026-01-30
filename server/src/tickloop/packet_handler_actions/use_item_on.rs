@@ -27,6 +27,7 @@ pub fn process(
 
 	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 	let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
+	let gamemode = player.get_gamemode();
 
 	let dimension = world.dimensions.get("minecraft:overworld").unwrap();
 	let block_id_at_location = dimension.get_block(location).unwrap_or_default();
@@ -57,12 +58,12 @@ pub fn process(
 				game.entity_id_manager.get_new(),
 				new_block_location,
 				dimension,
-				&players,
+				players_clone,
 				game.clone(),
 			);
 		}
 
-		lib::block::get_block_state_id(
+		let block_state_ids = lib::block::get_block_state_id(
 			face,
 			player_get_looking_cardinal_direction,
 			pitch,
@@ -73,7 +74,28 @@ pub fn process(
 			cursor_position_y,
 			cursor_position_z,
 			&game.block_state_data,
-		)
+		);
+
+		//first part of the if tries to check if player just right clicked an item that doesnt place a block
+		if (!block_state_ids.is_empty() && !block_state_ids[0].0 == 0) && gamemode == Gamemode::Survival {
+			let Some(hand_slot) = player.get_held_item(true) else {
+				return;
+			};
+
+			let hand_slot = hand_slot.clone();
+			let new_hand_slot = if hand_slot.item_count == 1 {
+				None
+			} else {
+				Some(Slot {
+					item_count: hand_slot.item_count - 1,
+					..hand_slot
+				})
+			};
+
+			player.set_selected_inventory_slot(new_hand_slot, players_clone, game.clone());
+		}
+
+		block_state_ids
 	};
 
 	let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
