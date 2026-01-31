@@ -49,6 +49,7 @@ pub struct Player {
 	gamemode: Gamemode,
 	mining_for_ticks: u16,
 	is_mining: bool,
+	health: f32,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -77,6 +78,7 @@ impl Clone for Player {
 			gamemode: self.gamemode,
 			mining_for_ticks: self.mining_for_ticks,
 			is_mining: self.is_mining,
+			health: self.health,
 		}
 	}
 }
@@ -202,6 +204,7 @@ impl Player {
 				gamemode: game.default_gamemode,
 				mining_for_ticks: 0,
 				is_mining: false,
+				health: 20.0,
 			};
 
 			return player;
@@ -306,6 +309,7 @@ impl Player {
 			gamemode: parsed_gamemode,
 			mining_for_ticks: 0,
 			is_mining: false,
+			health: 20.0,
 		};
 
 		return player;
@@ -992,5 +996,44 @@ impl Player {
 		}
 
 		return inventory_updated;
+	}
+
+	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+		self.health -= damage;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetHealth::PACKET_ID,
+			crate::packets::clientbound::play::SetHealth {
+				health: self.health,
+				food: 20,
+				food_saturation: 0.0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
+			entity_id: self.entity_id,
+			yaw: 0.0,
+		};
+
+		self.velocity.y += 0.05;
+
+		let horizontal_velocity = 0.05;
+		match self.get_looking_cardinal_direction() {
+			CardinalDirection::North => self.velocity.z -= horizontal_velocity,
+			CardinalDirection::East => self.velocity.x += horizontal_velocity,
+			CardinalDirection::South => self.velocity.z += horizontal_velocity,
+			CardinalDirection::West => self.velocity.x -= horizontal_velocity,
+		};
+
+		players.iter().for_each(|x| {
+			game.send_packet(
+				&x.peer_socket_address,
+				crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
+				hurt_animation_packet.clone().try_into().unwrap(),
+			);
+		});
 	}
 }

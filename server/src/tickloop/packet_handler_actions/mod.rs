@@ -125,7 +125,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 			}
 			PacketHandlerAction::Interact(peer_addr, parsed_packet) => {
-				interact::process(peer_addr, parsed_packet, game.clone());
+				interact::process(peer_addr, parsed_packet, game.clone(), players_clone);
 			}
 			PacketHandlerAction::NewPlayer(peer_addr, stream) => {
 				new_player::process(peer_addr, stream, game.clone());

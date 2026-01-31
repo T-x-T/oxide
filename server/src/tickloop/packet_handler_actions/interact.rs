@@ -2,12 +2,52 @@ use lib::packets::serverbound::play::Interact;
 
 use super::*;
 
-pub fn process(peer_addr: SocketAddr, parsed_packet: Interact, game: Arc<Game>) {
-	let mut players = game.players.lock().unwrap();
+pub fn process(peer_addr: SocketAddr, parsed_packet: Interact, game: Arc<Game>, players_clone: &[Player]) {
+	let players = game.players.lock().unwrap();
+
+
+	let world = game.world.lock().unwrap();
+
+	if players.iter().find(|x| x.entity_id == parsed_packet.entity_id).is_some() {
+		target_is_player(parsed_packet, game.clone(), players, players_clone, peer_addr);
+	} else {
+		target_is_entity(parsed_packet, game.clone(), world, players, peer_addr);
+	}
+}
+
+fn target_is_player(
+	parsed_packet: Interact,
+	game: Arc<Game>,
+	mut players: std::sync::MutexGuard<Vec<Player>>,
+	players_clone: &[Player],
+	peer_addr: SocketAddr,
+) {
+	let Some(target_player) = players.iter_mut().find(|x| x.entity_id == parsed_packet.entity_id) else {
+		return;
+	};
+	let Some(source_player) = players_clone.iter().find(|x| x.peer_socket_address == peer_addr) else {
+		return;
+	};
+
+	let held_item = source_player.get_held_item(true);
+
+	if parsed_packet.interact_type == 1 {
+		//attack
+		let damage = if held_item.is_some() { 10.0 } else { 1.0 };
+		target_player.damage(damage, game, players_clone);
+	}
+}
+
+fn target_is_entity(
+	parsed_packet: Interact,
+	game: Arc<Game>,
+	mut world: std::sync::MutexGuard<World>,
+	mut players: std::sync::MutexGuard<Vec<Player>>,
+	peer_addr: SocketAddr,
+) {
 	let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 	let held_item = player.get_held_item(true);
 
-	let mut world = game.world.lock().unwrap();
 	let Some(entity) = world
 		.dimensions
 		.get_mut("minecraft:overworld")

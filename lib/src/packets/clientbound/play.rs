@@ -2762,6 +2762,52 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 }
 
 //
+// MARK: 0x66 set health
+//
+
+#[derive(Debug, Clone)]
+pub struct SetHealth {
+	pub health: f32,
+	pub food: i32,
+	pub food_saturation: f32,
+}
+
+impl Packet for SetHealth {
+	const PACKET_ID: u8 = 0x66;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<SetHealth> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetHealth) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::float(value.health));
+		output.append(&mut crate::serialize::varint(value.food));
+		output.append(&mut crate::serialize::float(value.food_saturation));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetHealth {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			health: crate::deserialize::float(&mut value)?,
+			food: crate::deserialize::varint(&mut value)?,
+			food_saturation: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
+//
 // MARK: 0x67 set held item
 //
 

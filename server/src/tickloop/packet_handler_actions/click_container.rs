@@ -3,7 +3,7 @@ use lib::packets::serverbound::play::ClickContainer;
 use super::*;
 
 pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>) {
-	println!("{parsed_packet:?}");
+	//println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 

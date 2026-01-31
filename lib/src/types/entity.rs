@@ -23,6 +23,7 @@ pub enum Entity {
 	Pig(Pig),
 	Rabbit(Rabbit),
 	Sheep(Sheep),
+	Player(Player),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -116,6 +117,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_common_entity_data(),
 			Entity::Rabbit(x) => x.get_common_entity_data(),
 			Entity::Sheep(x) => x.get_common_entity_data(),
+			Entity::Player(x) => x.get_common_entity_data(),
 		};
 	}
 
@@ -134,6 +136,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_common_entity_data_mut(),
 			Entity::Rabbit(x) => x.get_common_entity_data_mut(),
 			Entity::Sheep(x) => x.get_common_entity_data_mut(),
+			Entity::Player(x) => x.get_common_entity_data_mut(),
 		};
 	}
 
@@ -152,6 +155,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_mob_data(),
 			Entity::Rabbit(x) => x.get_mob_data(),
 			Entity::Sheep(x) => x.get_mob_data(),
+			Entity::Player(x) => x.get_mob_data(),
 		};
 	}
 
@@ -170,6 +174,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_mob_data_mut(),
 			Entity::Rabbit(x) => x.get_mob_data_mut(),
 			Entity::Sheep(x) => x.get_mob_data_mut(),
+			Entity::Player(x) => x.get_mob_data_mut(),
 		};
 	}
 
@@ -188,6 +193,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_type(),
 			Entity::Rabbit(x) => x.get_type(),
 			Entity::Sheep(x) => x.get_type(),
+			Entity::Player(x) => x.get_type(),
 		};
 	}
 
@@ -206,6 +212,7 @@ impl Entity {
 			Entity::Pig(x) => x.to_nbt_extras(),
 			Entity::Rabbit(x) => x.to_nbt_extras(),
 			Entity::Sheep(x) => x.to_nbt_extras(),
+			Entity::Player(x) => x.to_nbt_extras(),
 		};
 	}
 
@@ -258,6 +265,7 @@ impl Entity {
 			Entity::Pig(x) => x.is_mob(),
 			Entity::Rabbit(x) => x.is_mob(),
 			Entity::Sheep(x) => x.is_mob(),
+			Entity::Player(x) => x.is_mob(),
 		};
 	}
 
@@ -276,6 +284,7 @@ impl Entity {
 			Entity::Pig(x) => x.get_metadata(),
 			Entity::Rabbit(x) => x.get_metadata(),
 			Entity::Sheep(x) => x.get_metadata(),
+			Entity::Player(x) => x.get_metadata(),
 		};
 	}
 	pub fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
@@ -293,6 +302,7 @@ impl Entity {
 			Entity::Pig(x) => x.tick(dimension, players, game),
 			Entity::Rabbit(x) => x.tick(dimension, players, game),
 			Entity::Sheep(x) => x.tick(dimension, players, game),
+			Entity::Player(x) => x.tick(dimension, players, game),
 		};
 	}
 }
