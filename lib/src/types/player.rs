@@ -754,8 +754,8 @@ impl Player {
 			);
 		});
 	}
-	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
-		self.inventory = items.clone();
+	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
+		self.set_inventory_and_dont_inform_client(items);
 
 		game.send_packet(
 			&self.peer_socket_address,
@@ -791,6 +791,10 @@ impl Player {
 				.unwrap(),
 			);
 		});
+	}
+
+	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Option<Slot>>) {
+		self.inventory = items.clone();
 	}
 
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity, game: Arc<Game>) {
@@ -970,7 +974,7 @@ impl Player {
 		}
 
 		if inventory_updated {
-			self.set_inventory(inventory, players, game.clone());
+			self.set_inventory_and_inform_client(inventory, players, game.clone());
 
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
 				collected_entity_id: item_entity_id,

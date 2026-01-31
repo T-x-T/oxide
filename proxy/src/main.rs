@@ -371,12 +371,19 @@ fn main() {
 								println!("parsed packet: {parsed_packet:?}");
 								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
+							lib::packets::clientbound::play::SetCursorItem::PACKET_ID => {
+								println!("\n\nraw packet: {:?}\n\n", client_packet.data);
+								let parsed_packet = lib::packets::clientbound::play::SetCursorItem::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							}
 							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID => {
 								// Disabled because implementation is still incomplete
 								//let parsed_packet = lib::packets::clientbound::play::SetEntityMetadata::try_from(client_packet.data.clone()).unwrap();
 								//println!("parsed packet: {parsed_packet:?}");
 								//parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
+							0x6f => (), //update time
 							_ => {
 								println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
 							}

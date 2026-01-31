@@ -34,7 +34,7 @@ pub fn handle(
 		let (new_inventory_item, new_cursor_item) =
 			handle_click(parsed_packet.button == 0, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-		//println!("new item: {new_inventory_item:?}");
+		//println!("new item: {new_inventory_item:?}; new cursor item: {new_cursor_item:?}");
 		if new_inventory_item != orig_inventory_item {
 			if outside_clicked {
 				//nothing to do
@@ -72,37 +72,59 @@ pub fn handle(
 			players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().cursor_item = new_cursor_item;
 		}
 	} else if parsed_packet.mode == 1 {
-		let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
-		let orig_player_inventory: Vec<Option<Slot>> = players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone();
-		let (new_chest_inventory, new_player_inventory) =
-			handle_shift_click(orig_chest_inventory.clone(), orig_player_inventory.clone(), parsed_packet.slot);
+		if parsed_packet.window_id == 0 {
+			println!("no shift clicking in your inventory!");
+			let player = players.iter().find(|x| x.uuid == player_uuid).unwrap();
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+				crate::packets::clientbound::play::SetContainerContent {
+					window_id: 0,
+					state_id: 1,
+					slot_data: player.get_inventory().clone(),
+					carried_item: orig_cursor_item.clone(),
+				}
+				.try_into()
+				.unwrap(),
+			);
+		} else {
+			let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
+			let orig_player_inventory: Vec<Option<Slot>> = players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone();
+			let (new_chest_inventory, new_player_inventory) =
+				handle_shift_click(orig_chest_inventory.clone(), orig_player_inventory.clone(), parsed_packet.slot);
 
-		if orig_chest_inventory != new_chest_inventory {
-			let new_chest_items: Vec<Item> = new_chest_inventory.into_iter().map(|x| x.into()).collect();
-			assert_eq!(chest_items.len(), new_chest_items.len());
-			chest_items.clone_from_slice(&new_chest_items);
+			if orig_chest_inventory != new_chest_inventory {
+				let new_chest_items: Vec<Item> = new_chest_inventory.into_iter().map(|x| x.into()).collect();
+				assert_eq!(chest_items.len(), new_chest_items.len());
+				chest_items.clone_from_slice(&new_chest_items);
 
-			for player in players.iter() {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerContent {
-						window_id: 1,
-						state_id: 1,
-						slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
-						carried_item: None,
-					}
-					.try_into()
-					.unwrap(),
+				for stream in streams_with_container_opened {
+					game.send_packet(
+						&stream.peer_addr().unwrap(),
+						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerContent {
+							window_id: 1,
+							state_id: 1,
+							slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
+							carried_item: None,
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
+			}
+
+			if orig_player_inventory != new_player_inventory {
+				let players_clone = players.clone();
+				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_and_inform_client(
+					new_player_inventory,
+					&players_clone,
+					game.clone(),
 				);
 			}
 		}
-
-		if orig_player_inventory != new_player_inventory {
-			let players_clone = players.clone();
-			players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory(new_player_inventory, &players_clone, game.clone());
-		}
 	} else {
+		//this just resets the inventory of the container and player if we dont know how to handle the used mode
 		game.send_packet(
 			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,

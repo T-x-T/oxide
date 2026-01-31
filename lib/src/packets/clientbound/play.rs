@@ -2351,6 +2351,47 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 }
 
 //
+// MARK: 0x5e Set Cursor Item
+//
+
+#[derive(Debug, Clone)]
+pub struct SetCursorItem {
+	pub carried_item: Slot,
+}
+
+impl Packet for SetCursorItem {
+	const PACKET_ID: u8 = 0x5e;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<SetCursorItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetCursorItem) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut slot::serialize_slot(Some(&value.carried_item)));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetCursorItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			carried_item: slot::deserialize_slot(&mut value)?.unwrap(),
+		});
+	}
+}
+
+//
 // MARK: 0x61 Set Entity Metadata
 //
 

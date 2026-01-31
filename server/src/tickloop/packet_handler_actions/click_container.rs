@@ -2,7 +2,7 @@ use lib::packets::serverbound::play::ClickContainer;
 
 use super::*;
 
-pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>, players_clone: &[Player]) {
+pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>) {
 	println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
@@ -12,13 +12,21 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			let mut inventory: Vec<Item> =
 				player.get_inventory().clone().into_iter().map(|x| x.map(Item::from)).map(|x| x.unwrap_or_default()).collect();
 
-			lib::containerclick::handle(parsed_packet, &mut inventory, player.uuid, game.clone(), Vec::new());
+			let player_uuid = player.uuid;
+			//need to drop lock on players here, because lib::containerclick::handle also locks players
+			drop(players);
+
+			lib::containerclick::handle(parsed_packet, &mut inventory, player_uuid, game.clone(), Vec::new());
+
+			let mut players = game.players.lock().unwrap();
+			let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+
 
 			let inventory_to_set: Vec<Option<Slot>> =
 				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
-			player.set_inventory(inventory_to_set, players_clone, game.clone());
+			player.set_inventory_and_dont_inform_client(inventory_to_set);
 		} else {
-			println!("player doesn't seems to have a container opened at the moment");
+			println!("player doesn't seem to have a container opened at the moment");
 		}
 		return;
 	};
