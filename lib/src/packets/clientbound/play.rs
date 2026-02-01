@@ -1923,6 +1923,50 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 }
 
 //
+// MARK: 0x42 combat death
+//
+
+#[derive(Debug, Clone)]
+pub struct CombatDeath {
+	pub player_id: i32,
+	pub message: NbtTag,
+}
+
+impl Packet for CombatDeath {
+	const PACKET_ID: u8 = 0x42;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<CombatDeath> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: CombatDeath) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.player_id));
+		output.append(&mut crate::serialize::nbt_network(value.message));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for CombatDeath {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			player_id: crate::deserialize::varint(&mut value)?,
+			message: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x43 player info remove
 //
 
@@ -2302,6 +2346,103 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 		return Ok(Self {
 			entity_id: crate::deserialize::varint(&mut value)?,
 			head_yaw: value.remove(0),
+		});
+	}
+}
+//
+// MARK: 0x50 respawn
+//
+
+#[derive(Debug, Clone)]
+pub struct Respawn {
+	pub dimension_type: i32,
+	pub dimension_name: String,
+	pub hashed_seed: i64,
+	pub game_mode: Gamemode,
+	pub previous_gamemode: i8,
+	pub is_debug: bool,
+	pub is_flat: bool,
+	pub has_death_location: bool,
+	pub death_dimension_name: Option<String>,
+	pub death_location: Option<BlockPosition>,
+	pub portal_cooldown: i32,
+	pub sea_level: i32,
+	pub data_kept: u8,
+}
+
+impl Packet for Respawn {
+	const PACKET_ID: u8 = 0x50;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<Respawn> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Respawn) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.dimension_type));
+		output.append(&mut crate::serialize::string(&value.dimension_name));
+		output.append(&mut crate::serialize::long(value.hashed_seed));
+		output.push(value.game_mode as u8);
+		output.push(value.previous_gamemode as u8);
+		output.append(&mut crate::serialize::boolean(value.is_debug));
+		output.append(&mut crate::serialize::boolean(value.is_flat));
+		if value.has_death_location {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::string(&value.death_dimension_name.unwrap()));
+			output.append(&mut crate::serialize::position(&value.death_location.unwrap()));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+		output.append(&mut crate::serialize::varint(value.portal_cooldown));
+		output.append(&mut crate::serialize::varint(value.sea_level));
+		output.push(value.data_kept);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Respawn {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let dimension_type = crate::deserialize::varint(&mut value)?;
+		let dimension_name = crate::deserialize::string(&mut value)?;
+		let hashed_seed = crate::deserialize::long(&mut value)?;
+		let game_mode = Gamemode::try_from(value.remove(0))?;
+		let previous_gamemode = value.remove(0) as i8;
+		let is_debug = crate::deserialize::boolean(&mut value)?;
+		let is_flat = crate::deserialize::boolean(&mut value)?;
+		let has_death_location = crate::deserialize::boolean(&mut value)?;
+		let (death_dimension_name, death_location) = if has_death_location {
+			(Some(crate::deserialize::string(&mut value)?), Some(crate::deserialize::position(&mut value)?))
+		} else {
+			(None, None)
+		};
+		let portal_cooldown = crate::deserialize::varint(&mut value)?;
+		let sea_level = crate::deserialize::varint(&mut value)?;
+		let data_kept = value.remove(0);
+
+		return Ok(Self {
+			dimension_type,
+			dimension_name,
+			hashed_seed,
+			game_mode,
+			previous_gamemode,
+			is_debug,
+			is_flat,
+			has_death_location,
+			death_dimension_name,
+			death_location,
+			portal_cooldown,
+			sea_level,
+			data_kept,
 		});
 	}
 }

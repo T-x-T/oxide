@@ -24,6 +24,20 @@ pub enum Gamemode {
 	Spectator = 3,
 }
 
+impl TryFrom<u8> for Gamemode {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		return match value {
+			0 => Ok(Gamemode::Survival),
+			1 => Ok(Gamemode::Creative),
+			2 => Ok(Gamemode::Adventure),
+			3 => Ok(Gamemode::Spectator),
+			x => Err(Box::new(crate::CustomError::InvalidInput(format!("I dont know what a gamemode of {x} is supposed to be")))),
+		};
+	}
+}
+
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
@@ -50,6 +64,7 @@ pub struct Player {
 	mining_for_ticks: u16,
 	is_mining: bool,
 	health: f32,
+	pub is_dead: bool,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -79,6 +94,7 @@ impl Clone for Player {
 			mining_for_ticks: self.mining_for_ticks,
 			is_mining: self.is_mining,
 			health: self.health,
+			is_dead: self.is_dead,
 		}
 	}
 }
@@ -205,6 +221,7 @@ impl Player {
 				mining_for_ticks: 0,
 				is_mining: false,
 				health: 20.0,
+				is_dead: false,
 			};
 
 			return player;
@@ -310,6 +327,7 @@ impl Player {
 			mining_for_ticks: 0,
 			is_mining: false,
 			health: 20.0,
+			is_dead: false,
 		};
 
 		return player;
@@ -940,6 +958,10 @@ impl Player {
 
 	//returns true when item pickup was succesfull and false when not
 	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+		if self.is_dead {
+			return false;
+		}
+
 		let slot = Slot::from(item.clone());
 
 		let slot_indecies = [
@@ -998,8 +1020,12 @@ impl Player {
 		return inventory_updated;
 	}
 
-	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player], dimension: &mut Dimension) {
 		self.health -= damage;
+
+		if self.health <= 0.0 {
+			self.die(game.clone(), players, dimension);
+		}
 
 		game.send_packet(
 			&self.peer_socket_address,
@@ -1018,16 +1044,6 @@ impl Player {
 			yaw: 0.0,
 		};
 
-		self.velocity.y += 0.05;
-
-		let horizontal_velocity = 0.05;
-		match self.get_looking_cardinal_direction() {
-			CardinalDirection::North => self.velocity.z -= horizontal_velocity,
-			CardinalDirection::East => self.velocity.x += horizontal_velocity,
-			CardinalDirection::South => self.velocity.z += horizontal_velocity,
-			CardinalDirection::West => self.velocity.x -= horizontal_velocity,
-		};
-
 		players.iter().for_each(|x| {
 			game.send_packet(
 				&x.peer_socket_address,
@@ -1035,5 +1051,197 @@ impl Player {
 				hurt_animation_packet.clone().try_into().unwrap(),
 			);
 		});
+	}
+
+	pub fn die(&mut self, game: Arc<Game>, players: &[Player], dimension: &mut Dimension) {
+		self.is_dead = true;
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::CombatDeath::PACKET_ID,
+			crate::packets::clientbound::play::CombatDeath {
+				player_id: self.entity_id,
+				message: NbtTag::Root(vec![
+					NbtTag::String("type".to_string(), "text".to_string()),
+					NbtTag::String("text".to_string(), "haha you dieded".to_string()),
+				]),
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
+			for slot in &self.inventory {
+				if slot.as_ref().is_some_and(|x| x.item_count > 0) {
+					let new_entity = crate::entity::ItemEntity {
+						common: CommonEntity {
+							position: self.get_position(),
+							velocity: EntityPosition::default(),
+							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+							entity_id: game.entity_id_manager.get_new(),
+							..Default::default()
+						},
+						age: 0,
+						health: 5,
+						item: Item::from(slot.clone().unwrap()),
+						owner: self.uuid,
+						pickup_delay: 0,
+						thrower: self.uuid,
+					};
+
+					let spawn_packet = new_entity.to_spawn_entity_packet();
+
+					let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+						entity_id: new_entity.get_common_entity_data().entity_id,
+						metadata: new_entity.get_metadata(),
+					};
+
+					dimension.add_entity(Entity::Item(new_entity));
+
+					players.iter().for_each(|x| {
+						game.send_packet(
+							&x.peer_socket_address,
+							crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+							spawn_packet.clone().try_into().unwrap(),
+						);
+						game.send_packet(
+							&x.peer_socket_address,
+							crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+							metadata_packet.clone().try_into().unwrap(),
+						);
+					});
+				}
+			}
+
+			players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
+				game.send_packet(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					crate::packets::clientbound::play::RemoveEntities {
+						entity_ids: vec![self.entity_id],
+					}
+					.try_into()
+					.unwrap(),
+				);
+			});
+
+			self.inventory = vec![None; 46];
+		}
+	}
+
+	pub fn respawn(&mut self, game: Arc<Game>, players: &[Player], world: &mut World) {
+		self.health = 20.0;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::Respawn::PACKET_ID,
+			crate::packets::clientbound::play::Respawn {
+				dimension_type: 0,
+				dimension_name: "minecraft:overworld".to_string(),
+				hashed_seed: 1,
+				game_mode: self.get_gamemode(),
+				previous_gamemode: self.get_gamemode() as i8,
+				is_debug: false,
+				is_flat: false,
+				has_death_location: true,
+				death_dimension_name: Some("minecraft:overworld".to_string()),
+				death_location: Some(self.get_position().into()),
+				portal_cooldown: 123,
+				sea_level: 64,
+				data_kept: 0x00,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		self
+			.new_position(
+				world.default_spawn_location.x as f64,
+				world.default_spawn_location.y as f64,
+				world.default_spawn_location.z as f64,
+				world,
+				&game.entity_id_manager,
+				&game.block_state_data,
+				game.clone(),
+			)
+			.unwrap();
+
+		for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
+			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
+				game.send_packet(
+					&other_stream.peer_addr().unwrap(),
+					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					crate::packets::clientbound::play::SpawnEntity {
+						entity_id: self.entity_id,
+						entity_uuid: self.uuid,
+						entity_type: data::entities::get_id_from_name("minecraft:player"),
+						x: self.get_position().x,
+						y: self.get_position().y,
+						z: self.get_position().z,
+						pitch: self.get_pitch_u8(),
+						yaw: self.get_yaw_u8(),
+						head_yaw: self.get_yaw_u8(),
+						data: 0,
+						velocity_x: 0,
+						velocity_y: 0,
+						velocity_z: 0,
+					}
+					.try_into()
+					.unwrap(),
+				);
+			}
+		}
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
+			crate::packets::clientbound::play::SynchronizePlayerPosition {
+				teleport_id: self.current_teleport_id,
+				x: self.get_position().x,
+				y: self.get_position().y,
+				z: self.get_position().z,
+				velocity_x: 0.0,
+				velocity_y: 0.0,
+				velocity_z: 0.0,
+				yaw: self.get_position().yaw,
+				pitch: self.get_position().pitch,
+				flags: 0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::GameEvent::PACKET_ID,
+			crate::packets::clientbound::play::GameEvent {
+				event: 13,
+				value: 0.0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		self.is_dead = false;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+			crate::packets::clientbound::play::SetContainerContent {
+				window_id: 0,
+				state_id: 1,
+				slot_data: self.get_inventory().clone(),
+				carried_item: None,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
+
+		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
+			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
+				self.send_chunk(world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
+			}
+		}
 	}
 }

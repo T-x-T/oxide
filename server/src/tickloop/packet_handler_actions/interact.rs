@@ -4,12 +4,10 @@ use super::*;
 
 pub fn process(peer_addr: SocketAddr, parsed_packet: Interact, game: Arc<Game>, players_clone: &[Player]) {
 	let players = game.players.lock().unwrap();
-
-
 	let world = game.world.lock().unwrap();
 
 	if players.iter().find(|x| x.entity_id == parsed_packet.entity_id).is_some() {
-		target_is_player(parsed_packet, game.clone(), players, players_clone, peer_addr);
+		target_is_player(parsed_packet, game.clone(), players, players_clone, peer_addr, world);
 	} else {
 		target_is_entity(parsed_packet, game.clone(), world, players, peer_addr);
 	}
@@ -21,6 +19,7 @@ fn target_is_player(
 	mut players: std::sync::MutexGuard<Vec<Player>>,
 	players_clone: &[Player],
 	peer_addr: SocketAddr,
+	mut world: std::sync::MutexGuard<World>,
 ) {
 	let Some(target_player) = players.iter_mut().find(|x| x.entity_id == parsed_packet.entity_id) else {
 		return;
@@ -34,7 +33,7 @@ fn target_is_player(
 	if parsed_packet.interact_type == 1 {
 		//attack
 		let damage = if held_item.is_some() { 10.0 } else { 1.0 };
-		target_player.damage(damage, game, players_clone);
+		target_player.damage(damage, game, players_clone, world.dimensions.get_mut("minecraft:overworld").unwrap());
 	}
 }
 

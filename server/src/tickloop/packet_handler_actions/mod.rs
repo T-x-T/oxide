@@ -7,6 +7,7 @@ mod interact;
 mod move_player;
 mod new_player;
 mod pick_item_from_block;
+mod respawn;
 mod send_chat_message;
 mod send_command;
 mod update_sign;
@@ -135,6 +136,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let mut players = game.players.lock().unwrap();
 				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 				player.set_gamemode(gamemode, &players_clone, game.clone()).unwrap();
+			}
+			PacketHandlerAction::Respawn(peer_addr) => {
+				respawn::process(peer_addr, game.clone(), players_clone);
 			}
 		}
 	}
