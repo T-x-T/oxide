@@ -326,7 +326,7 @@ impl Player {
 			gamemode: parsed_gamemode,
 			mining_for_ticks: 0,
 			is_mining: false,
-			health: 20.0,
+			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
 		};
 
@@ -351,7 +351,8 @@ impl Player {
 			NbtTag::List("Pos".to_string(), vec![NbtListTag::Double(self.x), NbtListTag::Double(self.y), NbtListTag::Double(self.z)]),
 			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.yaw), NbtListTag::Float(self.pitch)]),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
-			NbtTag::Int("playerGameType".to_string(), self.gamemode as u8 as i32),
+			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
+			NbtTag::Float("Health".to_string(), self.health),
 			NbtTag::List(
 				"Inventory".to_string(),
 				self
@@ -1243,5 +1244,9 @@ impl Player {
 				self.send_chunk(world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
 			}
 		}
+	}
+
+	pub fn get_health(&self) -> f32 {
+		return self.health;
 	}
 }
