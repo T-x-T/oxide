@@ -12,7 +12,7 @@ pub struct Slot {
 	pub components_to_remove: Vec<i32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Item {
 	pub id: String,
 	pub count: u8,

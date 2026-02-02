@@ -41,11 +41,8 @@ impl TryFrom<u8> for Gamemode {
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
-	x: f64,
-	y: f64,
-	z: f64,
-	yaw: f32,
-	pitch: f32,
+	position: EntityPosition,
+	last_position: EntityPosition,
 	pub velocity: EntityPosition,
 	pub display_name: String,
 	pub uuid: u128,
@@ -65,18 +62,16 @@ pub struct Player {
 	is_mining: bool,
 	health: f32,
 	pub is_dead: bool,
+	fall_distance: f64,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
 impl Clone for Player {
 	fn clone(&self) -> Self {
 		Self {
-			x: self.x,
-			y: self.y,
-			z: self.z,
-			yaw: self.yaw,
-			pitch: self.pitch,
-			velocity: EntityPosition::default(),
+			position: self.position,
+			last_position: self.last_position,
+			velocity: self.velocity,
 			display_name: self.display_name.clone(),
 			uuid: self.uuid,
 			peer_socket_address: self.peer_socket_address,
@@ -95,7 +90,36 @@ impl Clone for Player {
 			is_mining: self.is_mining,
 			health: self.health,
 			is_dead: self.is_dead,
+			fall_distance: self.fall_distance,
 		}
+	}
+}
+
+//manual implementation because TcpStream doesnt implement PartialEq, instead just compare peer_addr here
+impl PartialEq for Player {
+	fn eq(&self, other: &Self) -> bool {
+		self.position == other.position
+			&& self.last_position == other.last_position
+			&& self.velocity == other.velocity
+			&& self.display_name == other.display_name
+			&& self.uuid == other.uuid
+			&& self.peer_socket_address == other.peer_socket_address
+			&& self.connection_stream.peer_addr().unwrap() == other.connection_stream.peer_addr().unwrap()
+			&& self.entity_id == other.entity_id
+			&& self.waiting_for_confirm_teleportation == other.waiting_for_confirm_teleportation
+			&& self.current_teleport_id == other.current_teleport_id
+			&& self.inventory == other.inventory
+			&& self.selected_slot == other.selected_slot
+			&& self.opened_inventory_at == other.opened_inventory_at
+			&& self.cursor_item == other.cursor_item
+			&& self.is_sneaking == other.is_sneaking
+			&& self.chat_message_index == other.chat_message_index
+			&& self.gamemode == other.gamemode
+			&& self.mining_for_ticks == other.mining_for_ticks
+			&& self.is_mining == other.is_mining
+			&& self.health == other.health
+			&& self.is_dead == other.is_dead
+			&& self.fall_distance == other.fall_distance
 	}
 }
 
@@ -134,11 +158,19 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_yaw_u8(&self) -> u8 {
-		return if self.yaw < 0.0 { (((self.yaw / 90.0) * 64.0) + 256.0) as u8 } else { ((self.yaw / 90.0) * 64.0) as u8 };
+		return if self.position.yaw < 0.0 {
+			(((self.position.yaw / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.position.yaw / 90.0) * 64.0) as u8
+		};
 	}
 
 	fn get_pitch_u8(&self) -> u8 {
-		return if self.pitch < 0.0 { (((self.pitch / 90.0) * 64.0) + 256.0) as u8 } else { ((self.pitch / 90.0) * 64.0) as u8 };
+		return if self.position.pitch < 0.0 {
+			(((self.position.pitch / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.position.pitch / 90.0) * 64.0) as u8
+		};
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -146,19 +178,30 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn is_on_ground(&self, dimension: &Dimension) -> bool {
-		return self.is_on_ground_at(
-			dimension,
-			EntityPosition {
-				x: self.x,
-				y: self.y,
-				z: self.z,
-				yaw: self.yaw,
-				pitch: self.pitch,
-			},
-		);
+		return self.is_on_ground_at(dimension, self.position);
 	}
 
-	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+		if self.health <= 0.0 {
+			for entity in self.die(game.clone(), players) {
+				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
+			}
+		}
+
+		if self.position.y - self.last_position.y < 0.0 {
+			self.fall_distance += -(self.position.y - self.last_position.y);
+		} else {
+			let fall_damage_multiplier = 1.0; //will be important with enchantments and such
+			let fall_damage = ((self.fall_distance - 4.0) * fall_damage_multiplier).ceil();
+			if fall_damage > 0.0 {
+				output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
+			}
+			self.fall_distance = 0.0;
+		}
+
+		self.last_position = self.position;
+
 		let own_position = self.get_position();
 		let entities_to_remove: Vec<i32> = dimension
 			.entities
@@ -177,11 +220,40 @@ impl CommonEntityTrait for Player {
 			})
 			.collect();
 
-		if entities_to_remove.is_empty() {
-			return EntityTickOutcome::None;
-		} else {
-			return EntityTickOutcome::RemoveOthers(entities_to_remove);
+		if !entities_to_remove.is_empty() {
+			output.push(EntityTickOutcome::RemoveOthers(entities_to_remove));
 		}
+
+		return output;
+	}
+
+	fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+		self.health -= damage;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetHealth::PACKET_ID,
+			crate::packets::clientbound::play::SetHealth {
+				health: self.health,
+				food: 20,
+				food_saturation: 0.0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
+			entity_id: self.entity_id,
+			yaw: 0.0,
+		};
+
+		players.iter().for_each(|x| {
+			game.send_packet(
+				&x.peer_socket_address,
+				crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
+				hurt_animation_packet.clone().try_into().unwrap(),
+			);
+		});
 	}
 }
 
@@ -197,11 +269,8 @@ impl Player {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
 			let entity_id = game.entity_id_manager.get_new();
 			let player = Self {
-				x: default_spawn_location.x as f64,
-				y: default_spawn_location.y as f64,
-				z: default_spawn_location.z as f64,
-				yaw: 0.0,
-				pitch: 0.0,
+				position: default_spawn_location.into(),
+				last_position: default_spawn_location.into(),
 				velocity: EntityPosition::default(),
 				display_name,
 				uuid,
@@ -222,6 +291,7 @@ impl Player {
 				is_mining: false,
 				health: 20.0,
 				is_dead: false,
+				fall_distance: 0.0,
 			};
 
 			return player;
@@ -303,11 +373,20 @@ impl Player {
 
 		let entity_id = game.entity_id_manager.get_new();
 		let player = Self {
-			x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
-			y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
-			z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
-			yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
-			pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			position: EntityPosition {
+				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			},
+			last_position: EntityPosition {
+				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			},
 			velocity: EntityPosition::default(),
 			display_name,
 			uuid,
@@ -328,6 +407,7 @@ impl Player {
 			is_mining: false,
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
+			fall_distance: 0.0,
 		};
 
 		return player;
@@ -348,8 +428,11 @@ impl Player {
 			components_to_remove: Vec::new(),
 		};
 		let player_data = NbtTag::Root(vec![
-			NbtTag::List("Pos".to_string(), vec![NbtListTag::Double(self.x), NbtListTag::Double(self.y), NbtListTag::Double(self.z)]),
-			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.yaw), NbtListTag::Float(self.pitch)]),
+			NbtTag::List(
+				"Pos".to_string(),
+				vec![NbtListTag::Double(self.position.x), NbtListTag::Double(self.position.y), NbtListTag::Double(self.position.z)],
+			),
+			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.position.yaw), NbtListTag::Float(self.position.pitch)]),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
 			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
 			NbtTag::Float("Health".to_string(), self.health),
@@ -444,7 +527,7 @@ impl Player {
 	}
 
 	pub fn get_looking_cardinal_direction(&self) -> CardinalDirection {
-		let yaw = self.yaw;
+		let yaw = self.position.yaw;
 		let cardinal_direction: CardinalDirection;
 		if yaw >= 0.0 {
 			if (135.0..225.0).contains(&yaw) {
@@ -478,12 +561,12 @@ impl Player {
 		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		let old_x = self.x;
-		let old_z = self.z;
+		let old_x = self.position.x;
+		let old_z = self.position.z;
 
-		self.x = x;
-		self.y = y;
-		self.z = z;
+		self.position.x = x;
+		self.position.y = y;
+		self.position.z = z;
 
 		let old_chunk_position = BlockPosition {
 			x: old_x as i32,
@@ -492,9 +575,9 @@ impl Player {
 		}
 		.convert_to_coordinates_of_chunk();
 		let new_chunk_position = BlockPosition {
-			x: self.x as i32,
+			x: self.position.x as i32,
 			y: 0,
-			z: self.z as i32,
+			z: self.position.z as i32,
 		}
 		.convert_to_coordinates_of_chunk();
 
@@ -545,22 +628,22 @@ impl Player {
 		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		self.yaw = new_position.yaw;
-		self.pitch = new_position.pitch;
+		self.position.yaw = new_position.yaw;
+		self.position.pitch = new_position.pitch;
 		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, game)?;
 
 		return Ok(self.get_position());
 	}
 
 	pub fn new_rotation(&mut self, yaw: f32, pitch: f32) -> EntityPosition {
-		self.yaw = yaw;
-		self.pitch = pitch;
+		self.position.yaw = yaw;
+		self.position.pitch = pitch;
 
 		return self.get_position();
 	}
 
 	pub fn get_pitch(&self) -> f32 {
-		return self.pitch;
+		return self.position.pitch;
 	}
 
 	pub fn send_chunk(
@@ -897,13 +980,7 @@ impl Player {
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
-		return EntityPosition {
-			x: self.x,
-			y: self.y,
-			z: self.z,
-			yaw: self.yaw,
-			pitch: self.pitch,
-		};
+		return self.position;
 	}
 
 	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], game: Arc<Game>) -> Result<(), Box<dyn Error>> {
@@ -1021,40 +1098,8 @@ impl Player {
 		return inventory_updated;
 	}
 
-	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player], dimension: &mut Dimension) {
-		self.health -= damage;
-
-		if self.health <= 0.0 {
-			self.die(game.clone(), players, dimension);
-		}
-
-		game.send_packet(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetHealth::PACKET_ID,
-			crate::packets::clientbound::play::SetHealth {
-				health: self.health,
-				food: 20,
-				food_saturation: 0.0,
-			}
-			.try_into()
-			.unwrap(),
-		);
-
-		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
-			entity_id: self.entity_id,
-			yaw: 0.0,
-		};
-
-		players.iter().for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
-				hurt_animation_packet.clone().try_into().unwrap(),
-			);
-		});
-	}
-
-	pub fn die(&mut self, game: Arc<Game>, players: &[Player], dimension: &mut Dimension) {
+	//returns vec of entities to summon upon death (for dropping the inventory items)
+	pub fn die(&mut self, game: Arc<Game>, players: &[Player]) -> Vec<Entity> {
 		self.is_dead = true;
 		game.send_packet(
 			&self.peer_socket_address,
@@ -1069,6 +1114,8 @@ impl Player {
 			.try_into()
 			.unwrap(),
 		);
+
+		let mut entities_to_summon: Vec<Entity> = Vec::new();
 
 		if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
 			for slot in &self.inventory {
@@ -1089,27 +1136,7 @@ impl Player {
 						thrower: self.uuid,
 					};
 
-					let spawn_packet = new_entity.to_spawn_entity_packet();
-
-					let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
-						entity_id: new_entity.get_common_entity_data().entity_id,
-						metadata: new_entity.get_metadata(),
-					};
-
-					dimension.add_entity(Entity::Item(new_entity));
-
-					players.iter().for_each(|x| {
-						game.send_packet(
-							&x.peer_socket_address,
-							crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-							spawn_packet.clone().try_into().unwrap(),
-						);
-						game.send_packet(
-							&x.peer_socket_address,
-							crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-							metadata_packet.clone().try_into().unwrap(),
-						);
-					});
+					entities_to_summon.push(Entity::Item(new_entity));
 				}
 			}
 
@@ -1127,10 +1154,14 @@ impl Player {
 
 			self.inventory = vec![None; 46];
 		}
+
+		return entities_to_summon;
 	}
 
 	pub fn respawn(&mut self, game: Arc<Game>, players: &[Player], world: &mut World) {
 		self.health = 20.0;
+		self.fall_distance = 0.0;
+		self.last_position = world.default_spawn_location.into();
 
 		game.send_packet(
 			&self.peer_socket_address,

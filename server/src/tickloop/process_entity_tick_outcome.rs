@@ -59,7 +59,6 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					chunk.modified = true;
 				};
 			}
-			EntityTickOutcome::None => (),
 			EntityTickOutcome::RemoveOthers(entity_ids) => {
 				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
 					entity_ids: entity_ids.clone(),
@@ -74,6 +73,38 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				dimension.entities.retain(|x| !entity_ids.contains(&x.get_common_entity_data().entity_id));
+			}
+			EntityTickOutcome::DamageSelf(damage) => {
+				let mut players = game.players.lock().unwrap();
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == outcome.0) {
+					entity.damage(damage, game.clone(), players_clone);
+				};
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == outcome.0) {
+					player.damage(damage, game.clone(), players_clone);
+				};
+			}
+			EntityTickOutcome::SummonEntity(entity) => {
+				let spawn_packet = entity.to_spawn_entity_packet();
+
+				let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+					entity_id: entity.get_common_entity_data().entity_id,
+					metadata: entity.get_metadata(),
+				};
+
+				dimension.add_entity(*entity);
+
+				players_clone.iter().for_each(|x| {
+					game.send_packet(
+						&x.peer_socket_address,
+						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+						spawn_packet.clone().try_into().unwrap(),
+					);
+					game.send_packet(
+						&x.peer_socket_address,
+						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+						metadata_packet.clone().try_into().unwrap(),
+					);
+				});
 			}
 		}
 	}

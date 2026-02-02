@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Cat {
 	pub common: CommonEntity,
 	pub mob: CommonMob,

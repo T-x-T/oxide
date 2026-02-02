@@ -6,8 +6,13 @@ pub fn process(game: Arc<Game>, players: &[Player]) {
 		.lock()
 		.unwrap()
 		.iter_mut()
-		.map(|player| {
-			(player.entity_id, player.tick(game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap(), players, game.clone()))
+		.flat_map(|player| {
+			let outcomes = player.tick(game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap(), players, game.clone());
+			let mut output: Vec<(i32, EntityTickOutcome)> = Vec::new();
+			for outcome in outcomes {
+				output.push((player.entity_id, outcome));
+			}
+			output
 		})
 		.collect();
 

@@ -8,7 +8,7 @@ use crate::packets::Packet;
 use crate::packets::clientbound::play::EntityMetadata;
 use crate::types::*;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Entity {
 	Armadillo(Armadillo),
 	Cat(Cat),
@@ -26,13 +26,14 @@ pub enum Entity {
 	Player(Player),
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq)]
 pub enum EntityTickOutcome {
 	SelfDied,
 	RemoveSelf,
 	RemoveOthers(Vec<i32>),
 	Updated,
-	None,
+	DamageSelf(f32),
+	SummonEntity(Box<Entity>),
 }
 
 #[derive(Debug)]
@@ -287,7 +288,7 @@ impl Entity {
 			Entity::Player(x) => x.get_metadata(),
 		};
 	}
-	pub fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+	pub fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
 		return match self {
 			Entity::Armadillo(x) => x.tick(dimension, players, game),
 			Entity::Cat(x) => x.tick(dimension, players, game),
@@ -303,6 +304,24 @@ impl Entity {
 			Entity::Rabbit(x) => x.tick(dimension, players, game),
 			Entity::Sheep(x) => x.tick(dimension, players, game),
 			Entity::Player(x) => x.tick(dimension, players, game),
+		};
+	}
+	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+		return match self {
+			Entity::Armadillo(x) => x.damage(damage, game, players),
+			Entity::Cat(x) => x.damage(damage, game, players),
+			Entity::ChestMinecart(x) => x.damage(damage, game, players),
+			Entity::Chicken(x) => x.damage(damage, game, players),
+			Entity::Cow(x) => x.damage(damage, game, players),
+			Entity::Creeper(x) => x.damage(damage, game, players),
+			Entity::Donkey(x) => x.damage(damage, game, players),
+			Entity::Horse(x) => x.damage(damage, game, players),
+			Entity::Item(x) => x.damage(damage, game, players),
+			Entity::Parrot(x) => x.damage(damage, game, players),
+			Entity::Pig(x) => x.damage(damage, game, players),
+			Entity::Rabbit(x) => x.damage(damage, game, players),
+			Entity::Sheep(x) => x.damage(damage, game, players),
+			Entity::Player(x) => x.damage(damage, game, players),
 		};
 	}
 }
@@ -439,17 +458,17 @@ pub trait CommonEntityTrait {
 		panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
 	}
 
-	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> EntityTickOutcome {
+	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
 		if self.is_mob() {
 			let mob_data = self.get_mob_data_mut();
 
 			if mob_data.death_time == 20 {
-				return EntityTickOutcome::RemoveSelf;
+				return vec![EntityTickOutcome::RemoveSelf];
 			}
 
 			if mob_data.death_time > 0 {
 				mob_data.death_time += 1;
-				return EntityTickOutcome::None;
+				return Vec::new();
 			}
 
 			mob_data.alive_for_ticks += 1;
@@ -460,7 +479,7 @@ pub trait CommonEntityTrait {
 
 			if mob_data.health <= 0.0 {
 				mob_data.death_time = 1;
-				return EntityTickOutcome::SelfDied;
+				return vec![EntityTickOutcome::SelfDied];
 			}
 		}
 
@@ -561,10 +580,10 @@ pub trait CommonEntityTrait {
 				);
 			}
 
-			return EntityTickOutcome::Updated;
+			return vec![EntityTickOutcome::Updated];
 		}
 
-		return EntityTickOutcome::None;
+		return Vec::new();
 	}
 
 	fn collides_with_blocks_at(&self, dimension: &Dimension, position_to_check: EntityPosition) -> bool {
@@ -776,6 +795,12 @@ pub trait CommonEntityTrait {
 		} else {
 			((self.get_common_entity_data().position.pitch / 90.0) * 64.0) as u8
 		};
+	}
+
+	fn damage(&mut self, damage: f32, _game: Arc<Game>, _players: &[Player]) {
+		if self.is_mob() {
+			self.get_mob_data_mut().health -= damage;
+		}
 	}
 }
 
