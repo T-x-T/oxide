@@ -407,7 +407,7 @@ impl Player {
 			is_mining: false,
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
-			fall_distance: 0.0,
+			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_double(),
 		};
 
 		return player;
@@ -436,6 +436,7 @@ impl Player {
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
 			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
 			NbtTag::Float("Health".to_string(), self.health),
+			NbtTag::Double("fall_distance".to_string(), self.fall_distance),
 			NbtTag::List(
 				"Inventory".to_string(),
 				self
