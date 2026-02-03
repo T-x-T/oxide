@@ -63,6 +63,7 @@ pub struct Player {
 	health: f32,
 	pub is_dead: bool,
 	fall_distance: f64,
+	last_regen_ticks_ago: u32,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -91,35 +92,15 @@ impl Clone for Player {
 			health: self.health,
 			is_dead: self.is_dead,
 			fall_distance: self.fall_distance,
+			last_regen_ticks_ago: self.last_regen_ticks_ago,
 		}
 	}
 }
 
-//manual implementation because TcpStream doesnt implement PartialEq, instead just compare peer_addr here
+//manual implementation because TcpStream doesnt implement PartialEq
 impl PartialEq for Player {
 	fn eq(&self, other: &Self) -> bool {
-		self.position == other.position
-			&& self.last_position == other.last_position
-			&& self.velocity == other.velocity
-			&& self.display_name == other.display_name
-			&& self.uuid == other.uuid
-			&& self.peer_socket_address == other.peer_socket_address
-			&& self.connection_stream.peer_addr().unwrap() == other.connection_stream.peer_addr().unwrap()
-			&& self.entity_id == other.entity_id
-			&& self.waiting_for_confirm_teleportation == other.waiting_for_confirm_teleportation
-			&& self.current_teleport_id == other.current_teleport_id
-			&& self.inventory == other.inventory
-			&& self.selected_slot == other.selected_slot
-			&& self.opened_inventory_at == other.opened_inventory_at
-			&& self.cursor_item == other.cursor_item
-			&& self.is_sneaking == other.is_sneaking
-			&& self.chat_message_index == other.chat_message_index
-			&& self.gamemode == other.gamemode
-			&& self.mining_for_ticks == other.mining_for_ticks
-			&& self.is_mining == other.is_mining
-			&& self.health == other.health
-			&& self.is_dead == other.is_dead
-			&& self.fall_distance == other.fall_distance
+		self.uuid == other.uuid
 	}
 }
 
@@ -186,6 +167,13 @@ impl CommonEntityTrait for Player {
 		if self.health <= 0.0 {
 			for entity in self.die(game.clone(), players) {
 				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
+			}
+		} else {
+			if self.last_regen_ticks_ago > 80 {
+				self.last_regen_ticks_ago = 0;
+				self.heal(1.0, game.clone());
+			} else if self.health < 20.0 {
+				self.last_regen_ticks_ago += 1;
 			}
 		}
 
@@ -292,6 +280,7 @@ impl Player {
 				health: 20.0,
 				is_dead: false,
 				fall_distance: 0.0,
+				last_regen_ticks_ago: 0,
 			};
 
 			return player;
@@ -407,7 +396,8 @@ impl Player {
 			is_mining: false,
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
-			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_double(),
+			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
+			last_regen_ticks_ago: 0,
 		};
 
 		return player;
@@ -1280,5 +1270,24 @@ impl Player {
 
 	pub fn get_health(&self) -> f32 {
 		return self.health;
+	}
+
+	fn heal(&mut self, heal_amount: f32, game: Arc<Game>) {
+		self.health += heal_amount;
+		if self.health > 20.0 {
+			self.health = 20.0;
+		}
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetHealth::PACKET_ID,
+			crate::packets::clientbound::play::SetHealth {
+				health: self.health,
+				food: 20,
+				food_saturation: 0.0,
+			}
+			.try_into()
+			.unwrap(),
+		);
 	}
 }
