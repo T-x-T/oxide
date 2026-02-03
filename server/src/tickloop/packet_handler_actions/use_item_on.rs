@@ -36,7 +36,12 @@ pub fn process(
 	let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
 		//Don't place block, because player right clicked something that does something when right clicked
 		let block_interaction_result = lib::block::interact_with_block_at(location, block_id_at_location, face, &game.block_state_data);
-		block_interaction_result.handle(dimension, location, player, players_clone, block_id_at_location, game.clone()).unwrap()
+		block_interaction_result
+			.handle(dimension, location, player, players_clone, block_id_at_location, game.clone())
+			.inspect_err(|x| {
+				println!("lib::block::interact_with_block_at({location:?}, {block_id_at_location}, {face}) call resulted in error {x:?}")
+			})
+			.unwrap_or_default()
 	} else {
 		//Let's go - we can place a block
 		let used_item_id = player
