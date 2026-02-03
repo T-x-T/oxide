@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Creeper {
 	pub common: CommonEntity,
 	pub mob: CommonMob,

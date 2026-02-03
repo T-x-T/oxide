@@ -8,7 +8,7 @@ use crate::packets::Packet;
 use crate::packets::clientbound::play::EntityMetadata;
 use crate::types::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Entity {
 	Armadillo(Armadillo),
 	Cat(Cat),
@@ -441,6 +441,9 @@ pub trait CommonEntityTrait {
 
 	fn get_common_entity_data(&self) -> &CommonEntity;
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity;
+	fn get_common_entity_data_cloned(&self) -> CommonEntity {
+		return self.get_common_entity_data().clone();
+	}
 	fn set_common_entity_data(&mut self, common_entity_data: CommonEntity);
 	fn get_type(&self) -> i32;
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
@@ -801,6 +804,12 @@ pub trait CommonEntityTrait {
 		if self.is_mob() {
 			self.get_mob_data_mut().health -= damage;
 		}
+	}
+
+	fn is_in_liquid(&self, dimension: &Dimension) -> bool {
+		//need to use self.get_common_entity_data_cloned() because Player doesnt implement self.get_common_entity_data()
+		let block_at_pos = dimension.get_block(self.get_common_entity_data_cloned().position.into()).unwrap_or_default();
+		return data::blocks::get_type_from_block_state_id(block_at_pos) == data::blocks::Type::Liquid;
 	}
 }
 

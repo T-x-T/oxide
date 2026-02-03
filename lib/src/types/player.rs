@@ -110,7 +110,17 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
-		todo!()
+		todo!();
+	}
+
+	fn get_common_entity_data_cloned(&self) -> CommonEntity {
+		return CommonEntity {
+			position: self.position,
+			velocity: self.velocity,
+			uuid: self.uuid,
+			entity_id: self.entity_id,
+			..Default::default()
+		};
 	}
 
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
@@ -177,7 +187,7 @@ impl CommonEntityTrait for Player {
 			}
 		}
 
-		if self.position.y - self.last_position.y < 0.0 {
+		if self.position.y - self.last_position.y < 0.0 && !self.is_in_liquid(dimension) {
 			self.fall_distance += -(self.position.y - self.last_position.y);
 		} else {
 			let fall_damage_multiplier = 1.0; //will be important with enchantments and such
@@ -185,6 +195,10 @@ impl CommonEntityTrait for Player {
 			if fall_damage > 0.0 {
 				output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
 			}
+			self.fall_distance = 0.0;
+		}
+
+		if self.is_in_liquid(dimension) {
 			self.fall_distance = 0.0;
 		}
 

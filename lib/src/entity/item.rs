@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ItemEntity {
 	pub common: CommonEntity,
 	pub age: i16,
