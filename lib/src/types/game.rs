@@ -60,6 +60,7 @@ pub enum PacketHandlerAction {
 	NewPlayer(SocketAddr, TcpStream),
 	UpdateGamemode(SocketAddr, crate::player::Gamemode),
 	Respawn(SocketAddr),
+	UseItem(SocketAddr, crate::packets::serverbound::play::UseItem),
 }
 
 #[derive(Debug, Default)]

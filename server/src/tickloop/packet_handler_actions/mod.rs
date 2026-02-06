@@ -11,6 +11,7 @@ mod respawn;
 mod send_chat_message;
 mod send_command;
 mod update_sign;
+mod use_item;
 mod use_item_on;
 
 pub fn process(game: Arc<Game>, players_clone: &[Player]) {
@@ -140,6 +141,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::Respawn(peer_addr) => {
 				respawn::process(peer_addr, game.clone(), players_clone);
 			}
+			PacketHandlerAction::UseItem(peer_addr, parsed_packet) => use_item::process(peer_addr, parsed_packet, game.clone()),
 		}
 	}
 	*game.packet_handler_actions.lock().unwrap() = Vec::new();

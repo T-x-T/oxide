@@ -64,10 +64,11 @@ pub struct Player {
 	pub is_dead: bool,
 	fall_distance: f64,
 	food_level: u8,
-	food_saturation_level: u8,
+	food_saturation_level: f32,
 	food_tick_timer: u8,
 	food_exhaustion_level: f32,
 	last_starvation_ticks_ago: u8,
+	started_eating_ticks_ago: u8,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -101,6 +102,7 @@ impl Clone for Player {
 			food_tick_timer: self.food_tick_timer,
 			food_exhaustion_level: self.food_exhaustion_level,
 			last_starvation_ticks_ago: self.last_starvation_ticks_ago,
+			started_eating_ticks_ago: self.started_eating_ticks_ago,
 		}
 	}
 }
@@ -220,21 +222,58 @@ impl CommonEntityTrait for Player {
 
 			if self.food_exhaustion_level >= 4.0 {
 				self.food_exhaustion_level -= 4.0;
-				if self.food_saturation_level > 0 {
-					self.food_saturation_level -= 1;
+				if self.food_saturation_level > 0.0 {
+					self.food_saturation_level -= 1.0;
 					self.send_health_and_food_to_client(game.clone());
 				} else if self.food_level > 0 {
 					self.food_level -= 1;
 					self.send_health_and_food_to_client(game.clone());
 				}
 			}
+
+			if self.started_eating_ticks_ago < 32 && self.started_eating_ticks_ago != 0 {
+				self.started_eating_ticks_ago += 1;
+			} else if self.started_eating_ticks_ago != 0 {
+				self.started_eating_ticks_ago = 0;
+
+				if let Some(hand_slot) = self.get_held_item(true) {
+					let all_items = data::items::get_items();
+					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.item_id)).unwrap();
+
+					if let Some(nutrition) = item_data.nutrition {
+						self.add_nutrition(nutrition);
+					}
+					if let Some(saturation) = item_data.saturation {
+						self.add_saturation(saturation);
+					}
+
+					game.send_packet(
+						&self.peer_socket_address,
+						crate::packets::clientbound::play::EntityEvent::PACKET_ID,
+						crate::packets::clientbound::play::EntityEvent {
+							entity_id: self.entity_id,
+							entity_status: 9,
+						}
+						.try_into()
+						.unwrap(),
+					);
+
+					let selected_slot = self.get_selected_inventory_slot().clone();
+					let selected_slot = selected_slot.map(|x| {
+						let new_item_count = x.item_count - 1;
+						if new_item_count == 0 {
+							None
+						} else {
+							Some(Slot {
+								item_count: new_item_count,
+								..x
+							})
+						}
+					});
+					self.set_selected_inventory_slot(selected_slot.flatten(), players, game.clone());
+				};
+			}
 		}
-
-		println!(
-			"{} \tfood_level: {}\tsaturation: {}\texhaustion: {}",
-			self.display_name, self.food_level, self.food_saturation_level, self.food_exhaustion_level
-		);
-
 
 		self.last_position = self.position;
 
@@ -323,10 +362,11 @@ impl Player {
 				is_dead: false,
 				fall_distance: 0.0,
 				food_level: 20,
-				food_saturation_level: 5,
+				food_saturation_level: 5.0,
 				food_tick_timer: 0,
 				food_exhaustion_level: 0.0,
 				last_starvation_ticks_ago: 0,
+				started_eating_ticks_ago: 0,
 			};
 
 			return player;
@@ -444,10 +484,11 @@ impl Player {
 			is_dead: false,
 			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
 			food_level: 20,
-			food_saturation_level: 5,
+			food_saturation_level: 5.0,
 			food_tick_timer: 0,
-			food_exhaustion_level: 1000.0,
+			food_exhaustion_level: 50.0, //TODO: reset to 0.0
 			last_starvation_ticks_ago: 0,
+			started_eating_ticks_ago: 0,
 		};
 
 		return player;
@@ -855,6 +896,10 @@ impl Player {
 
 	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
 		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, game);
+	}
+
+	pub fn get_selected_inventory_slot(&self) -> &Option<Slot> {
+		return &self.get_inventory()[(self.get_selected_slot() + 36) as usize];
 	}
 
 	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
@@ -1342,17 +1387,47 @@ impl Player {
 		self.send_health_and_food_to_client(game);
 	}
 
-	fn send_health_and_food_to_client(&self, game: Arc<Game>) {
+	pub fn send_health_and_food_to_client(&self, game: Arc<Game>) {
 		game.send_packet(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetHealth::PACKET_ID,
 			crate::packets::clientbound::play::SetHealth {
 				health: self.health,
 				food: self.food_level as i32,
-				food_saturation: self.food_saturation_level as f32,
+				food_saturation: self.food_saturation_level,
 			}
 			.try_into()
 			.unwrap(),
 		);
+	}
+
+	pub fn add_nutrition(&mut self, nutrition: u8) {
+		self.food_level += nutrition;
+		if self.food_level > 20 {
+			self.food_level = 20;
+		}
+	}
+
+	pub fn add_saturation(&mut self, saturation: f32) {
+		self.food_saturation_level += saturation;
+		if self.food_saturation_level > 20.0 {
+			self.food_saturation_level = 20.0;
+		}
+	}
+
+	pub fn eat(&mut self) {
+		if self.started_eating_ticks_ago != 0 {
+			return;
+		}
+
+		if self.food_level == 20 {
+			return;
+		}
+
+		self.started_eating_ticks_ago = 1;
+	}
+
+	pub fn stop_eating(&mut self) {
+		self.started_eating_ticks_ago = 0;
 	}
 }

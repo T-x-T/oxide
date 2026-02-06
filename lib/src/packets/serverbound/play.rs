@@ -992,3 +992,53 @@ impl TryFrom<Vec<u8>> for UseItemOn {
 		});
 	}
 }
+
+//
+// MARK: 0x40 use item
+//
+
+#[derive(Debug, Clone)]
+pub struct UseItem {
+	pub hand: i32,
+	pub sequence: i32,
+	pub yaw: f32,
+	pub pitch: f32,
+}
+
+impl Packet for UseItem {
+	const PACKET_ID: u8 = 0x40;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<UseItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UseItem) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.hand));
+		result.append(&mut crate::serialize::varint(value.sequence));
+		result.append(&mut crate::serialize::float(value.yaw));
+		result.append(&mut crate::serialize::float(value.pitch));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UseItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			hand: crate::deserialize::varint(&mut value)?,
+			sequence: crate::deserialize::varint(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
