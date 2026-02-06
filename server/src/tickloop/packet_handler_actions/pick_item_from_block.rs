@@ -18,6 +18,8 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, 
 			id: 0,
 			repair_cost: 0,
 			tool_rules: Vec::new(),
+			nutrition: None,
+			saturation: None,
 		})
 		.id;
 

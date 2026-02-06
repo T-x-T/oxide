@@ -29,6 +29,8 @@ pub struct Item {
 	pub repair_cost: u8,
 	pub id: i32,
 	pub tool_rules: Vec<ToolRule>,
+	pub nutrition: Option<u8>,
+	pub saturation: Option<f32>,
 }
 
 #[derive(Debug, Clone)]
@@ -80,8 +82,19 @@ pub fn get_items() -> HashMap<&'static str, Item> {
 		}
 		tool_rules += "]";
 
+		let mut nutrition_text = "None".to_string();
+		let mut saturation_text = "None".to_string();
+		if let Some(food) = components["minecraft:food"].as_object() {
+			if let Some(nutrition) = food["nutrition"].as_i32() {
+				nutrition_text = format!("Some({nutrition})");
+			}
+			if let Some(saturation) = food["saturation"].as_f32() {
+				saturation_text = format!("Some({saturation:.2})");
+			}
+		}
+
 		output += format!(
-			"\titems.insert(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id}, tool_rules: {tool_rules} }});\n"
+			"\titems.insert(\"{key}\", Item {{ max_stack_size: {max_stack_size}, rarity: ItemRarity::{rarity}, repair_cost: {repair_cost}, id: {id}, nutrition: {nutrition_text}, saturation: {saturation_text}, tool_rules: {tool_rules} }});\n"
 		)
 		.as_str();
 	}
