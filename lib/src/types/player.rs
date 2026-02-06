@@ -230,6 +230,9 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+		if self.gamemode == Gamemode::Creative || self.gamemode == Gamemode::Spectator {
+			return;
+		}
 		self.health -= damage;
 
 		game.send_packet(
@@ -1227,6 +1230,17 @@ impl Player {
 				);
 			}
 		}
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
+			crate::packets::clientbound::play::EntityEvent {
+				entity_id: self.entity_id,
+				entity_status: 28, //set op permission level 4
+			}
+			.try_into()
+			.unwrap(),
+		);
 
 		game.send_packet(
 			&self.peer_socket_address,
