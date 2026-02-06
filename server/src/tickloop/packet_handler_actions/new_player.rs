@@ -89,17 +89,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		.unwrap(),
 	);
 
-	game.send_packet(
-		&peer_addr,
-		lib::packets::clientbound::play::SetHealth::PACKET_ID,
-		lib::packets::clientbound::play::SetHealth {
-			health: new_player.get_health(),
-			food: 20,
-			food_saturation: 0.0,
-		}
-		.try_into()
-		.unwrap(),
-	);
+	new_player.send_health_and_food_to_client(game.clone());
 
 	game.send_packet(
 		&peer_addr,

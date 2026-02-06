@@ -483,10 +483,10 @@ impl Player {
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
 			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
-			food_level: 20,
-			food_saturation_level: 5.0,
-			food_tick_timer: 0,
-			food_exhaustion_level: 50.0, //TODO: reset to 0.0
+			food_level: player_data.get_child("foodLevel").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
+			food_saturation_level: player_data.get_child("foodSaturationLevel").unwrap_or(&NbtTag::Float(String::new(), 5.0)).as_float(),
+			food_tick_timer: player_data.get_child("foodTickTimer").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
+			food_exhaustion_level: player_data.get_child("foodExhaustionLevel").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_float(),
 			last_starvation_ticks_ago: 0,
 			started_eating_ticks_ago: 0,
 		};
@@ -517,6 +517,10 @@ impl Player {
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
 			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
 			NbtTag::Float("Health".to_string(), self.health),
+			NbtTag::Float("foodExhaustionLevel".to_string(), self.food_exhaustion_level),
+			NbtTag::Int("foodLevel".to_string(), self.food_level as i32),
+			NbtTag::Float("foodSaturationLevel".to_string(), self.food_saturation_level),
+			NbtTag::Int("foodTickTimer".to_string(), self.food_tick_timer as i32),
 			NbtTag::Double("fall_distance".to_string(), self.fall_distance),
 			NbtTag::List(
 				"Inventory".to_string(),
