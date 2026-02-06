@@ -63,7 +63,11 @@ pub struct Player {
 	health: f32,
 	pub is_dead: bool,
 	fall_distance: f64,
-	last_regen_ticks_ago: u32,
+	food_level: u8,
+	food_saturation_level: u8,
+	food_tick_timer: u8,
+	food_exhaustion_level: f32,
+	last_starvation_ticks_ago: u8,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -92,7 +96,11 @@ impl Clone for Player {
 			health: self.health,
 			is_dead: self.is_dead,
 			fall_distance: self.fall_distance,
-			last_regen_ticks_ago: self.last_regen_ticks_ago,
+			food_level: self.food_level,
+			food_saturation_level: self.food_saturation_level,
+			food_tick_timer: self.food_tick_timer,
+			food_exhaustion_level: self.food_exhaustion_level,
+			last_starvation_ticks_ago: self.last_starvation_ticks_ago,
 		}
 	}
 }
@@ -178,29 +186,55 @@ impl CommonEntityTrait for Player {
 			for entity in self.die(game.clone(), players) {
 				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
 			}
-		} else {
-			if self.last_regen_ticks_ago > 80 {
-				self.last_regen_ticks_ago = 0;
-				self.heal(1.0, game.clone());
-			} else if self.health < 20.0 {
-				self.last_regen_ticks_ago += 1;
+		} else if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
+			let ticks_between_regen = 80;
+			if self.food_level > 17 || self.food_level == 0 {
+				if self.food_tick_timer > ticks_between_regen {
+					self.food_tick_timer = 0;
+					if self.food_level > 17 {
+						self.food_exhaustion_level += 1.0;
+						self.heal(1.0, game.clone());
+					} else {
+						self.damage(1.0, game.clone(), players);
+					}
+				} else {
+					self.food_tick_timer += 1;
+				}
+			}
+
+			if self.position.y - self.last_position.y < 0.0 && !self.is_in_liquid(dimension) {
+				self.fall_distance += -(self.position.y - self.last_position.y);
+			} else {
+				let fall_damage_multiplier = 1.0; //will be important with enchantments and such
+				let safe_fall_height = 4.0;
+				let fall_damage = ((self.fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
+				if fall_damage > 0.0 {
+					output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
+				}
+				self.fall_distance = 0.0;
+			}
+
+			if self.is_in_liquid(dimension) {
+				self.fall_distance = 0.0;
+			}
+
+			if self.food_exhaustion_level >= 4.0 {
+				self.food_exhaustion_level -= 4.0;
+				if self.food_saturation_level > 0 {
+					self.food_saturation_level -= 1;
+					self.send_health_and_food_to_client(game.clone());
+				} else if self.food_level > 0 {
+					self.food_level -= 1;
+					self.send_health_and_food_to_client(game.clone());
+				}
 			}
 		}
 
-		if self.position.y - self.last_position.y < 0.0 && !self.is_in_liquid(dimension) {
-			self.fall_distance += -(self.position.y - self.last_position.y);
-		} else {
-			let fall_damage_multiplier = 1.0; //will be important with enchantments and such
-			let fall_damage = ((self.fall_distance - 4.0) * fall_damage_multiplier).ceil();
-			if fall_damage > 0.0 {
-				output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
-			}
-			self.fall_distance = 0.0;
-		}
+		println!(
+			"{} \tfood_level: {}\tsaturation: {}\texhaustion: {}",
+			self.display_name, self.food_level, self.food_saturation_level, self.food_exhaustion_level
+		);
 
-		if self.is_in_liquid(dimension) {
-			self.fall_distance = 0.0;
-		}
 
 		self.last_position = self.position;
 
@@ -234,18 +268,9 @@ impl CommonEntityTrait for Player {
 			return;
 		}
 		self.health -= damage;
+		self.food_exhaustion_level += 0.1;
 
-		game.send_packet(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetHealth::PACKET_ID,
-			crate::packets::clientbound::play::SetHealth {
-				health: self.health,
-				food: 20,
-				food_saturation: 0.0,
-			}
-			.try_into()
-			.unwrap(),
-		);
+		self.send_health_and_food_to_client(game.clone());
 
 		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
 			entity_id: self.entity_id,
@@ -297,7 +322,11 @@ impl Player {
 				health: 20.0,
 				is_dead: false,
 				fall_distance: 0.0,
-				last_regen_ticks_ago: 0,
+				food_level: 20,
+				food_saturation_level: 5,
+				food_tick_timer: 0,
+				food_exhaustion_level: 0.0,
+				last_starvation_ticks_ago: 0,
 			};
 
 			return player;
@@ -414,7 +443,11 @@ impl Player {
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
 			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
-			last_regen_ticks_ago: 0,
+			food_level: 20,
+			food_saturation_level: 5,
+			food_tick_timer: 0,
+			food_exhaustion_level: 1000.0,
+			last_starvation_ticks_ago: 0,
 		};
 
 		return player;
@@ -1306,13 +1339,17 @@ impl Player {
 			self.health = 20.0;
 		}
 
+		self.send_health_and_food_to_client(game);
+	}
+
+	fn send_health_and_food_to_client(&self, game: Arc<Game>) {
 		game.send_packet(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetHealth::PACKET_ID,
 			crate::packets::clientbound::play::SetHealth {
 				health: self.health,
-				food: 20,
-				food_saturation: 0.0,
+				food: self.food_level as i32,
+				food_saturation: self.food_saturation_level as f32,
 			}
 			.try_into()
 			.unwrap(),
