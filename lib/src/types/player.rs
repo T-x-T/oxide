@@ -1368,14 +1368,6 @@ impl Player {
 			.try_into()
 			.unwrap(),
 		);
-
-		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
-
-		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
-			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
-				self.send_chunk(world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
-			}
-		}
 	}
 
 	pub fn get_health(&self) -> f32 {
