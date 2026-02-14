@@ -60,6 +60,7 @@ Configuration is handled through environment variables.
 | OXIDE_WORLD_PATH | ./world | any path | ./ must be explicitly stated |
 | OXIDE_SAVE_SECONDS | 60 | Whole seconds | |
 | OXIDE_MOTD | Hello oxide! | String | Quick and dirty hack, Freaks out on windows if string is contained in quotes or includes spaces and i don't know why... |
+| OXIDE_DEFAULT_GAMEMODE | survival | `survival` OR `creative` OR `adventure` OR `spectator` | The gamemode players that connect for the first time get assigned |
 
 # Repository contents
 
