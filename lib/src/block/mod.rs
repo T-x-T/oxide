@@ -9,6 +9,7 @@ use std::sync::Arc;
 mod barell;
 mod chest;
 mod door;
+mod drop_experience;
 mod ender_chest;
 mod fence;
 mod fencegate;
@@ -17,6 +18,7 @@ mod rotated_pillar;
 mod slab;
 mod stained_glass_pane;
 mod stair;
+mod tall_grass;
 mod trapdoor;
 mod trapped_chest;
 
@@ -132,6 +134,7 @@ pub fn update(
 		Type::IronBars => iron_bars::update(position, dimension, block_states),
 		Type::StainedGlassPane => stained_glass_pane::update(position, dimension, block_states),
 		Type::Fence => fence::update(position, dimension, block_states),
+		Type::Door => door::update(position, dimension, block_states),
 		_ => None,
 	};
 
@@ -235,5 +238,59 @@ pub fn interact_with_block_at(
 		Type::Stonecutter => BlockInteractionResult::OpenInventory(Inventory::Stonecutter),
 		Type::WallSign | Type::StandingSign | Type::WallHangingSign | Type::CeilingHangingSign => BlockInteractionResult::OpenSignEditor,
 		_ => BlockInteractionResult::Nothing,
+	};
+}
+
+pub fn get_item_drop(block_id: u16, used_tool_id: i32, block_states: &HashMap<String, data::blocks::Block>) -> Item {
+	let all_items = data::items::get_items();
+	let used_tool = all_items.get(data::items::get_item_name_by_id(used_tool_id)).unwrap();
+	let block = data::blocks::get_block_from_block_state_id(block_id, block_states);
+
+	let mut drop_item = true;
+
+	for rule in &used_tool.tool_rules {
+		for match_block in &rule.blocks {
+			if match_block.starts_with("#") {
+				for tag_match_block in data::tags::get_block().get(match_block.replace("#minecraft:", "").as_str()).unwrap_or(&Vec::<&str>::new()) {
+					if *tag_match_block == block.block_name && !rule.correct_for_drops {
+						drop_item = false;
+					}
+				}
+			} else {
+				if *match_block == block.block_name && !rule.correct_for_drops {
+					drop_item = false;
+				}
+			}
+		}
+	}
+
+	if !drop_item {
+		return Item::default();
+	}
+
+	return match block.block_type {
+		Type::DropExperience => drop_experience::get_item_drop(block, used_tool, block_states),
+		Type::TallGrass => tall_grass::get_item_drop(block, used_tool, block_states),
+		_ => {
+			let block_name = data::blocks::get_block_name_from_block_state_id(block_id, block_states);
+			let item = all_items.get(block_name.as_str()).unwrap_or(all_items.get("minecraft:air").unwrap()).clone();
+
+			Item {
+				id: data::items::get_item_name_by_id(item.id).to_string(),
+				count: 1,
+				components: Vec::new(),
+			}
+		}
+	};
+}
+
+pub fn get_hardness(block_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	let block = data::blocks::get_block_from_block_state_id(block_id, block_states);
+
+	return match block.block_type {
+		Type::TallGrass => 0.0,
+		Type::TallDryGrass => 0.0,
+		Type::DoublePlant => 0.0,
+		_ => 1.0,
 	};
 }

@@ -4,7 +4,7 @@ use crate::entity::ItemEntity;
 
 use super::*;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Slot {
 	pub item_count: i32,
 	pub item_id: i32,
@@ -12,7 +12,7 @@ pub struct Slot {
 	pub components_to_remove: Vec<i32>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Item {
 	pub id: String,
 	pub count: u8,

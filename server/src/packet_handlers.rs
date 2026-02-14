@@ -58,6 +58,9 @@ pub fn handle_packet(
 			lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data),
 			lib::packets::serverbound::play::PlayerInput::PACKET_ID => play::player_input(stream, &mut packet.data),
 			lib::packets::serverbound::play::Interact::PACKET_ID => play::interact(stream, &mut packet.data),
+			lib::packets::serverbound::play::ChangeGamemode::PACKET_ID => play::change_gamemode(stream, &mut packet.data),
+			lib::packets::serverbound::play::ClientStatus::PACKET_ID => play::client_status(stream, &mut packet.data),
+			lib::packets::serverbound::play::UseItem::PACKET_ID => play::use_item(stream, &mut packet.data),
 			_ => Ok(None),
 		},
 		ConnectionState::Transfer => todo!(),
@@ -808,5 +811,24 @@ pub mod play {
 	pub fn interact(stream: &mut TcpStream, data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
 		let parsed_packet = lib::packets::serverbound::play::Interact::try_from(data.to_vec())?;
 		return Ok(Some(PacketHandlerAction::Interact(stream.peer_addr()?, parsed_packet)));
+	}
+
+	pub fn change_gamemode(stream: &mut TcpStream, data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+		let parsed_packet = lib::packets::serverbound::play::ChangeGamemode::try_from(data.to_vec())?;
+		return Ok(Some(PacketHandlerAction::UpdateGamemode(stream.peer_addr()?, parsed_packet.gamemode)));
+	}
+
+	pub fn client_status(stream: &mut TcpStream, data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+		let parsed_packet = lib::packets::serverbound::play::ClientStatus::try_from(data.to_vec())?;
+		if parsed_packet.action_id == 0 {
+			return Ok(Some(PacketHandlerAction::Respawn(stream.peer_addr()?)));
+		} else {
+			return Ok(None);
+		}
+	}
+
+	pub fn use_item(stream: &mut TcpStream, data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+		let parsed_packet = lib::packets::serverbound::play::UseItem::try_from(data.to_vec())?;
+		return Ok(Some(PacketHandlerAction::UseItem(stream.peer_addr()?, parsed_packet)));
 	}
 }

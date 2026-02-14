@@ -20,6 +20,7 @@ pub struct Game {
 	pub connections: DashMap<SocketAddr, Connection>,
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
 	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
+	pub default_gamemode: Gamemode,
 }
 
 impl Game {
@@ -57,6 +58,9 @@ pub enum PacketHandlerAction {
 	PlayerInput(SocketAddr, crate::packets::serverbound::play::PlayerInput),
 	Interact(SocketAddr, crate::packets::serverbound::play::Interact),
 	NewPlayer(SocketAddr, TcpStream),
+	UpdateGamemode(SocketAddr, crate::player::Gamemode),
+	Respawn(SocketAddr),
+	UseItem(SocketAddr, crate::packets::serverbound::play::UseItem),
 }
 
 #[derive(Debug, Default)]

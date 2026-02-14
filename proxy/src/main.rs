@@ -141,6 +141,11 @@ fn main() {
 								println!("parsed packet: {parsed_packet:?}");
 								parsed_server_packet = Some(parsed_packet.try_into().unwrap());
 							}
+							lib::packets::serverbound::play::ChatCommand::PACKET_ID => {
+								let parsed_packet = lib::packets::serverbound::play::ChatCommand::try_from(server_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+								parsed_server_packet = Some(parsed_packet.try_into().unwrap());
+							}
 							lib::packets::serverbound::play::Interact::PACKET_ID => {
 								let parsed_packet = lib::packets::serverbound::play::Interact::try_from(server_packet.data.clone()).unwrap();
 								println!("parsed packet: {parsed_packet:?}");
@@ -153,7 +158,10 @@ fn main() {
 								//parsed_server_packet = Some(parsed_packet.try_into().unwrap());
 								parsed_server_packet = Some(server_packet.data.clone());
 							}
-							_ => (),
+							0x0c => (),
+							_ => {
+								println!("unkown serverbound packet received with id: 0x{packet_id:02x}");
+							}
 						};
 					}
 					lib::ConnectionState::Transfer => {}
@@ -352,9 +360,20 @@ fn main() {
 								println!("parsed packet: {parsed_packet:?}");
 								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
+							lib::packets::clientbound::play::SystemChatMessage::PACKET_ID => {
+								let parsed_packet = lib::packets::clientbound::play::SystemChatMessage::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							}
 							lib::packets::clientbound::play::Explosion::PACKET_ID => {
 								println!("\n\nraw packet: {:?}\n\n", client_packet.data);
 								let parsed_packet = lib::packets::clientbound::play::Explosion::try_from(client_packet.data.clone()).unwrap();
+								println!("parsed packet: {parsed_packet:?}");
+								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
+							}
+							lib::packets::clientbound::play::SetCursorItem::PACKET_ID => {
+								println!("\n\nraw packet: {:?}\n\n", client_packet.data);
+								let parsed_packet = lib::packets::clientbound::play::SetCursorItem::try_from(client_packet.data.clone()).unwrap();
 								println!("parsed packet: {parsed_packet:?}");
 								parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
@@ -364,8 +383,9 @@ fn main() {
 								//println!("parsed packet: {parsed_packet:?}");
 								//parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
+							0x6f => (), //update time
 							_ => {
-								//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
+								println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
 							}
 						};
 					}

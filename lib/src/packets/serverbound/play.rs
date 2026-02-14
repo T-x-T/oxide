@@ -43,6 +43,54 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 }
 
 //
+// MARK: 0x04 change game mode
+//
+
+#[derive(Debug, Clone)]
+pub struct ChangeGamemode {
+	pub gamemode: Gamemode,
+}
+
+impl Packet for ChangeGamemode {
+	const PACKET_ID: u8 = 0x04;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ChangeGamemode> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ChangeGamemode) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.gamemode as u8 as i32));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChangeGamemode {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let gamemode = match crate::deserialize::varint(&mut value)? {
+			0 => Gamemode::Survival,
+			1 => Gamemode::Creative,
+			2 => Gamemode::Adventure,
+			3 => Gamemode::Spectator,
+			x => return Err(Box::new(crate::CustomError::InvalidInput(format!("{x} is not a valid gamemode")))),
+		};
+		return Ok(ChangeGamemode {
+			gamemode,
+		});
+	}
+}
+
+//
 // MARK: 0x06 chat command
 //
 
@@ -158,6 +206,47 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 			message_count,
 			acknowledged,
 			checksum,
+		});
+	}
+}
+
+//
+// MARK: 0x0b client status
+//
+
+#[derive(Debug, Clone)]
+pub struct ClientStatus {
+	pub action_id: i32, //0: respawn; 1: stats
+}
+
+impl Packet for ClientStatus {
+	const PACKET_ID: u8 = 0x0b;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ClientStatus> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ClientStatus) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.action_id));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ClientStatus {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			action_id: crate::deserialize::varint(&mut value)?,
 		});
 	}
 }
@@ -725,7 +814,7 @@ impl TryFrom<SetCreativeModeSlot> for Vec<u8> {
 		let mut result: Vec<u8> = Vec::new();
 
 		result.append(&mut crate::serialize::short(value.slot));
-		result.append(&mut crate::slot::serialize_hashed_slot(value.item.as_ref()));
+		result.append(&mut crate::slot::serialize_slot(value.item.as_ref()));
 
 		return Ok(result);
 	}
@@ -737,7 +826,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		return Ok(Self {
 			slot: crate::deserialize::short(&mut value)?,
-			item: crate::slot::deserialize_hashed_slot(&mut value)?,
+			item: crate::slot::deserialize_slot(&mut value)?,
 		});
 	}
 }
@@ -900,6 +989,56 @@ impl TryFrom<Vec<u8>> for UseItemOn {
 			inside_block: crate::deserialize::boolean(&mut value)?,
 			world_border_hit: crate::deserialize::boolean(&mut value)?,
 			sequence: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x40 use item
+//
+
+#[derive(Debug, Clone)]
+pub struct UseItem {
+	pub hand: i32,
+	pub sequence: i32,
+	pub yaw: f32,
+	pub pitch: f32,
+}
+
+impl Packet for UseItem {
+	const PACKET_ID: u8 = 0x40;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<UseItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UseItem) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.hand));
+		result.append(&mut crate::serialize::varint(value.sequence));
+		result.append(&mut crate::serialize::float(value.yaw));
+		result.append(&mut crate::serialize::float(value.pitch));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UseItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			hand: crate::deserialize::varint(&mut value)?,
+			sequence: crate::deserialize::varint(&mut value)?,
+			yaw: crate::deserialize::float(&mut value)?,
+			pitch: crate::deserialize::float(&mut value)?,
 		});
 	}
 }

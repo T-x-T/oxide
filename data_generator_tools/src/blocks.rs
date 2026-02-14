@@ -36,7 +36,7 @@ fn get_blocks() {
 
 	let mut cargo_toml_contents = "[package]
 name = \"block_get_blocks\"
-version = \"0.4.0\"
+version = \"0.5.0\"
 edition = \"2024\"
 description = \"\"
 
@@ -155,7 +155,7 @@ fn get_blocks_add_functions() {
 		outputs[output_index] +=
 			format!("pub fn add_{}(map: &mut HashMap<String, Block>) {{\n", convert_to_upper_camel_case(key).to_lowercase()).as_str();
 		outputs[output_index] +=
-			format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![], default_state: {default_state} }};\n").as_str();
+			format!("\tlet mut block = Block {{ block_type: Type::{block_type}, properties: vec![{properties}], states: vec![], default_state: {default_state}, block_name: \"{key}\" }};\n").as_str();
 		for x in block["states"].as_array().unwrap().iter() {
 			outputs[output_index] += format!(
 				"\tblock.states.push(State {{ id: {}, properties: vec![ {}] }});\n",
@@ -194,7 +194,7 @@ fn get_blocks_add_functions() {
 		let cargo_toml_contents = format!(
 			"[package]
 name = \"blocks_add_fn_{i}\"
-version = \"0.4.0\"
+version = \"0.5.0\"
 edition = \"2024\"
 description = \"\"
 
@@ -619,6 +619,7 @@ pub struct Block {
 	pub states: Vec<State>,
 	pub default_state: usize,
 	pub properties: Vec<Property>,
+	pub block_name: &'static str,
 }
 
 #[derive(Debug, Clone)]

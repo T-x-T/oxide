@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Armadillo {
 	pub common: CommonEntity,
 	pub mob: CommonMob,

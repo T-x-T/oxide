@@ -31,7 +31,7 @@ pub use pig::*;
 pub use rabbit::*;
 pub use sheep::*;
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct CommonEntity {
 	pub position: EntityPosition,
 	pub velocity: EntityPosition,
@@ -55,7 +55,7 @@ pub struct CommonEntity {
 	pub ticks_frozen: i32,
 }
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct CommonMob {
 	pub absorption_amount: f32,
 	pub active_effects: Vec<NbtListTag>,

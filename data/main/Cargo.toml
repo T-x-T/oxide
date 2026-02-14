@@ -1,6 +1,6 @@
 [package]
 name = "data"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 description = "contains functions that are generated from the data_generator_tools binary crate"
 
@@ -11,3 +11,4 @@ blockentity = {path = "../blockentity", version = "*"}
 blocks = {path = "../blocks/main", version = "*"}
 entities = {path = "../entities", version = "*"}
 items = {path = "../items", version = "*"}
+tags = {path = "../tags", version = "*"}

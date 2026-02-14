@@ -1,6 +1,6 @@
 use super::*;
 use crate::entity::CommonEntity;
-use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
+use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
 use data::blocks::Block;
 use flate2::Compression;
@@ -15,14 +15,34 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Gamemode {
+	Survival = 0,
+	Creative = 1,
+	Adventure = 2,
+	Spectator = 3,
+}
+
+impl TryFrom<u8> for Gamemode {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		return match value {
+			0 => Ok(Gamemode::Survival),
+			1 => Ok(Gamemode::Creative),
+			2 => Ok(Gamemode::Adventure),
+			3 => Ok(Gamemode::Spectator),
+			x => Err(Box::new(crate::CustomError::InvalidInput(format!("I dont know what a gamemode of {x} is supposed to be")))),
+		};
+	}
+}
+
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
-	x: f64,
-	y: f64,
-	z: f64,
-	yaw: f32,
-	pitch: f32,
+	position: EntityPosition,
+	last_position: EntityPosition,
 	pub velocity: EntityPosition,
 	pub display_name: String,
 	pub uuid: u128,
@@ -37,18 +57,27 @@ pub struct Player {
 	pub cursor_item: Option<Slot>,
 	is_sneaking: bool,
 	pub chat_message_index: i32,
+	gamemode: Gamemode,
+	mining_for_ticks: u16,
+	is_mining: bool,
+	health: f32,
+	pub is_dead: bool,
+	fall_distance: f64,
+	food_level: u8,
+	food_saturation_level: f32,
+	food_tick_timer: u8,
+	food_exhaustion_level: f32,
+	last_starvation_ticks_ago: u8,
+	started_eating_ticks_ago: u8,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
 impl Clone for Player {
 	fn clone(&self) -> Self {
 		Self {
-			x: self.x,
-			y: self.y,
-			z: self.z,
-			yaw: self.yaw,
-			pitch: self.pitch,
-			velocity: EntityPosition::default(),
+			position: self.position,
+			last_position: self.last_position,
+			velocity: self.velocity,
 			display_name: self.display_name.clone(),
 			uuid: self.uuid,
 			peer_socket_address: self.peer_socket_address,
@@ -62,7 +91,26 @@ impl Clone for Player {
 			cursor_item: self.cursor_item.clone(),
 			is_sneaking: self.is_sneaking,
 			chat_message_index: self.chat_message_index,
+			gamemode: self.gamemode,
+			mining_for_ticks: self.mining_for_ticks,
+			is_mining: self.is_mining,
+			health: self.health,
+			is_dead: self.is_dead,
+			fall_distance: self.fall_distance,
+			food_level: self.food_level,
+			food_saturation_level: self.food_saturation_level,
+			food_tick_timer: self.food_tick_timer,
+			food_exhaustion_level: self.food_exhaustion_level,
+			last_starvation_ticks_ago: self.last_starvation_ticks_ago,
+			started_eating_ticks_ago: self.started_eating_ticks_ago,
 		}
+	}
+}
+
+//manual implementation because TcpStream doesnt implement PartialEq
+impl PartialEq for Player {
+	fn eq(&self, other: &Self) -> bool {
+		self.uuid == other.uuid
 	}
 }
 
@@ -72,7 +120,17 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
-		todo!()
+		todo!();
+	}
+
+	fn get_common_entity_data_cloned(&self) -> CommonEntity {
+		return CommonEntity {
+			position: self.position,
+			velocity: self.velocity,
+			uuid: self.uuid,
+			entity_id: self.entity_id,
+			..Default::default()
+		};
 	}
 
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
@@ -101,11 +159,19 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_yaw_u8(&self) -> u8 {
-		return if self.yaw < 0.0 { (((self.yaw / 90.0) * 64.0) + 256.0) as u8 } else { ((self.yaw / 90.0) * 64.0) as u8 };
+		return if self.position.yaw < 0.0 {
+			(((self.position.yaw / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.position.yaw / 90.0) * 64.0) as u8
+		};
 	}
 
 	fn get_pitch_u8(&self) -> u8 {
-		return if self.pitch < 0.0 { (((self.pitch / 90.0) * 64.0) + 256.0) as u8 } else { ((self.pitch / 90.0) * 64.0) as u8 };
+		return if self.position.pitch < 0.0 {
+			(((self.position.pitch / 90.0) * 64.0) + 256.0) as u8
+		} else {
+			((self.position.pitch / 90.0) * 64.0) as u8
+		};
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -113,30 +179,167 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn is_on_ground(&self, dimension: &Dimension) -> bool {
-		return self.is_on_ground_at(
-			dimension,
-			EntityPosition {
-				x: self.x,
-				y: self.y,
-				z: self.z,
-				yaw: self.yaw,
-				pitch: self.pitch,
-			},
-		);
+		return self.is_on_ground_at(dimension, self.position);
+	}
+
+	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+		if self.health <= 0.0 {
+			for entity in self.die(game.clone(), players) {
+				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
+			}
+		} else if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
+			let ticks_between_regen = 80;
+			if self.food_level > 17 || self.food_level == 0 {
+				if self.food_tick_timer > ticks_between_regen {
+					self.food_tick_timer = 0;
+					if self.food_level > 17 {
+						self.food_exhaustion_level += 1.0;
+						self.heal(1.0, game.clone());
+					} else {
+						self.damage(1.0, game.clone(), players);
+					}
+				} else {
+					self.food_tick_timer += 1;
+				}
+			}
+
+			if self.position.y - self.last_position.y < 0.0 && !self.is_in_liquid(dimension) {
+				self.fall_distance += -(self.position.y - self.last_position.y);
+			} else {
+				let fall_damage_multiplier = 1.0; //will be important with enchantments and such
+				let safe_fall_height = 4.0;
+				let fall_damage = ((self.fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
+				if fall_damage > 0.0 {
+					output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
+				}
+				self.fall_distance = 0.0;
+			}
+
+			if self.is_in_liquid(dimension) {
+				self.fall_distance = 0.0;
+			}
+
+			if self.food_exhaustion_level >= 4.0 {
+				self.food_exhaustion_level -= 4.0;
+				if self.food_saturation_level > 0.0 {
+					self.food_saturation_level -= 1.0;
+					self.send_health_and_food_to_client(game.clone());
+				} else if self.food_level > 0 {
+					self.food_level -= 1;
+					self.send_health_and_food_to_client(game.clone());
+				}
+			}
+
+			if self.started_eating_ticks_ago < 32 && self.started_eating_ticks_ago != 0 {
+				self.started_eating_ticks_ago += 1;
+			} else if self.started_eating_ticks_ago != 0 {
+				self.started_eating_ticks_ago = 0;
+
+				if let Some(hand_slot) = self.get_held_item(true) {
+					let all_items = data::items::get_items();
+					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.item_id)).unwrap();
+
+					if let Some(nutrition) = item_data.nutrition {
+						self.add_nutrition(nutrition);
+					}
+					if let Some(saturation) = item_data.saturation {
+						self.add_saturation(saturation);
+					}
+
+					game.send_packet(
+						&self.peer_socket_address,
+						crate::packets::clientbound::play::EntityEvent::PACKET_ID,
+						crate::packets::clientbound::play::EntityEvent {
+							entity_id: self.entity_id,
+							entity_status: 9,
+						}
+						.try_into()
+						.unwrap(),
+					);
+
+					let selected_slot = self.get_selected_inventory_slot().clone();
+					let selected_slot = selected_slot.map(|x| {
+						let new_item_count = x.item_count - 1;
+						if new_item_count == 0 {
+							None
+						} else {
+							Some(Slot {
+								item_count: new_item_count,
+								..x
+							})
+						}
+					});
+					self.set_selected_inventory_slot(selected_slot.flatten(), players, game.clone());
+				};
+			}
+		}
+
+		self.last_position = self.position;
+
+		let own_position = self.get_position();
+		let entities_to_remove: Vec<i32> = dimension
+			.entities
+			.iter()
+			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
+			.filter_map(|x| {
+				if let Entity::Item(item) = x {
+					if self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, game.clone()) {
+						Some(item.get_common_entity_data().entity_id)
+					} else {
+						None
+					}
+				} else {
+					None
+				}
+			})
+			.collect();
+
+		if !entities_to_remove.is_empty() {
+			output.push(EntityTickOutcome::RemoveOthers(entities_to_remove));
+		}
+
+		return output;
+	}
+
+	fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+		if self.gamemode == Gamemode::Creative || self.gamemode == Gamemode::Spectator {
+			return;
+		}
+		self.health -= damage;
+		self.food_exhaustion_level += 0.1;
+
+		self.send_health_and_food_to_client(game.clone());
+
+		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
+			entity_id: self.entity_id,
+			yaw: 0.0,
+		};
+
+		players.iter().for_each(|x| {
+			game.send_packet(
+				&x.peer_socket_address,
+				crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
+				hurt_animation_packet.clone().try_into().unwrap(),
+			);
+		});
 	}
 }
 
 impl Player {
-	pub fn new(display_name: String, uuid: u128, peer_socket_address: SocketAddr, game: Arc<Game>, connection_stream: TcpStream) -> Self {
+	pub fn new(
+		display_name: String,
+		uuid: u128,
+		peer_socket_address: SocketAddr,
+		game: Arc<Game>,
+		connection_stream: TcpStream,
+		default_spawn_location: BlockPosition,
+	) -> Self {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
-			let default_spawn_location = game.world.lock().unwrap().default_spawn_location;
 			let entity_id = game.entity_id_manager.get_new();
 			let player = Self {
-				x: default_spawn_location.x as f64,
-				y: default_spawn_location.y as f64,
-				z: default_spawn_location.z as f64,
-				yaw: 0.0,
-				pitch: 0.0,
+				position: default_spawn_location.into(),
+				last_position: default_spawn_location.into(),
 				velocity: EntityPosition::default(),
 				display_name,
 				uuid,
@@ -152,6 +355,18 @@ impl Player {
 				cursor_item: None,
 				is_sneaking: false,
 				chat_message_index: 0,
+				gamemode: game.default_gamemode,
+				mining_for_ticks: 0,
+				is_mining: false,
+				health: 20.0,
+				is_dead: false,
+				fall_distance: 0.0,
+				food_level: 20,
+				food_saturation_level: 5.0,
+				food_tick_timer: 0,
+				food_exhaustion_level: 0.0,
+				last_starvation_ticks_ago: 0,
+				started_eating_ticks_ago: 0,
 			};
 
 			return player;
@@ -220,13 +435,33 @@ impl Player {
 			}
 		}
 
+		let mut parsed_gamemode = game.default_gamemode;
+		if let Some(gamemode) = player_data.get_child("playerGameType") {
+			match gamemode.as_int() {
+				0 => parsed_gamemode = Gamemode::Survival,
+				1 => parsed_gamemode = Gamemode::Creative,
+				2 => parsed_gamemode = Gamemode::Adventure,
+				3 => parsed_gamemode = Gamemode::Spectator,
+				_ => (),
+			};
+		};
+
 		let entity_id = game.entity_id_manager.get_new();
 		let player = Self {
-			x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
-			y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
-			z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
-			yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
-			pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			position: EntityPosition {
+				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			},
+			last_position: EntityPosition {
+				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+			},
 			velocity: EntityPosition::default(),
 			display_name,
 			uuid,
@@ -242,6 +477,18 @@ impl Player {
 			cursor_item: None,
 			is_sneaking: false,
 			chat_message_index: 0,
+			gamemode: parsed_gamemode,
+			mining_for_ticks: 0,
+			is_mining: false,
+			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
+			is_dead: false,
+			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
+			food_level: player_data.get_child("foodLevel").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
+			food_saturation_level: player_data.get_child("foodSaturationLevel").unwrap_or(&NbtTag::Float(String::new(), 5.0)).as_float(),
+			food_tick_timer: player_data.get_child("foodTickTimer").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
+			food_exhaustion_level: player_data.get_child("foodExhaustionLevel").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_float(),
+			last_starvation_ticks_ago: 0,
+			started_eating_ticks_ago: 0,
 		};
 
 		return player;
@@ -262,9 +509,19 @@ impl Player {
 			components_to_remove: Vec::new(),
 		};
 		let player_data = NbtTag::Root(vec![
-			NbtTag::List("Pos".to_string(), vec![NbtListTag::Double(self.x), NbtListTag::Double(self.y), NbtListTag::Double(self.z)]),
-			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.yaw), NbtListTag::Float(self.pitch)]),
+			NbtTag::List(
+				"Pos".to_string(),
+				vec![NbtListTag::Double(self.position.x), NbtListTag::Double(self.position.y), NbtListTag::Double(self.position.z)],
+			),
+			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.position.yaw), NbtListTag::Float(self.position.pitch)]),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
+			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
+			NbtTag::Float("Health".to_string(), self.health),
+			NbtTag::Float("foodExhaustionLevel".to_string(), self.food_exhaustion_level),
+			NbtTag::Int("foodLevel".to_string(), self.food_level as i32),
+			NbtTag::Float("foodSaturationLevel".to_string(), self.food_saturation_level),
+			NbtTag::Int("foodTickTimer".to_string(), self.food_tick_timer as i32),
+			NbtTag::Double("fall_distance".to_string(), self.fall_distance),
 			NbtTag::List(
 				"Inventory".to_string(),
 				self
@@ -356,7 +613,7 @@ impl Player {
 	}
 
 	pub fn get_looking_cardinal_direction(&self) -> CardinalDirection {
-		let yaw = self.yaw;
+		let yaw = self.position.yaw;
 		let cardinal_direction: CardinalDirection;
 		if yaw >= 0.0 {
 			if (135.0..225.0).contains(&yaw) {
@@ -390,12 +647,12 @@ impl Player {
 		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		let old_x = self.x;
-		let old_z = self.z;
+		let old_x = self.position.x;
+		let old_z = self.position.z;
 
-		self.x = x;
-		self.y = y;
-		self.z = z;
+		self.position.x = x;
+		self.position.y = y;
+		self.position.z = z;
 
 		let old_chunk_position = BlockPosition {
 			x: old_x as i32,
@@ -404,9 +661,9 @@ impl Player {
 		}
 		.convert_to_coordinates_of_chunk();
 		let new_chunk_position = BlockPosition {
-			x: self.x as i32,
+			x: self.position.x as i32,
 			y: 0,
-			z: self.z as i32,
+			z: self.position.z as i32,
 		}
 		.convert_to_coordinates_of_chunk();
 
@@ -457,22 +714,22 @@ impl Player {
 		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		self.yaw = new_position.yaw;
-		self.pitch = new_position.pitch;
+		self.position.yaw = new_position.yaw;
+		self.position.pitch = new_position.pitch;
 		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, game)?;
 
 		return Ok(self.get_position());
 	}
 
 	pub fn new_rotation(&mut self, yaw: f32, pitch: f32) -> EntityPosition {
-		self.yaw = yaw;
-		self.pitch = pitch;
+		self.position.yaw = yaw;
+		self.position.pitch = pitch;
 
 		return self.get_position();
 	}
 
 	pub fn get_pitch(&self) -> f32 {
-		return self.pitch;
+		return self.position.pitch;
 	}
 
 	pub fn send_chunk(
@@ -645,6 +902,10 @@ impl Player {
 		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, game);
 	}
 
+	pub fn get_selected_inventory_slot(&self) -> &Option<Slot> {
+		return &self.get_inventory()[(self.get_selected_slot() + 36) as usize];
+	}
+
 	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
 		self.inventory[slot as usize] = item.clone();
 
@@ -689,8 +950,8 @@ impl Player {
 			);
 		});
 	}
-	pub fn set_inventory(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
-		self.inventory = items.clone();
+	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
+		self.set_inventory_and_dont_inform_client(items);
 
 		game.send_packet(
 			&self.peer_socket_address,
@@ -726,6 +987,10 @@ impl Player {
 				.unwrap(),
 			);
 		});
+	}
+
+	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Option<Slot>>) {
+		self.inventory = items.clone();
 	}
 
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity, game: Arc<Game>) {
@@ -805,12 +1070,363 @@ impl Player {
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
-		return EntityPosition {
-			x: self.x,
-			y: self.y,
-			z: self.z,
-			yaw: self.yaw,
-			pitch: self.pitch,
-		};
+		return self.position;
+	}
+
+	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+		self.gamemode = gamemode;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::GameEvent::PACKET_ID,
+			crate::packets::clientbound::play::GameEvent {
+				event: 3,
+				value: self.gamemode as u8 as f32,
+			}
+			.try_into()?,
+		);
+
+		players.iter().for_each(|player| {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
+				crate::packets::clientbound::play::PlayerInfoUpdate {
+					actions: 0x04,
+					players: vec![(self.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
+				}
+				.try_into()
+				.unwrap(),
+			);
+		});
+
+		return Ok(());
+	}
+
+	pub fn get_gamemode(&self) -> Gamemode {
+		return self.gamemode;
+	}
+
+	pub fn start_mining(&mut self) {
+		self.mining_for_ticks = 1;
+		self.is_mining = true;
+	}
+
+	pub fn finish_mining(&mut self) {
+		self.mining_for_ticks = 0;
+		self.is_mining = false;
+	}
+
+	pub fn get_mining_for_ticks(&self) -> u16 {
+		return self.mining_for_ticks;
+	}
+
+	pub fn get_is_mining(&self) -> bool {
+		return self.is_mining;
+	}
+
+	//returns true when item pickup was succesfull and false when not
+	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+		if self.is_dead {
+			return false;
+		}
+
+		let slot = Slot::from(item.clone());
+
+		let slot_indecies = [
+			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+			33, 34, 35,
+		];
+
+		let mut inventory = self.get_inventory().clone();
+		let mut inventory_updated = false;
+
+		//first check if we can stack up an existing slot
+		for slot_index in slot_indecies {
+			#[allow(clippy::collapsible_if)]
+			if let Some(inventory_slot) = &mut inventory[slot_index] {
+				if inventory_slot.item_id == slot.item_id
+					&& inventory_slot.item_count
+						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.item_id)).unwrap().max_stack_size as i32
+				{
+					inventory_slot.item_count += 1;
+					inventory_updated = true;
+
+					break;
+				}
+			}
+		}
+
+		//if the player doesnt have the item in its inventory, put it in the first free slot
+		if !inventory_updated {
+			for slot_index in slot_indecies {
+				if inventory[slot_index].as_ref().is_some_and(|x| x.item_count == 0) || inventory[slot_index].is_none() {
+					inventory[slot_index] = Some(slot.clone());
+					inventory_updated = true;
+					break;
+				}
+			}
+		}
+
+		if inventory_updated {
+			self.set_inventory_and_inform_client(inventory, players, game.clone());
+
+			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
+				collected_entity_id: item_entity_id,
+				collector_entity_id: self.entity_id,
+				pickup_item_count: item.count as i32,
+			};
+
+			for player in players {
+				game.send_packet(
+					&player.peer_socket_address,
+					crate::packets::clientbound::play::PickupItem::PACKET_ID,
+					pickup_item_packet.clone().try_into().unwrap(),
+				);
+			}
+		}
+
+		return inventory_updated;
+	}
+
+	//returns vec of entities to summon upon death (for dropping the inventory items)
+	pub fn die(&mut self, game: Arc<Game>, players: &[Player]) -> Vec<Entity> {
+		self.is_dead = true;
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::CombatDeath::PACKET_ID,
+			crate::packets::clientbound::play::CombatDeath {
+				player_id: self.entity_id,
+				message: NbtTag::Root(vec![
+					NbtTag::String("type".to_string(), "text".to_string()),
+					NbtTag::String("text".to_string(), "haha you dieded".to_string()),
+				]),
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		let mut entities_to_summon: Vec<Entity> = Vec::new();
+
+		if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
+			for slot in &self.inventory {
+				if slot.as_ref().is_some_and(|x| x.item_count > 0) {
+					let new_entity = crate::entity::ItemEntity {
+						common: CommonEntity {
+							position: self.get_position(),
+							velocity: EntityPosition::default(),
+							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+							entity_id: game.entity_id_manager.get_new(),
+							..Default::default()
+						},
+						age: 0,
+						health: 5,
+						item: Item::from(slot.clone().unwrap()),
+						owner: self.uuid,
+						pickup_delay: 0,
+						thrower: self.uuid,
+					};
+
+					entities_to_summon.push(Entity::Item(new_entity));
+				}
+			}
+
+			players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
+				game.send_packet(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					crate::packets::clientbound::play::RemoveEntities {
+						entity_ids: vec![self.entity_id],
+					}
+					.try_into()
+					.unwrap(),
+				);
+			});
+
+			self.inventory = vec![None; 46];
+		}
+
+		return entities_to_summon;
+	}
+
+	pub fn respawn(&mut self, game: Arc<Game>, players: &[Player], world: &mut World) {
+		self.health = 20.0;
+		self.food_level = 20;
+		self.food_exhaustion_level = 0.0;
+		self.food_saturation_level = 5.0;
+		self.fall_distance = 0.0;
+		self.last_position = world.default_spawn_location.into();
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::Respawn::PACKET_ID,
+			crate::packets::clientbound::play::Respawn {
+				dimension_type: 0,
+				dimension_name: "minecraft:overworld".to_string(),
+				hashed_seed: 1,
+				game_mode: self.get_gamemode(),
+				previous_gamemode: self.get_gamemode() as i8,
+				is_debug: false,
+				is_flat: false,
+				has_death_location: true,
+				death_dimension_name: Some("minecraft:overworld".to_string()),
+				death_location: Some(self.get_position().into()),
+				portal_cooldown: 123,
+				sea_level: 64,
+				data_kept: 0x00,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		self
+			.new_position(
+				world.default_spawn_location.x as f64,
+				world.default_spawn_location.y as f64,
+				world.default_spawn_location.z as f64,
+				world,
+				&game.entity_id_manager,
+				&game.block_state_data,
+				game.clone(),
+			)
+			.unwrap();
+
+		for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
+			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
+				game.send_packet(
+					&other_stream.peer_addr().unwrap(),
+					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					crate::packets::clientbound::play::SpawnEntity {
+						entity_id: self.entity_id,
+						entity_uuid: self.uuid,
+						entity_type: data::entities::get_id_from_name("minecraft:player"),
+						x: self.get_position().x,
+						y: self.get_position().y,
+						z: self.get_position().z,
+						pitch: self.get_pitch_u8(),
+						yaw: self.get_yaw_u8(),
+						head_yaw: self.get_yaw_u8(),
+						data: 0,
+						velocity_x: 0,
+						velocity_y: 0,
+						velocity_z: 0,
+					}
+					.try_into()
+					.unwrap(),
+				);
+			}
+		}
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
+			crate::packets::clientbound::play::EntityEvent {
+				entity_id: self.entity_id,
+				entity_status: 28, //set op permission level 4
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
+			crate::packets::clientbound::play::SynchronizePlayerPosition {
+				teleport_id: self.current_teleport_id,
+				x: self.get_position().x,
+				y: self.get_position().y,
+				z: self.get_position().z,
+				velocity_x: 0.0,
+				velocity_y: 0.0,
+				velocity_z: 0.0,
+				yaw: self.get_position().yaw,
+				pitch: self.get_position().pitch,
+				flags: 0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::GameEvent::PACKET_ID,
+			crate::packets::clientbound::play::GameEvent {
+				event: 13,
+				value: 0.0,
+			}
+			.try_into()
+			.unwrap(),
+		);
+
+		self.is_dead = false;
+
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+			crate::packets::clientbound::play::SetContainerContent {
+				window_id: 0,
+				state_id: 1,
+				slot_data: self.get_inventory().clone(),
+				carried_item: None,
+			}
+			.try_into()
+			.unwrap(),
+		);
+	}
+
+	pub fn get_health(&self) -> f32 {
+		return self.health;
+	}
+
+	fn heal(&mut self, heal_amount: f32, game: Arc<Game>) {
+		self.health += heal_amount;
+		if self.health > 20.0 {
+			self.health = 20.0;
+		}
+
+		self.send_health_and_food_to_client(game);
+	}
+
+	pub fn send_health_and_food_to_client(&self, game: Arc<Game>) {
+		game.send_packet(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetHealth::PACKET_ID,
+			crate::packets::clientbound::play::SetHealth {
+				health: self.health,
+				food: self.food_level as i32,
+				food_saturation: self.food_saturation_level,
+			}
+			.try_into()
+			.unwrap(),
+		);
+	}
+
+	pub fn add_nutrition(&mut self, nutrition: u8) {
+		self.food_level += nutrition;
+		if self.food_level > 20 {
+			self.food_level = 20;
+		}
+	}
+
+	pub fn add_saturation(&mut self, saturation: f32) {
+		self.food_saturation_level += saturation;
+		if self.food_saturation_level > 20.0 {
+			self.food_saturation_level = 20.0;
+		}
+	}
+
+	pub fn eat(&mut self) {
+		if self.started_eating_ticks_ago != 0 {
+			return;
+		}
+
+		if self.food_level == 20 {
+			return;
+		}
+
+		self.started_eating_ticks_ago = 1;
+	}
+
+	pub fn stop_eating(&mut self) {
+		self.started_eating_ticks_ago = 0;
 	}
 }

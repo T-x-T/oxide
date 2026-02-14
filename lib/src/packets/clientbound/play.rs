@@ -1923,6 +1923,50 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 }
 
 //
+// MARK: 0x42 combat death
+//
+
+#[derive(Debug, Clone)]
+pub struct CombatDeath {
+	pub player_id: i32,
+	pub message: NbtTag,
+}
+
+impl Packet for CombatDeath {
+	const PACKET_ID: u8 = 0x42;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<CombatDeath> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: CombatDeath) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.player_id));
+		output.append(&mut crate::serialize::nbt_network(value.message));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for CombatDeath {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			player_id: crate::deserialize::varint(&mut value)?,
+			message: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x43 player info remove
 //
 
@@ -2305,6 +2349,103 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 		});
 	}
 }
+//
+// MARK: 0x50 respawn
+//
+
+#[derive(Debug, Clone)]
+pub struct Respawn {
+	pub dimension_type: i32,
+	pub dimension_name: String,
+	pub hashed_seed: i64,
+	pub game_mode: Gamemode,
+	pub previous_gamemode: i8,
+	pub is_debug: bool,
+	pub is_flat: bool,
+	pub has_death_location: bool,
+	pub death_dimension_name: Option<String>,
+	pub death_location: Option<BlockPosition>,
+	pub portal_cooldown: i32,
+	pub sea_level: i32,
+	pub data_kept: u8,
+}
+
+impl Packet for Respawn {
+	const PACKET_ID: u8 = 0x50;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<Respawn> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Respawn) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.dimension_type));
+		output.append(&mut crate::serialize::string(&value.dimension_name));
+		output.append(&mut crate::serialize::long(value.hashed_seed));
+		output.push(value.game_mode as u8);
+		output.push(value.previous_gamemode as u8);
+		output.append(&mut crate::serialize::boolean(value.is_debug));
+		output.append(&mut crate::serialize::boolean(value.is_flat));
+		if value.has_death_location {
+			output.append(&mut crate::serialize::boolean(true));
+			output.append(&mut crate::serialize::string(&value.death_dimension_name.unwrap()));
+			output.append(&mut crate::serialize::position(&value.death_location.unwrap()));
+		} else {
+			output.append(&mut crate::serialize::boolean(false));
+		}
+		output.append(&mut crate::serialize::varint(value.portal_cooldown));
+		output.append(&mut crate::serialize::varint(value.sea_level));
+		output.push(value.data_kept);
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Respawn {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let dimension_type = crate::deserialize::varint(&mut value)?;
+		let dimension_name = crate::deserialize::string(&mut value)?;
+		let hashed_seed = crate::deserialize::long(&mut value)?;
+		let game_mode = Gamemode::try_from(value.remove(0))?;
+		let previous_gamemode = value.remove(0) as i8;
+		let is_debug = crate::deserialize::boolean(&mut value)?;
+		let is_flat = crate::deserialize::boolean(&mut value)?;
+		let has_death_location = crate::deserialize::boolean(&mut value)?;
+		let (death_dimension_name, death_location) = if has_death_location {
+			(Some(crate::deserialize::string(&mut value)?), Some(crate::deserialize::position(&mut value)?))
+		} else {
+			(None, None)
+		};
+		let portal_cooldown = crate::deserialize::varint(&mut value)?;
+		let sea_level = crate::deserialize::varint(&mut value)?;
+		let data_kept = value.remove(0);
+
+		return Ok(Self {
+			dimension_type,
+			dimension_name,
+			hashed_seed,
+			game_mode,
+			previous_gamemode,
+			is_debug,
+			is_flat,
+			has_death_location,
+			death_dimension_name,
+			death_location,
+			portal_cooldown,
+			sea_level,
+			data_kept,
+		});
+	}
+}
 
 //
 // MARK: 0x5c set center chunk
@@ -2346,6 +2487,47 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 		return Ok(Self {
 			chunk_x: crate::deserialize::varint(&mut value)?,
 			chunk_z: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x5e Set Cursor Item
+//
+
+#[derive(Debug, Clone)]
+pub struct SetCursorItem {
+	pub carried_item: Slot,
+}
+
+impl Packet for SetCursorItem {
+	const PACKET_ID: u8 = 0x5e;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<SetCursorItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetCursorItem) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut slot::serialize_slot(Some(&value.carried_item)));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetCursorItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			carried_item: slot::deserialize_slot(&mut value)?.unwrap(),
 		});
 	}
 }
@@ -2721,6 +2903,52 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 }
 
 //
+// MARK: 0x66 set health
+//
+
+#[derive(Debug, Clone)]
+pub struct SetHealth {
+	pub health: f32,
+	pub food: i32,
+	pub food_saturation: f32,
+}
+
+impl Packet for SetHealth {
+	const PACKET_ID: u8 = 0x66;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<SetHealth> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: SetHealth) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::float(value.health));
+		output.append(&mut crate::serialize::varint(value.food));
+		output.append(&mut crate::serialize::float(value.food_saturation));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for SetHealth {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			health: crate::deserialize::float(&mut value)?,
+			food: crate::deserialize::varint(&mut value)?,
+			food_saturation: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
+//
 // MARK: 0x67 set held item
 //
 
@@ -2889,6 +3117,53 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 		return Ok(Self {
 			header: crate::deserialize::nbt_network(&mut value)?,
 			footer: crate::deserialize::nbt_network(&mut value)?,
+		});
+	}
+}
+
+//
+// MARK: 0x7a pickup item
+//
+
+#[derive(Debug, Clone)]
+pub struct PickupItem {
+	pub collected_entity_id: i32,
+	pub collector_entity_id: i32,
+	pub pickup_item_count: i32,
+}
+
+impl Packet for PickupItem {
+	const PACKET_ID: u8 = 0x7a;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<PickupItem> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PickupItem) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.collected_entity_id));
+		output.append(&mut crate::serialize::varint(value.collector_entity_id));
+		output.append(&mut crate::serialize::varint(value.pickup_item_count));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PickupItem {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			collected_entity_id: crate::deserialize::varint(&mut value)?,
+			collector_entity_id: crate::deserialize::varint(&mut value)?,
+			pickup_item_count: crate::deserialize::varint(&mut value)?,
 		});
 	}
 }

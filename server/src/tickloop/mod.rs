@@ -6,9 +6,11 @@ use lib::packets::Packet;
 use lib::types::*;
 
 mod packet_handler_actions;
+mod process_entity_tick_outcome;
 mod send_keepalives;
 mod tick_blockentities;
 mod tick_entities;
+mod tick_players;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -18,6 +20,7 @@ pub struct TickTimings {
 	pub send_keepalives: std::time::Duration,
 	pub tick_blockentities: std::time::Duration,
 	pub tick_entities: std::time::Duration,
+	pub tick_players: std::time::Duration,
 	pub packet_handler_actions: std::time::Duration,
 }
 
@@ -55,12 +58,17 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	tick_entities::process(game.clone(), &players_clone);
 	let duration_tick_entities = std::time::Instant::now() - now;
 
+	let now = std::time::Instant::now();
+	tick_players::process(game, &players_clone);
+	let duration_tick_players = std::time::Instant::now() - now;
+
 	return TickTimings {
 		save_all: duration_save_all,
 		clone_players: duration_clone_players,
 		send_keepalives: duration_send_keepalives,
 		tick_blockentities: duration_tick_blockentities,
 		tick_entities: duration_tick_entities,
+		tick_players: duration_tick_players,
 		packet_handler_actions: duration_packet_handler_actions,
 	};
 }
