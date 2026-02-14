@@ -1250,6 +1250,9 @@ impl Player {
 
 	pub fn respawn(&mut self, game: Arc<Game>, players: &[Player], world: &mut World) {
 		self.health = 20.0;
+		self.food_level = 20;
+		self.food_exhaustion_level = 0.0;
+		self.food_saturation_level = 5.0;
 		self.fall_distance = 0.0;
 		self.last_position = world.default_spawn_location.into();
 
