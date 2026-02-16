@@ -1175,6 +1175,10 @@ impl Player {
 		self.is_mining = false;
 	}
 
+	pub fn apply_exhaustion_from_mining_block(&mut self) {
+		self.food_exhaustion_level += 0.005;
+	}
+
 	pub fn get_mining_for_ticks(&self) -> u16 {
 		return self.mining_for_ticks;
 	}

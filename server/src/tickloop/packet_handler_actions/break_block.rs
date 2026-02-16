@@ -37,6 +37,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			return;
 		} else if status == 2 || (status == 0 && block_hardness == 0.0) {
 			player.finish_mining();
+			player.apply_exhaustion_from_mining_block();
 		} else if status == 5 {
 			player.stop_eating();
 		}
