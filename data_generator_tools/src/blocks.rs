@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::*;
 
 static ADD_FNS_COUNT: usize = 8;
@@ -262,7 +264,7 @@ fn property_enums() -> String {
 	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
-	let mut properties: HashMap<String, Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<String, Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
@@ -313,7 +315,7 @@ fn get_block_state_id_from_raw() -> String {
 	let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
 
 	//The key is the type and then the property, because properties can have different values depending on their type
-	let mut properties: HashMap<(String, String), Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
@@ -394,7 +396,7 @@ fn get_raw_properties_from_block_state_id() -> String {
 	let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
 
 	//The key is the type and then the property, because properties can have different values depending on their type
-	let mut properties: HashMap<(String, String), Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
