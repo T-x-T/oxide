@@ -10,7 +10,7 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "biomes"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "bitflags"
@@ -20,7 +20,7 @@ checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 
 [[package]]
 name = "block_get_blocks"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
  "blocks_add_fn_0",
@@ -35,22 +35,22 @@ dependencies = [
 
 [[package]]
 name = "block_get_type_from_block_state_id"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "block_types"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "blockentity"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "blocks"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_get_blocks",
  "block_get_type_from_block_state_id",
@@ -59,56 +59,56 @@ dependencies = [
 
 [[package]]
 name = "blocks_add_fn_0"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_1"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_2"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_3"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_4"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_5"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_6"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_7"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
@@ -150,7 +150,7 @@ dependencies = [
 
 [[package]]
 name = "data"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "biomes",
  "blockentity",
@@ -163,14 +163,14 @@ dependencies = [
 
 [[package]]
 name = "data_generator_tools"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "jzon",
 ]
 
 [[package]]
 name = "entities"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "flate2"
@@ -202,11 +202,11 @@ checksum = "e5274423e17b7c9fc20b6e7e208532f9b19825d82dfd615708b70edd83df41f1"
 
 [[package]]
 name = "inventory"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "items"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "jzon"
@@ -216,7 +216,7 @@ checksum = "17ab85f84ca42c5ec520e6f3c9966ba1fd62909ce260f8837e248857d2560509"
 
 [[package]]
 name = "lib"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "dashmap",
  "data",
@@ -287,7 +287,7 @@ dependencies = [
 
 [[package]]
 name = "proxy"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "lib",
 ]
@@ -353,7 +353,7 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "server"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "dashmap",
  "data",
@@ -380,7 +380,7 @@ dependencies = [
 
 [[package]]
 name = "tags"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "unicode-ident"
