@@ -102,6 +102,25 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 	}
 }
 
+pub fn get_item_drop(
+	_block: data::blocks::Block,
+	used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	let all_items = data::items::get_items();
+	let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+
+	if !pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	} else {
+		return Item {
+			id: "minecraft:iron_bars".to_string(),
+			count: 1,
+			components: Vec::new(),
+		};
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

@@ -79,6 +79,115 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_item_drop(
+	block: data::blocks::Block,
+	used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	let all_items = data::items::get_items();
+	let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+	let stone_pickaxes = [
+		all_items.get("minecraft:stone_pickaxe").unwrap().id,
+		all_items.get("minecraft:copper_pickaxe").unwrap().id,
+		all_items.get("minecraft:iron_pickaxe").unwrap().id,
+		all_items.get("minecraft:golden_pickaxe").unwrap().id,
+		all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+		all_items.get("minecraft:netherite_pickaxe").unwrap().id,
+	];
+
+	let needs_to_be_mined_with_wooden_pickaxe = [
+		"minecraft:andesite_slab",
+		"minecraft:blackstone_slab",
+		"minecraft:brick_slab",
+		"minecraft:cobbled_deepslate_slab",
+		"minecraft:cobblestone_slab",
+		"minecraft:cut_red_sandstone_slab",
+		"minecraft:cut_sandstone_slab",
+		"minecraft:dark_prismarine_slab",
+		"minecraft:deepslate_brick_slab",
+		"minecraft:deepslate_tile_slab",
+		"minecraft:diorite_slab",
+		"minecraft:end_stone_brick_slab",
+		"minecraft:granite_slab",
+		"minecraft:mossy_cobblestone_slab",
+		"minecraft:mossy_stone_brick_slab",
+		"minecraft:mud_brick_slab",
+		"minecraft:nether_brick_slab",
+		"minecraft:polished_andesite_slab",
+		"minecraft:polished_blackstone_brick_slab",
+		"minecraft:polished_blackstone_slab",
+		"minecraft:polished_deepslate_slab",
+		"minecraft:polished_diorite_slab",
+		"minecraft:polished_granite_slab",
+		"minecraft:polished_tuff_slab",
+		"minecraft:prismarine_brick_slab",
+		"minecraft:prismarine_slab",
+		"minecraft:purpur_slab",
+		"minecraft:quartz_slab",
+		"minecraft:red_nether_brick_slab",
+		"minecraft:red_sandstone_slab",
+		"minecraft:resin_brick_slab",
+		"minecraft:sandstone_slab",
+		"minecraft:smooth_quartz_slab",
+		"minecraft:smooth_red_sandstone_slab",
+		"minecraft:smooth_sandstone_slab",
+		"minecraft:smooth_stone_slab",
+		"minecraft:stone_brick_slab",
+		"minecraft:stone_slab",
+		"minecraft:tuff_brick_slab",
+		"minecraft:tuff_slab",
+	];
+	let needs_to_be_mined_with_stone_pickaxe = [
+		"minecraft:waxed_cut_copper_slab",
+		"minecraft:waxed_exposed_cut_copper_slab",
+		"minecraft:waxed_oxidized_cut_copper_slab",
+		"minecraft:waxed_weathered_cut_copper_slab",
+	];
+	if needs_to_be_mined_with_wooden_pickaxe.contains(&block.block_name) && !pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	if needs_to_be_mined_with_stone_pickaxe.contains(&block.block_name) && !stone_pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	return Item {
+		id: block.block_name.to_string(),
+		count: 1,
+		components: Vec::new(),
+	};
+}
+
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:andesite_slab" => 1.5,
+		"minecraft:cobbled_deepslate_slab" => 3.5,
+		"minecraft:dark_prismarine_slab" => 1.5,
+		"minecraft:deepslate_brick_slab" => 3.5,
+		"minecraft:deepslate_tile_slab" => 3.5,
+		"minecraft:diorite_slab" => 1.5,
+		"minecraft:end_stone_brick_slab" => 3.0,
+		"minecraft:granite_slab" => 1.5,
+		"minecraft:mossy_stone_brick_slab" => 1.5,
+		"minecraft:mud_brick_slab" => 1.5,
+		"minecraft:polished_andesite_slab" => 1.5,
+		"minecraft:polished_deepslate_slab" => 3.5,
+		"minecraft:polished_diorite_slab" => 1.5,
+		"minecraft:polished_granite_slab" => 1.5,
+		"minecraft:polished_tuff_slab" => 1.5,
+		"minecraft:prismarine_brick_slab" => 1.5,
+		"minecraft:prismarine_slab" => 1.5,
+		"minecraft:resin_brick_slab" => 1.5,
+		"minecraft:tuff_brick_slab" => 1.5,
+		"minecraft:tuff_slab" => 1.5,
+		"minecraft:waxed_cut_copper_slab" => 3.0,
+		"minecraft:waxed_exposed_cut_copper_slab" => 3.0,
+		"minecraft:waxed_oxidized_cut_copper_slab" => 3.0,
+		"minecraft:waxed_weathered_cut_copper_slab" => 3.0,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
@@ -614,6 +723,38 @@ mod test {
 			)];
 
 			assert_eq!(res, expected);
+		}
+	}
+
+	mod get_item_drop {
+		#[test]
+		fn copper_slab_drops_with_stone_pickaxe() {
+			let block_states = data::blocks::get_blocks();
+			let all_items = data::items::get_items();
+
+			let res = super::get_item_drop(
+				block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone(),
+				all_items.get("minecraft:stone_pickaxe").unwrap(),
+				&block_states,
+			);
+
+			assert_eq!(res.id, "minecraft:waxed_weathered_cut_copper_slab");
+			assert_eq!(res.count, 1);
+		}
+
+		#[test]
+		fn copper_slab_drops_nothing_with_wooden_pickaxe() {
+			let block_states = data::blocks::get_blocks();
+			let all_items = data::items::get_items();
+
+			let res = super::get_item_drop(
+				block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone(),
+				all_items.get("minecraft:wooden_pickaxe").unwrap(),
+				&block_states,
+			);
+
+			assert_eq!(res.id, "minecraft:air");
+			assert_eq!(res.count, 0);
 		}
 	}
 }

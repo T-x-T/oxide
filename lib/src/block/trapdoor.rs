@@ -61,6 +61,55 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_item_drop(
+	block: data::blocks::Block,
+	used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	let all_items = data::items::get_items();
+	let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+	let stone_pickaxes = [
+		all_items.get("minecraft:stone_pickaxe").unwrap().id,
+		all_items.get("minecraft:copper_pickaxe").unwrap().id,
+		all_items.get("minecraft:iron_pickaxe").unwrap().id,
+		all_items.get("minecraft:golden_pickaxe").unwrap().id,
+		all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+		all_items.get("minecraft:netherite_pickaxe").unwrap().id,
+	];
+
+	let needs_to_be_mined_with_wooden_pickaxe = ["minecraft:iron_trapdoor"];
+	let needs_to_be_mined_with_stone_pickaxe = [
+		"minecraft:waxed_copper_trapdoor",
+		"minecraft:waxed_exposed_copper_trapdoor",
+		"minecraft:waxed_oxidized_copper_trapdoor",
+		"minecraft:waxed_weathered_copper_trapdoor",
+	];
+	if needs_to_be_mined_with_wooden_pickaxe.contains(&block.block_name) && !pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	if needs_to_be_mined_with_stone_pickaxe.contains(&block.block_name) && !stone_pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	return Item {
+		id: block.block_name.to_string(),
+		count: 1,
+		components: Vec::new(),
+	};
+}
+
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:iron_trapdoor" => 5.0,
+		"minecraft:waxed_copper_trapdoor" => 6.0,
+		"minecraft:waxed_exposed_copper_trapdoor" => 6.0,
+		"minecraft:waxed_oxidized_copper_trapdoor" => 6.0,
+		"minecraft:waxed_weathered_copper_trapdoor" => 6.0,
+		_ => 3.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

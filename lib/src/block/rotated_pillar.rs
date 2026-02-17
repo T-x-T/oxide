@@ -25,6 +25,47 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_item_drop(
+	block: data::blocks::Block,
+	used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	let all_items = data::items::get_items();
+	let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+
+	let needs_to_be_mined_with_wooden_pickaxe = [
+		"minecraft:purpur_pillar",
+		"minecraft:basalt",
+		"minecraft:bone_block",
+		"minecraft:deepslate",
+		"minecraft:polished_basalt",
+		"minecraft:quartz_pillar",
+	];
+	if needs_to_be_mined_with_wooden_pickaxe.contains(&block.block_name) && !pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	} else {
+		return Item {
+			id: block.block_name.to_string(),
+			count: 1,
+			components: Vec::new(),
+		};
+	}
+}
+
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:purpur_pillar" => 1.5,
+		"minecraft:basalt" => 1.25,
+		"minecraft:polished_basalt" => 1.25,
+		"minecraft:deepslate" => 3.0,
+		"minecraft:ochre_froglight" => 0.3,
+		"minecraft:pearlescent_froglight" => 0.3,
+		"minecraft:verdant_froglight" => 0.3,
+		"minecraft:quartz_pillar" => 0.8,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
@@ -104,6 +145,35 @@ mod test {
 			)];
 
 			assert_eq!(res, expected);
+		}
+	}
+
+	mod get_item_drop {
+		#[test]
+		fn basalt_drops_basalt_with_wooden_pickaxe() {
+			let block_states = data::blocks::get_blocks();
+			let all_items = data::items::get_items();
+
+			let res = super::get_item_drop(
+				block_states.get("minecraft:basalt").unwrap().clone(),
+				all_items.get("minecraft:wooden_pickaxe").unwrap(),
+				&block_states,
+			);
+
+			assert_eq!(res.id, "minecraft:basalt");
+			assert_eq!(res.count, 1);
+		}
+
+		#[test]
+		fn basalt_drops_nothing_with_no_tool() {
+			let block_states = data::blocks::get_blocks();
+			let all_items = data::items::get_items();
+
+			let res =
+				super::get_item_drop(block_states.get("minecraft:basalt").unwrap().clone(), all_items.get("minecraft:air").unwrap(), &block_states);
+
+			assert_eq!(res.id, "minecraft:air");
+			assert_eq!(res.count, 0);
 		}
 	}
 }

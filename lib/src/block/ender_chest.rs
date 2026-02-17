@@ -32,6 +32,18 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_item_drop(
+	_block: data::blocks::Block,
+	_used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	return Item {
+		id: "minecraft:obsidian".to_string(),
+		count: 8,
+		components: Vec::new(),
+	};
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

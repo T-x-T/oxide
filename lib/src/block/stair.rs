@@ -272,6 +272,120 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 	}
 }
 
+pub fn get_item_drop(
+	block: data::blocks::Block,
+	used_tool: &data::items::Item,
+	_block_states: &HashMap<String, data::blocks::Block>,
+) -> Item {
+	let all_items = data::items::get_items();
+	let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+	let stone_pickaxes = [
+		all_items.get("minecraft:stone_pickaxe").unwrap().id,
+		all_items.get("minecraft:copper_pickaxe").unwrap().id,
+		all_items.get("minecraft:iron_pickaxe").unwrap().id,
+		all_items.get("minecraft:golden_pickaxe").unwrap().id,
+		all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+		all_items.get("minecraft:netherite_pickaxe").unwrap().id,
+	];
+
+	let needs_to_be_mined_with_wooden_pickaxe = [
+		"minecraft:andesite_stairs",
+		"minecraft:blackstone_stairs",
+		"minecraft:brick_stairs",
+		"minecraft:cobbled_deepslate_stairs",
+		"minecraft:cobblestone_stairs",
+		"minecraft:dark_prismarine_stairs",
+		"minecraft:deepslate_brick_stairs",
+		"minecraft:deepslate_tile_stairs",
+		"minecraft:diorite_stairs",
+		"minecraft:end_stone_brick_stairs",
+		"minecraft:granite_stairs",
+		"minecraft:mossy_cobblestone_stairs",
+		"minecraft:mossy_stone_brick_stairs",
+		"minecraft:mud_brick_stairs",
+		"minecraft:nether_brick_stairs",
+		"minecraft:polished_andesite_stairs",
+		"minecraft:polished_blackstone_brick_stairs",
+		"minecraft:polished_blackstone_stairs",
+		"minecraft:polished_deepslate_stairs",
+		"minecraft:polished_diorite_stairs",
+		"minecraft:polished_granite_stairs",
+		"minecraft:polished_tuff_stairs",
+		"minecraft:prismarine_brick_stairs",
+		"minecraft:prismarine_stairs",
+		"minecraft:purpur_stairs",
+		"minecraft:quartz_stairs",
+		"minecraft:red_nether_brick_stairs",
+		"minecraft:red_sandstone_stairs",
+		"minecraft:resin_brick_stairs",
+		"minecraft:sandstone_stairs",
+		"minecraft:smooth_quartz_stairs",
+		"minecraft:smooth_red_sandstone_stairs",
+		"minecraft:smooth_sandstone_stairs",
+		"minecraft:stone_brick_stairs",
+		"minecraft:stone_stairs",
+		"minecraft:tuff_brick_stairs",
+		"minecraft:tuff_stairs",
+	];
+	let needs_to_be_mined_with_stone_pickaxe = [
+		"minecraft:waxed_cut_copper_stairs",
+		"minecraft:waxed_exposed_cut_copper_stairs",
+		"minecraft:waxed_oxidized_cut_copper_stairs",
+		"minecraft:waxed_weathered_cut_copper_stairs",
+	];
+	if needs_to_be_mined_with_wooden_pickaxe.contains(&block.block_name) && !pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	if needs_to_be_mined_with_stone_pickaxe.contains(&block.block_name) && !stone_pickaxes.contains(&used_tool.id) {
+		return Item::default();
+	}
+
+	return Item {
+		id: block.block_name.to_string(),
+		count: 1,
+		components: Vec::new(),
+	};
+}
+
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:andesite_stairs" => 1.5,
+		"minecraft:blackstone_stairs" => 1.5,
+		"minecraft:cobbled_deepslate_stairs" => 3.5,
+		"minecraft:dark_prismarine_stairs" => 1.5,
+		"minecraft:deepslate_brick_stairs" => 3.5,
+		"minecraft:deepslate_tile_stairs" => 3.5,
+		"minecraft:diorite_stairs" => 1.5,
+		"minecraft:end_stone_brick_stairs" => 3.0,
+		"minecraft:granite_stairs" => 1.5,
+		"minecraft:mossy_stone_brick_stairs" => 1.5,
+		"minecraft:mud_brick_stairs" => 1.5,
+		"minecraft:polished_andesite_stairs" => 1.5,
+		"minecraft:polished_blackstone_brick_stairs" => 1.5,
+		"minecraft:polished_deepslate_stairs" => 3.5,
+		"minecraft:polished_diorite_stairs" => 1.5,
+		"minecraft:polished_granite_stairs" => 1.5,
+		"minecraft:polished_tuff_stairs" => 1.5,
+		"minecraft:prismarine_brick_stairs" => 1.5,
+		"minecraft:prismarine_stairs" => 1.5,
+		"minecraft:purpur_stairs" => 1.5,
+		"minecraft:quartz_stairs" => 0.8,
+		"minecraft:red_sandstone_stairs" => 0.8,
+		"minecraft:resin_brick_stairs" => 1.5,
+		"minecraft:sandstone_stairs" => 0.8,
+		"minecraft:stone_brick_stairs" => 1.5,
+		"minecraft:stone_stairs" => 1.5,
+		"minecraft:tuff_brick_stairs" => 1.5,
+		"minecraft:tuff_stairs" => 1.5,
+		"minecraft:waxed_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_exposed_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_oxidized_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_weathered_cut_copper_stairs" => 3.0,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
