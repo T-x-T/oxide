@@ -7,6 +7,8 @@ use std::error::Error;
 use std::sync::Arc;
 
 mod barell;
+#[allow(clippy::module_inception)]
+mod block;
 mod chest;
 mod door;
 mod double_plant;
@@ -282,6 +284,7 @@ pub fn get_item_drop(block_id: u16, used_tool_id: i32, block_states: &HashMap<St
 		Type::TallDryGrass => tall_dry_grass::get_item_drop(block, used_tool, block_states),
 		Type::TallGrass => tall_grass::get_item_drop(block, used_tool, block_states),
 		Type::Trapdoor => trapdoor::get_item_drop(block, used_tool, block_states),
+		Type::Block => block::get_item_drop(block, used_tool, block_states),
 		_ => {
 			let block_name = data::blocks::get_block_name_from_block_state_id(block_id, block_states);
 			let item = all_items.get(block_name.as_str()).unwrap_or(all_items.get("minecraft:air").unwrap()).clone();
@@ -326,6 +329,7 @@ pub fn get_hardness(block_id: u16, block_states: &HashMap<String, data::blocks::
 		Type::TallGrass => 0.0,
 		Type::Trapdoor => trapdoor::get_hardness(block_id, block, block_states),
 		Type::TrappedChest => 2.5,
+		Type::Block => block::get_hardness(block_id, block, block_states),
 		Type::TallDryGrass => 0.0,
 		Type::DoublePlant => 0.0,
 		_ => 1.0,
