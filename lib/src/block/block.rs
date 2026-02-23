@@ -1,11 +1,9 @@
-use rand::Rng;
-
 use super::*;
 
 pub fn get_item_drop(
 	block: data::blocks::Block,
 	used_tool: &data::items::Item,
-	block_states: &HashMap<String, data::blocks::Block>,
+	_block_states: &HashMap<String, data::blocks::Block>,
 ) -> Item {
 	let all_items = data::items::get_items();
 	if data::tags::get_block().get("needs_iron_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
@@ -44,8 +42,6 @@ pub fn get_item_drop(
 			return Item::default();
 		}
 	}
-
-	let mut rng = rand::rng();
 
 	match block.block_name {
 		"minecraft:stone" => Item {

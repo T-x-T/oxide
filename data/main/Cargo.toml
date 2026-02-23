@@ -2,7 +2,7 @@
 name = "data"
 version = "0.5.1"
 edition = "2024"
-description = "contains functions that are generated from the data_generator_tools binary crate"
+description = "contains functions that are mostly generated from the data_generator_tools binary crate"
 
 [dependencies]
 biomes = {path = "../biomes", version = "*"}
@@ -12,3 +12,5 @@ blocks = {path = "../blocks/main", version = "*"}
 entities = {path = "../entities", version = "*"}
 items = {path = "../items", version = "*"}
 tags = {path = "../tags", version = "*"}
+loot_tables = {path = "../loot_tables", version = "*"}
+basic_types = {path = "../basic_types", version = "*"}
