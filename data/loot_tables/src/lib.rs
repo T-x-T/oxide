@@ -1,5 +1,9 @@
 #![allow(clippy::needless_return)]
-use basic_types::*;
+use basic_types::NumberProvider;
+use basic_types::data_component_predicate::*;
+use basic_types::item_modifier::*;
+use basic_types::loot_table::*;
+use basic_types::predicate::*;
 use std::collections::HashMap;
 
 pub fn get_loot_tables() -> HashMap<LootTableType, Vec<LootTable>> {
@@ -97,19 +101,17 @@ pub fn get_loot_tables() -> HashMap<LootTableType, Vec<LootTable>> {
 						children: vec![
 							LootTablePoolEntry::Singleton(LootTablePoolEntrySingleton {
 								entry_type: LootTablePoolEntrySingletonType::Item("minecraft:glowstone"),
-								conditions: vec![Predicate::MatchTool(PredicateMatchTool {
-									predicate: ItemPredicate {
-										items: vec![],
-										count: None,
-										data_component_predicates: vec![DataComponentPredicate::Enchantments(vec![DataComponentPredicateEnchantments {
-											enchantments: vec!["minecraft:silk_touch"],
-											levels: None,
-											min_level: Some(1),
-											max_level: None,
-										}])],
-										count_min: None,
-										count_max: None,
-									},
+								conditions: vec![Predicate::MatchTool(ItemPredicate {
+									items: vec![],
+									count: None,
+									data_component_predicates: vec![DataComponentPredicate::Enchantments(vec![EnchantmentsPredicate {
+										enchantments: vec!["minecraft:silk_touch"],
+										levels: None,
+										min_level: Some(1),
+										max_level: None,
+									}])],
+									count_min: None,
+									count_max: None,
 								})],
 								functions: vec![],
 								weight: None,

@@ -15,29 +15,6 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u8)]
-pub enum Gamemode {
-	Survival = 0,
-	Creative = 1,
-	Adventure = 2,
-	Spectator = 3,
-}
-
-impl TryFrom<u8> for Gamemode {
-	type Error = Box<dyn Error>;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		return match value {
-			0 => Ok(Gamemode::Survival),
-			1 => Ok(Gamemode::Creative),
-			2 => Ok(Gamemode::Adventure),
-			3 => Ok(Gamemode::Spectator),
-			x => Err(Box::new(crate::CustomError::InvalidInput(format!("I dont know what a gamemode of {x} is supposed to be")))),
-		};
-	}
-}
-
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {

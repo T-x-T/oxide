@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+use crate::data_component::DataComponent;
+use crate::loot_table::LootTable;
+use crate::predicate::ItemPredicate;
 use crate::*;
 
 //https://minecraft.wiki/w/Item_modifier

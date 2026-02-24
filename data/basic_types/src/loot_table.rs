@@ -1,3 +1,5 @@
+use crate::item_modifier::ItemModifier;
+use crate::predicate::Predicate;
 use crate::*;
 
 //https://minecraft.wiki/w/Loot_table

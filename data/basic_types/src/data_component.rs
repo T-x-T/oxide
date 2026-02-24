@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::*;
+use crate::nbt::NbtTag;
+use crate::predicate::ItemPredicate;
 
 //https://minecraft.wiki/w/Data_component_format
 #[derive(Debug, Clone, PartialEq)]
@@ -37,52 +38,52 @@ pub enum DataComponent {
 	Enchantments(HashMap<&'static str, i32>),
 	EntityData(NbtTag),
 	Equippable(EquippableData),
-	FireworkExplosion,
-	Fireworks,
-	Food,
+	FireworkExplosion(FireworkExplosionData),
+	Fireworks(FireworksData),
+	Food(FoodData),
 	Glider,
-	Instrument,
+	Instrument(InstrumentData),
 	IntangibleProjectile,
-	ItemModel,
-	ItemName,
-	JukeboxPlayable,
-	KineticWeapon,
-	Lock,
-	LodestoneTracker,
-	Lore,
-	MapColor,
-	MapDecorations,
-	MapId,
-	MaxDamage,
-	MaxStackSize,
-	MinimumAttackCharge,
-	NoteBlockSound,
-	OminousBottleAmplifier,
-	PiercingWeapon,
-	PotDecorations,
-	PotionContents,
-	PotionDurationScale,
-	Profile,
-	ProvidesBannerPatterns,
-	ProvidesTrimMaterial,
-	Rarity,
-	Recipes,
-	RepairCost,
-	Repairable,
-	StoredEnchantments,
-	SuspiciousStewEffects,
-	SwingAnimation,
-	Tool,
-	TooltipDisplay,
-	TooltipStyle,
-	Trim,
+	ItemModel(&'static str),
+	ItemName(NbtTag),
+	JukeboxPlayable(&'static str),
+	KineticWeapon(KineticWeaponData),
+	Lock(ItemPredicate),
+	LodestoneTracker(LodestoneTrackerData),
+	Lore(Vec<NbtTag>),
+	MapColor(i32),
+	MapDecorations(HashMap<&'static str, MapDecoration>),
+	MapId(i32),
+	MaxDamage(i32),
+	MaxStackSize(i32),
+	MinimumAttackCharge(f32),
+	NoteBlockSound(&'static str),
+	OminousBottleAmplifier(i32),
+	PiercingWeapon(PiercingWeaponData),
+	PotDecorations(Vec<&'static str>),
+	PotionContents(PotionContentsData),
+	PotionDurationScale(f32),
+	Profile(ProfileData),
+	ProvidesBannerPatterns(&'static str),
+	ProvidesTrimMaterial(&'static str),
+	Rarity(&'static str),
+	Recipes(Vec<&'static str>),
+	RepairCost(i32),
+	Repairable(Vec<&'static str>),
+	StoredEnchantments(HashMap<&'static str, i32>),
+	SuspiciousStewEffects(Vec<SuspiciousStewEffect>),
+	SwingAnimation(SwingAnimationData),
+	Tool(ToolData),
+	TooltipDisplay(TooltipDisplayData),
+	TooltipStyle(&'static str),
+	Trim(TrimData),
 	Unbreakable,
-	UseCooldown,
-	UseEffects,
-	UseRemainder,
-	Weapon,
-	WritableBookContent,
-	WrittenBookContent,
+	UseCooldown(UseCooldownData),
+	UseEffects(UseEffectsData),
+	UseRemainder(ItemStack),
+	Weapon(WeaponData),
+	WritableBookContent(WritableBookContentData),
+	WrittenBookContent(WrittenBookContentData),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -293,4 +294,207 @@ pub enum EquippableDataSlot {
 	Mainhand,
 	Offhand,
 	Saddle,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FireworkExplosionData {
+	pub shape: FireworkExplosionShape,
+	pub colors: Vec<i32>,
+	pub fade_colors: Vec<i32>,
+	pub has_trail: bool,
+	pub has_twinkle: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum FireworkExplosionShape {
+	SmallBall,
+	LargeBall,
+	Star,
+	Creeper,
+	Burst,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FireworksData {
+	pub flight_duration: u8,
+	pub explosions: Vec<FireworkExplosionData>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FoodData {
+	pub nutrition: i32,
+	pub saturation: f32,
+	pub can_always_eat: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum InstrumentData {
+	Id(&'static str),
+	Custom(CustomInstrument),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CustomInstrument {
+	pub description: NbtTag,
+	pub sound_event: Sound,
+	pub use_duration: f32,
+	pub range: f32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct KineticWeaponData {
+	pub delay_ticks: Option<i32>,
+	pub damage_conditions: KineticWeaponCondition,
+	pub dismount_conditions: KineticWeaponCondition,
+	pub knockback_conditions: KineticWeaponCondition,
+	pub forward_movement: Option<f32>,
+	pub damage_multiplier: Option<f32>,
+	pub sound: Option<Sound>,
+	pub hit_sound: Option<Sound>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct KineticWeaponCondition {
+	pub max_duration_ticks: i32,
+	pub min_speed: Option<i32>,
+	pub min_relative_speed: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LodestoneTrackerData {
+	pub pos: Option<Vec<i32>>,
+	pub dimension: Option<&'static str>,
+	pub tracked: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MapDecoration {
+	pub decoration_type: &'static str,
+	pub x: f64,
+	pub z: f64,
+	pub rotation: f32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PiercingWeaponData {
+	pub deals_knockback: Option<bool>,
+	pub dismounts: Option<bool>,
+	pub sound: Option<Sound>,
+	pub hit_sound: Option<Sound>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum PotionContentsData {
+	Id(&'static str),
+	Custom(CustomPotionContents),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CustomPotionContents {
+	pub potion: &'static str,
+	pub custom_color: i32,
+	pub custom_name: &'static str,
+	pub custom_effects: Vec<Effect>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProfileData {
+	pub name: Option<&'static str>,
+	pub id: Option<u128>,
+	pub properties: Vec<ProfileDataProperties>,
+	pub texture: Option<&'static str>,
+	pub cape: Option<&'static str>,
+	pub elytra: Option<&'static str>,
+	pub model: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ProfileDataProperties {
+	pub texture_data: &'static str,
+	pub signature: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SuspiciousStewEffect {
+	pub id: &'static str,
+	pub duration: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SwingAnimationData {
+	pub animation: SwingAnimationType,
+	pub duration: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum SwingAnimationType {
+	None,
+	Whack,
+	Stab,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ToolData {
+	pub default_mining_speed: Option<f32>,
+	pub damage_per_block: Option<i32>,
+	pub can_destroy_blocks_in_creative: Option<bool>,
+	pub rules: Vec<ToolRule>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ToolRule {
+	pub blocks: Vec<&'static str>,
+	pub speed: Option<f32>,
+	pub correct_for_drops: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TooltipDisplayData {
+	pub hide_tooltip: bool,
+	pub hidden_components: Vec<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct TrimData {
+	pub pattern: &'static str,
+	pub material: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct UseCooldownData {
+	pub seonds: f32,
+	pub cooldown_ground: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct UseEffectsData {
+	pub can_sprint: Option<bool>,
+	pub speed_mulitplier: Option<f32>,
+	pub interact_vibrations: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct WeaponData {
+	pub item_damage_per_attack: Option<i32>,
+	pub disable_blocking_for_seonds: Option<f32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Page {
+	pub raw: &'static str,
+	pub filtered: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct WritableBookContentData {
+	pub pages: Vec<Page>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct WrittenBookContentData {
+	pub pages: Vec<Page>,
+	pub title: Page,
+	pub author: &'static str,
+	pub generation: Vec<i32>,
+	pub resolved: Option<bool>,
 }

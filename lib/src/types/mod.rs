@@ -29,3 +29,5 @@ pub enum CardinalDirection {
 	South,
 	West,
 }
+
+pub use data::basic_types::*;

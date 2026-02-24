@@ -7,12 +7,6 @@ pub mod loot_table;
 pub mod nbt;
 pub mod predicate;
 
-pub use data_component::*;
-pub use data_component_predicate::*;
-pub use item_modifier::*;
-pub use loot_table::*;
-pub use nbt::*;
-pub use predicate::*;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum NumberProvider {
@@ -25,11 +19,25 @@ pub enum NumberProvider {
 	Sum(Vec<NumberProvider>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct ItemPredicate {
-	pub items: Vec<&'static str>,
-	pub count: Option<i32>,
-	pub count_min: Option<i32>,
-	pub count_max: Option<i32>,
-	pub data_component_predicates: Vec<DataComponentPredicate>,
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum Gamemode {
+	Survival = 0,
+	Creative = 1,
+	Adventure = 2,
+	Spectator = 3,
+}
+
+impl TryFrom<u8> for Gamemode {
+	type Error = String;
+
+	fn try_from(value: u8) -> Result<Self, Self::Error> {
+		return match value {
+			0 => Ok(Gamemode::Survival),
+			1 => Ok(Gamemode::Creative),
+			2 => Ok(Gamemode::Adventure),
+			3 => Ok(Gamemode::Spectator),
+			x => Err(format!("I dont know what a gamemode of {x} is supposed to be")),
+		};
+	}
 }
