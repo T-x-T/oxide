@@ -2,6 +2,7 @@
 
 pub mod data_component;
 pub mod data_component_predicate;
+pub mod enchantment;
 pub mod item_modifier;
 pub mod loot_table;
 pub mod nbt;

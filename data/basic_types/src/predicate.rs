@@ -4,6 +4,7 @@ use blocks::Property;
 
 use crate::data_component::DataComponent;
 use crate::data_component_predicate::DataComponentPredicate;
+use crate::enchantment::LevelBasedValue;
 use crate::item_modifier::EntityLootContext;
 use crate::nbt::NbtTag;
 use crate::*;
@@ -20,16 +21,16 @@ pub enum Predicate {
 	EntityScores(PredicateEntityScores),
 	Inverted(Box<Predicate>),
 	KilledByPlayer,
-	LocationToCheck,
+	LocationCheck(Box<PredicateLocationCheck>),
 	MatchTool(ItemPredicate),
-	RandomChance,
-	RandomChanceWithEnchantedBonus,
-	Reference,
+	RandomChance(NumberProvider),
+	RandomChanceWithEnchantedBonus(PredicateRandomChanceWithEnchantedBonus),
+	Reference(&'static str),
 	SurvivesExplosion,
-	TableBonus,
-	TimeCheck,
-	ValueCheck,
-	WeatherCheck,
+	TableBonus(PredicateTableBonus),
+	TimeCheck(PredicateTimeCheck),
+	ValueCheck(PredicateValueCheck),
+	WeatherCheck(PredicateWeatherCheck),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -260,4 +261,48 @@ pub struct PredicateEntityScoresScore {
 	pub score: Option<i32>,
 	pub score_min: Option<i32>,
 	pub score_max: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateLocationCheck {
+	pub offset_x: Option<i32>,
+	pub offset_y: Option<i32>,
+	pub offset_z: Option<i32>,
+	pub predicate: LocationPredicate,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateRandomChanceWithEnchantedBonus {
+	pub unenchanted_chance: f32,
+	pub enchanted_chance: LevelBasedValue,
+	pub enchantment: Option<&'static str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateTableBonus {
+	pub enchantment: &'static str,
+	pub chances: Vec<f32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateTimeCheck {
+	pub clock: Option<&'static str>,
+	pub value_min: Option<NumberProvider>,
+	pub value_max: Option<NumberProvider>,
+	pub value: Option<i32>,
+	pub period: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateValueCheck {
+	pub value: NumberProvider,
+	pub range_min: Option<NumberProvider>,
+	pub range_max: Option<NumberProvider>,
+	pub range: Option<i32>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PredicateWeatherCheck {
+	pub raining: Option<bool>,
+	pub thundering: Option<bool>,
 }
