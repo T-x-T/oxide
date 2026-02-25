@@ -43,7 +43,7 @@ pub enum ItemModifier {
 	SetLore(SetLoreData),
 	SetName(SetNameData),
 	SetOminousBottleAmplifier(NumberProvider),
-	SertPotion(&'static str),
+	SetPotion(&'static str),
 	SetRandomDyes(NumberProvider),
 	SetRandomPotion(Vec<&'static str>),
 	SetStewEffect(SetStewEffectData),
@@ -247,7 +247,7 @@ pub enum SetContentsDataComponent {
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetCountData {
 	pub count: NumberProvider,
-	pub add: bool,
+	pub add: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

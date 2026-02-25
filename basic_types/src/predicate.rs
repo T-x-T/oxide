@@ -15,7 +15,7 @@ pub enum Predicate {
 	AllOf(Vec<Predicate>),
 	AnyOf(Vec<Predicate>),
 	BlockStateProperty(PredicateBlockStateProperty),
-	DamageSourceProperty(Box<PredicateDamageSourceProperties>),
+	DamageSourceProperties(Box<PredicateDamageSourceProperties>),
 	EnchantmentActiveCheck(bool),
 	EntityProperties(Box<PredicateEntityProperties>),
 	EntityScores(PredicateEntityScores),
@@ -194,30 +194,26 @@ pub struct LocationPredicate {
 	pub biomes: Vec<&'static str>,
 	pub blocks: Vec<&'static str>,
 	pub block_nbt: NbtTag,
-	pub block_state: Option<Property>,
-	pub block_state_max: Option<Property>,
-	pub block_state_min: Option<Property>,
+	pub block_state: Vec<(Property, Property)>,
 	pub block_components: Vec<DataComponent>,
 	pub block_predicates: Vec<DataComponentPredicate>,
-	pub dimension: &'static str,
+	pub dimension: Option<&'static str>,
 	pub fluids: Vec<&'static str>,
-	pub fluid_state: Option<Property>,
-	pub fluid_state_max: Option<Property>,
-	pub fluid_state_min: Option<Property>,
+	pub fluid_state: Vec<(Property, Property)>,
 	pub fluid_components: Vec<DataComponent>,
 	pub fluid_predicates: Vec<DataComponentPredicate>,
-	pub light_state: Option<i32>,
-	pub light_state_max: Option<i32>,
-	pub light_state_min: Option<i32>,
-	pub position_x: Option<i32>,
-	pub position_x_max: Option<i32>,
-	pub position_x_min: Option<i32>,
-	pub position_y: Option<i32>,
-	pub position_y_max: Option<i32>,
-	pub position_y_min: Option<i32>,
-	pub position_z: Option<i32>,
-	pub position_z_max: Option<i32>,
-	pub position_z_min: Option<i32>,
+	pub light: Option<i32>,
+	pub light_max: Option<i32>,
+	pub light_min: Option<i32>,
+	pub position_x: Option<f64>,
+	pub position_x_max: Option<f64>,
+	pub position_x_min: Option<f64>,
+	pub position_y: Option<f64>,
+	pub position_y_max: Option<f64>,
+	pub position_y_min: Option<f64>,
+	pub position_z: Option<f64>,
+	pub position_z_max: Option<f64>,
+	pub position_z_min: Option<f64>,
 	pub smokey: Option<bool>,
 	pub can_see_sky: Option<bool>,
 	pub structures: Vec<&'static str>,
@@ -227,13 +223,13 @@ pub struct LocationPredicate {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PredicateBlockStateProperty {
 	pub block: &'static str,
-	pub properties: Vec<(&'static str, NumberProvider)>,
+	pub properties: Vec<(Property, Property)>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PredicateDamageSourceProperties {
-	pub direct_entity: EntityPredicate,
-	pub source_entity: EntityPredicate,
+	pub direct_entity: Option<EntityPredicate>,
+	pub source_entity: Option<EntityPredicate>,
 	pub is_direct: Option<bool>,
 	pub tags: Vec<PredicateDamageSourcePropertiesTag>,
 }
@@ -247,7 +243,7 @@ pub struct PredicateDamageSourcePropertiesTag {
 #[derive(Debug, Clone, PartialEq)]
 pub struct PredicateEntityProperties {
 	pub entity: EntityLootContext,
-	pub predicate: EntityPredicate,
+	pub predicate: Option<EntityPredicate>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -268,13 +264,13 @@ pub struct PredicateLocationCheck {
 	pub offset_x: Option<i32>,
 	pub offset_y: Option<i32>,
 	pub offset_z: Option<i32>,
-	pub predicate: LocationPredicate,
+	pub predicate: Option<LocationPredicate>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct PredicateRandomChanceWithEnchantedBonus {
-	pub unenchanted_chance: f32,
-	pub enchanted_chance: LevelBasedValue,
+	pub unenchanted_chance: Option<f32>,
+	pub enchanted_chance: Option<LevelBasedValue>,
 	pub enchantment: Option<&'static str>,
 }
 

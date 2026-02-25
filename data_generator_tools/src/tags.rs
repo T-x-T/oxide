@@ -89,18 +89,3 @@ fn sub_tags_left(input: &BTreeMap<String, Vec<String>>) -> bool {
 
 	return false;
 }
-
-fn read_dir_recursively(path: PathBuf) -> io::Result<Vec<DirEntry>> {
-	let mut output: Vec<DirEntry> = Vec::new();
-
-	for entry in fs::read_dir(path).unwrap() {
-		let entry = entry.unwrap();
-		if entry.metadata().unwrap().is_file() {
-			output.push(entry);
-		} else {
-			output.append(&mut read_dir_recursively(entry.path()).unwrap());
-		}
-	}
-
-	return Ok(output);
-}

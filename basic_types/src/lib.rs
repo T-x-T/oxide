@@ -12,8 +12,8 @@ pub mod predicate;
 #[derive(Debug, Clone, PartialEq)]
 pub enum NumberProvider {
 	Constant(f32),
-	Uniform(f32, f32),
-	Binomial(i32, f32),
+	Uniform(Box<NumberProvider>, Box<NumberProvider>),
+	Binomial(Box<NumberProvider>, Box<NumberProvider>),
 	Score(&'static str, &'static str, &'static str, &'static str, f32),
 	Storage(&'static str, &'static str),
 	EnchantmentLevel(&'static str),

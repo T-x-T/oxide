@@ -13,7 +13,23 @@ pub struct LootTable {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LootTableType {
+	Archaeology,
 	Block,
+	EntityInteract,
+	BlockInteract,
+	ChargedCreeper,
+	Chest,
+	Dispenser,
+	Entity,
+	Equipment,
+	Gameplay,
+	Harvest,
+	Pot,
+	Shearing,
+	Spawner,
+	Gift,
+	Fishing,
+	Barter,
 }
 
 #[derive(Debug, Clone, PartialEq)]
