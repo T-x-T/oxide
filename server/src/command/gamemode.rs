@@ -24,10 +24,10 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let gamemode = command.replace("gamemode ", "");
 
 	let parsed_gamemode = match gamemode.as_str() {
-		"survival" => data::basic_types::Gamemode::Survival,
-		"creative" => data::basic_types::Gamemode::Creative,
-		"adventure" => data::basic_types::Gamemode::Adventure,
-		"spectator" => data::basic_types::Gamemode::Spectator,
+		"survival" => basic_types::Gamemode::Survival,
+		"creative" => basic_types::Gamemode::Creative,
+		"adventure" => basic_types::Gamemode::Adventure,
+		"spectator" => basic_types::Gamemode::Spectator,
 		_ => {
 			game.send_packet(
 				&stream.peer_addr()?,

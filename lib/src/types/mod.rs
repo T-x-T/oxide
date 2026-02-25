@@ -30,4 +30,4 @@ pub enum CardinalDirection {
 	West,
 }
 
-pub use data::basic_types::*;
+pub use basic_types::*;

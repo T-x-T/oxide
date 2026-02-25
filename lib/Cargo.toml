@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 data = {path = "../data/main", version = "*"}
+basic_types = {path = "../basic_types", version = "*"}
 flate2 = "1.1.2"
 rand = "0.9.*"
 dashmap = "6"

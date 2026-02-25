@@ -5,4 +5,4 @@ edition = "2024"
 
 [dependencies]
 blocks = {path = "../blocks/main", version = "*"}
-basic_types = {path = "../basic_types", version = "*"}
+basic_types = {path = "../../basic_types", version = "*"}

@@ -13,4 +13,3 @@ entities = {path = "../entities", version = "*"}
 items = {path = "../items", version = "*"}
 tags = {path = "../tags", version = "*"}
 loot_tables = {path = "../loot_tables", version = "*"}
-basic_types = {path = "../basic_types", version = "*"}
