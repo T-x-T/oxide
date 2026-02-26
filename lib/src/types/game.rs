@@ -21,6 +21,7 @@ pub struct Game {
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
 	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
 	pub default_gamemode: Gamemode,
+	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 }
 
 impl Game {

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::data_component::DataComponent;
 use crate::loot_table::LootTable;
+use crate::nbt::NbtTag;
 use crate::predicate::ItemPredicate;
 use crate::*;
 
@@ -21,7 +22,7 @@ pub enum ItemModifier {
 	FillPlayerHead(EntityLootContext),
 	Filtered(FilteredData),
 	FurnaceSmelt,
-	LimitCount(NumberProvider),
+	LimitCount(LimitCountData),
 	ModifyContents(ModifyContentsData),
 	Reference(Vec<ItemModifier>),
 	Sequence(Vec<ItemModifier>),
@@ -46,7 +47,7 @@ pub enum ItemModifier {
 	SetPotion(&'static str),
 	SetRandomDyes(NumberProvider),
 	SetRandomPotion(Vec<&'static str>),
-	SetStewEffect(SetStewEffectData),
+	SetStewEffect(Vec<SetStewEffectDataEffect>),
 	SetWritableBookPages(SetWritableBookPagesData),
 	SetWrittenBookPages(SetWrittenBookPagesData),
 	ToggleTooltips(ToggleTooltipsData),
@@ -132,32 +133,32 @@ pub struct CopyStateData {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct EnchantRandomlyData {
-	pub enchant_randomly: Vec<&'static str>,
-	pub only_compatible: bool,
-	pub include_additional_cost_component: bool,
+	pub options: Vec<&'static str>,
+	pub only_compatible: Option<bool>,
+	pub include_additional_cost_component: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct EnchantWithLevelsData {
 	pub levels: NumberProvider,
 	pub options: Vec<&'static str>,
-	pub include_additional_cost_component: bool,
+	pub include_additional_cost_component: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct EnchantCountIncreaseData {
 	pub count: NumberProvider,
-	pub limit: i32,
+	pub limit: Option<i32>,
 	pub enchantment: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExplorationMapData {
-	pub destination: &'static str,
-	pub decoration: &'static str,
-	pub zoom: i32,
-	pub search_radius: i32,
-	pub skip_existing_chunks: bool,
+	pub destination: Option<&'static str>,
+	pub decoration: Option<&'static str>,
+	pub zoom: Option<i32>,
+	pub search_radius: Option<i32>,
+	pub skip_existing_chunks: Option<bool>,
 }
 
 
@@ -165,6 +166,12 @@ pub struct ExplorationMapData {
 pub struct FilteredData {
 	pub item_filter: ItemPredicate,
 	pub modifiert: Vec<ItemModifier>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct LimitCountData {
+	pub min: Option<NumberProvider>,
+	pub max: Option<NumberProvider>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -286,13 +293,13 @@ pub struct SetCustomModelDataColors {
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetDamageData {
 	pub damage: NumberProvider,
-	pub add: bool,
+	pub add: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetEnchantmentsData {
 	pub enchantments: HashMap<i32, NumberProvider>,
-	pub add: bool,
+	pub add: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -341,20 +348,15 @@ pub struct SetLoreData {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SetNameData {
-	pub name: &'static str,
-	pub entity: EntityLootContext,
-	pub target: SetNameDataTarget,
+	pub name: NbtTag,
+	pub entity: Option<EntityLootContext>,
+	pub target: Option<SetNameDataTarget>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SetNameDataTarget {
 	CustomName,
 	ItemName,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct SetStewEffectData {
-	pub effects: Vec<SetStewEffectDataEffect>,
 }
 
 #[derive(Debug, Clone, PartialEq)]

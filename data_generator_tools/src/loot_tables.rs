@@ -10,27 +10,35 @@ use crate::{convert_to_upper_camel_case, read_dir_recursively};
 
 pub fn generate() {
 	let mut output = r#"#![allow(clippy::needless_return)]
-use basic_types::data_component_predicate::*;
+use ::blocks::*;
 use basic_types::item_modifier::*;
 use basic_types::loot_table::*;
+use basic_types::nbt::*;
 use basic_types::predicate::*;
 use basic_types::*;
 use std::collections::HashMap;
 "#
 	.to_string();
 
+	let mut function_calls = String::new();
+
 	for dir in fs::read_dir("../official_server/generated/data/minecraft/loot_table").expect("couldnt open loot_table directory") {
 		let name = dir.unwrap().file_name().into_string().unwrap();
 		do_dir(name.clone());
 		output += format!("mod {name};\n").as_str();
+
+		function_calls += format!("\toutput.insert(\"{name}\", {name}::get_{name}());\n").as_str();
 	}
 
-	println!("{output}");
+	output += "pub fn get_loot_tables() -> HashMap<&'static str, HashMap<&'static str, LootTable>> {
+	let mut output: HashMap<&'static str, HashMap<&'static str, LootTable>> = HashMap::new();\n";
+	output += function_calls.as_str();
+	output += "\treturn output;\n}";
 
-	//let path = PathBuf::from("../data/loot_tables/src/lib.rs");
-	//let mut file = fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
-	//file.write_all(output.as_bytes()).unwrap();
-	//file.flush().unwrap();
+	let path = PathBuf::from("../data/loot_tables/src/lib.rs");
+	let mut file = fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
+	file.write_all(output.as_bytes()).unwrap();
+	file.flush().unwrap();
 }
 
 fn do_dir(name: String) {
@@ -74,11 +82,15 @@ fn do_dir(name: String) {
 	file.flush().unwrap();
 }
 
-fn turn_json_into_loot_table(input: JsonValue, block_name: &str) -> String {
+fn turn_json_into_loot_table(input: JsonValue, block_name: &str) -> (String) {
 	let mut output = "LootTable {\n".to_string();
 
-	let loot_table_type = convert_to_upper_camel_case(input["type"].as_str().unwrap());
-	output += format!("\t\tloot_table_type: LootTableType::{loot_table_type},\n").as_str();
+	if input["type"].is_string() {
+		let loot_table_type = convert_to_upper_camel_case(input["type"].as_str().unwrap());
+		output += format!("\t\tloot_table_type: LootTableType::{loot_table_type},\n").as_str();
+	} else {
+		output += "\t\tloot_table_type: LootTableType::Custom,\n".to_string().as_str();
+	}
 
 	let functions: Vec<String> =
 		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
@@ -151,6 +163,225 @@ fn turn_json_into_function(input: JsonValue) -> String {
 		}
 		"SetPotion" => return format!("ItemModifier::SetPotion(\"{}\"),\n", input["id"].as_str().unwrap()),
 		"SetInstrument" => return format!("ItemModifier::SetInstrument(\"{}\"),\n", input["options"].as_str().unwrap()),
+		"CopyComponents" => {
+			let source = input["source"].as_str().unwrap();
+
+			let mut include = String::new();
+			let raw_include: Vec<String> =
+				input["include"].as_array().unwrap_or(&Vec::new()).iter().map(|x| x.as_str().unwrap().to_string()).collect();
+			if raw_include.is_empty() {
+				include += "vec![],\n"
+			} else {
+				include += "vec![\n";
+				for function in raw_include {
+					for line in function.lines() {
+						include += format!("\t\t\"{line}\",\n").as_str();
+					}
+				}
+				include += "\t]";
+			}
+
+			let mut exclude = String::new();
+			let raw_exlude: Vec<String> =
+				input["exlucde"].as_array().unwrap_or(&Vec::new()).iter().map(|x| x.as_str().unwrap().to_string()).collect();
+			if raw_exlude.is_empty() {
+				exclude += "vec![],\n"
+			} else {
+				exclude += "vec![\n";
+				for function in raw_exlude {
+					for line in function.lines() {
+						exclude += format!("\t\t\"{line}\",\n").as_str();
+					}
+				}
+				exclude += "\t]";
+			}
+
+			let data_struct = format!("CopyComponentsData {{\n\tsource: \"{source}\",\n\tinclude: {include},\n\texclude: {exclude}\n}}");
+			return format!("ItemModifier::CopyComponents({data_struct}),\n");
+		}
+		"CopyState" => {
+			let block = input["block"].as_str().unwrap();
+
+			let mut properties = String::new();
+			let raw_properties: Vec<String> =
+				input["properties"].as_array().unwrap_or(&Vec::new()).iter().map(|x| x.as_str().unwrap().to_string()).collect();
+			if raw_properties.is_empty() {
+				properties += "vec![]\n"
+			} else {
+				properties += "vec![\n";
+				for function in raw_properties {
+					for line in function.lines() {
+						properties += format!("\t\t\"{line}\",\n").as_str();
+					}
+				}
+				properties += "\t]";
+			}
+
+			let data_struct = format!("CopyStateData {{\n\tblock: \"{block}\",\n\tproperties: {properties},\n}}");
+			return format!("ItemModifier::CopyState({data_struct}),\n");
+		}
+		"SetStewEffect" => {
+			let mut stew_effect = String::new();
+			let raw_stew_effect: Vec<String> = input["effects"]
+				.as_array()
+				.unwrap_or(&Vec::new())
+				.iter()
+				.map(|x| {
+					let effect_type = x["type"].as_str().unwrap();
+					let duration = turn_json_into_number_provider(x["duration"].clone());
+					format!("SetStewEffectDataEffect {{\n\teffect_type: \"{effect_type}\",\n\tduration: {duration}\n}},")
+				})
+				.collect();
+			if raw_stew_effect.is_empty() {
+				stew_effect += "\tvec![],\n"
+			} else {
+				stew_effect += "\tvec![\n";
+				for function in raw_stew_effect {
+					for line in function.lines() {
+						stew_effect += format!("\t\t{line}\n").as_str();
+					}
+				}
+				stew_effect += "\t]";
+			}
+
+			return format!("ItemModifier::SetStewEffect({stew_effect}),\n");
+		}
+		"SetDamage" => {
+			let damage = turn_json_into_number_provider(input["damage"].clone());
+			let add = if input["add"].is_boolean() { format!("Some({})", input["add"].as_bool().unwrap()) } else { "None".to_string() };
+
+			let data_struct = format!("SetDamageData {{\n\tdamage: {damage}\n\tadd: {add}\n}}");
+			return format!("ItemModifier::SetDamage({data_struct}),\n");
+		}
+		"EnchantWithLevels" => {
+			let levels = turn_json_into_number_provider(input["levels"].clone());
+
+			let mut options = String::new();
+			let raw_options: Vec<String> =
+				input["options"].as_array().unwrap_or(&Vec::new()).iter().map(|x| x.as_str().unwrap().to_string()).collect();
+			if raw_options.is_empty() {
+				options += "\tvec![]"
+			} else {
+				options += "\tvec![\n";
+				for function in raw_options {
+					for line in function.lines() {
+						options += format!("\t\t{line},\n").as_str();
+					}
+				}
+				options += "\t]";
+			}
+
+			let include_additional_cost_component = if input["include_additional_cost_component"].is_boolean() {
+				format!("Some({})", input["add"].as_bool().unwrap())
+			} else {
+				"None".to_string()
+			};
+
+			let data_struct = format!(
+				"EnchantWithLevelsData {{\n\tlevels: {levels}\n\toptions: {options},\n\tinclude_additional_cost_component: {include_additional_cost_component},\n}}"
+			);
+			return format!("ItemModifier::EnchantWithLevels({data_struct}),\n");
+		}
+		"EnchantRandomly" => {
+			let mut options = String::new();
+			let raw_options: Vec<String> =
+				input["options"].as_array().unwrap_or(&Vec::new()).iter().map(|x| x.as_str().unwrap().to_string()).collect();
+			if raw_options.is_empty() {
+				options += "vec![]"
+			} else {
+				options += "vec![\n";
+				for function in raw_options {
+					for line in function.lines() {
+						options += format!("\t\t\"{line}\",\n").as_str();
+					}
+				}
+				options += "\t]";
+			}
+
+			let only_compatible =
+				if input["only_compatible"].is_boolean() { format!("Some({})", input["add"].as_bool().unwrap()) } else { "None".to_string() };
+
+			let include_additional_cost_component = if input["include_additional_cost_component"].is_boolean() {
+				format!("Some({})", input["add"].as_bool().unwrap())
+			} else {
+				"None".to_string()
+			};
+
+			let data_struct = format!(
+				"EnchantRandomlyData {{\n\toptions: {options},\n\tonly_compatible: {only_compatible},\n\tinclude_additional_cost_component: {include_additional_cost_component}\n}}"
+			);
+			return format!("ItemModifier::EnchantRandomly({data_struct}),\n");
+		}
+		"ExplorationMap" => {
+			let destination =
+				if input["destination"].is_string() { format!("Some({})", input["destination"].as_str().unwrap()) } else { "None".to_string() };
+			let decoration =
+				if input["decoration"].is_string() { format!("Some(\"{}\")", input["decoration"].as_str().unwrap()) } else { "None".to_string() };
+			let zoom = if input["zoom"].is_number() { format!("Some({})", input["zoom"].as_number().unwrap()) } else { "None".to_string() };
+			let search_radius = if input["search_radius"].is_number() {
+				format!("Some({})", input["search_radius"].as_number().unwrap())
+			} else {
+				"None".to_string()
+			};
+			let skip_existing_chunks = if input["skip_existing_chunks"].is_boolean() {
+				format!("Some({})", input["skip_existing_chunks"].as_bool().unwrap())
+			} else {
+				"None".to_string()
+			};
+
+			let data_struct = format!(
+				"ExplorationMapData {{\n\tdestination: {destination},\n\tdecoration: {decoration},\n\tzoom: {zoom},\n\tsearch_radius: {search_radius},\n\tskip_existing_chunks: {skip_existing_chunks}\n}}"
+			);
+			return format!("ItemModifier::ExplorationMap({data_struct}),\n");
+		}
+		"SetName" => {
+			//TODO: finish implementation
+			let data_struct = "SetNameData {\n\tname: NbtTag::default(),\n\tentity: None,\n\ttarget: None\n}".to_string();
+			return format!("ItemModifier::SetName({data_struct}),\n");
+		}
+		"SetOminousBottleAmplifier" => {
+			return format!("ItemModifier::SetOminousBottleAmplifier({}),\n", turn_json_into_number_provider(input["amplifier"].clone()));
+		}
+		"SetEnchantments" => {
+			//TODO: finish implementation
+			let data_struct = "SetEnchantmentsData {\n\tenchantments: HashMap::new(),\n\tadd: None\n}".to_string();
+			return format!("ItemModifier::SetEnchantments({data_struct}),\n");
+		}
+		"SetComponents" => {
+			//TODO: finish implementation
+			return "ItemModifier::SetComponents(vec![]),\n".to_string();
+		}
+		"EnchantedCountIncrease" => {
+			let count = turn_json_into_number_provider(input["count"].clone());
+			let limit = if input["limit"].is_number() { format!("Some({})", input["limit"].as_number().unwrap()) } else { "None".to_string() };
+			let enchantment = input["enchantment"].as_str().unwrap().to_string();
+			let data_struct = format!("EnchantCountIncreaseData {{\n\tcount: {count}\n\tlimit: {limit},\n\tenchantment:\"{enchantment}\"\n}}");
+			return format!("ItemModifier::EnchantedCountIncrease({data_struct}),\n");
+		}
+		"FurnaceSmelt" => return "ItemModifier::FurnaceSmelt,\n".to_string(),
+		"LimitCount" => {
+			let min = if input["limit"].is_number() {
+				input["limit"].as_number().unwrap().to_string()
+			} else {
+				if input["limit"].has_key("min") {
+					format!("Some({})", turn_json_into_number_provider(input["limit"]["min"].clone()))
+				} else {
+					"None".to_string()
+				}
+			};
+			let max = if input["limit"].is_number() {
+				input["limit"].as_number().unwrap().to_string()
+			} else {
+				if input["limit"].has_key("max") {
+					format!("Some({})", turn_json_into_number_provider(input["limit"]["max"].clone()))
+				} else {
+					"None".to_string()
+				}
+			};
+
+			let data_struct = format!("LimitCountData {{\n\tmin: {min},\n\tmax: {max}\n}}");
+			return format!("ItemModifier::LimitCount({data_struct}),\n");
+		}
 		x => panic!("unknown function_type {x}"),
 	}
 
@@ -196,7 +427,19 @@ fn turn_json_into_pool(input: JsonValue, block_name: &str) -> String {
 	let rolls = input["bonus_rolls"].clone();
 	output += format!("\tbonus_rolls: {}\n", turn_json_into_number_provider(rolls)).as_str();
 
-	output += "\tentries: vec![],\n";
+	let entries: Vec<String> =
+		input["entries"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_entry(x.clone(), block_name)).collect();
+	if entries.is_empty() {
+		output += "\tentries: vec![],\n"
+	} else {
+		output += "\tentries: vec![\n";
+		for entry in entries {
+			for line in entry.lines() {
+				output += format!("\t\t{line}\n").as_str();
+			}
+		}
+		output += "\t],\n";
+	}
 
 	output += "},";
 	return output;
@@ -217,6 +460,12 @@ fn turn_json_into_number_provider(input: JsonValue) -> String {
 			let max = turn_json_into_number_provider(input["max"].clone());
 
 			return format!("NumberProvider::Uniform(Box::new({min}), Box::new({max})),");
+		}
+		"Binomial" => {
+			let n = turn_json_into_number_provider(input["n"].clone());
+			let p = turn_json_into_number_provider(input["p"].clone());
+
+			return format!("NumberProvider::Binomial(Box::new({n}), Box::new({p})),");
 		}
 		x => panic!("unknown number_provider_type {x}"),
 	}
@@ -273,8 +522,8 @@ fn turn_json_into_predicate(input: JsonValue, block_name: &str) -> String {
 		}
 		"BlockStateProperty" => {
 			let block = input["block"].as_str().unwrap();
-			let properties = input["properties"].as_object().unwrap();
 
+			let properties = input["properties"].as_object().unwrap();
 			let mut properties_code = "vec![".to_string();
 			for (property, value) in properties.iter() {
 				if value.is_string() {
@@ -348,6 +597,26 @@ fn turn_json_into_predicate(input: JsonValue, block_name: &str) -> String {
 			return format!(
 				"Predicate::DamageSourceProperties(Box::new(PredicateDamageSourceProperties {{\ndirect_entity: {direct_entity},\nsource_entity: {source_entity},\nis_direct: {is_direct},\ntags: {tags}\n}}))"
 			);
+		}
+		"TableBonus" => {
+			let enchantment = input["enchantment"].as_str().unwrap();
+			let mut chances = String::new();
+			let raw_chances: Vec<String> =
+				input["chances"].as_array().unwrap_or(&Vec::new()).iter().map(|x| f64::from(x.as_number().unwrap()).to_string()).collect();
+			if raw_chances.is_empty() {
+				chances += "\tvec![],\n"
+			} else {
+				chances += "\tvec![\n";
+				for mut chance in raw_chances {
+					if !chance.contains(".") {
+						chance += ".0";
+					}
+					chances += format!("\t\t{chance},\n").as_str();
+				}
+				chances += "\t]";
+			}
+
+			return format!("Predicate::TableBonus(PredicateTableBonus {{\nenchantment: \"{enchantment}\",\nchances: {chances},\n}})");
 		}
 		x => panic!("unknown predicate {x}"),
 	}
@@ -540,6 +809,176 @@ fn turn_json_into_location_predicate(input: JsonValue, block_name: &str) -> Stri
 \tcan_see_sky: {can_see_sky},
 \tstructures: {structures},
 }}"
+	);
+}
+
+pub fn turn_json_into_entry(input: JsonValue, block_name: &str) -> String {
+	return if input.has_key("children") {
+		turn_json_into_entry_composite(input, block_name)
+	} else if input.has_key("expand") {
+		turn_json_into_entry_tag(input, block_name)
+	} else {
+		turn_json_into_entry_singleton(input, block_name)
+	};
+}
+
+pub fn turn_json_into_entry_singleton(input: JsonValue, block_name: &str) -> String {
+	let entry_type = match input["type"].as_str().unwrap() {
+		"minecraft:item" => format!("LootTablePoolEntrySingletonType::Item(\"{}\")", input["name"].as_str().unwrap()),
+		"minecraft:loot_table" => {
+			if input["value"].is_string() {
+				format!("LootTablePoolEntrySingletonType::LootTableId(\"{}\")", input["value"].as_str().unwrap())
+			} else {
+				format!("LootTablePoolEntrySingletonType::LootTableCustom({})", turn_json_into_loot_table(input["value"].clone(), block_name))
+			}
+		}
+		"minecraft:dynamic" => format!("LootTablePoolEntrySingletonType::Dynamic(\"{}\")", input["name"].as_str().unwrap()),
+		_ => "LootTablePoolEntrySingletonType::Empty".to_string(),
+	};
+
+	let mut conditions = String::new();
+	let raw_conditions: Vec<String> =
+		input["conditions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_predicate(x.clone(), block_name)).collect();
+	if raw_conditions.is_empty() {
+		conditions += "vec![]"
+	} else {
+		conditions += "vec![\n";
+		for condition in raw_conditions {
+			for line in condition.lines() {
+				conditions += format!("\t\t{line}\n").as_str();
+			}
+			conditions.pop();
+			conditions += ",\n";
+		}
+		conditions += "]";
+	}
+	let mut functions = String::new();
+	let raw_functions: Vec<String> =
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+	if raw_functions.is_empty() {
+		functions += "vec![]"
+	} else {
+		functions += "vec![\n";
+		for function in raw_functions {
+			for line in function.lines() {
+				functions += format!("\t\t{line}\n").as_str();
+			}
+		}
+		functions += "]";
+	}
+
+	let weight = if input["weight"].is_number() { format!("Some({})", input["weight"].as_number().unwrap()) } else { "None".to_string() };
+	let quality = if input["quality"].is_number() { format!("Some({})", input["quality"].as_number().unwrap()) } else { "None".to_string() };
+
+	return format!(
+		"LootTablePoolEntry::Singleton(LootTablePoolEntrySingleton {{
+entry_type: {entry_type},
+conditions: {conditions},
+functions: {functions},
+weight: {weight},
+quality: {quality},
+}}),\n"
+	);
+}
+
+pub fn turn_json_into_entry_tag(input: JsonValue, block_name: &str) -> String {
+	let name = input["name"].as_str().unwrap().to_string();
+	let expand = input["expand"].as_bool().unwrap().to_string();
+
+	let mut conditions = String::new();
+	let raw_conditions: Vec<String> =
+		input["conditions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_predicate(x.clone(), block_name)).collect();
+	if raw_conditions.is_empty() {
+		conditions += "vec![]"
+	} else {
+		conditions += "vec![\n";
+		for condition in raw_conditions {
+			for line in condition.lines() {
+				conditions += format!("\t\t{line}\n").as_str();
+			}
+			conditions.pop();
+			conditions += ",\n";
+		}
+		conditions += "]";
+	}
+	let mut functions = String::new();
+	let raw_functions: Vec<String> =
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+	if raw_functions.is_empty() {
+		functions += "vec![]"
+	} else {
+		functions += "vec![\n";
+		for function in raw_functions {
+			for line in function.lines() {
+				functions += format!("\t\t{line}\n").as_str();
+			}
+		}
+		functions += "]";
+	}
+
+	let weight = if input["weight"].is_number() { format!("Some({})", input["weight"].as_number().unwrap()) } else { "None".to_string() };
+	let quality = if input["quality"].is_number() { format!("Some({})", input["quality"].as_number().unwrap()) } else { "None".to_string() };
+
+	return format!(
+		"LootTablePoolEntry::Tag(LootTablePoolEntryTag {{
+	name: \"{name}\",
+	expand: {expand},
+	conditions: {conditions},
+	functions: {functions},
+	weight: {weight},
+	quality: {quality},
+}}),\n"
+	);
+}
+
+pub fn turn_json_into_entry_composite(input: JsonValue, block_name: &str) -> String {
+	let entry_type = match input["type"].as_str().unwrap() {
+		"minecraft:group" => "LootTablePoolEntryCompositeType::Group",
+		"minecraft:alternatives" => "LootTablePoolEntryCompositeType::Alternatives",
+		"minecraft:sequence" => "LootTablePoolEntryCompositeType::Sequence",
+		x => panic!("no idea what the LootTablePoolEntrySingletonType {x} is supposed to be"),
+	};
+
+	let mut conditions = String::new();
+	let raw_conditions: Vec<String> =
+		input["conditions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_predicate(x.clone(), block_name)).collect();
+	if raw_conditions.is_empty() {
+		conditions += "vec![]"
+	} else {
+		conditions += "vec![\n";
+		for condition in raw_conditions {
+			for line in condition.lines() {
+				conditions += format!("\t\t{line}\n").as_str();
+			}
+			conditions.pop();
+			conditions += ",\n";
+		}
+		conditions += "]";
+	}
+
+	let mut children = String::new();
+	let raw_children: Vec<String> =
+		input["children"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_entry(x.clone(), block_name)).collect();
+	if raw_children.is_empty() {
+		children += "vec![]"
+	} else {
+		children += "vec![\n";
+		for condition in raw_children {
+			for line in condition.lines() {
+				children += format!("\t\t{line}\n").as_str();
+			}
+			children.pop();
+			children += "\n";
+		}
+		children += "]";
+	}
+
+	return format!(
+		"LootTablePoolEntry::Composite(LootTablePoolEntryComposite {{
+	entry_type: {entry_type},
+	children: {children},
+	conditions: {conditions},
+ }}),\n"
 	);
 }
 

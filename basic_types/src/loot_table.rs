@@ -30,6 +30,7 @@ pub enum LootTableType {
 	Gift,
 	Fishing,
 	Barter,
+	Custom,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -59,9 +60,8 @@ pub struct LootTablePoolEntrySingleton {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LootTablePoolEntryTag {
-	pub entry_type: LootTablePoolEntrySingletonType,
-	pub expand: bool,
 	pub name: &'static str,
+	pub expand: bool,
 	pub conditions: Vec<Predicate>,
 	pub functions: Vec<ItemModifier>,
 	pub weight: Option<i32>,
@@ -85,7 +85,8 @@ pub enum LootTablePoolEntryCompositeType {
 #[derive(Debug, Clone, PartialEq)]
 pub enum LootTablePoolEntrySingletonType {
 	Item(&'static str),
-	LootTable(&'static str),
+	LootTableId(&'static str),
+	LootTableCustom(LootTable),
 	Dynamic(&'static str),
 	Empty,
 }
