@@ -9,6 +9,7 @@ mod blockentity;
 mod blocks;
 mod entities;
 mod items;
+mod loot_tables;
 mod tags;
 
 fn main() {
@@ -17,6 +18,7 @@ fn main() {
 	items::generate();
 	blocks::generate();
 	tags::generate();
+	loot_tables::generate();
 }
 
 fn convert_to_upper_camel_case(input: &str) -> String {
@@ -39,4 +41,19 @@ fn convert_to_upper_camel_case(input: &str) -> String {
 		})
 		.filter(|i| *i != '_')
 		.collect();
+}
+
+fn read_dir_recursively(path: PathBuf) -> std::io::Result<Vec<fs::DirEntry>> {
+	let mut output: Vec<fs::DirEntry> = Vec::new();
+
+	for entry in fs::read_dir(path).unwrap() {
+		let entry = entry.unwrap();
+		if entry.metadata().unwrap().is_file() {
+			output.push(entry);
+		} else {
+			output.append(&mut read_dir_recursively(entry.path()).unwrap());
+		}
+	}
+
+	return Ok(output);
 }

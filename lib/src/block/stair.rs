@@ -272,6 +272,44 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 	}
 }
 
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:andesite_stairs" => 1.5,
+		"minecraft:blackstone_stairs" => 1.5,
+		"minecraft:cobbled_deepslate_stairs" => 3.5,
+		"minecraft:dark_prismarine_stairs" => 1.5,
+		"minecraft:deepslate_brick_stairs" => 3.5,
+		"minecraft:deepslate_tile_stairs" => 3.5,
+		"minecraft:diorite_stairs" => 1.5,
+		"minecraft:end_stone_brick_stairs" => 3.0,
+		"minecraft:granite_stairs" => 1.5,
+		"minecraft:mossy_stone_brick_stairs" => 1.5,
+		"minecraft:mud_brick_stairs" => 1.5,
+		"minecraft:polished_andesite_stairs" => 1.5,
+		"minecraft:polished_blackstone_brick_stairs" => 1.5,
+		"minecraft:polished_deepslate_stairs" => 3.5,
+		"minecraft:polished_diorite_stairs" => 1.5,
+		"minecraft:polished_granite_stairs" => 1.5,
+		"minecraft:polished_tuff_stairs" => 1.5,
+		"minecraft:prismarine_brick_stairs" => 1.5,
+		"minecraft:prismarine_stairs" => 1.5,
+		"minecraft:purpur_stairs" => 1.5,
+		"minecraft:quartz_stairs" => 0.8,
+		"minecraft:red_sandstone_stairs" => 0.8,
+		"minecraft:resin_brick_stairs" => 1.5,
+		"minecraft:sandstone_stairs" => 0.8,
+		"minecraft:stone_brick_stairs" => 1.5,
+		"minecraft:stone_stairs" => 1.5,
+		"minecraft:tuff_brick_stairs" => 1.5,
+		"minecraft:tuff_stairs" => 1.5,
+		"minecraft:waxed_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_exposed_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_oxidized_cut_copper_stairs" => 3.0,
+		"minecraft:waxed_weathered_cut_copper_stairs" => 3.0,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

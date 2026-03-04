@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use super::*;
 
 static ADD_FNS_COUNT: usize = 8;
@@ -19,6 +21,7 @@ pub fn generate() {
 	output += get_block_name_from_block_state_id().as_str();
 	output += get_block_from_name().as_str();
 	output += get_raw_properties_from_block_state_id().as_str();
+	output += get_raw_properties().as_str();
 	output += get_block_state_id_from_raw().as_str();
 
 	let path = std::path::PathBuf::from("../data/blocks/main/src/lib.rs");
@@ -36,7 +39,7 @@ fn get_blocks() {
 
 	let mut cargo_toml_contents = "[package]
 name = \"block_get_blocks\"
-version = \"0.5.0\"
+version = \"0.5.1\"
 edition = \"2024\"
 description = \"\"
 
@@ -194,7 +197,7 @@ fn get_blocks_add_functions() {
 		let cargo_toml_contents = format!(
 			"[package]
 name = \"blocks_add_fn_{i}\"
-version = \"0.5.0\"
+version = \"0.5.1\"
 edition = \"2024\"
 description = \"\"
 
@@ -262,7 +265,7 @@ fn property_enums() -> String {
 	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
-	let mut properties: HashMap<String, Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<String, Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
@@ -313,7 +316,7 @@ fn get_block_state_id_from_raw() -> String {
 	let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
 
 	//The key is the type and then the property, because properties can have different values depending on their type
-	let mut properties: HashMap<(String, String), Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
@@ -394,7 +397,7 @@ fn get_raw_properties_from_block_state_id() -> String {
 	let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
 
 	//The key is the type and then the property, because properties can have different values depending on their type
-	let mut properties: HashMap<(String, String), Vec<String>> = HashMap::new();
+	let mut properties: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
 	for block in blocks_json.as_object().unwrap().iter() {
 		if !block.1["properties"].is_object() {
 			continue;
@@ -416,7 +419,51 @@ fn get_raw_properties_from_block_state_id() -> String {
 	output += "\tlet state = block_states.iter().find(|x| x.1.states.iter().any(|x| x.id == block_state_id)).unwrap().1.states.iter().find(|x| x.id == block_state_id).unwrap().clone();\n";
 	output += "\tlet mut output: Vec<(String, String)> = Vec::new();\n\n";
 	output += "\tfor property in state.properties {\n";
-	output += "\t\tmatch property {\n";
+	output += "\t\toutput.push(get_raw_properties(property));\n";
+	output += "\t}\n";
+	output += "\treturn output;\n";
+	output += "}\n";
+
+	return output;
+}
+
+fn get_raw_properties() -> String {
+	let mut output = String::new();
+
+	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+	let mut block_types: Vec<String> = Vec::new();
+	for x in blocks_file.lines() {
+		if x.trim().starts_with("\"type\":") {
+			block_types.push(convert_to_upper_camel_case(&x.trim().replace("\"type\": \"", "").replace("\",", "")));
+		}
+	}
+	block_types.sort();
+	block_types.dedup();
+	let block_types: Vec<String> = block_types.into_iter().filter(|x| x != "\"type\": [").collect();
+
+	//The key is the type and then the property, because properties can have different values depending on their type
+	let mut properties: BTreeMap<(String, String), Vec<String>> = BTreeMap::new();
+	for block in blocks_json.as_object().unwrap().iter() {
+		if !block.1["properties"].is_object() {
+			continue;
+		}
+		for property in block.1["properties"].as_object().unwrap().iter() {
+			let property_entry = format!(
+				"{}{}",
+				convert_to_upper_camel_case(block.1["definition"]["type"].as_str().unwrap()),
+				convert_to_upper_camel_case(property.0)
+			);
+			properties
+				.entry((convert_to_upper_camel_case(block.1["definition"]["type"].as_str().unwrap()), property.0.to_string()))
+				.or_insert(property.1.as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect());
+		}
+	}
+
+
+	output += "pub fn get_raw_properties(property: Property) -> (String, String) {\n";
+	output += "\treturn match property {\n";
 	for property in properties {
 		let enum_variant = convert_to_upper_camel_case(&format!("{}{}", property.0.0, convert_to_upper_camel_case(&property.0.1)));
 		for option in property.1 {
@@ -426,15 +473,13 @@ fn get_raw_properties_from_block_state_id() -> String {
 				convert_to_upper_camel_case(&option)
 			};
 			output += format!(
-				"\t\t\tProperty::{enum_variant}({enum_variant}::{variant}) => output.push((\"{}\".to_string(), \"{option}\".to_string())),\n",
+				"\t\tProperty::{enum_variant}({enum_variant}::{variant}) => (\"{}\".to_string(), \"{option}\".to_string()),\n",
 				property.0.1
 			)
 			.as_str();
 		}
 	}
-	output += "\t\t}\n";
 	output += "\t}\n";
-	output += "\treturn output;\n";
 	output += "}\n";
 
 	return output;

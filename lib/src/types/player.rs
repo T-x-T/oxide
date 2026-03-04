@@ -15,29 +15,6 @@ use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u8)]
-pub enum Gamemode {
-	Survival = 0,
-	Creative = 1,
-	Adventure = 2,
-	Spectator = 3,
-}
-
-impl TryFrom<u8> for Gamemode {
-	type Error = Box<dyn Error>;
-
-	fn try_from(value: u8) -> Result<Self, Self::Error> {
-		return match value {
-			0 => Ok(Gamemode::Survival),
-			1 => Ok(Gamemode::Creative),
-			2 => Ok(Gamemode::Adventure),
-			3 => Ok(Gamemode::Spectator),
-			x => Err(Box::new(crate::CustomError::InvalidInput(format!("I dont know what a gamemode of {x} is supposed to be")))),
-		};
-	}
-}
-
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
@@ -69,6 +46,9 @@ pub struct Player {
 	food_exhaustion_level: f32,
 	last_starvation_ticks_ago: u8,
 	started_eating_ticks_ago: u8,
+	exhaustion_swimming_for_meters: f64,
+	exhaustion_sprinting_for_meters: f64,
+	is_sprinting: bool,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -103,6 +83,9 @@ impl Clone for Player {
 			food_exhaustion_level: self.food_exhaustion_level,
 			last_starvation_ticks_ago: self.last_starvation_ticks_ago,
 			started_eating_ticks_ago: self.started_eating_ticks_ago,
+			exhaustion_swimming_for_meters: self.exhaustion_swimming_for_meters,
+			exhaustion_sprinting_for_meters: self.exhaustion_sprinting_for_meters,
+			is_sprinting: self.is_sprinting,
 		}
 	}
 }
@@ -194,8 +177,10 @@ impl CommonEntityTrait for Player {
 				if self.food_tick_timer > ticks_between_regen {
 					self.food_tick_timer = 0;
 					if self.food_level > 17 {
-						self.food_exhaustion_level += 1.0;
-						self.heal(1.0, game.clone());
+						if self.health < 20.0 {
+							self.food_exhaustion_level += 1.0;
+							self.heal(1.0, game.clone());
+						}
 					} else {
 						self.damage(1.0, game.clone(), players);
 					}
@@ -218,6 +203,35 @@ impl CommonEntityTrait for Player {
 
 			if self.is_in_liquid(dimension) {
 				self.fall_distance = 0.0;
+				let last_position_without_height = EntityPosition {
+					y: 0.0,
+					..self.last_position
+				};
+				let current_position_without_height = EntityPosition {
+					y: 0.0,
+					..self.position
+				};
+				self.exhaustion_swimming_for_meters += last_position_without_height.distance_to(current_position_without_height);
+				if self.exhaustion_swimming_for_meters >= 1.0 {
+					self.food_exhaustion_level += 0.01;
+					self.exhaustion_swimming_for_meters -= 1.0;
+				}
+			}
+
+			if self.is_sprinting {
+				let last_position_without_height = EntityPosition {
+					y: 0.0,
+					..self.last_position
+				};
+				let current_position_without_height = EntityPosition {
+					y: 0.0,
+					..self.position
+				};
+				self.exhaustion_sprinting_for_meters += last_position_without_height.distance_to(current_position_without_height);
+				if self.exhaustion_sprinting_for_meters >= 1.0 {
+					self.food_exhaustion_level += 0.1;
+					self.exhaustion_sprinting_for_meters -= 1.0;
+				}
 			}
 
 			if self.food_exhaustion_level >= 4.0 {
@@ -367,6 +381,9 @@ impl Player {
 				food_exhaustion_level: 0.0,
 				last_starvation_ticks_ago: 0,
 				started_eating_ticks_ago: 0,
+				exhaustion_swimming_for_meters: 0.0,
+				exhaustion_sprinting_for_meters: 0.0,
+				is_sprinting: false,
 			};
 
 			return player;
@@ -489,6 +506,9 @@ impl Player {
 			food_exhaustion_level: player_data.get_child("foodExhaustionLevel").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_float(),
 			last_starvation_ticks_ago: 0,
 			started_eating_ticks_ago: 0,
+			exhaustion_swimming_for_meters: 0.0,
+			exhaustion_sprinting_for_meters: 0.0,
+			is_sprinting: false,
 		};
 
 		return player;
@@ -1036,6 +1056,22 @@ impl Player {
 		return Ok(());
 	}
 
+	pub fn jump(&mut self) {
+		if self.is_sprinting {
+			self.food_exhaustion_level += 0.2;
+		} else {
+			self.food_exhaustion_level += 0.05;
+		}
+	}
+
+	pub fn is_sprinting(&self) -> bool {
+		return self.is_sprinting;
+	}
+
+	pub fn set_sprinting(&mut self, is_sprinting: bool) {
+		self.is_sprinting = is_sprinting;
+	}
+
 	pub fn is_sneaking(&self) -> bool {
 		return self.is_sneaking;
 	}
@@ -1114,6 +1150,10 @@ impl Player {
 	pub fn finish_mining(&mut self) {
 		self.mining_for_ticks = 0;
 		self.is_mining = false;
+	}
+
+	pub fn apply_exhaustion_from_mining_block(&mut self) {
+		self.food_exhaustion_level += 0.005;
 	}
 
 	pub fn get_mining_for_ticks(&self) -> u16 {

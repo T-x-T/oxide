@@ -24,6 +24,7 @@ fn initialize_server() {
 	println!("oxide listening on {}", listener.local_addr().unwrap());
 
 	let block_states = data::blocks::get_blocks();
+	let loot_tables = data::loot_tables::get_loot_tables();
 
 	let world_loader = lib::world::loader::vanilla::Loader {
 		path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
@@ -50,6 +51,7 @@ fn initialize_server() {
 		packet_handler_actions: Mutex::new(Vec::new()),
 		packet_send_queues: DashMap::new(),
 		default_gamemode,
+		loot_tables,
 	};
 
 	command::init(&mut game);

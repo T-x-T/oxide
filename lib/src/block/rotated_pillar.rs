@@ -25,6 +25,20 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:purpur_pillar" => 1.5,
+		"minecraft:basalt" => 1.25,
+		"minecraft:polished_basalt" => 1.25,
+		"minecraft:deepslate" => 3.0,
+		"minecraft:ochre_froglight" => 0.3,
+		"minecraft:pearlescent_froglight" => 0.3,
+		"minecraft:verdant_froglight" => 0.3,
+		"minecraft:quartz_pillar" => 0.8,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

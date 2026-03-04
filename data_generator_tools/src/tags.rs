@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs::{DirEntry, ReadDir};
 use std::io;
 use std::str::FromStr;
@@ -21,7 +22,7 @@ pub fn generate() {
 }
 
 fn do_dir(name: String) {
-	let mut output: HashMap<String, Vec<String>> = HashMap::new();
+	let mut output: BTreeMap<String, Vec<String>> = BTreeMap::new();
 
 	let mut path = PathBuf::from_str("../official_server/generated/data/minecraft/tags").unwrap();
 	path.push(name.clone());
@@ -77,7 +78,7 @@ fn do_dir(name: String) {
 	file.flush().unwrap();
 }
 
-fn sub_tags_left(input: &HashMap<String, Vec<String>>) -> bool {
+fn sub_tags_left(input: &BTreeMap<String, Vec<String>>) -> bool {
 	for entry in input.values() {
 		for element in entry {
 			if element.starts_with("#") {
@@ -87,19 +88,4 @@ fn sub_tags_left(input: &HashMap<String, Vec<String>>) -> bool {
 	}
 
 	return false;
-}
-
-fn read_dir_recursively(path: PathBuf) -> io::Result<Vec<DirEntry>> {
-	let mut output: Vec<DirEntry> = Vec::new();
-
-	for entry in fs::read_dir(path).unwrap() {
-		let entry = entry.unwrap();
-		if entry.metadata().unwrap().is_file() {
-			output.push(entry);
-		} else {
-			output.append(&mut read_dir_recursively(entry.path()).unwrap());
-		}
-	}
-
-	return Ok(output);
 }

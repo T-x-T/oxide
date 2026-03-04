@@ -1,0 +1,40 @@
+#![allow(clippy::needless_return)]
+use ::blocks::*;
+use basic_types::item_modifier::*;
+use basic_types::loot_table::*;
+use basic_types::nbt::*;
+use basic_types::predicate::*;
+use basic_types::*;
+use std::collections::HashMap;
+mod blocks;
+mod archaeology;
+mod pots;
+mod dispensers;
+mod harvest;
+mod shearing;
+mod spawners;
+mod gameplay;
+mod chests;
+mod charged_creeper;
+mod brush;
+mod equipment;
+mod carve;
+mod entities;
+pub fn get_loot_tables() -> HashMap<&'static str, HashMap<&'static str, LootTable>> {
+	let mut output: HashMap<&'static str, HashMap<&'static str, LootTable>> = HashMap::new();
+	output.insert("blocks", blocks::get_blocks());
+	output.insert("archaeology", archaeology::get_archaeology());
+	output.insert("pots", pots::get_pots());
+	output.insert("dispensers", dispensers::get_dispensers());
+	output.insert("harvest", harvest::get_harvest());
+	output.insert("shearing", shearing::get_shearing());
+	output.insert("spawners", spawners::get_spawners());
+	output.insert("gameplay", gameplay::get_gameplay());
+	output.insert("chests", chests::get_chests());
+	output.insert("charged_creeper", charged_creeper::get_charged_creeper());
+	output.insert("brush", brush::get_brush());
+	output.insert("equipment", equipment::get_equipment());
+	output.insert("carve", carve::get_carve());
+	output.insert("entities", entities::get_entities());
+	return output;
+}

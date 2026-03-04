@@ -120,11 +120,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let mut players = game.players.lock().unwrap();
 				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 
-				if parsed_packet.sneak {
-					player.set_sneaking(true, &players_clone, game.clone());
-				} else {
-					player.set_sneaking(false, &players_clone, game.clone());
-				}
+				player.set_sneaking(parsed_packet.sneak, &players_clone, game.clone());
+				player.set_sprinting(parsed_packet.sprint);
 			}
 			PacketHandlerAction::Interact(peer_addr, parsed_packet) => {
 				interact::process(peer_addr, parsed_packet, game.clone(), players_clone);

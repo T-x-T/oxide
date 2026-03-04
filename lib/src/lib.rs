@@ -10,6 +10,7 @@ pub mod blockentities;
 pub mod containerclick;
 pub mod deserialize;
 pub mod entity;
+pub mod loot_table;
 pub mod packets;
 pub mod serialize;
 pub mod types;

@@ -79,6 +79,36 @@ pub fn get_block_state_id(
 	return output;
 }
 
+pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+	match block.block_name {
+		"minecraft:andesite_slab" => 1.5,
+		"minecraft:cobbled_deepslate_slab" => 3.5,
+		"minecraft:dark_prismarine_slab" => 1.5,
+		"minecraft:deepslate_brick_slab" => 3.5,
+		"minecraft:deepslate_tile_slab" => 3.5,
+		"minecraft:diorite_slab" => 1.5,
+		"minecraft:end_stone_brick_slab" => 3.0,
+		"minecraft:granite_slab" => 1.5,
+		"minecraft:mossy_stone_brick_slab" => 1.5,
+		"minecraft:mud_brick_slab" => 1.5,
+		"minecraft:polished_andesite_slab" => 1.5,
+		"minecraft:polished_deepslate_slab" => 3.5,
+		"minecraft:polished_diorite_slab" => 1.5,
+		"minecraft:polished_granite_slab" => 1.5,
+		"minecraft:polished_tuff_slab" => 1.5,
+		"minecraft:prismarine_brick_slab" => 1.5,
+		"minecraft:prismarine_slab" => 1.5,
+		"minecraft:resin_brick_slab" => 1.5,
+		"minecraft:tuff_brick_slab" => 1.5,
+		"minecraft:tuff_slab" => 1.5,
+		"minecraft:waxed_cut_copper_slab" => 3.0,
+		"minecraft:waxed_exposed_cut_copper_slab" => 3.0,
+		"minecraft:waxed_oxidized_cut_copper_slab" => 3.0,
+		"minecraft:waxed_weathered_cut_copper_slab" => 3.0,
+		_ => 2.0,
+	}
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;
