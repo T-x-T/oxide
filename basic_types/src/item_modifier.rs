@@ -3,12 +3,18 @@ use std::collections::HashMap;
 use crate::data_component::DataComponent;
 use crate::loot_table::LootTable;
 use crate::nbt::NbtTag;
-use crate::predicate::ItemPredicate;
+use crate::predicate::{ItemPredicate, Predicate};
 use crate::*;
 
 //https://minecraft.wiki/w/Item_modifier
 #[derive(Debug, Clone, PartialEq)]
-pub enum ItemModifier {
+pub struct ItemModifier {
+	pub function: Function,
+	pub conditions: Vec<Predicate>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Function {
 	ApplyBonus(ApplyBonusData),
 	CopyComponents(CopyComponentsData),
 	CopyCustomData(CopyCustomDataData),

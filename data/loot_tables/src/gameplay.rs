@@ -249,10 +249,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather_boots"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetDamage(SetDamageData {
+							ItemModifier {
+								function: Function::SetDamage(SetDamageData {
 								damage: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(0.9),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -275,7 +280,12 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potion"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetPotion("minecraft:water"),
+							ItemModifier {
+								function: Function::SetPotion("minecraft:water"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -291,10 +301,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:fishing_rod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetDamage(SetDamageData {
+							ItemModifier {
+								function: Function::SetDamage(SetDamageData {
 								damage: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(0.9),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(2),
 					quality: None,
@@ -317,10 +332,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ink_sac"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(10.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -412,15 +432,25 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetDamage(SetDamageData {
+							ItemModifier {
+								function: Function::SetDamage(SetDamageData {
 								damage: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(0.25),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantWithLevels(EnchantWithLevelsData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantWithLevels(EnchantWithLevelsData {
 								levels: NumberProvider::Constant(30.0),
 								options: 	vec![],
 								include_additional_cost_component: None,
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -429,15 +459,25 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:fishing_rod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetDamage(SetDamageData {
+							ItemModifier {
+								function: Function::SetDamage(SetDamageData {
 								damage: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(0.25),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantWithLevels(EnchantWithLevelsData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantWithLevels(EnchantWithLevelsData {
 								levels: NumberProvider::Constant(30.0),
 								options: 	vec![],
 								include_additional_cost_component: None,
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -446,11 +486,16 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:book"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantWithLevels(EnchantWithLevelsData {
+							ItemModifier {
+								function: Function::EnchantWithLevels(EnchantWithLevelsData {
 								levels: NumberProvider::Constant(30.0),
 								options: 	vec![],
 								include_additional_cost_component: None,
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -726,11 +771,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:swiftness"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:swiftness"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -739,11 +794,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:slowness"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:slowness"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -752,11 +817,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:strength"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:strength"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -765,11 +840,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:healing"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:healing"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -778,11 +863,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:harming"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:harming"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -791,11 +886,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:leaping"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:leaping"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -804,11 +909,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:regeneration"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:regeneration"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -817,11 +932,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:fire_resistance"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:fire_resistance"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -830,11 +955,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:water_breathing"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:water_breathing"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -843,11 +978,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:invisibility"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:invisibility"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -856,11 +1001,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:night_vision"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:night_vision"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -869,11 +1024,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:weakness"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:weakness"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -882,11 +1047,21 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetPotion("minecraft:poison"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:poison"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1233,11 +1408,16 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:book"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantRandomly(EnchantRandomlyData {
+							ItemModifier {
+								function: Function::EnchantRandomly(EnchantRandomlyData {
 								options: vec![],
 								only_compatible: None,
 								include_additional_cost_component: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(5),
 					quality: None,
@@ -1246,11 +1426,16 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_boots"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantRandomly(EnchantRandomlyData {
+							ItemModifier {
+								function: Function::EnchantRandomly(EnchantRandomlyData {
 								options: vec![],
 								only_compatible: None,
 								include_additional_cost_component: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(8),
 					quality: None,
@@ -1259,7 +1444,12 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potion"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetPotion("minecraft:fire_resistance"),
+							ItemModifier {
+								function: Function::SetPotion("minecraft:fire_resistance"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(8),
 					quality: None,
@@ -1268,7 +1458,12 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:splash_potion"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetPotion("minecraft:fire_resistance"),
+							ItemModifier {
+								function: Function::SetPotion("minecraft:fire_resistance"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(8),
 					quality: None,
@@ -1277,7 +1472,12 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potion"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetPotion("minecraft:water"),
+							ItemModifier {
+								function: Function::SetPotion("minecraft:water"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -1286,10 +1486,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_nugget"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(10.0),), Box::new(NumberProvider::Constant(36.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -1298,10 +1503,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ender_pearl"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(4.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -1310,10 +1520,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dried_ghast"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(10),
 					quality: None,
@@ -1322,10 +1537,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:string"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(9.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(20),
 					quality: None,
@@ -1334,10 +1554,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:quartz"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(5.0),), Box::new(NumberProvider::Constant(12.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(20),
 					quality: None,
@@ -1353,10 +1578,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:crying_obsidian"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1372,10 +1602,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(4.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1384,10 +1619,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:soul_sand"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(8.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1396,10 +1636,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:nether_brick"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(8.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1408,10 +1653,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:spectral_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(6.0),), Box::new(NumberProvider::Constant(12.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1420,10 +1670,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gravel"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(8.0),), Box::new(NumberProvider::Constant(16.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,
@@ -1432,10 +1687,15 @@ pub fn get_gameplay() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blackstone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(8.0),), Box::new(NumberProvider::Constant(16.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(40),
 					quality: None,

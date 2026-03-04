@@ -216,11 +216,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -388,11 +398,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:acacia_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:acacia_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -587,16 +612,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(4.0),
 												add: Some(false)
 											}),
-											ItemModifier::ApplyBonus(ApplyBonusData {
+											
+													conditions: vec![],
+											
+											},
+											ItemModifier {
+												function: Function::ApplyBonus(ApplyBonusData {
 												enchantment: "minecraft:fortune",
 												formula: "minecraft:ore_drops",	extra: None,
 												probability: None,
 												bonus_multiplier: None
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -605,11 +640,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									entry_type: LootTablePoolEntrySingletonType::Item("minecraft:amethyst_shard"),
 									conditions: vec![],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(2.0),
 												add: Some(false)
 											}),
-											ItemModifier::ExplosionDecay,
+											
+													conditions: vec![],
+											
+											},
+											ItemModifier {
+												function: Function::ExplosionDecay,
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -687,11 +732,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:andesite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:andesite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -780,7 +840,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 			LootTablePool {
 				conditions: vec![],
 				functions: vec![
-					ItemModifier::ExplosionDecay,
+					ItemModifier {
+						function: Function::ExplosionDecay,
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -789,10 +854,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:melon_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.53333336),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -809,7 +879,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 			LootTablePool {
 				conditions: vec![],
 				functions: vec![
-					ItemModifier::ExplosionDecay,
+					ItemModifier {
+						function: Function::ExplosionDecay,
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -818,10 +893,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pumpkin_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.53333336),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -945,11 +1025,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1194,11 +1284,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bamboo_mosaic_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:bamboo_mosaic_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1366,11 +1471,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bamboo_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:bamboo_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1444,7 +1564,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:barrel"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -1452,6 +1573,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1499,7 +1624,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:beacon"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -1507,6 +1633,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1537,7 +1667,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bee_nest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:bees",
@@ -1545,12 +1676,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:bee_nest",
 								properties: vec![
 									"honey_level",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1584,7 +1724,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::CopyComponents(CopyComponentsData {
+									ItemModifier {
+										function: Function::CopyComponents(CopyComponentsData {
 										source: "block_entity",
 										include: vec![
 											"minecraft:bees",
@@ -1592,12 +1733,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 										exclude: vec![],
 									
 									}),
-									ItemModifier::CopyState(CopyStateData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::CopyState(CopyStateData {
 										block: "minecraft:beehive",
 										properties: vec![
 											"honey_level",
 										],
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -1620,7 +1770,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:beetroots", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -1671,12 +1826,17 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:beetroot_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::ApplyBonus(ApplyBonusData {
+							ItemModifier {
+								function: Function::ApplyBonus(ApplyBonusData {
 								enchantment: "minecraft:fortune",
 								formula: "minecraft:binomial_with_bonus_count",	extra: Some(3),
 								probability: Some(0.5714286),
 								bonus_multiplier: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1973,11 +2133,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2145,11 +2315,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:birch_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:birch_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2247,7 +2432,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:black_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -2259,6 +2445,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2311,19 +2501,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:black_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:black_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:black_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:black_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2465,7 +2690,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:black_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -2476,6 +2702,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2629,11 +2859,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blackstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:blackstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2707,7 +2952,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blast_furnace"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -2715,6 +2961,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2740,7 +2990,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blue_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -2752,6 +3003,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2804,19 +3059,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blue_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3011,7 +3301,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blue_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -3022,6 +3313,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3192,11 +3487,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:book"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(3.0),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -3327,7 +3632,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brewing_stand"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -3335,6 +3641,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3358,11 +3668,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3460,7 +3785,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brown_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -3472,6 +3798,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3524,19 +3854,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brown_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:brown_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:brown_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:brown_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3719,15 +4084,30 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brown_mushroom"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-6.0),), Box::new(NumberProvider::Constant(2.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: Some(NumberProvider::Constant(0.0),),
 										max: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -3754,7 +4134,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brown_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -3765,6 +4146,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -4165,10 +4550,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									Predicate::SurvivesExplosion,
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(2.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -4195,19 +4585,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -4242,7 +4667,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:carrots", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -4275,12 +4705,17 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:carrot"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::ApplyBonus(ApplyBonusData {
+							ItemModifier {
+								function: Function::ApplyBonus(ApplyBonusData {
 								enchantment: "minecraft:fortune",
 								formula: "minecraft:binomial_with_bonus_count",	extra: Some(3),
 								probability: Some(0.5714286),
 								bonus_multiplier: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -4631,11 +5066,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -4803,11 +5248,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cherry_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cherry_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -4905,7 +5365,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -4913,6 +5374,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5281,11 +5746,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:chorus_fruit"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5326,11 +5801,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:clay_ball"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(4.0),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -5422,13 +5907,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:coal"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -5503,11 +5998,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cobbled_deepslate_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cobbled_deepslate_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5603,11 +6113,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cobblestone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cobblestone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5729,11 +6254,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cocoa_beans"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cocoa",
+										properties: vec![(Property::CocoaAge(CocoaAge::Num2), Property::CocoaAge(CocoaAge::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5781,7 +6321,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:composter"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::ExplosionDecay,
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -5945,7 +6490,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -5953,6 +6499,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -6007,7 +6557,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -6015,12 +6566,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -6109,17 +6669,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_copper"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(5.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -6403,21 +6978,41 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:resin_clump"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: None,
 										max: Some(NumberProvider::Constant(9.0),)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -6444,7 +7039,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:creeper_head"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -6452,6 +7048,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -6812,11 +7412,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:crimson_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:crimson_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -6960,11 +7575,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cut_copper_slab",
+										properties: vec![(Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double), Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7036,11 +7666,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cut_red_sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cut_red_sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7088,11 +7733,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cut_sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cut_sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7118,7 +7778,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cyan_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -7130,6 +7791,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7182,19 +7847,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cyan_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cyan_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cyan_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:cyan_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7336,7 +8036,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cyan_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -7347,6 +8048,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7725,11 +8430,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -7937,11 +8652,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dark_oak_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:dark_oak_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -8061,11 +8791,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dark_prismarine_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:dark_prismarine_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -8318,11 +9063,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:stick"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -8610,7 +9365,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:decorated_pot"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::CopyComponents(CopyComponentsData {
+									ItemModifier {
+										function: Function::CopyComponents(CopyComponentsData {
 										source: "block_entity",
 										include: vec![
 											"minecraft:pot_decorations",
@@ -8618,6 +9374,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 										exclude: vec![],
 									
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -8688,11 +9448,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:deepslate_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:deepslate_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -8805,13 +9580,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:coal"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -8855,17 +9640,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_copper"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(5.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -8909,13 +9709,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:diamond"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -8959,13 +9769,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:emerald"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9009,13 +9829,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_gold"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9059,13 +9889,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_iron"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9109,17 +9949,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:lapis_lazuli"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(4.0),), Box::new(NumberProvider::Constant(9.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9163,17 +10018,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:redstone"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(4.0),), Box::new(NumberProvider::Constant(5.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9200,11 +10070,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:deepslate_tile_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:deepslate_tile_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9365,13 +10250,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:diamond"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9422,11 +10317,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:diorite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:diorite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9548,7 +10458,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dispenser"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -9556,6 +10467,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9601,7 +10516,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dragon_head"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -9609,6 +10525,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9706,7 +10626,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:dropper"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -9714,6 +10635,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9778,13 +10703,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:emerald"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -9813,7 +10748,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:enchanting_table"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -9821,6 +10757,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -9892,11 +10832,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:end_stone_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:end_stone_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10009,11 +10964,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:obsidian"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(8.0),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -10162,7 +11127,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:exposed_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -10170,6 +11136,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10224,7 +11194,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:exposed_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -10232,12 +11203,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:exposed_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10357,11 +11337,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:exposed_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:exposed_cut_copper_slab",
+										properties: vec![(Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double), Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10476,13 +11471,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									Predicate::RandomChance(NumberProvider::Constant(0.125),),
 							],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -10790,11 +11795,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10834,7 +11849,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:furnace"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -10842,6 +11858,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -10895,10 +11915,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(5.0),)),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -11002,35 +12027,105 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenDown(GlowLichenDown::True), Property::GlowLichenDown(GlowLichenDown::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenUp(GlowLichenUp::True), Property::GlowLichenUp(GlowLichenUp::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenNorth(GlowLichenNorth::True), Property::GlowLichenNorth(GlowLichenNorth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenSouth(GlowLichenSouth::True), Property::GlowLichenSouth(GlowLichenSouth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenWest(GlowLichenWest::True), Property::GlowLichenWest(GlowLichenWest::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:glow_lichen",
+										properties: vec![(Property::GlowLichenEast(GlowLichenEast::True), Property::GlowLichenEast(GlowLichenEast::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(-1.0),
 								add: Some(true)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11071,21 +12166,41 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:glowstone_dust"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(4.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: Some(NumberProvider::Constant(1.0),),
 										max: Some(NumberProvider::Constant(4.0),)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -11153,13 +12268,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_gold"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -11210,11 +12335,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:granite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:granite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11399,7 +12539,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gray_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -11411,6 +12552,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11463,19 +12608,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gray_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11617,7 +12797,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gray_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -11628,6 +12809,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11759,7 +12944,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:green_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -11771,6 +12957,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11823,19 +13013,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:green_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:green_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:green_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:green_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -11977,7 +13202,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:green_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -11988,6 +13214,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -12292,7 +13522,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:hopper"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -12300,6 +13531,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -12775,13 +14010,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:raw_iron"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -13082,11 +14327,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -13254,11 +14509,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:jungle_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:jungle_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -13491,17 +14761,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:lapis_lazuli"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(4.0),), Box::new(NumberProvider::Constant(9.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -13604,10 +14889,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(2.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -13684,10 +14974,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(2.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -13748,23 +15043,68 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leaf_litter"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:leaf_litter",
+										properties: vec![(Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num1), Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num1))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:leaf_litter",
+										properties: vec![(Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num2), Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:leaf_litter",
+										properties: vec![(Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num3), Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:leaf_litter",
+										properties: vec![(Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num4), Property::LeafLitterSegmentAmount(LeafLitterSegmentAmount::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -13838,7 +15178,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_blue_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -13850,6 +15191,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -13902,19 +15247,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_blue_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_blue_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14056,7 +15436,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_blue_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -14067,6 +15448,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14198,7 +15583,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_gray_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -14210,6 +15596,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14262,19 +15652,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_gray_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:light_gray_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14416,7 +15841,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:light_gray_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -14427,6 +15853,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14683,7 +16113,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:lime_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -14695,6 +16126,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14747,19 +16182,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:lime_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:lime_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:lime_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:lime_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -14901,7 +16371,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:lime_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -14912,6 +16383,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -15091,7 +16566,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:magenta_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -15103,6 +16579,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -15155,19 +16635,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:magenta_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:magenta_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:magenta_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:magenta_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -15309,7 +16824,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:magenta_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -15320,6 +16836,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -15632,11 +17152,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -15724,7 +17254,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:mangrove_propagule", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -15836,11 +17371,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:mangrove_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:mangrove_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -15982,21 +17532,41 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:melon_slice"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(7.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: None,
 										max: Some(NumberProvider::Constant(9.0),)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -16016,7 +17586,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 			LootTablePool {
 				conditions: vec![],
 				functions: vec![
-					ItemModifier::ExplosionDecay,
+					ItemModifier {
+						function: Function::ExplosionDecay,
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -16025,38 +17600,118 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:melon_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.06666667),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num0), Property::StemAge(StemAge::Num0))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.13333334),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num1), Property::StemAge(StemAge::Num1))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.2),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num2), Property::StemAge(StemAge::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.26666668),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num3), Property::StemAge(StemAge::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.33333334),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num4), Property::StemAge(StemAge::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.4),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num5), Property::StemAge(StemAge::Num5))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.46666667),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num6), Property::StemAge(StemAge::Num6))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.53333336),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:melon_stem",
+										properties: vec![(Property::StemAge(StemAge::Num7), Property::StemAge(StemAge::Num7))]
+									}),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -16152,11 +17807,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:mossy_cobblestone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:mossy_cobblestone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -16228,11 +17898,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:mossy_stone_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:mossy_stone_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -16352,11 +18037,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:mud_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:mud_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -16573,11 +18273,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:nether_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:nether_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -16690,17 +18405,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gold_nugget"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(6.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -16751,13 +18481,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:quartz"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:ore_drops",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -16806,7 +18546,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 			LootTablePool {
 				conditions: vec![],
 				functions: vec![
-					ItemModifier::ExplosionDecay,
+					ItemModifier {
+						function: Function::ExplosionDecay,
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -16815,16 +18560,36 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:nether_wart"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(4.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ApplyBonus(ApplyBonusData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:nether_wart",
+										properties: vec![(Property::NetherWartAge(NetherWartAge::Num3), Property::NetherWartAge(NetherWartAge::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ApplyBonus(ApplyBonusData {
 								enchantment: "minecraft:fortune",
 								formula: "minecraft:uniform_bonus_count",	extra: None,
 								probability: None,
 								bonus_multiplier: None
 							}),
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:nether_wart",
+										properties: vec![(Property::NetherWartAge(NetherWartAge::Num3), Property::NetherWartAge(NetherWartAge::Num3))]
+									}),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -17145,11 +18910,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -17357,11 +19132,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:oak_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:oak_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -17555,7 +19345,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:orange_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -17567,6 +19358,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -17619,19 +19414,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:orange_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:orange_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:orange_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:orange_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -17773,7 +19603,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:orange_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -17784,6 +19615,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18083,7 +19918,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:oxidized_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -18091,6 +19927,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18145,7 +19985,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:oxidized_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -18153,12 +19994,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:oxidized_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18278,11 +20128,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:oxidized_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:oxidized_cut_copper_slab",
+										properties: vec![(Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double), Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18471,7 +20336,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::ExplosionDecay,
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18696,11 +20566,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -18868,11 +20748,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pale_oak_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pale_oak_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19021,11 +20916,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:petrified_oak_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:petrified_oak_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19049,7 +20959,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:piglin_head"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -19057,6 +20968,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19082,7 +20997,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pink_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -19094,6 +21010,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19146,19 +21066,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pink_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19300,23 +21255,68 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pink_petals"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_petals",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_petals",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_petals",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pink_petals",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19340,7 +21340,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pink_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -19351,6 +21352,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19517,7 +21522,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:pitcher_crop", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -19542,10 +21552,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -19563,10 +21578,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -19584,10 +21604,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -19605,10 +21630,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -19626,10 +21656,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -19645,7 +21680,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:pitcher_plant", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -19685,7 +21725,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:player_head"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:profile",
@@ -19695,6 +21736,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19810,11 +21855,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_andesite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_andesite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -19910,11 +21970,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_blackstone_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_blackstone_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20058,11 +22133,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_blackstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_blackstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20158,11 +22248,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_deepslate_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_deepslate_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20258,11 +22363,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_diorite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_diorite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20334,11 +22454,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_granite_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_granite_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20410,11 +22545,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:polished_tuff_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:polished_tuff_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -20499,7 +22649,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:potatoes", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -20532,12 +22687,17 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potato"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::ApplyBonus(ApplyBonusData {
+							ItemModifier {
+								function: Function::ApplyBonus(ApplyBonusData {
 								enchantment: "minecraft:fortune",
 								formula: "minecraft:binomial_with_bonus_count",	extra: Some(3),
 								probability: Some(0.5714286),
 								bonus_multiplier: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22179,11 +24339,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:prismarine_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22255,11 +24430,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:prismarine_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22348,7 +24538,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 			LootTablePool {
 				conditions: vec![],
 				functions: vec![
-					ItemModifier::ExplosionDecay,
+					ItemModifier {
+						function: Function::ExplosionDecay,
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -22357,38 +24552,118 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pumpkin_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.06666667),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num0), Property::StemAge(StemAge::Num0))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.13333334),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num1), Property::StemAge(StemAge::Num1))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.2),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num2), Property::StemAge(StemAge::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.26666668),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num3), Property::StemAge(StemAge::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.33333334),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num4), Property::StemAge(StemAge::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.4),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num5), Property::StemAge(StemAge::Num5))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.46666667),)),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num6), Property::StemAge(StemAge::Num6))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Binomial(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(0.53333336),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:pumpkin_stem",
+										properties: vec![(Property::StemAge(StemAge::Num7), Property::StemAge(StemAge::Num7))]
+									}),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22414,7 +24689,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:purple_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -22426,6 +24702,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22478,19 +24758,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:purple_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:purple_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:purple_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:purple_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22632,7 +24947,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:purple_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -22643,6 +24959,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22820,11 +25140,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:purpur_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:purpur_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -22944,11 +25279,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:quartz_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:quartz_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23094,7 +25444,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -23106,6 +25457,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23158,19 +25513,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:red_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:red_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:red_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23353,15 +25743,30 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_mushroom"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-6.0),), Box::new(NumberProvider::Constant(2.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: Some(NumberProvider::Constant(0.0),),
 										max: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -23388,11 +25793,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_nether_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:red_nether_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23536,11 +25956,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:red_sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23612,7 +26047,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -23623,6 +26059,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -23841,17 +26281,32 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:redstone"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(4.0),), Box::new(NumberProvider::Constant(5.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -23981,11 +26436,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:resin_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24081,35 +26551,105 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:resin_clump"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceDown(MultifaceDown::True), Property::MultifaceDown(MultifaceDown::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceUp(MultifaceUp::True), Property::MultifaceUp(MultifaceUp::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceNorth(MultifaceNorth::True), Property::MultifaceNorth(MultifaceNorth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceSouth(MultifaceSouth::True), Property::MultifaceSouth(MultifaceSouth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceWest(MultifaceWest::True), Property::MultifaceWest(MultifaceWest::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:resin_clump",
+										properties: vec![(Property::MultifaceEast(MultifaceEast::True), Property::MultifaceEast(MultifaceEast::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(-1.0),
 								add: Some(true)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24258,11 +26798,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24481,35 +27036,105 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinDown(SculkVeinDown::True), Property::SculkVeinDown(SculkVeinDown::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinUp(SculkVeinUp::True), Property::SculkVeinUp(SculkVeinUp::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinNorth(SculkVeinNorth::True), Property::SculkVeinNorth(SculkVeinNorth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinSouth(SculkVeinSouth::True), Property::SculkVeinSouth(SculkVeinSouth::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinWest(SculkVeinWest::True), Property::SculkVeinWest(SculkVeinWest::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(true)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sculk_vein",
+										properties: vec![(Property::SculkVeinEast(SculkVeinEast::True), Property::SculkVeinEast(SculkVeinEast::True))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(-1.0),
 								add: Some(true)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24550,21 +27175,41 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_crystals"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(3.0),)),
 										add: Some(false)
 									}),
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::LimitCount(LimitCountData {
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::LimitCount(LimitCountData {
 										min: Some(NumberProvider::Constant(1.0),),
 										max: Some(NumberProvider::Constant(5.0),)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -24591,19 +27236,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:sea_pickle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sea_pickle",
+										properties: vec![(Property::SeaPicklePickles(SeaPicklePickles::Num2), Property::SeaPicklePickles(SeaPicklePickles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sea_pickle",
+										properties: vec![(Property::SeaPicklePickles(SeaPicklePickles::Num3), Property::SeaPicklePickles(SeaPicklePickles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:sea_pickle",
+										properties: vec![(Property::SeaPicklePickles(SeaPicklePickles::Num4), Property::SeaPicklePickles(SeaPicklePickles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24710,13 +27390,23 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									Predicate::RandomChance(NumberProvider::Constant(0.125),),
 							],
 							functions: vec![
-									ItemModifier::ApplyBonus(ApplyBonusData {
+									ItemModifier {
+										function: Function::ApplyBonus(ApplyBonusData {
 										enchantment: "minecraft:fortune",
 										formula: "minecraft:uniform_bonus_count",	extra: None,
 										probability: None,
 										bonus_multiplier: None
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -24767,7 +27457,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -24778,6 +27469,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24801,7 +27496,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:skeleton_skull"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -24809,6 +27505,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -24940,7 +27640,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:smoker"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -24948,6 +27649,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -25019,11 +27724,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:smooth_quartz_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:smooth_quartz_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -25095,11 +27815,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:smooth_red_sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:smooth_red_sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -25171,11 +27906,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:smooth_sandstone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:smooth_sandstone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -25247,11 +27997,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:smooth_stone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:smooth_stone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -25315,10 +28080,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(1.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25332,10 +28102,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(2.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25349,10 +28124,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(3.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25366,10 +28146,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(4.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25383,10 +28168,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(5.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25400,10 +28190,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(6.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25417,10 +28212,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(7.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25434,10 +28234,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(8.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25464,10 +28269,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(1.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25481,10 +28291,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(2.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25498,10 +28313,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(3.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25515,10 +28335,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(4.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25532,10 +28357,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(5.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25549,10 +28379,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(6.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25566,10 +28401,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 											}),
 									],
 									functions: vec![
-											ItemModifier::SetCount(SetCountData {
+											ItemModifier {
+												function: Function::SetCount(SetCountData {
 												count: NumberProvider::Constant(7.0),
 												add: Some(false)
 											}),
+											
+													conditions: vec![],
+											
+											},
 									],
 									weight: None,
 									quality: None,
@@ -25623,11 +28463,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							entry_type: LootTablePoolEntrySingletonType::Item("minecraft:snowball"),
 							conditions: vec![],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(4.0),
 										add: Some(false)
 									}),
-									ItemModifier::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
+									ItemModifier {
+										function: Function::ExplosionDecay,
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -25673,10 +28523,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									Predicate::SurvivesExplosion,
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(1.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -26062,11 +28917,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 							}),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -26234,11 +29099,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:spruce_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:spruce_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -26402,11 +29282,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:stone_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:stone_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -26550,11 +29445,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:stone_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:stone_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -27234,7 +30144,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:sweet_berry_bush", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -27245,16 +30160,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					}),
 				],
 				functions: vec![
-					ItemModifier::SetCount(SetCountData {
+					ItemModifier {
+						function: Function::SetCount(SetCountData {
 						count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(3.0),)),
 						add: Some(false)
 					}),
-					ItemModifier::ApplyBonus(ApplyBonusData {
+					
+							conditions: vec![],
+					
+					},
+					ItemModifier {
+						function: Function::ApplyBonus(ApplyBonusData {
 						enchantment: "minecraft:fortune",
 						formula: "minecraft:uniform_bonus_count",	extra: None,
 						probability: None,
 						bonus_multiplier: None
 					}),
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -27276,16 +30201,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					}),
 				],
 				functions: vec![
-					ItemModifier::SetCount(SetCountData {
+					ItemModifier {
+						function: Function::SetCount(SetCountData {
 						count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 						add: Some(false)
 					}),
-					ItemModifier::ApplyBonus(ApplyBonusData {
+					
+							conditions: vec![],
+					
+					},
+					ItemModifier {
+						function: Function::ApplyBonus(ApplyBonusData {
 						enchantment: "minecraft:fortune",
 						formula: "minecraft:uniform_bonus_count",	extra: None,
 						probability: None,
 						bonus_multiplier: None
 					}),
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -27398,10 +30333,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(2.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -27478,10 +30418,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 									}),
 							],
 							functions: vec![
-									ItemModifier::SetCount(SetCountData {
+									ItemModifier {
+										function: Function::SetCount(SetCountData {
 										count: NumberProvider::Constant(2.0),
 										add: Some(false)
 									}),
+									
+											conditions: vec![],
+									
+									},
 							],
 							weight: None,
 							quality: None,
@@ -27525,10 +30470,15 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:seagrass"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -27690,7 +30640,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:torchflower_crop", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -27727,7 +30682,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:trapped_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -27735,6 +30691,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -27939,11 +30899,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tuff_brick_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:tuff_brick_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -28039,11 +31014,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tuff_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:tuff_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -28657,11 +31647,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:warped_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:warped_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -28927,7 +31932,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -28935,6 +31941,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -28989,7 +31999,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -28997,12 +32008,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:waxed_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29122,11 +32142,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:waxed_cut_copper_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29296,7 +32331,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_exposed_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -29304,6 +32340,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29358,7 +32398,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_exposed_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -29366,12 +32407,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:waxed_exposed_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29491,11 +32541,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_exposed_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:waxed_exposed_cut_copper_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29713,7 +32778,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_oxidized_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -29721,6 +32787,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29775,7 +32845,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_oxidized_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -29783,12 +32854,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:waxed_oxidized_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -29908,11 +32988,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_oxidized_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:waxed_oxidized_cut_copper_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30106,7 +33201,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_weathered_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -30114,6 +33210,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30168,7 +33268,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_weathered_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -30176,12 +33277,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:waxed_weathered_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30301,11 +33411,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:waxed_weathered_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:waxed_weathered_cut_copper_slab",
+										properties: vec![(Property::SlabType(SlabType::Double), Property::SlabType(SlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30499,7 +33624,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:weathered_copper_chest"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -30507,6 +33633,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30561,7 +33691,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:weathered_copper_golem_statue"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -30569,12 +33700,21 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
-							ItemModifier::CopyState(CopyStateData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::CopyState(CopyStateData {
 								block: "minecraft:weathered_copper_golem_statue",
 								properties: vec![
 									"copper_golem_pose",
 								],
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30694,11 +33834,26 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:weathered_cut_copper_slab"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:weathered_cut_copper_slab",
+										properties: vec![(Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double), Property::WeatheringCopperSlabType(WeatheringCopperSlabType::Double))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30899,7 +34054,12 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 	output.insert("minecraft:wheat", LootTable {
 		loot_table_type: LootTableType::Block,
 		functions: vec![
-			ItemModifier::ExplosionDecay,
+			ItemModifier {
+				function: Function::ExplosionDecay,
+			
+					conditions: vec![],
+			
+			},
 		],
 		pools: vec![
 			LootTablePool {
@@ -30950,12 +34110,17 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:wheat_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::ApplyBonus(ApplyBonusData {
+							ItemModifier {
+								function: Function::ApplyBonus(ApplyBonusData {
 								enchantment: "minecraft:fortune",
 								formula: "minecraft:binomial_with_bonus_count",	extra: Some(3),
 								probability: Some(0.5714286),
 								bonus_multiplier: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -30981,7 +34146,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:white_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -30993,6 +34159,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31045,19 +34215,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:white_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:white_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:white_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:white_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31199,7 +34404,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:white_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -31210,6 +34416,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31363,23 +34573,68 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:wildflowers"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:wildflowers",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num1))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:wildflowers",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:wildflowers",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:wildflowers",
+										properties: vec![(Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4), Property::FlowerBedFlowerAmount(FlowerBedFlowerAmount::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31427,7 +34682,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:wither_skeleton_skull"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -31435,6 +34691,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31460,7 +34720,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:yellow_banner"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -31472,6 +34733,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31524,19 +34789,54 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:yellow_candle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(2.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:yellow_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num2), Property::CandleCandles(CandleCandles::Num2))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(3.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetCount(SetCountData {
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:yellow_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num3), Property::CandleCandles(CandleCandles::Num3))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
-							ItemModifier::ExplosionDecay,
+							
+									conditions: vec![
+									Predicate::BlockStateProperty(PredicateBlockStateProperty{
+										block: "minecraft:yellow_candle",
+										properties: vec![(Property::CandleCandles(CandleCandles::Num4), Property::CandleCandles(CandleCandles::Num4))]
+									}),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::ExplosionDecay,
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31678,7 +34978,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:yellow_shulker_box"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -31689,6 +34990,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -31818,7 +35123,8 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:zombie_head"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::CopyComponents(CopyComponentsData {
+							ItemModifier {
+								function: Function::CopyComponents(CopyComponentsData {
 								source: "block_entity",
 								include: vec![
 									"minecraft:custom_name",
@@ -31826,6 +35132,10 @@ pub fn get_blocks() -> HashMap<&'static str, LootTable> {
 								exclude: vec![],
 							
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

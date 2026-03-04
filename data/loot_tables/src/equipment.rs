@@ -28,11 +28,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:chainmail_helmet"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -51,11 +61,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:chainmail_chestplate"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -87,11 +107,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_helmet"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -110,11 +140,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_chestplate"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -146,11 +186,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:diamond_helmet"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -169,11 +219,21 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 										entry_type: LootTablePoolEntrySingletonType::Item("minecraft:diamond_chestplate"),
 										conditions: vec![],
 										functions: vec![
-												ItemModifier::SetComponents(vec![]),
-												ItemModifier::SetEnchantments(SetEnchantmentsData {
+												ItemModifier {
+													function: Function::SetComponents(vec![]),
+												
+														conditions: vec![],
+												
+												},
+												ItemModifier {
+													function: Function::SetEnchantments(SetEnchantmentsData {
 													enchantments: HashMap::new(),
 													add: None
 												}),
+												
+														conditions: vec![],
+												
+												},
 										],
 										weight: None,
 										quality: None,
@@ -229,10 +289,15 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_sword"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetEnchantments(SetEnchantmentsData {
+							ItemModifier {
+								function: Function::SetEnchantments(SetEnchantmentsData {
 								enchantments: HashMap::new(),
 								add: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -241,10 +306,15 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_sword"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetEnchantments(SetEnchantmentsData {
+							ItemModifier {
+								function: Function::SetEnchantments(SetEnchantmentsData {
 								enchantments: HashMap::new(),
 								add: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -297,10 +367,15 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetEnchantments(SetEnchantmentsData {
+							ItemModifier {
+								function: Function::SetEnchantments(SetEnchantmentsData {
 								enchantments: HashMap::new(),
 								add: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -309,10 +384,15 @@ pub fn get_equipment() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetEnchantments(SetEnchantmentsData {
+							ItemModifier {
+								function: Function::SetEnchantments(SetEnchantmentsData {
 								enchantments: HashMap::new(),
 								add: None
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

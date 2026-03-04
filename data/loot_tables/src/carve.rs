@@ -15,10 +15,15 @@ pub fn get_carve() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pumpkin_seeds"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(4.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

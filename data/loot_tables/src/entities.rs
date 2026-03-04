@@ -59,15 +59,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:blaze_rod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -91,15 +101,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -116,15 +136,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -143,16 +173,31 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: Some(1),
 								enchantment:"minecraft:looting"
 							}),
-							ItemModifier::SetPotion("minecraft:poison"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:poison"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -178,15 +223,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:breeze_rod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -217,10 +272,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:string"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -244,15 +304,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:string"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -271,15 +341,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:spider_eye"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-1.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -303,15 +383,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:feather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -328,12 +418,31 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:chicken"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -357,7 +466,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -398,15 +521,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:copper_ingot"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -430,15 +563,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -455,16 +598,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:beef"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -495,15 +662,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gunpowder"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -548,16 +725,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
-							ItemModifier::FurnaceSmelt,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -581,15 +782,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -613,15 +824,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -667,15 +888,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_shard"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -692,12 +923,31 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
-							ItemModifier::FurnaceSmelt,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: Some(3),
 					quality: None,
@@ -706,11 +956,16 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_crystals"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(2),
 					quality: None,
@@ -758,7 +1013,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::LootTableId("minecraft:gameplay/fishing/fish"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -811,15 +1080,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ender_pearl"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -867,15 +1146,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:emerald"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -913,15 +1202,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ghast_tear"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -938,15 +1237,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gunpowder"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -964,10 +1273,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					Predicate::KilledByPlayer,
 				],
 				functions: vec![
-					ItemModifier::SetCount(SetCountData {
+					ItemModifier {
+						function: Function::SetCount(SetCountData {
 						count: NumberProvider::Constant(1.0),
 						add: Some(false)
 					}),
+					
+							conditions: vec![],
+					
+					},
 				],
 				rolls: NumberProvider::Constant(1.0),
 				bonus_rolls: NumberProvider::Constant(0.0),
@@ -1005,15 +1319,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:glow_ink_sac"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1044,15 +1368,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_shard"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1069,12 +1403,31 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
-							ItemModifier::FurnaceSmelt,
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: Some(2),
 					quality: None,
@@ -1083,11 +1436,16 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:prismarine_crystals"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(2),
 					quality: None,
@@ -1118,7 +1476,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::LootTableId("minecraft:gameplay/fishing/fish"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1149,16 +1521,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:porkchop"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(4.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1175,15 +1571,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1207,15 +1613,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1239,15 +1655,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1285,7 +1711,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potato"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1316,10 +1756,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:poppy"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1336,10 +1781,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:iron_ingot"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(3.0),), Box::new(NumberProvider::Constant(5.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1363,15 +1813,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1406,15 +1866,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-2.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1430,10 +1900,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1449,10 +1924,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1468,10 +1948,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1502,15 +1987,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1527,16 +2022,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:beef"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1560,15 +2079,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1599,10 +2128,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bamboo"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1626,15 +2160,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:feather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1660,15 +2204,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:phantom_membrane"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1692,16 +2246,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:porkchop"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1744,11 +2322,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ominous_bottle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
-							ItemModifier::SetOminousBottleAmplifier(NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(4.0),)),),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetOminousBottleAmplifier(NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(4.0),)),),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1779,16 +2367,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:cod"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(3),
 					quality: None,
@@ -1797,16 +2409,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:salmon"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1830,10 +2466,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:pufferfish"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1874,15 +2515,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rabbit_hide"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1899,16 +2550,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rabbit"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1954,10 +2629,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:saddle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -1981,7 +2661,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:salmon"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2022,16 +2716,40 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:mutton"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::FurnaceSmelt,
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2648,15 +3366,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2673,15 +3401,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2705,15 +3443,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2749,15 +3497,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})))),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2773,10 +3531,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 							})),
 					],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2807,10 +3570,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:snowball"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(15.0),)),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2834,15 +3602,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:string"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2861,15 +3639,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:spider_eye"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-1.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2893,15 +3681,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:ink_sac"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2925,15 +3723,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2950,15 +3758,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -2977,16 +3795,31 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tipped_arrow"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: Some(1),
 								enchantment:"minecraft:looting"
 							}),
-							ItemModifier::SetPotion("minecraft:slowness"),
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::SetPotion("minecraft:slowness"),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3010,15 +3843,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:string"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(2.0),), Box::new(NumberProvider::Constant(5.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3049,15 +3892,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:leather"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3081,10 +3934,15 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:tropical_fish"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3125,15 +3983,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:seagrass"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(3),
 					quality: None,
@@ -3195,15 +4063,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:emerald"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3256,15 +4134,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:glowstone_dust"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3273,15 +4161,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:sugar"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3290,15 +4188,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:spider_eye"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3307,15 +4215,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:glass_bottle"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3324,15 +4242,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gunpowder"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3341,15 +4269,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:stick"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: Some(2),
 					quality: None,
@@ -3366,15 +4304,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:redstone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(4.0),), Box::new(NumberProvider::Constant(8.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3405,15 +4353,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:coal"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(-1.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3430,15 +4388,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:bone"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3491,15 +4459,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(1.0),), Box::new(NumberProvider::Constant(3.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3523,15 +4501,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3569,7 +4557,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potato"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3614,15 +4616,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3646,15 +4658,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(2.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3692,7 +4714,21 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:potato"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::FurnaceSmelt,
+							ItemModifier {
+								function: Function::FurnaceSmelt,
+							
+									conditions: vec![
+									Predicate::AnyOf(vec![Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::This,
+									predicate: None
+									})),
+									Predicate::EntityProperties(Box::new(PredicateEntityProperties {
+									entity: EntityLootContext::DirectAttacker,
+									predicate: None
+									}))]),
+								],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3716,15 +4752,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:rotten_flesh"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -3741,15 +4787,25 @@ pub fn get_entities() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:gold_nugget"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								add: Some(false)
 							}),
-							ItemModifier::EnchantedCountIncrease(EnchantCountIncreaseData {
+							
+									conditions: vec![],
+							
+							},
+							ItemModifier {
+								function: Function::EnchantedCountIncrease(EnchantCountIncreaseData {
 								count: NumberProvider::Uniform(Box::new(NumberProvider::Constant(0.0),), Box::new(NumberProvider::Constant(1.0),)),
 								limit: None,
 								enchantment:"minecraft:looting"
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

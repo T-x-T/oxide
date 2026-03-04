@@ -15,10 +15,15 @@ pub fn get_shearing() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:brown_mushroom"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,
@@ -27,10 +32,15 @@ pub fn get_shearing() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:red_mushroom"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetCount(SetCountData {
+							ItemModifier {
+								function: Function::SetCount(SetCountData {
 								count: NumberProvider::Constant(1.0),
 								add: Some(false)
 							}),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

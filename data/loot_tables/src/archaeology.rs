@@ -121,7 +121,8 @@ pub fn get_archaeology() -> HashMap<&'static str, LootTable> {
 					entry_type: LootTablePoolEntrySingletonType::Item("minecraft:suspicious_stew"),
 					conditions: vec![],
 					functions: vec![
-							ItemModifier::SetStewEffect(	vec![
+							ItemModifier {
+								function: Function::SetStewEffect(	vec![
 									SetStewEffectDataEffect {
 										effect_type: "minecraft:night_vision",
 										duration: NumberProvider::Uniform(Box::new(NumberProvider::Constant(7.0),), Box::new(NumberProvider::Constant(10.0),)),
@@ -147,6 +148,10 @@ pub fn get_archaeology() -> HashMap<&'static str, LootTable> {
 										duration: NumberProvider::Uniform(Box::new(NumberProvider::Constant(7.0),), Box::new(NumberProvider::Constant(10.0),)),
 									},
 								]),
+							
+									conditions: vec![],
+							
+							},
 					],
 					weight: None,
 					quality: None,

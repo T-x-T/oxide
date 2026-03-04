@@ -1,3 +1,4 @@
+use basic_types::item_modifier::{Function, ItemModifier};
 use basic_types::loot_table::{LootTable, LootTablePoolEntry, LootTablePoolEntrySingleton, LootTablePoolEntrySingletonType};
 use basic_types::predicate::Predicate;
 use rand::seq::*;
@@ -12,11 +13,53 @@ pub fn get_block_drops(
 	used_tool: &Slot,
 	block_states: &HashMap<String, data::blocks::Block>,
 ) -> Vec<Item> {
-	let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id, block_states);
-	let Some(loot_table) = loot_tables.get("blocks").unwrap().get(block_name.as_str()) else {
+	let block = data::blocks::get_block_from_block_state_id(block_state_id, block_states);
+	let block_name = block.block_name;
+	let Some(loot_table) = loot_tables.get("blocks").unwrap().get(block_name) else {
 		println!("didnt find loot table for {block_name}");
 		return Vec::new();
 	};
+
+	let all_items = data::items::get_items();
+
+	if data::tags::get_block().get("needs_iron_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
+		let iron_pickaxes = [
+			all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			all_items.get("minecraft:golden_pickaxe").unwrap().id,
+			all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+			all_items.get("minecraft:netherite_pickaxe").unwrap().id,
+		];
+
+		if !iron_pickaxes.contains(&used_tool.item_id) {
+			return Vec::new();
+		}
+	} else if data::tags::get_block().get("needs_stone_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
+		let stone_pickaxes = [
+			all_items.get("minecraft:stone_pickaxe").unwrap().id,
+			all_items.get("minecraft:copper_pickaxe").unwrap().id,
+			all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			all_items.get("minecraft:golden_pickaxe").unwrap().id,
+			all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+			all_items.get("minecraft:netherite_pickaxe").unwrap().id,
+		];
+
+		if !stone_pickaxes.contains(&used_tool.item_id) {
+			return Vec::new();
+		}
+	} else if data::tags::get_block().get("needs_diamond_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
+		let diamond_pickaxes =
+			[all_items.get("minecraft:diamond_pickaxe").unwrap().id, all_items.get("minecraft:netherite_pickaxe").unwrap().id];
+
+		if !diamond_pickaxes.contains(&used_tool.item_id) {
+			return Vec::new();
+		}
+	} else if data::tags::get_block().get("mineable/pickaxe").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
+		let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
+
+		if !pickaxes.contains(&used_tool.item_id) {
+			return Vec::new();
+		}
+	}
 
 	return evaluate_loot_table(loot_table, block_state_id, used_tool, block_states, loot_tables, block_name);
 }
@@ -27,22 +70,37 @@ fn evaluate_loot_table(
 	used_tool: &Slot,
 	block_states: &HashMap<String, data::blocks::Block>,
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
-	block_name: String,
+	block_name: &str,
 ) -> Vec<Item> {
 	let mut rng = rng();
 	let mut output: Vec<Item> = Vec::new();
 	for pool in &loot_table.pools {
+		for condition in &pool.conditions {
+			if !evaluate_condition(condition, block_state_id, block_states, &Some(used_tool.clone())) {
+				return Vec::new();
+			}
+		}
+
 		let valid_entries = get_valid_entries_from_pool_entries(&pool.entries, block_state_id, block_states, &Some(used_tool.clone()));
 		let Some(chosen_entry) = valid_entries.choose(&mut rng) else {
 			return Vec::new();
 		};
 
 		match &chosen_entry.entry_type {
-			LootTablePoolEntrySingletonType::Item(item) => output.push(Item {
-				id: item.to_string(),
-				count: 1,
-				components: Vec::new(),
-			}),
+			LootTablePoolEntrySingletonType::Item(item) => {
+				let item = Item {
+					id: item.to_string(),
+					count: 1,
+					components: Vec::new(),
+				};
+				if chosen_entry.functions.is_empty() {
+					output.push(item);
+				} else {
+					for function in &chosen_entry.functions {
+						output.append(&mut apply_function(function, vec![item.clone()], block_state_id, block_states, &Some(used_tool.clone())));
+					}
+				}
+			}
 			LootTablePoolEntrySingletonType::LootTableId(loot_table_id) => {
 				let Some(loot_table) = loot_tables.get("blocks").unwrap().get(loot_table_id) else {
 					println!("didnt find loot table for {block_name}");
@@ -57,7 +115,11 @@ fn evaluate_loot_table(
 			LootTablePoolEntrySingletonType::Dynamic(_) => return Vec::new(),
 			LootTablePoolEntrySingletonType::Empty => return Vec::new(),
 		}
+		for function in &pool.functions {
+			output = apply_function(function, output, block_state_id, block_states, &Some(used_tool.clone()));
+		}
 	}
+
 	return output;
 }
 
@@ -71,7 +133,6 @@ fn get_valid_entries_from_pool_entries(
 	for entry in entries {
 		valid_entries.append(&mut get_valid_entries_from_pool_entry(entry, block_state_id, block_states, used_tool));
 	}
-
 	return valid_entries;
 }
 
@@ -82,7 +143,6 @@ fn get_valid_entries_from_pool_entry(
 	used_tool: &Option<Slot>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
-
 	match entry {
 		LootTablePoolEntry::Singleton(loot_table_pool_entry_singleton) => {
 			for condition in &loot_table_pool_entry_singleton.conditions {
@@ -180,6 +240,14 @@ fn evaluate_condition(
 				let Some(block_state_property_value) = state.iter().find(|x| x.0 == raw_property_min.0) else {
 					continue;
 				};
+
+				if raw_property_min == raw_property_max
+					&& raw_property_min.1.parse::<i32>().is_err()
+					&& block_state_property_value.1 != raw_property_min.1
+				{
+					return false;
+				}
+
 				if block_state_property_value.1.parse::<i32>().unwrap_or_default() < raw_property_min.1.parse::<i32>().unwrap_or_default()
 					|| block_state_property_value.1.parse::<i32>().unwrap_or_default() > raw_property_max.1.parse::<i32>().unwrap_or_default()
 				{
@@ -218,6 +286,9 @@ fn evaluate_condition(
 			let Some(used_tool) = used_tool else {
 				return false;
 			};
+			if used_tool.item_id == 0 || used_tool.item_count == 0 {
+				return false;
+			}
 			let items: Vec<&'static str> = item_predicate
 				.items
 				.clone()
@@ -246,13 +317,7 @@ fn evaluate_condition(
 			true
 		}
 		Predicate::RandomChance(number_provider) => {
-			let number = match number_provider {
-				NumberProvider::Constant(x) => *x,
-				x => {
-					println!("cant evaluate number provider of type {x:?} yet, returning 0");
-					0.0
-				}
-			};
+			let number = evaluate_number_provider(number_provider);
 
 			let mut rng = rng();
 			let random_number: f32 = rng.random_range(0.0..=1.0);
@@ -285,4 +350,473 @@ fn evaluate_condition(
 			false
 		}
 	};
+}
+
+fn apply_function(
+	function: &ItemModifier,
+	mut items: Vec<Item>,
+	block_state_id: u16,
+	block_states: &HashMap<String, data::blocks::Block>,
+	used_tool: &Option<Slot>,
+) -> Vec<Item> {
+	let conditions = function.conditions.clone();
+	for condition in conditions {
+		println!("{condition:?}");
+		if !evaluate_condition(&condition, block_state_id, block_states, used_tool) {
+			return items;
+		}
+	}
+	let function = function.function.clone();
+	return match function {
+		Function::ApplyBonus(_apply_bonus_data) => items,
+		Function::CopyComponents(_copy_components_data) => items,
+		Function::CopyCustomData(_copy_custom_data_data) => items,
+		Function::CopyName(_) => items,
+		Function::CopyState(_copy_state_data) => items,
+		Function::EnchantRandomly(_enchant_randomly_data) => items,
+		Function::EnchantWithLevels(_enchant_with_levels_data) => items,
+		Function::EnchantedCountIncrease(_enchant_count_increase_data) => items,
+		Function::ExplorationMap(_exploration_map_data) => items,
+		Function::ExplosionDecay => items,
+		Function::FillPlayerHead(_entity_loot_context) => items,
+		Function::Filtered(_filtered_data) => items,
+		Function::FurnaceSmelt => items,
+		Function::LimitCount(_limit_count_data) => items,
+		Function::ModifyContents(_modify_contents_data) => items,
+		Function::Reference(_item_modifiers) => items,
+		Function::Sequence(_item_modifiers) => items,
+		Function::SetAttributes(_set_attributes_data) => items,
+		Function::SetBannerPattern(_set_banner_pattern_data) => items,
+		Function::SetBookCover(_set_book_cover_data) => items,
+		Function::SetComponents(_data_components) => items,
+		Function::SetContents(_set_contents_data) => items,
+		Function::SetCount(set_count_data) => {
+			let add = set_count_data.add.unwrap_or(false);
+			let new_count = evaluate_number_provider(&set_count_data.count);
+
+			for item in &mut items {
+				if add {
+					item.count += new_count.round() as u8;
+				} else {
+					item.count = new_count.round() as u8;
+				}
+			}
+			items
+		}
+		Function::SetCustomData(_) => items,
+		Function::SetCustomModelData(_set_custom_model_data) => items,
+		Function::SetDamage(_set_damage_data) => items,
+		Function::SetEnchantments(_set_enchantments_data) => items,
+		Function::SetFireworks(_set_fireworks_data) => items,
+		Function::SetFireworkExplosion(_set_fireworks_explosion_data) => items,
+		Function::SetInstrument(_) => items,
+		Function::SetItem(_) => items,
+		Function::SetLootTable(_set_loot_table_data) => items,
+		Function::SetLore(_set_lore_data) => items,
+		Function::SetName(_set_name_data) => items,
+		Function::SetOminousBottleAmplifier(_number_provider) => items,
+		Function::SetPotion(_) => items,
+		Function::SetRandomDyes(_number_provider) => items,
+		Function::SetRandomPotion(_items) => items,
+		Function::SetStewEffect(_set_stew_effect_data_effects) => items,
+		Function::SetWritableBookPages(_set_writable_book_pages_data) => items,
+		Function::SetWrittenBookPages(_set_written_book_pages_data) => items,
+		Function::ToggleTooltips(_toggle_tooltips_data) => items,
+	};
+}
+
+fn evaluate_number_provider(number_provider: &NumberProvider) -> f32 {
+	return match number_provider {
+		NumberProvider::Constant(x) => *x,
+		NumberProvider::Uniform(min, max) => {
+			let mut rng = rng();
+			rng.random_range(evaluate_number_provider(min)..=evaluate_number_provider(max))
+		}
+		x => {
+			println!("cant evaluate number provider of type {x:?} yet, returning 0");
+			0.0
+		}
+	};
+}
+
+#[cfg(test)]
+mod test {
+	use crate::Slot;
+
+
+	#[test]
+	fn ancient_debris_drops_itself_with_diamond_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:diamond_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:ancient_debris").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+
+		assert_eq!(res[0].id, "minecraft:ancient_debris");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn ancient_debris_drops_nothing_with_iron_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:ancient_debris").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn diamond_ore_drops_diamond_with_iron_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:diamond");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn diamond_ore_drops_nothing_with_stone_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn diamond_ore_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn coal_ore_drops_coal_with_iron_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:coal");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn coal_ore_drops_coal_ore_with_wooden_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:coal");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn coal_ore_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn copper_ore_drops_2_to_5_raw_copper_with_iron_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:copper_ore").unwrap().clone();
+
+		let mut counts: Vec<u8> = Vec::new();
+		for _ in 0..100 {
+			let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+			assert_eq!(res[0].id, "minecraft:raw_copper");
+			counts.push(res[0].count);
+		}
+		counts.sort();
+		counts.dedup();
+		println!("{counts:?}");
+		assert!(counts.contains(&2));
+		assert!(counts.contains(&3));
+		assert!(counts.contains(&4));
+		assert!(counts.contains(&5));
+	}
+
+	#[test]
+	fn deepslate_coal_ore_drops_coal_ore_with_wooden_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:coal");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn deepslate_coal_ore_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+
+	#[test]
+	fn short_grass_drops_self_with_shears() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:shears").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:short_grass").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:short_grass");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn short_grass_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:short_grass").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		if !res.is_empty() {
+			assert_eq!(res[0].id, "minecraft:wheat_seeds");
+		}
+	}
+
+	#[test]
+	fn basalt_drops_basalt_with_wooden_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:basalt").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:basalt");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn basalt_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:basalt").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn copper_slab_drops_with_stone_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:waxed_weathered_cut_copper_slab");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn copper_slab_drops_nothing_with_wooden_pickaxe() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res.len(), 0);
+	}
+
+	#[test]
+	fn tall_dry_grass_drops_self_with_shears() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 1,
+			item_id: all_items.get("minecraft:shears").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		assert_eq!(res[0].id, "minecraft:tall_dry_grass");
+		assert_eq!(res[0].count, 1);
+	}
+
+	#[test]
+	fn tall_dry_grass_drops_nothing_with_no_tool() {
+		let block_states = data::blocks::get_blocks();
+		let all_items = data::items::get_items();
+		let loot_tables = data::loot_tables::get_loot_tables();
+
+		let used_item = Slot {
+			item_count: 0,
+			item_id: all_items.get("minecraft:air").unwrap().id,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
+
+		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
+		println!("{res:?}");
+		assert_eq!(res.len(), 0);
+	}
 }

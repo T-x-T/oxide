@@ -93,7 +93,7 @@ fn turn_json_into_loot_table(input: JsonValue, block_name: &str) -> (String) {
 	}
 
 	let functions: Vec<String> =
-		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone(), block_name)).collect();
 	if functions.is_empty() {
 		output += "\t\tfunctions: vec![],\n"
 	} else {
@@ -126,9 +126,9 @@ fn turn_json_into_loot_table(input: JsonValue, block_name: &str) -> (String) {
 	return output;
 }
 
-fn turn_json_into_function(input: JsonValue) -> String {
+fn turn_json_into_function(input: JsonValue, block_name: &str) -> String {
 	let function_type = convert_to_upper_camel_case(input["function"].as_str().unwrap());
-	match function_type.as_str() {
+	let function = match function_type.as_str() {
 		"ApplyBonus" => {
 			let enchantment = input["enchantment"].as_str().unwrap();
 			let formula = input["formula"].as_str().unwrap();
@@ -150,19 +150,19 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			let data_struct = format!(
 				"ApplyBonusData {{\n\tenchantment: \"{enchantment}\",\n\tformula: \"{formula}\",\textra: {extra},\n\tprobability: {probability},\n\tbonus_multiplier: {bonus_multiplier}\n}}"
 			);
-			return format!("ItemModifier::ApplyBonus({data_struct}),\n");
+			format!("Function::ApplyBonus({data_struct}),\n")
 		}
-		"ExplosionDecay" => return "ItemModifier::ExplosionDecay,\n".to_string(),
+		"ExplosionDecay" => "Function::ExplosionDecay,\n".to_string(),
 		"SetCount" => {
 			let count = turn_json_into_number_provider(input["count"].clone());
 
 			let add = if input["add"].is_boolean() { format!("Some({})", input["add"].as_bool().unwrap()) } else { "None".to_string() };
 
 			let data_struct = format!("SetCountData {{\n\tcount: {count}\n\tadd: {add}\n}}");
-			return format!("ItemModifier::SetCount({data_struct}),\n");
+			format!("Function::SetCount({data_struct}),\n")
 		}
-		"SetPotion" => return format!("ItemModifier::SetPotion(\"{}\"),\n", input["id"].as_str().unwrap()),
-		"SetInstrument" => return format!("ItemModifier::SetInstrument(\"{}\"),\n", input["options"].as_str().unwrap()),
+		"SetPotion" => format!("Function::SetPotion(\"{}\"),\n", input["id"].as_str().unwrap()),
+		"SetInstrument" => format!("Function::SetInstrument(\"{}\"),\n", input["options"].as_str().unwrap()),
 		"CopyComponents" => {
 			let source = input["source"].as_str().unwrap();
 
@@ -197,7 +197,7 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			}
 
 			let data_struct = format!("CopyComponentsData {{\n\tsource: \"{source}\",\n\tinclude: {include},\n\texclude: {exclude}\n}}");
-			return format!("ItemModifier::CopyComponents({data_struct}),\n");
+			format!("Function::CopyComponents({data_struct}),\n")
 		}
 		"CopyState" => {
 			let block = input["block"].as_str().unwrap();
@@ -218,7 +218,7 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			}
 
 			let data_struct = format!("CopyStateData {{\n\tblock: \"{block}\",\n\tproperties: {properties},\n}}");
-			return format!("ItemModifier::CopyState({data_struct}),\n");
+			format!("Function::CopyState({data_struct}),\n")
 		}
 		"SetStewEffect" => {
 			let mut stew_effect = String::new();
@@ -244,14 +244,14 @@ fn turn_json_into_function(input: JsonValue) -> String {
 				stew_effect += "\t]";
 			}
 
-			return format!("ItemModifier::SetStewEffect({stew_effect}),\n");
+			format!("Function::SetStewEffect({stew_effect}),\n")
 		}
 		"SetDamage" => {
 			let damage = turn_json_into_number_provider(input["damage"].clone());
 			let add = if input["add"].is_boolean() { format!("Some({})", input["add"].as_bool().unwrap()) } else { "None".to_string() };
 
 			let data_struct = format!("SetDamageData {{\n\tdamage: {damage}\n\tadd: {add}\n}}");
-			return format!("ItemModifier::SetDamage({data_struct}),\n");
+			format!("Function::SetDamage({data_struct}),\n")
 		}
 		"EnchantWithLevels" => {
 			let levels = turn_json_into_number_provider(input["levels"].clone());
@@ -280,7 +280,7 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			let data_struct = format!(
 				"EnchantWithLevelsData {{\n\tlevels: {levels}\n\toptions: {options},\n\tinclude_additional_cost_component: {include_additional_cost_component},\n}}"
 			);
-			return format!("ItemModifier::EnchantWithLevels({data_struct}),\n");
+			format!("Function::EnchantWithLevels({data_struct}),\n")
 		}
 		"EnchantRandomly" => {
 			let mut options = String::new();
@@ -310,7 +310,7 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			let data_struct = format!(
 				"EnchantRandomlyData {{\n\toptions: {options},\n\tonly_compatible: {only_compatible},\n\tinclude_additional_cost_component: {include_additional_cost_component}\n}}"
 			);
-			return format!("ItemModifier::EnchantRandomly({data_struct}),\n");
+			format!("Function::EnchantRandomly({data_struct}),\n")
 		}
 		"ExplorationMap" => {
 			let destination =
@@ -332,33 +332,33 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			let data_struct = format!(
 				"ExplorationMapData {{\n\tdestination: {destination},\n\tdecoration: {decoration},\n\tzoom: {zoom},\n\tsearch_radius: {search_radius},\n\tskip_existing_chunks: {skip_existing_chunks}\n}}"
 			);
-			return format!("ItemModifier::ExplorationMap({data_struct}),\n");
+			format!("Function::ExplorationMap({data_struct}),\n")
 		}
 		"SetName" => {
 			//TODO: finish implementation
 			let data_struct = "SetNameData {\n\tname: NbtTag::default(),\n\tentity: None,\n\ttarget: None\n}".to_string();
-			return format!("ItemModifier::SetName({data_struct}),\n");
+			format!("Function::SetName({data_struct}),\n")
 		}
 		"SetOminousBottleAmplifier" => {
-			return format!("ItemModifier::SetOminousBottleAmplifier({}),\n", turn_json_into_number_provider(input["amplifier"].clone()));
+			format!("Function::SetOminousBottleAmplifier({}),\n", turn_json_into_number_provider(input["amplifier"].clone()))
 		}
 		"SetEnchantments" => {
 			//TODO: finish implementation
 			let data_struct = "SetEnchantmentsData {\n\tenchantments: HashMap::new(),\n\tadd: None\n}".to_string();
-			return format!("ItemModifier::SetEnchantments({data_struct}),\n");
+			format!("Function::SetEnchantments({data_struct}),\n")
 		}
 		"SetComponents" => {
 			//TODO: finish implementation
-			return "ItemModifier::SetComponents(vec![]),\n".to_string();
+			"Function::SetComponents(vec![]),\n".to_string()
 		}
 		"EnchantedCountIncrease" => {
 			let count = turn_json_into_number_provider(input["count"].clone());
 			let limit = if input["limit"].is_number() { format!("Some({})", input["limit"].as_number().unwrap()) } else { "None".to_string() };
 			let enchantment = input["enchantment"].as_str().unwrap().to_string();
 			let data_struct = format!("EnchantCountIncreaseData {{\n\tcount: {count}\n\tlimit: {limit},\n\tenchantment:\"{enchantment}\"\n}}");
-			return format!("ItemModifier::EnchantedCountIncrease({data_struct}),\n");
+			format!("Function::EnchantedCountIncrease({data_struct}),\n")
 		}
-		"FurnaceSmelt" => return "ItemModifier::FurnaceSmelt,\n".to_string(),
+		"FurnaceSmelt" => "Function::FurnaceSmelt,\n".to_string(),
 		"LimitCount" => {
 			let min = if input["limit"].is_number() {
 				input["limit"].as_number().unwrap().to_string()
@@ -380,12 +380,28 @@ fn turn_json_into_function(input: JsonValue) -> String {
 			};
 
 			let data_struct = format!("LimitCountData {{\n\tmin: {min},\n\tmax: {max}\n}}");
-			return format!("ItemModifier::LimitCount({data_struct}),\n");
+			format!("Function::LimitCount({data_struct}),\n")
 		}
 		x => panic!("unknown function_type {x}"),
-	}
+	};
 
-	//TODO: handle functions with parameters
+	let mut conditions = String::new();
+	let raw_conditions: Vec<String> =
+		input["conditions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_predicate(x.clone(), block_name)).collect();
+	if raw_conditions.is_empty() {
+		conditions += "\tconditions: vec![],\n"
+	} else {
+		conditions += "\tconditions: vec![\n";
+		for condition in raw_conditions {
+			for line in condition.lines() {
+				conditions += format!("\t\t{line}\n").as_str();
+			}
+			conditions.pop();
+			conditions += ",\n";
+		}
+		conditions += "\t],\n";
+	}
+	return format!("ItemModifier {{\n\tfunction: {function}\n\t{conditions}\n}},");
 }
 
 fn turn_json_into_pool(input: JsonValue, block_name: &str) -> String {
@@ -408,7 +424,7 @@ fn turn_json_into_pool(input: JsonValue, block_name: &str) -> String {
 	}
 
 	let functions: Vec<String> =
-		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone(), block_name)).collect();
 	if functions.is_empty() {
 		output += "\tfunctions: vec![],\n"
 	} else {
@@ -854,7 +870,7 @@ pub fn turn_json_into_entry_singleton(input: JsonValue, block_name: &str) -> Str
 	}
 	let mut functions = String::new();
 	let raw_functions: Vec<String> =
-		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone(), block_name)).collect();
 	if raw_functions.is_empty() {
 		functions += "vec![]"
 	} else {
@@ -903,7 +919,7 @@ pub fn turn_json_into_entry_tag(input: JsonValue, block_name: &str) -> String {
 	}
 	let mut functions = String::new();
 	let raw_functions: Vec<String> =
-		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone())).collect();
+		input["functions"].as_array().unwrap_or(&Vec::new()).iter().map(|x| turn_json_into_function(x.clone(), block_name)).collect();
 	if raw_functions.is_empty() {
 		functions += "vec![]"
 	} else {
