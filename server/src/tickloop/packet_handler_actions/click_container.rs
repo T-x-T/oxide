@@ -28,27 +28,78 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
 				// Player tries to craft in their own inventory
-				println!("player tries to craft something");
 				let recipe = player.get_inventory()[1..=4].to_vec();
 				if recipe.iter().any(|x| x.as_ref().is_some_and(|y| y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id))
 				{
-					println!("its planks");
 					game.send_packet(
 						&player.peer_socket_address,
-						lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
-						lib::packets::clientbound::play::SetPlayerInventorySlot {
+						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
+						lib::packets::clientbound::play::SetContainerSlot {
+							window_id: 0,
+							state_id: 1,
+							slot: 0,
 							slot_data: Some(Slot {
 								item_count: 4,
 								item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
+						}
+						.try_into()
+						.unwrap(),
+					);
+				} else {
+					game.send_packet(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
+						lib::packets::clientbound::play::SetContainerSlot {
+							window_id: 0,
+							state_id: 1,
 							slot: 0,
+							slot_data: None,
 						}
 						.try_into()
 						.unwrap(),
 					);
 				}
+			} else if parsed_packet.slot == 0 {
+				// Player takes from the result slot
+				if player.cursor_item.is_none() {
+					player.cursor_item = Some(Slot {
+						item_count: 4,
+						item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					});
+					game.send_packet(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::SetCursorItem::PACKET_ID,
+						lib::packets::clientbound::play::SetCursorItem {
+							carried_item: player.cursor_item.clone().unwrap(),
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
+				player.set_inventory_and_inform_client(
+					player
+						.get_inventory()
+						.iter()
+						.enumerate()
+						.map(|(i, x)| {
+							if ![1, 2, 3, 4].contains(&i) {
+								return x.clone();
+							}
+							if let Some(mut slot) = x.clone() {
+								slot.item_count -= 1;
+								return Some(slot.clone());
+							}
+							x.clone()
+						})
+						.collect(),
+					players_clone,
+					game.clone(),
+				);
 			}
 		} else {
 			println!("player doesn't seem to have a container opened at the moment");

@@ -933,7 +933,7 @@ impl Player {
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
 			crate::packets::clientbound::play::SetPlayerInventorySlot {
-				slot_data: self.get_inventory()[(slot + 36) as usize].clone(),
+				slot_data: self.get_inventory()[slot as usize].clone(),
 				slot: slot as i32,
 			}
 			.try_into()
