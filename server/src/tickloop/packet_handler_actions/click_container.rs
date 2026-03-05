@@ -2,7 +2,7 @@ use lib::packets::serverbound::play::ClickContainer;
 
 use super::*;
 
-pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>) {
+pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>, players_clone: &[Player]) {
 	//println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
@@ -16,7 +16,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			//need to drop lock on players here, because lib::containerclick::handle also locks players
 			drop(players);
 
-			lib::containerclick::handle(parsed_packet, &mut inventory, player_uuid, game.clone(), Vec::new());
+			lib::containerclick::handle(parsed_packet.clone(), &mut inventory, player_uuid, game.clone(), Vec::new());
 
 			let mut players = game.players.lock().unwrap();
 			let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
@@ -24,7 +24,32 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 
 			let inventory_to_set: Vec<Option<Slot>> =
 				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
-			player.set_inventory_and_dont_inform_client(inventory_to_set);
+			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
+
+			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
+				// Player tries to craft in their own inventory
+				println!("player tries to craft something");
+				let recipe = player.get_inventory()[1..=4].to_vec();
+				if recipe.iter().any(|x| x.as_ref().is_some_and(|y| y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id))
+				{
+					println!("its planks");
+					game.send_packet(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
+						lib::packets::clientbound::play::SetPlayerInventorySlot {
+							slot_data: Some(Slot {
+								item_count: 4,
+								item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+								components_to_add: Vec::new(),
+								components_to_remove: Vec::new(),
+							}),
+							slot: 0,
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
+			}
 		} else {
 			println!("player doesn't seem to have a container opened at the moment");
 		}
