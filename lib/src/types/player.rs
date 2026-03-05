@@ -980,7 +980,7 @@ impl Player {
 				window_id: 0,
 				state_id: 1,
 				slot_data: self.inventory.clone(),
-				carried_item: None,
+				carried_item: self.cursor_item.clone(),
 			}
 			.try_into()
 			.unwrap(),

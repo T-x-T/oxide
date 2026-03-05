@@ -16,7 +16,9 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			//need to drop lock on players here, because lib::containerclick::handle also locks players
 			drop(players);
 
-			lib::containerclick::handle(parsed_packet.clone(), &mut inventory, player_uuid, game.clone(), Vec::new());
+			if parsed_packet.slot != 0 {
+				lib::containerclick::handle(parsed_packet.clone(), &mut inventory, player_uuid, game.clone(), Vec::new());
+			}
 
 			let mut players = game.players.lock().unwrap();
 			let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
@@ -26,11 +28,12 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
 			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
 
+			let recipe = player.get_inventory()[1..=4].to_vec();
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
 				// Player tries to craft in their own inventory
-				let recipe = player.get_inventory()[1..=4].to_vec();
-				if recipe.iter().any(|x| x.as_ref().is_some_and(|y| y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id))
-				{
+				if recipe.iter().any(|x| {
+					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
+				}) {
 					game.send_packet(
 						&player.peer_socket_address,
 						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
@@ -62,7 +65,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						.unwrap(),
 					);
 				}
-			} else if parsed_packet.slot == 0 {
+			} else if parsed_packet.slot == 0
+				&& recipe.iter().any(|x| {
+					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
+				}) {
 				// Player takes from the result slot
 				if player.cursor_item.is_none() {
 					player.cursor_item = Some(Slot {
@@ -71,15 +77,13 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::SetCursorItem::PACKET_ID,
-						lib::packets::clientbound::play::SetCursorItem {
-							carried_item: player.cursor_item.clone().unwrap(),
-						}
-						.try_into()
-						.unwrap(),
-					);
+				} else if player.cursor_item.as_ref().unwrap().item_id == data::items::get_items().get("minecraft:acacia_planks").unwrap().id {
+					player.cursor_item = Some(Slot {
+						item_count: player.cursor_item.as_ref().unwrap().item_count + 4,
+						item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					});
 				}
 				player.set_inventory_and_inform_client(
 					player
@@ -100,6 +104,27 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					players_clone,
 					game.clone(),
 				);
+				if recipe.iter().any(|x| {
+					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
+				}) {
+					game.send_packet(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
+						lib::packets::clientbound::play::SetContainerSlot {
+							window_id: 0,
+							state_id: 1,
+							slot: 0,
+							slot_data: Some(Slot {
+								item_count: 4,
+								item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+								components_to_add: Vec::new(),
+								components_to_remove: Vec::new(),
+							}),
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
 			}
 		} else {
 			println!("player doesn't seem to have a container opened at the moment");
