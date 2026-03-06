@@ -7,6 +7,7 @@ pub mod item_modifier;
 pub mod loot_table;
 pub mod nbt;
 pub mod predicate;
+pub mod recipe;
 
 
 #[derive(Debug, Clone, PartialEq)]
