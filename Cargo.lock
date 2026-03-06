@@ -27,7 +27,7 @@ checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 
 [[package]]
 name = "block_get_blocks"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
  "blocks_add_fn_0",
@@ -66,56 +66,56 @@ dependencies = [
 
 [[package]]
 name = "blocks_add_fn_0"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_1"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_2"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_3"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_4"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_5"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_6"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_7"
-version = "0.6.0"
+version = "0.5.1"
 dependencies = [
  "block_types",
 ]
@@ -166,6 +166,7 @@ dependencies = [
  "inventory",
  "items",
  "loot_tables",
+ "recipes",
  "tags",
 ]
 
@@ -351,6 +352,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "99d9a13982dcf210057a8a78572b2217b667c3beacbf3a0d8b454f6f82837d38"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "recipes"
+version = "0.6.0"
+dependencies = [
+ "basic_types",
 ]
 
 [[package]]

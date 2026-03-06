@@ -25,6 +25,7 @@ pub enum Category {
 	Misc,
 	Redstone,
 	Blocks,
+	Food,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -40,7 +41,6 @@ pub struct FurnaceData {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct CampfireCookingData {
-	pub group: Option<&'static str>,
 	pub ingredient: Vec<&'static str>,
 	pub cooking_time: Option<i32>,
 	pub result_id: &'static str,

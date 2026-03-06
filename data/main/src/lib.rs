@@ -1,3 +1,11 @@
 #![allow(clippy::needless_return)]
 
-pub use {biomes, blockentity, blocks, entities, inventory, items, loot_tables, tags};
+pub use biomes;
+pub use blockentity;
+pub use blocks;
+pub use entities;
+pub use inventory;
+pub use items;
+pub use loot_tables;
+pub use recipes;
+pub use tags;

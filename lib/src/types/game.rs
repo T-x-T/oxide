@@ -3,6 +3,7 @@ use std::net::{SocketAddr, TcpStream};
 use std::sync::Mutex;
 use std::sync::atomic::AtomicI32;
 
+use basic_types::recipe::Recipe;
 use dashmap::DashMap;
 
 use super::*;
@@ -22,6 +23,7 @@ pub struct Game {
 	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
 	pub default_gamemode: Gamemode,
 	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
+	pub recipes: HashMap<&'static str, Recipe>,
 }
 
 impl Game {
