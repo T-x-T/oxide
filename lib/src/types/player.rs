@@ -403,7 +403,7 @@ impl Player {
 			let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
 			inventory[slot_index] = Some(Slot {
 				item_count: x.get_child("count").unwrap().as_int(),
-				item_id: data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id,
+				item_id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			});
@@ -413,7 +413,7 @@ impl Player {
 			if let Some(head) = equipment.get_child("head") {
 				inventory[5] = Some(Slot {
 					item_count: head.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(head.get_child("id").unwrap().as_string()).unwrap().id,
+					item_id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -421,7 +421,7 @@ impl Player {
 			if let Some(chest) = equipment.get_child("chest") {
 				inventory[6] = Some(Slot {
 					item_count: chest.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(chest.get_child("id").unwrap().as_string()).unwrap().id,
+					item_id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -429,7 +429,7 @@ impl Player {
 			if let Some(legs) = equipment.get_child("legs") {
 				inventory[7] = Some(Slot {
 					item_count: legs.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(legs.get_child("id").unwrap().as_string()).unwrap().id,
+					item_id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -437,7 +437,7 @@ impl Player {
 			if let Some(feet) = equipment.get_child("feet") {
 				inventory[8] = Some(Slot {
 					item_count: feet.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(feet.get_child("id").unwrap().as_string()).unwrap().id,
+					item_id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -445,7 +445,7 @@ impl Player {
 			if let Some(offhand) = equipment.get_child("offhand") {
 				inventory[45] = Some(Slot {
 					item_count: offhand.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(offhand.get_child("id").unwrap().as_string()).unwrap().id,
+					item_id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})

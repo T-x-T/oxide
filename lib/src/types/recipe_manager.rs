@@ -14,6 +14,7 @@ impl RecipeManager {
 	}
 
 	pub fn get_crafting_recipe_2x2(&self, slots: &[Option<Slot>; 4]) -> Option<&Recipe> {
+		let now = std::time::Instant::now();
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}
@@ -24,6 +25,7 @@ impl RecipeManager {
 			println!("found multiple matching recipes for slots {slots:?}:\n{matching_recipes:?}");
 		}
 
+		println!("get_crafting_recipe_2x2 took {:?}", std::time::Instant::now() - now);
 		if matching_recipes.is_empty() {
 			return None;
 		} else {

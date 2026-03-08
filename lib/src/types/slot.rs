@@ -147,7 +147,7 @@ impl From<Item> for Slot {
 	fn from(value: Item) -> Self {
 		return Self {
 			item_count: value.count as i32,
-			item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
+			item_id: data::items::get_item_id_by_name(&value.id),
 			components_to_add: value.components,
 			components_to_remove: Vec::new(),
 		};
@@ -161,7 +161,7 @@ impl From<Item> for Option<Slot> {
 		} else {
 			Some(Slot {
 				item_count: value.count as i32,
-				item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
+				item_id: data::items::get_item_id_by_name(&value.id),
 				components_to_add: value.components,
 				components_to_remove: Vec::new(),
 			})

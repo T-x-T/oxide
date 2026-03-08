@@ -41,7 +41,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							slot: 0,
 							slot_data: Some(Slot {
 								item_count: recipe.get_result_count(),
-								item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
+								item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
@@ -70,13 +70,11 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				if player.cursor_item.is_none() {
 					player.cursor_item = Some(Slot {
 						item_count: recipe.get_result_count(),
-						item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
+						item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
-				} else if player.cursor_item.as_ref().unwrap().item_id
-					== data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id
-				{
+				} else if player.cursor_item.as_ref().unwrap().item_id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()) {
 					player.cursor_item = Some(Slot {
 						item_count: player.cursor_item.as_ref().unwrap().item_count + recipe.get_result_count(),
 						item_id: player.cursor_item.as_ref().unwrap().item_id,
@@ -113,7 +111,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							slot: 0,
 							slot_data: Some(Slot {
 								item_count: recipe.get_result_count(),
-								item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
+								item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
