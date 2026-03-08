@@ -43,7 +43,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Run clippy
         run: |
-          rustup component add --toolchain nightly clippy
           cargo clippy
 
   formatting:
@@ -55,7 +54,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Check formatting
         run: |
-          rustup component add rustfmt
           cargo fmt --check
 
   push_server:
