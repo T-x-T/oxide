@@ -1,6 +1,6 @@
 pub mod loader;
 
-use data::blocks::Block;
+use basic_types::blocks::Block;
 
 use super::*;
 use std::collections::HashMap;

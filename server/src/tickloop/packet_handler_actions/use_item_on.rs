@@ -109,10 +109,10 @@ pub fn process(
 			Ok(res) => {
 				let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
 				//Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
-				if block.block_type == data::blocks::Type::WallSign
-					|| block.block_type == data::blocks::Type::StandingSign
-					|| block.block_type == data::blocks::Type::WallHangingSign
-					|| block.block_type == data::blocks::Type::CeilingHangingSign
+				if block.block_type == basic_types::blocks::Type::WallSign
+					|| block.block_type == basic_types::blocks::Type::StandingSign
+					|| block.block_type == basic_types::blocks::Type::WallHangingSign
+					|| block.block_type == basic_types::blocks::Type::CeilingHangingSign
 				{
 					game.send_packet(
 						&peer_addr,

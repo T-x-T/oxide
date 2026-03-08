@@ -5,4 +5,4 @@ edition = "2024"
 description = ""
 
 [dependencies]
-block_types = {path = "../../types", version = "*"}
+basic_types = {path = "../../../../basic_types", version = "*"}

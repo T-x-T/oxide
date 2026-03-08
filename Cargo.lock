@@ -11,9 +11,6 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 [[package]]
 name = "basic_types"
 version = "0.6.0"
-dependencies = [
- "blocks",
-]
 
 [[package]]
 name = "biomes"
@@ -29,7 +26,7 @@ checksum = "812e12b5285cc515a9c72a5c1d3b6d46a19dac5acfef5265968c166106e31dd3"
 name = "block_get_blocks"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
  "blocks_add_fn_0",
  "blocks_add_fn_1",
  "blocks_add_fn_2",
@@ -44,12 +41,8 @@ dependencies = [
 name = "block_get_type_from_block_state_id"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
-
-[[package]]
-name = "block_types"
-version = "0.6.0"
 
 [[package]]
 name = "blockentity"
@@ -59,65 +52,65 @@ version = "0.6.0"
 name = "blocks"
 version = "0.6.0"
 dependencies = [
+ "basic_types",
  "block_get_blocks",
  "block_get_type_from_block_state_id",
- "block_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_0"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_1"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_2"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_3"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_4"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_5"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_6"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]
 name = "blocks_add_fn_7"
 version = "0.6.0"
 dependencies = [
- "block_types",
+ "basic_types",
 ]
 
 [[package]]

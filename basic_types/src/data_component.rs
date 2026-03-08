@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::blocks;
 use crate::nbt::NbtTag;
 use crate::predicate::ItemPredicate;
 

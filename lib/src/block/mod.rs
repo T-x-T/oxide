@@ -1,6 +1,6 @@
 use crate::packets::Packet;
 use crate::types::*;
-use data::blocks::*;
+use basic_types::blocks::*;
 use data::inventory::Inventory;
 use std::collections::HashMap;
 use std::error::Error;
@@ -205,7 +205,7 @@ pub fn interact_with_block_at(
 	location: BlockPosition,
 	block_id_at_location: u16,
 	face: u8,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, Block>,
 ) -> BlockInteractionResult {
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
@@ -241,7 +241,7 @@ pub fn interact_with_block_at(
 	};
 }
 
-pub fn get_hardness(block_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32 {
 	let block = data::blocks::get_block_from_block_state_id(block_id, block_states);
 
 	return match block.block_type {

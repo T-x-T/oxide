@@ -8,7 +8,7 @@ use blocks_add_fn_5::*;
 use blocks_add_fn_6::*;
 use blocks_add_fn_7::*;
 use std::collections::HashMap;
-use block_types::*;
+use basic_types::blocks::*;
 pub fn get_blocks() -> HashMap<String, Block> {
 	let mut output: HashMap<String, Block> = HashMap::new();
 	add_acaciabutton(&mut output);

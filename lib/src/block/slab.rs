@@ -79,7 +79,7 @@ pub fn get_block_state_id(
 	return output;
 }
 
-pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+pub fn get_hardness(_block_id: u16, block: Block, _block_states: &HashMap<String, Block>) -> f32 {
 	match block.block_name {
 		"minecraft:andesite_slab" => 1.5,
 		"minecraft:cobbled_deepslate_slab" => 3.5,

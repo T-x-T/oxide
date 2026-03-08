@@ -4,4 +4,3 @@ version = "0.6.0"
 edition = "2024"
 
 [dependencies]
-blocks = {path = "../data/blocks/main", version = "*"}

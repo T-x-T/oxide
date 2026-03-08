@@ -1,5 +1,5 @@
 #![allow(clippy::needless_return)]
-use ::blocks::*;
+use basic_types::blocks::*;
 use basic_types::item_modifier::*;
 use basic_types::loot_table::*;
 use basic_types::nbt::*;

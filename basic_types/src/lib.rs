@@ -1,5 +1,6 @@
 #![allow(clippy::needless_return)]
 
+pub mod blocks; //auto-generated from data_generator_tools; DONT EDIT MANUALLY
 pub mod data_component;
 pub mod data_component_predicate;
 pub mod enchantment;

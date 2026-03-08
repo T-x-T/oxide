@@ -1,5 +1,5 @@
 #![allow(clippy::needless_return)]
-use block_types::*;
+use basic_types::blocks::*;
 pub fn get_type_from_block_state_id(block_state_id: u16) -> Type {
 	return match block_state_id {
 		10569 => Type::Button,

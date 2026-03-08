@@ -11,7 +11,7 @@ pub fn get_block_drops(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_state_id: u16,
 	used_tool: &Slot,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 ) -> Vec<Item> {
 	let block = data::blocks::get_block_from_block_state_id(block_state_id, block_states);
 	let block_name = block.block_name;
@@ -68,7 +68,7 @@ fn evaluate_loot_table(
 	loot_table: &LootTable,
 	block_state_id: u16,
 	used_tool: &Slot,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_name: &str,
 ) -> Vec<Item> {
@@ -126,7 +126,7 @@ fn evaluate_loot_table(
 fn get_valid_entries_from_pool_entries(
 	entries: &Vec<LootTablePoolEntry>,
 	block_state_id: u16,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 	used_tool: &Option<Slot>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -139,7 +139,7 @@ fn get_valid_entries_from_pool_entries(
 fn get_valid_entries_from_pool_entry(
 	entry: &LootTablePoolEntry,
 	block_state_id: u16,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 	used_tool: &Option<Slot>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -223,7 +223,7 @@ fn get_valid_entries_from_pool_entry(
 fn evaluate_condition(
 	condition: &Predicate,
 	block_state_id: u16,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 	used_tool: &Option<Slot>,
 ) -> bool {
 	return match condition {
@@ -356,7 +356,7 @@ fn apply_function(
 	function: &ItemModifier,
 	mut items: Vec<Item>,
 	block_state_id: u16,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, basic_types::blocks::Block>,
 	used_tool: &Option<Slot>,
 ) -> Vec<Item> {
 	let conditions = function.conditions.clone();

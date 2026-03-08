@@ -5,6 +5,6 @@
   description = ""
 
 [dependencies]
-block_types = {path = "../types", version = "*"}
+basic_types = {path = "../../../basic_types", version = "*"}
 block_get_blocks = {path = "../get_blocks", version = "*"}
 block_get_type_from_block_state_id = {path = "../get_type_from_block_state_id", version = "*"}

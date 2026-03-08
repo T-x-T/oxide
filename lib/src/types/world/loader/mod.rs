@@ -1,6 +1,6 @@
 pub mod vanilla;
 
-use data::blocks::Block;
+use basic_types::blocks::Block;
 
 use super::*;
 

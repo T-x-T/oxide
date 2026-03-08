@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::sync::Arc;
 
-use data::blocks::Type;
+use basic_types::blocks::Type;
 
 use crate::packets::Packet;
 
@@ -116,7 +116,7 @@ impl BlockEntity {
 		}
 	}
 
-	pub fn new_from_block(block_type: data::blocks::Type, position: BlockPosition) -> Option<Self> {
+	pub fn new_from_block(block_type: Type, position: BlockPosition) -> Option<Self> {
 		return match block_type {
 			Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
 			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
