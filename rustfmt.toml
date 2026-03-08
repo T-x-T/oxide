@@ -1,5 +1,5 @@
 ignore = [
-  "/data"
+  "/data",
   "/basic_types/src/blocks.rs"
 ]
 blank_lines_upper_bound = 2
