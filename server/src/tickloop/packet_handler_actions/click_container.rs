@@ -28,12 +28,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
 			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
 
-			let recipe = player.get_inventory()[1..=4].to_vec();
+			let crafting_slots = player.get_inventory()[1..=4].to_vec();
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
 				// Player tries to craft in their own inventory
-				if recipe.iter().any(|x| {
-					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
-				}) {
+				if let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap()) {
 					game.send_packet(
 						&player.peer_socket_address,
 						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
@@ -42,8 +40,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							state_id: 1,
 							slot: 0,
 							slot_data: Some(Slot {
-								item_count: 4,
-								item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+								item_count: recipe.get_result_count(),
+								item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
@@ -66,21 +64,22 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					);
 				}
 			} else if parsed_packet.slot == 0
-				&& recipe.iter().any(|x| {
-					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
-				}) {
+				&& let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap())
+			{
 				// Player takes from the result slot
 				if player.cursor_item.is_none() {
 					player.cursor_item = Some(Slot {
-						item_count: 4,
-						item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+						item_count: recipe.get_result_count(),
+						item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
-				} else if player.cursor_item.as_ref().unwrap().item_id == data::items::get_items().get("minecraft:acacia_planks").unwrap().id {
+				} else if player.cursor_item.as_ref().unwrap().item_id
+					== data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id
+				{
 					player.cursor_item = Some(Slot {
-						item_count: player.cursor_item.as_ref().unwrap().item_count + 4,
-						item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+						item_count: player.cursor_item.as_ref().unwrap().item_count + recipe.get_result_count(),
+						item_id: player.cursor_item.as_ref().unwrap().item_id,
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
@@ -104,9 +103,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					players_clone,
 					game.clone(),
 				);
-				if recipe.iter().any(|x| {
-					x.as_ref().is_some_and(|y| y.item_count != 0 && y.item_id == data::items::get_items().get("minecraft:acacia_log").unwrap().id)
-				}) {
+				if let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap()) {
 					game.send_packet(
 						&player.peer_socket_address,
 						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
@@ -115,8 +112,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							state_id: 1,
 							slot: 0,
 							slot_data: Some(Slot {
-								item_count: 4,
-								item_id: data::items::get_items().get("minecraft:acacia_planks").unwrap().id,
+								item_count: recipe.get_result_count(),
+								item_id: data::items::get_items().get(recipe.get_result_item_id().unwrap()).unwrap().id,
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),

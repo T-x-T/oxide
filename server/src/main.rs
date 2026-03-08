@@ -53,7 +53,7 @@ fn initialize_server() {
 		packet_send_queues: DashMap::new(),
 		default_gamemode,
 		loot_tables,
-		recipes,
+		recipe_manager: RecipeManager::new(recipes),
 	};
 
 	command::init(&mut game);
