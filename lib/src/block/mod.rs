@@ -163,10 +163,7 @@ impl BlockInteractionResult {
 		match self {
 			BlockInteractionResult::OverwriteBlocks(blocks) => Ok(blocks),
 			BlockInteractionResult::OpenInventory(window_type) => {
-				let Some(block_entity) = dimension.get_chunk_from_position(position).unwrap().try_get_block_entity(position) else {
-					return Err(Box::new(crate::CustomError::BlockEntityNotFoundAtLocation(position)));
-				};
-				player.open_inventory(window_type, block_entity, game.clone());
+				player.open_inventory(window_type, position, game.clone(), dimension);
 
 				players.iter().for_each(|x| {
 					game.send_packet(

@@ -1013,7 +1013,7 @@ impl Player {
 		self.inventory = items.clone();
 	}
 
-	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity, game: Arc<Game>) {
+	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, location: BlockPosition, game: Arc<Game>, dimension: &Dimension) {
 		game.send_packet(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::OpenScreen::PACKET_ID,
@@ -1026,19 +1026,21 @@ impl Player {
 			.unwrap(),
 		);
 
-		self.opened_inventory_at = Some(block_entity.get_position());
-		game.send_packet(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 1,
-				state_id: 1,
-				slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
-				carried_item: None,
-			}
-			.try_into()
-			.unwrap(),
-		);
+		self.opened_inventory_at = Some(location);
+		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
+			game.send_packet(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+				crate::packets::clientbound::play::SetContainerContent {
+					window_id: 1,
+					state_id: 1,
+					slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
+					carried_item: None,
+				}
+				.try_into()
+				.unwrap(),
+			);
+		};
 	}
 
 	pub fn close_inventory(&mut self, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
