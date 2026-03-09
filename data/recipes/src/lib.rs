@@ -2321,7 +2321,7 @@ pattern: vec![
 ],
 key: vec![
 	("#", vec!["minecraft:diamond"]),
-	("{k}", vec![
+	("C", vec![
 		"minecraft:copper_block",
 		"minecraft:waxed_copper_block",
 	]),
@@ -3103,7 +3103,7 @@ pattern: vec![
 key: vec![
 	("#", vec!["minecraft:stick"]),
 	("S", vec!["#minecraft:soul_fire_base_blocks"]),
-	("{k}", vec![
+	("X", vec![
 		"minecraft:coal",
 		"minecraft:charcoal",
 	]),
@@ -3120,7 +3120,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:red_sandstone",
 		"minecraft:chiseled_red_sandstone",
 	]),
@@ -3609,7 +3609,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:sandstone",
 		"minecraft:chiseled_sandstone",
 	]),
@@ -3832,7 +3832,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:purpur_block",
 		"minecraft:purpur_pillar",
 	]),
@@ -4813,7 +4813,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:chiseled_quartz_block",
 		"minecraft:quartz_block",
 		"minecraft:quartz_pillar",
@@ -4975,7 +4975,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:sandstone",
 		"minecraft:chiseled_sandstone",
 		"minecraft:cut_sandstone",
@@ -6795,7 +6795,7 @@ pattern: vec![
 	"X#X",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:sand",
 		"minecraft:red_sand",
 	]),
@@ -16114,7 +16114,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:purpur_block",
 		"minecraft:purpur_pillar",
 	]),
@@ -16692,7 +16692,7 @@ pattern: vec![
 ],
 key: vec![
 	("#", vec!["minecraft:stick"]),
-	("{k}", vec![
+	("X", vec![
 		"minecraft:coal",
 		"minecraft:charcoal",
 	]),
@@ -16978,7 +16978,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:red_sandstone",
 		"minecraft:chiseled_red_sandstone",
 		"minecraft:cut_red_sandstone",
@@ -17194,7 +17194,7 @@ pattern: vec![
 	"###",
 ],
 key: vec![
-	("{k}", vec![
+	("#", vec![
 		"minecraft:chiseled_quartz_block",
 		"minecraft:quartz_block",
 		"minecraft:quartz_pillar",
@@ -17631,7 +17631,7 @@ pattern: vec![
 key: vec![
 	("#", vec!["minecraft:stick"]),
 	("C", vec!["minecraft:copper_nugget"]),
-	("{k}", vec![
+	("X", vec![
 		"minecraft:coal",
 		"minecraft:charcoal",
 	]),

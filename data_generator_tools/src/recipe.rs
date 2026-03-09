@@ -74,7 +74,7 @@ result_components: None,
 				if v.is_string() {
 					key += format!("\t(\"{k}\", vec![\"{}\"]),\n", v.as_str().unwrap()).as_str();
 				} else {
-					key += "\t(\"{k}\", vec![\n";
+					key += format!("\t(\"{k}\", vec![\n").as_str();
 					for v2 in v.as_array().unwrap() {
 						key += format!("\t\t\"{}\",\n", v2.as_str().unwrap()).as_str();
 					}
