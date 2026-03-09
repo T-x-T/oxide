@@ -34,7 +34,113 @@ impl RecipeManager {
 
 fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 	return match recipe {
-		Recipe::CraftingShaped(_crafting_shaped_data) => false,
+		Recipe::CraftingShaped(crafting_shaped_data) => {
+			if crafting_shaped_data.pattern.len() > 2 || crafting_shaped_data.pattern.first().unwrap().len() > 2 {
+				return false;
+			}
+
+			let mut possible_shapes: Vec<[Option<Vec<&str>>; 4]> = Vec::new();
+
+			if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
+				// XX
+				// XX
+				let mut index = 0;
+				let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
+				for row in &crafting_shaped_data.pattern {
+					for key in row.chars() {
+						if key == ' ' {
+							shape[index] = None;
+						} else {
+							let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
+							let mut all_possible_options: Vec<&str> = Vec::new();
+							for ingredient_option in possible_options {
+								let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
+									data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+								} else {
+									vec![ingredient_option]
+								};
+								all_possible_options.append(&mut tag_resolved_ingredient_options);
+							}
+							shape[index] = Some(all_possible_options);
+						}
+						index += 1;
+					}
+				}
+				possible_shapes.push(shape);
+			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
+				// X
+				// X
+				for variant in 0..=1 {
+					let mut index = 0;
+					let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
+							let mut all_possible_options: Vec<&str> = Vec::new();
+							for ingredient_option in possible_options {
+								let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
+									data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+								} else {
+									vec![ingredient_option]
+								};
+								all_possible_options.append(&mut tag_resolved_ingredient_options);
+							}
+							shape[index + variant] = Some(all_possible_options);
+							index += 2;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 1 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
+				// XX
+				for variant in 0..=1 {
+					let mut index = 0;
+					let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
+							let mut all_possible_options: Vec<&str> = Vec::new();
+							for ingredient_option in possible_options {
+								let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
+									data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+								} else {
+									vec![ingredient_option]
+								};
+								all_possible_options.append(&mut tag_resolved_ingredient_options);
+							}
+							shape[index + (variant * 2)] = Some(all_possible_options);
+							index += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else {
+				println!("is_recipe_a_match_2x2 encountered a shaped crafting recipe thats a weird shape:\n{crafting_shaped_data:?}");
+			}
+
+			let mut match_found = false;
+			'outer: for possible_shape in possible_shapes {
+				for (i, slot) in possible_shape.iter().enumerate() {
+					if let Some(recipe_slot) = slot {
+						if let Some(input_slot) = &slots[i] {
+							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.item_id)) {
+								continue 'outer;
+							}
+						} else {
+							continue 'outer;
+						}
+					} else {
+						if slots[i].as_ref().is_some_and(|x| x.item_count > 0) {
+							continue 'outer;
+						}
+					}
+				}
+				match_found = true;
+				break;
+			}
+
+			match_found
+		}
 		Recipe::CraftingShapeless(crafting_shapeless_data) => {
 			let mut slots_vec = slots.to_vec();
 
@@ -173,6 +279,131 @@ mod tests {
 
 			let all_recipes = data::recipes::get_recipes();
 			let recipe = all_recipes.get("minecraft:book").unwrap();
+
+			assert!(!is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn matches_torch_recipe_left() {
+			let slots: &[Option<Slot>; 4] = &[
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:torch").unwrap();
+
+			assert!(is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn matches_torch_recipe_right() {
+			let slots: &[Option<Slot>; 4] = &[
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:torch").unwrap();
+
+			assert!(is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn doesnt_match_torch_recipe_wrong() {
+			let slots: &[Option<Slot>; 4] = &[
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:torch").unwrap();
+
+			assert!(!is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn matches_pressure_plate_up() {
+			let slots: &[Option<Slot>; 4] = &[
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+				None,
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:oak_pressure_plate").unwrap();
+
+			assert!(is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn doesnt_match_pressure_plate_wrong() {
+			let slots: &[Option<Slot>; 4] = &[
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+				None,
+				Some(Slot {
+					item_count: 1,
+					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:oak_pressure_plate").unwrap();
 
 			assert!(!is_recipe_a_match_2x2(slots, recipe));
 		}
