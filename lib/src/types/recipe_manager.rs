@@ -32,7 +32,6 @@ impl RecipeManager {
 	}
 
 	pub fn get_crafting_recipe_3x3(&self, slots: &[Option<Slot>; 9]) -> Option<&Recipe> {
-		println!("craft {slots:?}");
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}

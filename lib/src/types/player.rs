@@ -49,7 +49,7 @@ pub struct Player {
 	exhaustion_swimming_for_meters: f64,
 	exhaustion_sprinting_for_meters: f64,
 	is_sprinting: bool,
-	pub crafting_table_slots: [Option<Slot>; 10],
+	pub crafting_table_slots: [Slot; 9],
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -386,7 +386,17 @@ impl Player {
 				exhaustion_swimming_for_meters: 0.0,
 				exhaustion_sprinting_for_meters: 0.0,
 				is_sprinting: false,
-				crafting_table_slots: [None, None, None, None, None, None, None, None, None, None],
+				crafting_table_slots: [
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+				],
 			};
 
 			return player;
@@ -512,7 +522,17 @@ impl Player {
 			exhaustion_swimming_for_meters: 0.0,
 			exhaustion_sprinting_for_meters: 0.0,
 			is_sprinting: false,
-			crafting_table_slots: [None, None, None, None, None, None, None, None, None, None],
+			crafting_table_slots: [
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+			],
 		};
 
 		return player;

@@ -10,11 +10,11 @@ pub fn handle(
 	player_uuid: u128,
 	game: Arc<Game>,
 	streams_with_container_opened: Vec<TcpStream>,
+	players: &mut [Player],
+	players_clone: &[Player],
 ) {
 	const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
 	let player_inventory_index = parsed_packet.slot - chest_items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
-
-	let mut players = game.players.lock().unwrap();
 
 	let outside_clicked = parsed_packet.slot < 0;
 	let chest_inventory_clicked = parsed_packet.slot < chest_items.len() as i16;
@@ -57,11 +57,10 @@ pub fn handle(
 				}
 			} else {
 				//Player inventory got changed
-				let players_clone = players.clone();
 				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_slot(
 					player_inventory_index as u8,
 					new_inventory_item,
-					&players_clone,
+					players_clone,
 					game.clone(),
 				);
 			}
@@ -115,10 +114,9 @@ pub fn handle(
 			}
 
 			if orig_player_inventory != new_player_inventory {
-				let players_clone = players.clone();
 				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_and_inform_client(
 					new_player_inventory,
-					&players_clone,
+					players_clone,
 					game.clone(),
 				);
 			}
