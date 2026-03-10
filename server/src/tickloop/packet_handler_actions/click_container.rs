@@ -9,8 +9,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 
 	let Some(position) = player.opened_inventory_at else {
 		if player.get_gamemode() != Gamemode::Creative && parsed_packet.window_id == 0 {
-			let mut inventory: Vec<Item> =
-				player.get_inventory().clone().into_iter().map(|x| x.map(Item::from)).map(|x| x.unwrap_or_default()).collect();
+			let mut inventory: Vec<Slot> = player.get_inventory().clone().into_iter().map(|x| x.unwrap_or_default()).collect();
 
 			let player_uuid = player.uuid;
 			//need to drop lock on players here, because lib::containerclick::handle also locks players
@@ -24,8 +23,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 
 
-			let inventory_to_set: Vec<Option<Slot>> =
-				inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(Slot::from(x)) }).collect();
+			let inventory_to_set: Vec<Option<Slot>> = inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect();
 			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
 
 			let crafting_slots = player.get_inventory()[1..=4].to_vec();
@@ -40,8 +38,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							state_id: 1,
 							slot: 0,
 							slot_data: Some(Slot {
-								item_count: recipe.get_result_count(),
-								item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+								count: recipe.get_result_count(),
+								id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
@@ -69,15 +67,15 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				// Player takes from the result slot
 				if player.cursor_item.is_none() {
 					player.cursor_item = Some(Slot {
-						item_count: recipe.get_result_count(),
-						item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+						count: recipe.get_result_count(),
+						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
-				} else if player.cursor_item.as_ref().unwrap().item_id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()) {
+				} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()) {
 					player.cursor_item = Some(Slot {
-						item_count: player.cursor_item.as_ref().unwrap().item_count + recipe.get_result_count(),
-						item_id: player.cursor_item.as_ref().unwrap().item_id,
+						count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(),
+						id: player.cursor_item.as_ref().unwrap().id,
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
 					});
@@ -92,7 +90,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 								return x.clone();
 							}
 							if let Some(mut slot) = x.clone() {
-								slot.item_count -= 1;
+								slot.count -= 1;
 								return Some(slot.clone());
 							}
 							x.clone()
@@ -110,8 +108,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 							state_id: 1,
 							slot: 0,
 							slot_data: Some(Slot {
-								item_count: recipe.get_result_count(),
-								item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+								count: recipe.get_result_count(),
+								id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 								components_to_add: Vec::new(),
 								components_to_remove: Vec::new(),
 							}),
@@ -135,8 +133,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 		.get_block(position)
 		.is_ok_and(|x| game.block_state_data.get("minecraft:crafting_table").unwrap().states.first().unwrap().id == x)
 	{
-		let mut crafting_table_slots =
-			player.crafting_table_slots.clone().into_iter().map(|x| x.map(Item::from)).map(|x| x.unwrap_or_default()).collect::<Vec<Item>>();
+		let mut crafting_table_slots = player.crafting_table_slots.clone().into_iter().map(|x| x.unwrap_or_default()).collect::<Vec<Slot>>();
 		let player_uuid = player.uuid;
 		let player_connection_stream = player.connection_stream.try_clone().unwrap();
 
@@ -165,8 +162,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						state_id: 1,
 						slot: 0,
 						slot_data: Some(Slot {
-							item_count: recipe.get_result_count(),
-							item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+							count: recipe.get_result_count(),
+							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 							components_to_add: Vec::new(),
 							components_to_remove: Vec::new(),
 						}),
@@ -194,15 +191,15 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			// Player takes from the result slot
 			if player.cursor_item.is_none() {
 				player.cursor_item = Some(Slot {
-					item_count: recipe.get_result_count(),
-					item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				});
-			} else if player.cursor_item.as_ref().unwrap().item_id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()) {
+			} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()) {
 				player.cursor_item = Some(Slot {
-					item_count: player.cursor_item.as_ref().unwrap().item_count + recipe.get_result_count(),
-					item_id: player.cursor_item.as_ref().unwrap().item_id,
+					count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(),
+					id: player.cursor_item.as_ref().unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				});
@@ -216,7 +213,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						return x.clone();
 					}
 					if let Some(mut slot) = x.clone() {
-						slot.item_count -= 1;
+						slot.count -= 1;
 						return Some(slot.clone());
 					}
 					x.clone()
@@ -234,8 +231,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						state_id: 1,
 						slot: 0,
 						slot_data: Some(Slot {
-							item_count: recipe.get_result_count(),
-							item_id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
+							count: recipe.get_result_count(),
+							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()),
 							components_to_add: Vec::new(),
 							components_to_remove: Vec::new(),
 						}),

@@ -60,8 +60,8 @@ pub enum BlockEntity {
 pub trait CommonBlockEntity {
 	fn tick(&mut self, players: &[Player], game: Arc<Game>);
 	fn new(position: BlockPosition) -> Self;
-	fn get_contained_items_mut(&mut self) -> &mut [Item];
-	fn get_contained_items_owned(&self) -> Vec<Item>;
+	fn get_contained_items_mut(&mut self) -> &mut [Slot];
+	fn get_contained_items_owned(&self) -> Vec<Slot>;
 }
 
 impl BlockEntity {
@@ -277,7 +277,7 @@ impl BlockEntity {
 		}
 	}
 
-	pub fn get_contained_items_owned(&self) -> Vec<Item> {
+	pub fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
 			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),

@@ -4,7 +4,7 @@ use super::*;
 pub struct Campfire {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub items: Vec<Item>,               //up to 4
+	pub items: Vec<Slot>,               //up to 4
 	pub cooking_times: Vec<i32>,
 	pub cooking_total_times: Vec<i32>,
 }
@@ -24,11 +24,11 @@ impl CommonBlockEntity for Campfire {
 		};
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut self.items;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Item> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return self.items.clone();
 	}
 }
@@ -56,15 +56,16 @@ impl TryFrom<NbtListTag> for Campfire {
 			z,
 		};
 
-		let items: Vec<Item> = value
+		let items: Vec<Slot> = value
 			.get_child("Items")
 			.unwrap_or(&NbtTag::List(String::new(), Vec::new()))
 			.as_list()
 			.iter()
-			.map(|entry| Item {
-				id: entry.get_child("id").unwrap().as_string().to_string(),
-				count: entry.get_child("count").unwrap().as_int() as u8,
-				components: Vec::new(),
+			.map(|entry| Slot {
+				id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+				count: entry.get_child("count").unwrap().as_int(),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
 			})
 			.collect();
 

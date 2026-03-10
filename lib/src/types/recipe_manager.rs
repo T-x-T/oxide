@@ -142,14 +142,14 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 				for (i, slot) in possible_shape.iter().enumerate() {
 					if let Some(recipe_slot) = slot {
 						if let Some(input_slot) = &slots[i] {
-							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.item_id)) {
+							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id)) {
 								continue 'outer;
 							}
 						} else {
 							continue 'outer;
 						}
 					} else {
-						if slots[i].as_ref().is_some_and(|x| x.item_count > 0) {
+						if slots[i].as_ref().is_some_and(|x| x.count > 0) {
 							continue 'outer;
 						}
 					}
@@ -173,7 +173,7 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 					};
 					for actual_ingredient_option in tag_resolved_ingredient_options {
 						for slot in &mut slots_vec {
-							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.item_id) == actual_ingredient_option) {
+							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id) == actual_ingredient_option) {
 								*slot = None;
 								found_match = true;
 								break 'ingredient_loop;
@@ -318,7 +318,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					};
 					for actual_ingredient_option in tag_resolved_ingredient_options {
 						for slot in &mut slots_vec {
-							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.item_id) == actual_ingredient_option) {
+							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id) == actual_ingredient_option) {
 								*slot = None;
 								found_match = true;
 								break 'ingredient_loop;
@@ -352,8 +352,8 @@ mod tests {
 		fn crafting_planks_from_acacia_log() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -372,14 +372,14 @@ mod tests {
 		fn crafting_planks_from_2acacia_logs_doesnt_work() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -397,26 +397,26 @@ mod tests {
 		fn crafting_book() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:paper").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:paper").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:paper").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:leather").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:leather").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -432,8 +432,8 @@ mod tests {
 		fn crafting_book_from_one_paper_doesnt_work() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:paper").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -452,15 +452,15 @@ mod tests {
 		fn matches_torch_recipe_left() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -478,15 +478,15 @@ mod tests {
 			let slots: &[Option<Slot>; 4] = &[
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -502,16 +502,16 @@ mod tests {
 		fn doesnt_match_torch_recipe_wrong() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:coal").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:stick").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -527,14 +527,14 @@ mod tests {
 		fn matches_pressure_plate_up() {
 			let slots: &[Option<Slot>; 4] = &[
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
@@ -553,15 +553,15 @@ mod tests {
 			let slots: &[Option<Slot>; 4] = &[
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
 				Some(Slot {
-					item_count: 1,
-					item_id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
+					count: 1,
+					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),

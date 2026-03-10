@@ -845,7 +845,7 @@ impl CommonMob {
 			output.drop_chances = value.clone();
 		}
 		if let Some(value) = data.get_child("equipment") {
-			let mut equipment: HashMap<String, Item> = HashMap::new();
+			let mut equipment: HashMap<String, Slot> = HashMap::new();
 			if let Some(x) = value.get_child("head") {
 				equipment.insert("head".to_string(), x.clone().into());
 			}

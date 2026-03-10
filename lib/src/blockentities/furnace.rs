@@ -5,7 +5,7 @@ pub struct Furnace {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
 	pub needs_ticking: bool,
-	pub inventory: Vec<Item>, //input, fuel, output
+	pub inventory: Vec<Slot>, //input, fuel, output
 	pub lit_time_remaining: i16,
 	pub cooking_time_spent: i16,
 	pub cooking_total_time: i16,
@@ -52,7 +52,9 @@ impl CommonBlockEntity for Furnace {
 				return;
 			}
 
-			if (self.inventory[1].id != "minecraft:coal" && self.lit_time_remaining == 0) || self.inventory[0].id != "minecraft:raw_iron" {
+			if (self.inventory[1].id != data::items::get_item_id_by_name("minecraft:coal") && self.lit_time_remaining == 0)
+				|| self.inventory[0].id != data::items::get_item_id_by_name("minecraft:raw_iron")
+			{
 				self.needs_ticking = false;
 				return;
 			}
@@ -60,7 +62,7 @@ impl CommonBlockEntity for Furnace {
 			let mut can_cook = true;
 			if self.lit_time_remaining == 0 {
 				if self.inventory[1].count > 0 {
-					self.inventory[1] = Item {
+					self.inventory[1] = Slot {
 						count: self.inventory[1].count - 1,
 						..self.inventory[1].clone()
 					};
@@ -77,19 +79,20 @@ impl CommonBlockEntity for Furnace {
 				} else if self.cooking_time_spent == 200 {
 					self.cooking_time_spent = 0;
 
-					if self.inventory[2].id == "minecraft:iron_ingot" {
-						self.inventory[2] = Item {
+					if self.inventory[2].id == data::items::get_item_id_by_name("minecraft:iron_ingot") {
+						self.inventory[2] = Slot {
 							count: self.inventory[2].count + 1,
 							..self.inventory[2].clone()
 						};
 					} else {
-						self.inventory[2] = Item {
+						self.inventory[2] = Slot {
 							count: 1,
-							id: "minecraft:iron_ingot".to_string(),
-							components: Vec::new(),
+							id: data::items::get_item_id_by_name("minecraft:iron_ingot"),
+							components_to_add: Vec::new(),
+							components_to_remove: Vec::new(),
 						};
 					}
-					self.inventory[0] = Item {
+					self.inventory[0] = Slot {
 						count: self.inventory[0].count - 1,
 						..self.inventory[0].clone()
 					};
@@ -172,7 +175,7 @@ impl CommonBlockEntity for Furnace {
 			needs_ticking: false,
 			position,
 			components: Vec::new(),
-			inventory: vec![Item::default(); 3],
+			inventory: vec![Slot::default(); 3],
 			lit_time_remaining: 0,
 			cooking_time_spent: 0,
 			cooking_total_time: 0,
@@ -180,11 +183,11 @@ impl CommonBlockEntity for Furnace {
 		}
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut self.inventory;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Item> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return self.inventory.clone();
 	}
 }
@@ -215,13 +218,14 @@ impl TryFrom<NbtListTag> for Furnace {
 			z,
 		};
 
-		let mut inventory = vec![Item::default(); 3];
+		let mut inventory = vec![Slot::default(); 3];
 		if let Some(items) = value.get_child("Items") {
 			for entry in items.as_list() {
-				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-					id: entry.get_child("id").unwrap().as_string().to_string(),
-					count: entry.get_child("count").unwrap().as_int() as u8,
-					components: Vec::new(),
+				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
+					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+					count: entry.get_child("count").unwrap().as_int(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
 				};
 			}
 		}

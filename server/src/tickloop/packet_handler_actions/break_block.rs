@@ -50,7 +50,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		);
 
 		for item_to_drop in items_to_drop {
-			if item_to_drop.id != "minecraft:air" {
+			if item_to_drop.id != 0 {
 				let new_entity = lib::entity::ItemEntity {
 					common: lib::entity::CommonEntity {
 						position: EntityPosition {

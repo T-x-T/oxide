@@ -4,7 +4,7 @@ use super::*;
 pub struct DecoratedPot {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub item: Item,
+	pub item: Slot,
 }
 
 impl CommonBlockEntity for DecoratedPot {
@@ -16,15 +16,15 @@ impl CommonBlockEntity for DecoratedPot {
 		return Self {
 			position,
 			components: Vec::new(),
-			item: Item::default(),
+			item: Slot::default(),
 		};
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Item> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return vec![self.item.clone()];
 	}
 }
@@ -48,12 +48,13 @@ impl TryFrom<NbtListTag> for DecoratedPot {
 			z,
 		};
 
-		let mut item = Item::default();
+		let mut item = Slot::default();
 		if let Some(raw_item) = value.get_child("Item") {
-			item = Item {
-				id: raw_item.get_child("id").unwrap().as_string().to_string(),
-				count: raw_item.get_child("count").unwrap().as_int() as u8,
-				components: Vec::new(),
+			item = Slot {
+				id: data::items::get_item_id_by_name(raw_item.get_child("id").unwrap().as_string()),
+				count: raw_item.get_child("count").unwrap().as_int(),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
 			};
 		}
 

@@ -4,7 +4,7 @@ use super::*;
 pub struct ChiseledBookshelf {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub items: Vec<Item>,               //len 6
+	pub items: Vec<Slot>,               //len 6
 	pub last_interacted_slot: i32,      //0-5 or -1 if none
 }
 
@@ -17,16 +17,16 @@ impl CommonBlockEntity for ChiseledBookshelf {
 		return Self {
 			position,
 			components: Vec::new(),
-			items: vec![Item::default(); 6],
+			items: vec![Slot::default(); 6],
 			last_interacted_slot: -1,
 		};
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut self.items;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Item> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return self.items.clone();
 	}
 }
@@ -50,13 +50,14 @@ impl TryFrom<NbtListTag> for ChiseledBookshelf {
 			z,
 		};
 
-		let mut items = vec![Item::default(); 27];
+		let mut items = vec![Slot::default(); 27];
 		if let Some(raw_items) = value.get_child("Items") {
 			for entry in raw_items.as_list() {
-				items[entry.get_child("Slot").unwrap().as_byte() as usize] = Item {
-					id: entry.get_child("id").unwrap().as_string().to_string(),
-					count: entry.get_child("count").unwrap().as_int() as u8,
-					components: Vec::new(),
+				items[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
+					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+					count: entry.get_child("count").unwrap().as_int(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
 				};
 			}
 		}

@@ -47,12 +47,12 @@ pub fn process(
 		let used_item_id = player
 			.get_held_item(true)
 			.unwrap_or(&Slot {
-				item_count: 0,
-				item_id: 0,
+				count: 0,
+				id: 0,
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			})
-			.item_id;
+			.id;
 		let used_item_name = data::items::get_item_name_by_id(used_item_id);
 		let pitch = player.get_pitch();
 
@@ -88,11 +88,11 @@ pub fn process(
 			};
 
 			let hand_slot = hand_slot.clone();
-			let new_hand_slot = if hand_slot.item_count == 1 {
+			let new_hand_slot = if hand_slot.count == 1 {
 				None
 			} else {
 				Some(Slot {
-					item_count: hand_slot.item_count - 1,
+					count: hand_slot.count - 1,
 					..hand_slot
 				})
 			};
