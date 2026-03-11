@@ -1,5 +1,5 @@
 use super::*;
-use basic_types::recipe::Recipe;
+use basic_types::recipe::{CraftingShapedData, Recipe};
 use std::collections::HashMap;
 
 pub struct RecipeManager {
@@ -35,9 +35,10 @@ impl RecipeManager {
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}
+		let now = std::time::Instant::now();
 		let matching_recipes: Vec<(&&'static str, &Recipe)> =
 			self.recipes.iter().filter(|(_, recipe)| is_recipe_a_match_3x3(slots, recipe)).collect();
-
+		println!("get_crafting_recipe_3x3 took {:?}", std::time::Instant::now() - now);
 		if matching_recipes.len() > 1 {
 			println!("found multiple matching recipes for slots {slots:?}:\n{matching_recipes:?}");
 		}
@@ -197,112 +198,158 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 	return match recipe {
 		Recipe::CraftingShaped(crafting_shaped_data) => {
-			// if crafting_shaped_data.pattern.len() > 2 || crafting_shaped_data.pattern.first().unwrap().len() > 2 {
-			// 	return false;
-			// }
+			if crafting_shaped_data.pattern.len() > 3 || crafting_shaped_data.pattern.first().unwrap().len() > 3 {
+				return false;
+			}
 
-			// let mut possible_shapes: Vec<[Option<Vec<&str>>; 4]> = Vec::new();
+			let mut possible_shapes: Vec<[Option<Vec<&str>>; 9]> = Vec::new();
 
-			// if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
-			// 	// XX
-			// 	// XX
-			// 	let mut index = 0;
-			// 	let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
-			// 	for row in &crafting_shaped_data.pattern {
-			// 		for key in row.chars() {
-			// 			if key == ' ' {
-			// 				shape[index] = None;
-			// 			} else {
-			// 				let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
-			// 				let mut all_possible_options: Vec<&str> = Vec::new();
-			// 				for ingredient_option in possible_options {
-			// 					let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
-			// 						data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
-			// 					} else {
-			// 						vec![ingredient_option]
-			// 					};
-			// 					all_possible_options.append(&mut tag_resolved_ingredient_options);
-			// 				}
-			// 				shape[index] = Some(all_possible_options);
-			// 			}
-			// 			index += 1;
-			// 		}
-			// 	}
-			// 	possible_shapes.push(shape);
-			// } else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
-			// 	// X
-			// 	// X
-			// 	for variant in 0..=1 {
-			// 		let mut index = 0;
-			// 		let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
-			// 		for row in &crafting_shaped_data.pattern {
-			// 			for key in row.chars() {
-			// 				let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
-			// 				let mut all_possible_options: Vec<&str> = Vec::new();
-			// 				for ingredient_option in possible_options {
-			// 					let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
-			// 						data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
-			// 					} else {
-			// 						vec![ingredient_option]
-			// 					};
-			// 					all_possible_options.append(&mut tag_resolved_ingredient_options);
-			// 				}
-			// 				shape[index + variant] = Some(all_possible_options);
-			// 				index += 2;
-			// 			}
-			// 		}
-			// 		possible_shapes.push(shape);
-			// 	}
-			// } else if crafting_shaped_data.pattern.len() == 1 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
-			// 	// XX
-			// 	for variant in 0..=1 {
-			// 		let mut index = 0;
-			// 		let mut shape: [Option<Vec<&str>>; 4] = [None, None, None, None];
-			// 		for row in &crafting_shaped_data.pattern {
-			// 			for key in row.chars() {
-			// 				let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
-			// 				let mut all_possible_options: Vec<&str> = Vec::new();
-			// 				for ingredient_option in possible_options {
-			// 					let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
-			// 						data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
-			// 					} else {
-			// 						vec![ingredient_option]
-			// 					};
-			// 					all_possible_options.append(&mut tag_resolved_ingredient_options);
-			// 				}
-			// 				shape[index + (variant * 2)] = Some(all_possible_options);
-			// 				index += 1;
-			// 			}
-			// 		}
-			// 		possible_shapes.push(shape);
-			// 	}
-			// } else {
-			// 	println!("is_recipe_a_match_2x2 encountered a shaped crafting recipe thats a weird shape:\n{crafting_shaped_data:?}");
-			// }
+			if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 3 {
+				// XXX
+				// XXX
+				// XXX
+				let mut offset = 0;
+				let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+				for row in &crafting_shaped_data.pattern {
+					for key in row.chars() {
+						shape[offset] = process_key(crafting_shaped_data, key);
 
-			// let mut match_found = false;
-			// 'outer: for possible_shape in possible_shapes {
-			// 	for (i, slot) in possible_shape.iter().enumerate() {
-			// 		if let Some(recipe_slot) = slot {
-			// 			if let Some(input_slot) = &slots[i] {
-			// 				if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.item_id)) {
-			// 					continue 'outer;
-			// 				}
-			// 			} else {
-			// 				continue 'outer;
-			// 			}
-			// 		} else {
-			// 			if slots[i].as_ref().is_some_and(|x| x.item_count > 0) {
-			// 				continue 'outer;
-			// 			}
-			// 		}
-			// 	}
-			// 	match_found = true;
-			// 	break;
-			// }
+						offset += 1;
+					}
+				}
+				possible_shapes.push(shape);
+			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
+				// X
+				// X
+				for starting_index in 0..=5 {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							shape[starting_index + (offset * 3)] = process_key(crafting_shaped_data, key);
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 1 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
+				// XX
+				for starting_index in [0, 1, 3, 4, 6, 7] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
+				// XX
+				// XX
+				for starting_index in [0, 1, 3, 4] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							if offset < 2 {
+								shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							} else {
+								shape[starting_index + offset + 1] = process_key(crafting_shaped_data, key);
+							}
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 1 && crafting_shaped_data.pattern.first().unwrap().len() == 3 {
+				// XXX
+				for starting_index in [0, 3, 6] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
+				// X
+				// X
+				// X
+				for starting_index in [0, 1, 2] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							shape[starting_index + (offset * 3)] = process_key(crafting_shaped_data, key);
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 3 {
+				// XXX
+				// XXX
+				for starting_index in [0, 3] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
+				// XX
+				// XX
+				// XX
+				for starting_index in [0, 1] {
+					let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
+					let mut offset = 0;
+					for row in &crafting_shaped_data.pattern {
+						for key in row.chars() {
+							match offset {
+								0 | 1 => shape[starting_index + offset] = process_key(crafting_shaped_data, key),
+								2 | 3 => shape[starting_index + offset + 1] = process_key(crafting_shaped_data, key),
+								_ => shape[starting_index + offset + 2] = process_key(crafting_shaped_data, key),
+							}
+							offset += 1;
+						}
+					}
+					possible_shapes.push(shape);
+				}
+			} else {
+				println!("is_recipe_a_match_3x3 encountered a shaped crafting recipe thats a weird shape:\n{crafting_shaped_data:?}");
+			}
 
-			// match_found
-			false
+			let mut match_found = false;
+			'outer: for possible_shape in possible_shapes {
+				for (i, slot) in possible_shape.iter().enumerate() {
+					if let Some(recipe_slot) = slot {
+						if let Some(input_slot) = &slots[i] {
+							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id)) {
+								continue 'outer;
+							}
+						} else {
+							continue 'outer;
+						}
+					} else {
+						if slots[i].as_ref().is_some_and(|x| x.count > 0) {
+							continue 'outer;
+						}
+					}
+				}
+				match_found = true;
+				break;
+			}
+
+			match_found
 		}
 		Recipe::CraftingShapeless(crafting_shapeless_data) => {
 			let mut slots_vec = slots.to_vec();
@@ -337,6 +384,24 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 		Recipe::CraftingDecoratedPot(_category) => false,
 		_ => false,
 	};
+}
+
+fn process_key(crafting_shaped_data: &CraftingShapedData, key: char) -> Option<Vec<&'static str>> {
+	if key == ' ' {
+		return None;
+	}
+	let possible_options = crafting_shaped_data.key.get(key.to_string().as_str()).unwrap();
+	let mut all_possible_options: Vec<&str> = Vec::new();
+	for ingredient_option in possible_options {
+		let mut tag_resolved_ingredient_options: Vec<&str> = if ingredient_option.starts_with("#") {
+			data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+		} else {
+			vec![ingredient_option]
+		};
+		all_possible_options.append(&mut tag_resolved_ingredient_options);
+	}
+
+	return Some(all_possible_options);
 }
 
 
