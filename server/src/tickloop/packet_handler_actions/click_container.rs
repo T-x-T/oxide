@@ -322,17 +322,18 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 		items.insert(0, Slot::default()); //need to append empty result slot
 
 		let _ = player;
-
-		lib::containerclick::handle(
-			parsed_packet.clone(),
-			&mut items,
-			player_uuid,
-			game.clone(),
-			streams_with_container_opened,
-			&mut players,
-			players_clone,
-		);
-
+		//no need to handle when taking from result slot as that gets handled further down
+		if parsed_packet.slot != 0 {
+			lib::containerclick::handle(
+				parsed_packet.clone(),
+				&mut items,
+				player_uuid,
+				game.clone(),
+				streams_with_container_opened,
+				&mut players,
+				players_clone,
+			);
+		}
 		items.remove(0); //remove empty result slot again
 
 		let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
@@ -387,7 +388,6 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					.unwrap(),
 			) {
 			// Player takes from the result slot
-			println!("before: {:?}", player.cursor_item);
 			if player.cursor_item.as_ref().is_none_or(|x| x.count == 0) {
 				player.cursor_item = Some(Slot {
 					count: recipe.get_result_count(),
@@ -403,7 +403,6 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					components_to_remove: Vec::new(),
 				});
 			}
-			println!("after: {:?}", player.cursor_item);
 			player.crafting_table_slots = crafting_slots
 				.clone()
 				.iter()
