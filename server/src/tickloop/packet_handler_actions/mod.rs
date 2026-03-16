@@ -110,7 +110,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				click_container::process(peer_addr, parsed_packet, game.clone(), players_clone);
 			}
 			PacketHandlerAction::CloseContainer(peer_addr, window_id) => {
-				close_container::process(peer_addr, window_id, game.clone());
+				close_container::process(peer_addr, window_id, game.clone(), players_clone);
 			}
 			PacketHandlerAction::UpdateSign(location, _is_front, text) => {
 				update_sign::process(location, text, game.clone());

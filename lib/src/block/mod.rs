@@ -145,7 +145,7 @@ pub fn update(
 #[derive(Debug, PartialEq)]
 pub enum BlockInteractionResult {
 	OverwriteBlocks(Vec<(u16, BlockPosition)>),
-	OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
+	OpenInventory(Inventory),
 	OpenSignEditor,
 	Nothing,
 }
