@@ -83,6 +83,8 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 						index += 1;
 					}
 				}
+				let reversed_shape: [Option<Vec<&str>>; 4] = [shape[1].clone(), shape[0].clone(), shape[3].clone(), shape[2].clone()];
+				possible_shapes.push(reversed_shape);
 				possible_shapes.push(shape);
 			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
 				// X
@@ -129,6 +131,8 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 							index += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 4] = [shape[1].clone(), shape[0].clone(), shape[3].clone(), shape[2].clone()];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else {
@@ -222,6 +226,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 						offset += 1;
 					}
 				}
+				let reversed_shape: [Option<Vec<&str>>; 9] = [
+					shape[2].clone(),
+					shape[1].clone(),
+					shape[0].clone(),
+					shape[5].clone(),
+					shape[4].clone(),
+					shape[3].clone(),
+					shape[8].clone(),
+					shape[7].clone(),
+					shape[6].clone(),
+				];
+				possible_shapes.push(reversed_shape);
 				possible_shapes.push(shape);
 			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
 				// X
@@ -248,6 +264,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 							offset += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 9] = [
+						shape[2].clone(),
+						shape[1].clone(),
+						shape[0].clone(),
+						shape[5].clone(),
+						shape[4].clone(),
+						shape[3].clone(),
+						shape[8].clone(),
+						shape[7].clone(),
+						shape[6].clone(),
+					];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else if crafting_shaped_data.pattern.len() == 2 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
@@ -266,6 +294,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 							offset += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 9] = [
+						shape[2].clone(),
+						shape[1].clone(),
+						shape[0].clone(),
+						shape[5].clone(),
+						shape[4].clone(),
+						shape[3].clone(),
+						shape[8].clone(),
+						shape[7].clone(),
+						shape[6].clone(),
+					];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else if crafting_shaped_data.pattern.len() == 1 && crafting_shaped_data.pattern.first().unwrap().len() == 3 {
@@ -279,6 +319,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 							offset += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 9] = [
+						shape[2].clone(),
+						shape[1].clone(),
+						shape[0].clone(),
+						shape[5].clone(),
+						shape[4].clone(),
+						shape[3].clone(),
+						shape[8].clone(),
+						shape[7].clone(),
+						shape[6].clone(),
+					];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 1 {
@@ -308,6 +360,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 							offset += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 9] = [
+						shape[2].clone(),
+						shape[1].clone(),
+						shape[0].clone(),
+						shape[5].clone(),
+						shape[4].clone(),
+						shape[3].clone(),
+						shape[8].clone(),
+						shape[7].clone(),
+						shape[6].clone(),
+					];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 2 {
@@ -327,6 +391,18 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 							offset += 1;
 						}
 					}
+					let reversed_shape: [Option<Vec<&str>>; 9] = [
+						shape[2].clone(),
+						shape[1].clone(),
+						shape[0].clone(),
+						shape[5].clone(),
+						shape[4].clone(),
+						shape[3].clone(),
+						shape[8].clone(),
+						shape[7].clone(),
+						shape[6].clone(),
+					];
+					possible_shapes.push(reversed_shape);
 					possible_shapes.push(shape);
 				}
 			} else {
