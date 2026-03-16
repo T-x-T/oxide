@@ -35,10 +35,8 @@ impl RecipeManager {
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}
-		let now = std::time::Instant::now();
 		let matching_recipes: Vec<(&&'static str, &Recipe)> =
 			self.recipes.iter().filter(|(_, recipe)| is_recipe_a_match_3x3(slots, recipe)).collect();
-		println!("get_crafting_recipe_3x3 took {:?}", std::time::Instant::now() - now);
 		if matching_recipes.len() > 1 {
 			println!("found multiple matching recipes for slots {slots:?}:\n{matching_recipes:?}");
 		}
@@ -198,11 +196,18 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 	return match recipe {
 		Recipe::CraftingShaped(crafting_shaped_data) => {
-			if crafting_shaped_data.pattern.len() > 3 || crafting_shaped_data.pattern.first().unwrap().len() > 3 {
+			let used_item_count = slots.iter().filter(|x| x.is_some()).count();
+			if crafting_shaped_data.pattern.len() > used_item_count || crafting_shaped_data.pattern.first().unwrap().len() > used_item_count {
 				return false;
 			}
 
 			let mut possible_shapes: Vec<[Option<Vec<&str>>; 9]> = Vec::new();
+
+			let calculated_key: HashMap<char, Vec<&str>> = crafting_shaped_data
+				.key
+				.keys()
+				.map(|k| (k.chars().next().unwrap(), process_key(crafting_shaped_data, k.chars().next().unwrap()).unwrap()))
+				.collect();
 
 			if crafting_shaped_data.pattern.len() == 3 && crafting_shaped_data.pattern.first().unwrap().len() == 3 {
 				// XXX
@@ -212,7 +217,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 				let mut shape: [Option<Vec<&str>>; 9] = [None, None, None, None, None, None, None, None, None];
 				for row in &crafting_shaped_data.pattern {
 					for key in row.chars() {
-						shape[offset] = process_key(crafting_shaped_data, key);
+						shape[offset] = calculated_key.get(&key).cloned();
 
 						offset += 1;
 					}
@@ -226,7 +231,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					let mut offset = 0;
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
-							shape[starting_index + (offset * 3)] = process_key(crafting_shaped_data, key);
+							shape[starting_index + (offset * 3)] = calculated_key.get(&key).cloned();
 							offset += 1;
 						}
 					}
@@ -239,7 +244,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					let mut offset = 0;
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
-							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							shape[starting_index + offset] = calculated_key.get(&key).cloned();
 							offset += 1;
 						}
 					}
@@ -254,9 +259,9 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
 							if offset < 2 {
-								shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+								shape[starting_index + offset] = calculated_key.get(&key).cloned();
 							} else {
-								shape[starting_index + offset + 1] = process_key(crafting_shaped_data, key);
+								shape[starting_index + offset + 1] = calculated_key.get(&key).cloned();
 							}
 							offset += 1;
 						}
@@ -270,7 +275,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					let mut offset = 0;
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
-							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							shape[starting_index + offset] = calculated_key.get(&key).cloned();
 							offset += 1;
 						}
 					}
@@ -285,7 +290,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					let mut offset = 0;
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
-							shape[starting_index + (offset * 3)] = process_key(crafting_shaped_data, key);
+							shape[starting_index + (offset * 3)] = calculated_key.get(&key).cloned();
 							offset += 1;
 						}
 					}
@@ -299,7 +304,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					let mut offset = 0;
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
-							shape[starting_index + offset] = process_key(crafting_shaped_data, key);
+							shape[starting_index + offset] = calculated_key.get(&key).cloned();
 							offset += 1;
 						}
 					}
@@ -315,9 +320,9 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					for row in &crafting_shaped_data.pattern {
 						for key in row.chars() {
 							match offset {
-								0 | 1 => shape[starting_index + offset] = process_key(crafting_shaped_data, key),
-								2 | 3 => shape[starting_index + offset + 1] = process_key(crafting_shaped_data, key),
-								_ => shape[starting_index + offset + 2] = process_key(crafting_shaped_data, key),
+								0 | 1 => shape[starting_index + offset] = calculated_key.get(&key).cloned(),
+								2 | 3 => shape[starting_index + offset + 1] = calculated_key.get(&key).cloned(),
+								_ => shape[starting_index + offset + 2] = calculated_key.get(&key).cloned(),
 							}
 							offset += 1;
 						}
