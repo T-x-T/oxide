@@ -1,5 +1,5 @@
 use super::*;
-use basic_types::recipe::{CraftingShapedData, Recipe};
+use basic_types::recipe::{CraftingShapedData, FurnaceData, Recipe};
 use std::collections::HashMap;
 
 pub struct RecipeManager {
@@ -46,6 +46,31 @@ impl RecipeManager {
 		} else {
 			return Some(matching_recipes.first().unwrap().1);
 		}
+	}
+
+	pub fn get_smelting_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+		for recipe in self.recipes.values() {
+			match recipe {
+				Recipe::Smelting(recipe) => {
+					let mut tag_resolved_ingredient_options: Vec<&str> = Vec::new();
+					for ingredient_option in &recipe.ingredient {
+						let mut tag_resolved_ingredient_option: Vec<&str> = if ingredient_option.starts_with("#") {
+							data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+						} else {
+							vec![ingredient_option]
+						};
+						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
+					}
+
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+						return Some(*recipe.clone());
+					}
+				}
+				_ => continue,
+			}
+		}
+
+		return None;
 	}
 }
 
