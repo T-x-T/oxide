@@ -1,11 +1,11 @@
 [package]
 name = "block_get_blocks"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2024"
 description = ""
 
 [dependencies]
-block_types = {path = "../types", version = "*"}
+basic_types = {path = "../../../basic_types", version = "*"}
 blocks_add_fn_0 = {path = "../add_functions/add_fn_0", version = "*"}
 blocks_add_fn_1 = {path = "../add_functions/add_fn_1", version = "*"}
 blocks_add_fn_2 = {path = "../add_functions/add_fn_2", version = "*"}

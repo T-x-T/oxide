@@ -1,5 +1,6 @@
 #![allow(clippy::needless_return)]
 
+pub mod blocks; //auto-generated from data_generator_tools; DONT EDIT MANUALLY
 pub mod data_component;
 pub mod data_component_predicate;
 pub mod enchantment;
@@ -7,6 +8,7 @@ pub mod item_modifier;
 pub mod loot_table;
 pub mod nbt;
 pub mod predicate;
+pub mod recipe;
 
 
 #[derive(Debug, Clone, PartialEq)]

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use blocks::Property;
+use crate::blocks::Property;
 
 use crate::data_component::DataComponent;
 use crate::data_component_predicate::DataComponentPredicate;

@@ -24,15 +24,16 @@ This list is non-exhaustive, but covers the most important parts.
 - Placing and breaking blocks (very few block state rules implemented)
 - Loading and saving vanilla worlds
 - Creative mode
+- Basic survival features (WIP)
 - Block entities (chests, furnaces (only smelting raw iron with coal) and signs for now)
 - Entities with basic AI
+- Crafting & Smelting
 
 ## Missing
 
 These will be implemented in the nearish future
 
 - More commands
-- Survival mode
 - Nether and End dimensions
 - Protocol encryption / online mode
 - Packet compression
@@ -78,13 +79,17 @@ It has access to all the packet deserialization/serialization code which makes t
 
 A library containing common functionality that is shared between the server and proxy. This mostly includes the logic to deserialize and serialize packets and some common types.
 
+## basic_types
+
+As the name suggests, this library crate contains some basic types that are used by all other crates.
+
 ## data_generator_tools
 
-Extremely rough program to generate the data library crate from the official servers generated json files.
+Extremely rough program to generate the data library crate from the official servers generated json files. It expects a directory `official_server` in the root of the project. The jar of the desired official server then needs to be downloaded into this directory. Executing `java -DbundlerMainClass="net.minecraft.data.Main" -jar official_server.jar -all` then generates the required json files. Afterwards you can run `cargo run -p data_generator_tools` to generate/update the data crate.
 
 ## data
 
-Another library that contains data on biomes, blocks and items. It is mostly generated using the data_generator_tools crate.
+Another library that contains data on biomes, blocks, items, block entities, inventories, loot tables, recipes and tags. It is mostly generated using the data_generator_tools crate.
 
 # Contributing
 
@@ -97,7 +102,13 @@ The last option is to [support me financially](https://buymeacoffee.com/thetxt),
 # Dependencies
 
 This project aims to minimally rely on third party dependecies. Everything related to Minecraft is fully custom.
-The only third party dependency is flate2 for compression and decompression. The jzon crate is also used in the `data_gnerator_tools` utility for working with the generated json files from the official Minecraft server.
+There are still some third party dependencies:
+
+- `flate2` for compression and decompression
+- `dashmap` for parallel hashmaps
+- `rand` for random number generation
+
+The jzon crate is also used in the `data_gnerator_tools` utility for working with the generated json files from the official Minecraft server.
 
 # Credit
 

@@ -41,9 +41,25 @@ pub struct ToolRule {
 }
 
 pub fn get_item_name_by_id(id: i32) -> &'static str {
-	return get_items().into_iter().find(|x| x.1.id == id).unwrap_or(get_items().into_iter().next().unwrap()).0;
-}
+  return match id {
+"#;
+	for (k, v) in items_registry.iter() {
+		output += format!("\t\t{} => \"{k}\",\n", v["protocol_id"].as_number().unwrap()).as_str();
+	}
 
+	output += r#"    x => panic!("no idea what item id {x} is"),
+	};
+}
+pub fn get_item_id_by_name(name: &str) -> i32 {
+  return match name {
+"#;
+	for (k, v) in items_registry.iter() {
+		output += format!("\t\t\"{k}\" => {},\n", v["protocol_id"].as_number().unwrap()).as_str();
+	}
+
+	output += r#"    x => panic!("no idea what item name {x} is"),
+	};
+}
 pub fn get_items() -> HashMap<&'static str, Item> {
 	let mut items = HashMap::new();
 "#;

@@ -1,6 +1,6 @@
 use crate::packets::Packet;
 use crate::types::*;
-use data::blocks::*;
+use basic_types::blocks::*;
 use data::inventory::Inventory;
 use std::collections::HashMap;
 use std::error::Error;
@@ -145,7 +145,7 @@ pub fn update(
 #[derive(Debug, PartialEq)]
 pub enum BlockInteractionResult {
 	OverwriteBlocks(Vec<(u16, BlockPosition)>),
-	OpenInventory(Inventory), //Proper enum somewhere for window types; find types here https://minecraft.wiki/w/Java_Edition_protocol/Inventory
+	OpenInventory(Inventory),
 	OpenSignEditor,
 	Nothing,
 }
@@ -163,10 +163,7 @@ impl BlockInteractionResult {
 		match self {
 			BlockInteractionResult::OverwriteBlocks(blocks) => Ok(blocks),
 			BlockInteractionResult::OpenInventory(window_type) => {
-				let Some(block_entity) = dimension.get_chunk_from_position(position).unwrap().try_get_block_entity(position) else {
-					return Err(Box::new(crate::CustomError::BlockEntityNotFoundAtLocation(position)));
-				};
-				player.open_inventory(window_type, block_entity, game.clone());
+				player.open_inventory(window_type, position, game.clone(), dimension);
 
 				players.iter().for_each(|x| {
 					game.send_packet(
@@ -205,7 +202,7 @@ pub fn interact_with_block_at(
 	location: BlockPosition,
 	block_id_at_location: u16,
 	face: u8,
-	block_states: &HashMap<String, data::blocks::Block>,
+	block_states: &HashMap<String, Block>,
 ) -> BlockInteractionResult {
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
@@ -241,7 +238,7 @@ pub fn interact_with_block_at(
 	};
 }
 
-pub fn get_hardness(block_id: u16, block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32 {
 	let block = data::blocks::get_block_from_block_state_id(block_id, block_states);
 
 	return match block.block_type {

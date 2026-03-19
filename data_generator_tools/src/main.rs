@@ -10,6 +10,7 @@ mod blocks;
 mod entities;
 mod items;
 mod loot_tables;
+mod recipe;
 mod tags;
 
 fn main() {
@@ -19,6 +20,7 @@ fn main() {
 	blocks::generate();
 	tags::generate();
 	loot_tables::generate();
+	recipe::generate();
 }
 
 fn convert_to_upper_camel_case(input: &str) -> String {

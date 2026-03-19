@@ -115,7 +115,7 @@ fn target_is_entity(
 		//interact
 		if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper"
 			&& held_item.is_some()
-			&& held_item.unwrap().item_id == data::items::get_items().get("minecraft:flint_and_steel").unwrap().id
+			&& held_item.unwrap().id == data::items::get_item_id_by_name("minecraft:flint_and_steel")
 		{
 			//right clicked a creeper with flint and steel -> explode!
 			entity.get_mob_data_mut().health = 0.0;

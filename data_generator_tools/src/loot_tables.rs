@@ -10,7 +10,7 @@ use crate::{convert_to_upper_camel_case, read_dir_recursively};
 
 pub fn generate() {
 	let mut output = r#"#![allow(clippy::needless_return)]
-use ::blocks::*;
+use basic_types::blocks::*;
 use basic_types::item_modifier::*;
 use basic_types::loot_table::*;
 use basic_types::nbt::*;

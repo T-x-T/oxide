@@ -1,4 +1,4 @@
-use block_types::*;
+use basic_types::blocks::*;
 use std::collections::HashMap;
 pub fn add_acaciaplanks(map: &mut HashMap<String, Block>) {
 	let mut block = Block { block_type: Type::Block, properties: vec![], states: vec![], default_state: 0, block_name: "minecraft:acacia_planks" };

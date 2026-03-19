@@ -2,7 +2,7 @@ use super::*;
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
-use data::blocks::Block;
+use basic_types::blocks::Block;
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -49,6 +49,7 @@ pub struct Player {
 	exhaustion_swimming_for_meters: f64,
 	exhaustion_sprinting_for_meters: f64,
 	is_sprinting: bool,
+	pub crafting_table_slots: [Slot; 9],
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -86,6 +87,7 @@ impl Clone for Player {
 			exhaustion_swimming_for_meters: self.exhaustion_swimming_for_meters,
 			exhaustion_sprinting_for_meters: self.exhaustion_sprinting_for_meters,
 			is_sprinting: self.is_sprinting,
+			crafting_table_slots: self.crafting_table_slots.clone(),
 		}
 	}
 }
@@ -252,7 +254,7 @@ impl CommonEntityTrait for Player {
 
 				if let Some(hand_slot) = self.get_held_item(true) {
 					let all_items = data::items::get_items();
-					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.item_id)).unwrap();
+					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.id)).unwrap();
 
 					if let Some(nutrition) = item_data.nutrition {
 						self.add_nutrition(nutrition);
@@ -274,12 +276,12 @@ impl CommonEntityTrait for Player {
 
 					let selected_slot = self.get_selected_inventory_slot().clone();
 					let selected_slot = selected_slot.map(|x| {
-						let new_item_count = x.item_count - 1;
+						let new_item_count = x.count - 1;
 						if new_item_count == 0 {
 							None
 						} else {
 							Some(Slot {
-								item_count: new_item_count,
+								count: new_item_count,
 								..x
 							})
 						}
@@ -384,6 +386,17 @@ impl Player {
 				exhaustion_swimming_for_meters: 0.0,
 				exhaustion_sprinting_for_meters: 0.0,
 				is_sprinting: false,
+				crafting_table_slots: [
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+				],
 			};
 
 			return player;
@@ -402,8 +415,8 @@ impl Player {
 		player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
 			let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
 			inventory[slot_index] = Some(Slot {
-				item_count: x.get_child("count").unwrap().as_int(),
-				item_id: data::items::get_items().get(x.get_child("id").unwrap().as_string()).unwrap().id,
+				count: x.get_child("count").unwrap().as_int(),
+				id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			});
@@ -412,40 +425,40 @@ impl Player {
 		if let Some(equipment) = player_data.get_child("equipment") {
 			if let Some(head) = equipment.get_child("head") {
 				inventory[5] = Some(Slot {
-					item_count: head.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(head.get_child("id").unwrap().as_string()).unwrap().id,
+					count: head.get_child("count").unwrap().as_int(),
+					id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
 			}
 			if let Some(chest) = equipment.get_child("chest") {
 				inventory[6] = Some(Slot {
-					item_count: chest.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(chest.get_child("id").unwrap().as_string()).unwrap().id,
+					count: chest.get_child("count").unwrap().as_int(),
+					id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
 			}
 			if let Some(legs) = equipment.get_child("legs") {
 				inventory[7] = Some(Slot {
-					item_count: legs.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(legs.get_child("id").unwrap().as_string()).unwrap().id,
+					count: legs.get_child("count").unwrap().as_int(),
+					id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
 			}
 			if let Some(feet) = equipment.get_child("feet") {
 				inventory[8] = Some(Slot {
-					item_count: feet.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(feet.get_child("id").unwrap().as_string()).unwrap().id,
+					count: feet.get_child("count").unwrap().as_int(),
+					id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
 			}
 			if let Some(offhand) = equipment.get_child("offhand") {
 				inventory[45] = Some(Slot {
-					item_count: offhand.get_child("count").unwrap().as_int(),
-					item_id: data::items::get_items().get(offhand.get_child("id").unwrap().as_string()).unwrap().id,
+					count: offhand.get_child("count").unwrap().as_int(),
+					id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -509,6 +522,17 @@ impl Player {
 			exhaustion_swimming_for_meters: 0.0,
 			exhaustion_sprinting_for_meters: 0.0,
 			is_sprinting: false,
+			crafting_table_slots: [
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+			],
 		};
 
 		return player;
@@ -523,8 +547,8 @@ impl Player {
 			OpenOptions::new().read(true).write(true).truncate(true).create(true).open(Player::get_playerdata_path(self.uuid)).unwrap();
 
 		let empty_slot = Slot {
-			item_count: 0,
-			item_id: 0,
+			count: 0,
+			id: 0,
 			components_to_add: Vec::new(),
 			components_to_remove: Vec::new(),
 		};
@@ -553,8 +577,8 @@ impl Player {
 					.map(|x| {
 						NbtListTag::TagCompound(vec![
 							NbtTag::Byte("Slot".to_string(), x.0 as u8),
-							NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().item_count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().item_id).to_string()),
+							NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().count),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().id).to_string()),
 						])
 					})
 					.collect(),
@@ -565,50 +589,50 @@ impl Player {
 					NbtTag::TagCompound(
 						"head".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).item_count),
+							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).id).to_string(),
 							),
 						],
 					),
 					NbtTag::TagCompound(
 						"chest".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).item_count),
+							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).id).to_string(),
 							),
 						],
 					),
 					NbtTag::TagCompound(
 						"legs".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).item_count),
+							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).id).to_string(),
 							),
 						],
 					),
 					NbtTag::TagCompound(
 						"feet".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).item_count),
+							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).id).to_string(),
 							),
 						],
 					),
 					NbtTag::TagCompound(
 						"offhand".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).item_count),
+							NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).item_id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).id).to_string(),
 							),
 						],
 					),
@@ -980,7 +1004,7 @@ impl Player {
 				window_id: 0,
 				state_id: 1,
 				slot_data: self.inventory.clone(),
-				carried_item: None,
+				carried_item: self.cursor_item.clone(),
 			}
 			.try_into()
 			.unwrap(),
@@ -1013,7 +1037,7 @@ impl Player {
 		self.inventory = items.clone();
 	}
 
-	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, block_entity: &BlockEntity, game: Arc<Game>) {
+	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, location: BlockPosition, game: Arc<Game>, dimension: &Dimension) {
 		game.send_packet(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::OpenScreen::PACKET_ID,
@@ -1026,19 +1050,21 @@ impl Player {
 			.unwrap(),
 		);
 
-		self.opened_inventory_at = Some(block_entity.get_position());
-		game.send_packet(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 1,
-				state_id: 1,
-				slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
-				carried_item: None,
-			}
-			.try_into()
-			.unwrap(),
-		);
+		self.opened_inventory_at = Some(location);
+		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
+			game.send_packet(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+				crate::packets::clientbound::play::SetContainerContent {
+					window_id: 1,
+					state_id: 1,
+					slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
+					carried_item: None,
+				}
+				.try_into()
+				.unwrap(),
+			);
+		};
 	}
 
 	pub fn close_inventory(&mut self, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
@@ -1165,12 +1191,12 @@ impl Player {
 	}
 
 	//returns true when item pickup was succesfull and false when not
-	pub fn pickup_item(&mut self, item: Item, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
 		if self.is_dead {
 			return false;
 		}
 
-		let slot = Slot::from(item.clone());
+		let slot = item.clone();
 
 		let slot_indecies = [
 			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
@@ -1184,11 +1210,11 @@ impl Player {
 		for slot_index in slot_indecies {
 			#[allow(clippy::collapsible_if)]
 			if let Some(inventory_slot) = &mut inventory[slot_index] {
-				if inventory_slot.item_id == slot.item_id
-					&& inventory_slot.item_count
-						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.item_id)).unwrap().max_stack_size as i32
+				if inventory_slot.id == slot.id
+					&& inventory_slot.count
+						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.id)).unwrap().max_stack_size as i32
 				{
-					inventory_slot.item_count += 1;
+					inventory_slot.count += 1;
 					inventory_updated = true;
 
 					break;
@@ -1199,7 +1225,7 @@ impl Player {
 		//if the player doesnt have the item in its inventory, put it in the first free slot
 		if !inventory_updated {
 			for slot_index in slot_indecies {
-				if inventory[slot_index].as_ref().is_some_and(|x| x.item_count == 0) || inventory[slot_index].is_none() {
+				if inventory[slot_index].as_ref().is_some_and(|x| x.count == 0) || inventory[slot_index].is_none() {
 					inventory[slot_index] = Some(slot.clone());
 					inventory_updated = true;
 					break;
@@ -1213,7 +1239,7 @@ impl Player {
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
 				collected_entity_id: item_entity_id,
 				collector_entity_id: self.entity_id,
-				pickup_item_count: item.count as i32,
+				pickup_item_count: item.count,
 			};
 
 			for player in players {
@@ -1249,7 +1275,7 @@ impl Player {
 
 		if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
 			for slot in &self.inventory {
-				if slot.as_ref().is_some_and(|x| x.item_count > 0) {
+				if slot.as_ref().is_some_and(|x| x.count > 0) {
 					let new_entity = crate::entity::ItemEntity {
 						common: CommonEntity {
 							position: self.get_position(),
@@ -1260,7 +1286,7 @@ impl Player {
 						},
 						age: 0,
 						health: 5,
-						item: Item::from(slot.clone().unwrap()),
+						item: slot.clone().unwrap(),
 						owner: self.uuid,
 						pickup_delay: 0,
 						thrower: self.uuid,

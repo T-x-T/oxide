@@ -1,4 +1,4 @@
-use block_types::*;
+use basic_types::blocks::*;
 use std::collections::HashMap;
 pub fn add_acacialog(map: &mut HashMap<String, Block>) {
 	let mut block = Block { block_type: Type::RotatedPillar, properties: vec![Property::RotatedPillarAxis(RotatedPillarAxis::X),Property::RotatedPillarAxis(RotatedPillarAxis::Y),Property::RotatedPillarAxis(RotatedPillarAxis::Z),], states: vec![], default_state: 1, block_name: "minecraft:acacia_log" };

@@ -1,3 +1,4 @@
+//auto-generated from data_generator_tools; DONT EDIT MANUALLY
 #![allow(clippy::needless_return)]
 #[derive(Debug, Clone)]
 pub struct Block {

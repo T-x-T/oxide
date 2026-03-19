@@ -1,4 +1,4 @@
-use block_types::*;
+use basic_types::blocks::*;
 use std::collections::HashMap;
 pub fn add_acaciabutton(map: &mut HashMap<String, Block>) {
 	let mut block = Block { block_type: Type::Button, properties: vec![Property::ButtonFace(ButtonFace::Floor),Property::ButtonFace(ButtonFace::Wall),Property::ButtonFace(ButtonFace::Ceiling),Property::ButtonFacing(ButtonFacing::North),Property::ButtonFacing(ButtonFacing::South),Property::ButtonFacing(ButtonFacing::West),Property::ButtonFacing(ButtonFacing::East),Property::ButtonPowered(ButtonPowered::True),Property::ButtonPowered(ButtonPowered::False),], states: vec![], default_state: 9, block_name: "minecraft:acacia_button" };

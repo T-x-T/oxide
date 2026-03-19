@@ -1,4 +1,4 @@
-use block_types::*;
+use basic_types::blocks::*;
 use std::collections::HashMap;
 pub fn add_acacialeaves(map: &mut HashMap<String, Block>) {
 	let mut block = Block { block_type: Type::TintedParticleLeaves, properties: vec![Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num1),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num2),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num3),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num4),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num5),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num6),Property::TintedParticleLeavesDistance(TintedParticleLeavesDistance::Num7),Property::TintedParticleLeavesPersistent(TintedParticleLeavesPersistent::True),Property::TintedParticleLeavesPersistent(TintedParticleLeavesPersistent::False),Property::TintedParticleLeavesWaterlogged(TintedParticleLeavesWaterlogged::True),Property::TintedParticleLeavesWaterlogged(TintedParticleLeavesWaterlogged::False),], states: vec![], default_state: 27, block_name: "minecraft:acacia_leaves" };

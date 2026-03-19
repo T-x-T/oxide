@@ -1,6 +1,6 @@
 pub mod loader;
 
-use data::blocks::Block;
+use basic_types::blocks::Block;
 
 use super::*;
 use std::collections::HashMap;
@@ -280,13 +280,13 @@ impl Chunk {
 		return self.sections[section_id as usize].blocks[block_id as usize];
 	}
 
-	pub fn try_get_block_entity(&self, position_in_chunk: BlockPosition) -> Option<&BlockEntity> {
-		return self.block_entities.iter().find(|x| x.get_position() == position_in_chunk);
+	pub fn try_get_block_entity(&self, position: BlockPosition) -> Option<&BlockEntity> {
+		return self.block_entities.iter().find(|x| x.get_position() == position);
 	}
 
-	pub fn try_get_block_entity_mut(&mut self, position_in_chunk: BlockPosition) -> Option<&mut BlockEntity> {
+	pub fn try_get_block_entity_mut(&mut self, position: BlockPosition) -> Option<&mut BlockEntity> {
 		self.modified = true; //cant know what caller will do with the &mut so better be safe
-		return self.block_entities.iter_mut().find(|x| x.get_position() == position_in_chunk);
+		return self.block_entities.iter_mut().find(|x| x.get_position() == position);
 	}
 }
 

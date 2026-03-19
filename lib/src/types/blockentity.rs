@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::sync::Arc;
 
-use data::blocks::Type;
+use basic_types::blocks::Type;
 
 use crate::packets::Packet;
 
@@ -60,8 +60,8 @@ pub enum BlockEntity {
 pub trait CommonBlockEntity {
 	fn tick(&mut self, players: &[Player], game: Arc<Game>);
 	fn new(position: BlockPosition) -> Self;
-	fn get_contained_items_mut(&mut self) -> &mut [Item];
-	fn get_contained_items_owned(&self) -> Vec<Item>;
+	fn get_contained_items_mut(&mut self) -> &mut [Slot];
+	fn get_contained_items_owned(&self) -> Vec<Slot>;
 }
 
 impl BlockEntity {
@@ -116,7 +116,7 @@ impl BlockEntity {
 		}
 	}
 
-	pub fn new_from_block(block_type: data::blocks::Type, position: BlockPosition) -> Option<Self> {
+	pub fn new_from_block(block_type: Type, position: BlockPosition) -> Option<Self> {
 		return match block_type {
 			Type::Furnace => Some(BlockEntity::Furnace(crate::blockentities::furnace::Furnace::new(position))),
 			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
@@ -277,7 +277,7 @@ impl BlockEntity {
 		}
 	}
 
-	pub fn get_contained_items_owned(&self) -> Vec<Item> {
+	pub fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
 			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),
@@ -343,6 +343,8 @@ impl BlockEntity {
 		#[allow(clippy::single_match)]
 		match self {
 			BlockEntity::Furnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+			BlockEntity::BlastFurnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+			BlockEntity::Smoker(furnace) => furnace.needs_ticking = new_needs_ticking,
 			_ => (),
 		}
 	}
@@ -350,6 +352,8 @@ impl BlockEntity {
 	pub fn get_needs_ticking(&self) -> bool {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.needs_ticking,
+			BlockEntity::BlastFurnace(furnace) => furnace.needs_ticking,
+			BlockEntity::Smoker(furnace) => furnace.needs_ticking,
 			_ => false,
 		};
 	}

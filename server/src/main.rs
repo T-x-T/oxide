@@ -1,4 +1,5 @@
 #![allow(clippy::needless_return)]
+#![allow(clippy::needless_range_loop)]
 
 use dashmap::DashMap;
 use lib::packets::Packet;
@@ -25,6 +26,7 @@ fn initialize_server() {
 
 	let block_states = data::blocks::get_blocks();
 	let loot_tables = data::loot_tables::get_loot_tables();
+	let recipes = data::recipes::get_recipes();
 
 	let world_loader = lib::world::loader::vanilla::Loader {
 		path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
@@ -52,6 +54,7 @@ fn initialize_server() {
 		packet_send_queues: DashMap::new(),
 		default_gamemode,
 		loot_tables,
+		recipe_manager: RecipeManager::new(recipes),
 	};
 
 	command::init(&mut game);

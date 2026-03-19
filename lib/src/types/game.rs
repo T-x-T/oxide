@@ -16,12 +16,13 @@ pub struct Game {
 	pub commands: Mutex<Vec<Command>>,
 	pub last_save_all_timestamp: Mutex<std::time::Instant>,
 	pub last_player_keepalive_timestamp: Mutex<std::time::Instant>,
-	pub block_state_data: HashMap<String, data::blocks::Block>,
+	pub block_state_data: HashMap<String, basic_types::blocks::Block>,
 	pub connections: DashMap<SocketAddr, Connection>,
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
 	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
 	pub default_gamemode: Gamemode,
 	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
+	pub recipe_manager: RecipeManager,
 }
 
 impl Game {

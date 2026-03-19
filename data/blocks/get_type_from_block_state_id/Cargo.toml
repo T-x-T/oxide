@@ -1,8 +1,8 @@
 [package]
   name = "block_get_type_from_block_state_id"
-  version = "0.5.1"
+  version = "0.6.0"
   edition = "2024"
   description = ""
 
 [dependencies]
-block_types = {path = "../types", version = "*"}
+basic_types = {path = "../../../basic_types", version = "*"}

@@ -6,20 +6,13 @@ use super::*;
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Slot {
-	pub item_count: i32,
-	pub item_id: i32,
+	pub count: i32,
+	pub id: i32,
 	pub components_to_add: Vec<SlotComponent>,
 	pub components_to_remove: Vec<i32>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct Item {
-	pub id: String,
-	pub count: u8,
-	pub components: Vec<SlotComponent>,
-}
-
-impl Item {
+impl Slot {
 	pub fn get_entity(&self, position: EntityPosition, entity_id: i32) -> ItemEntity {
 		return ItemEntity {
 			common: crate::entity::CommonEntity {
@@ -39,29 +32,19 @@ impl Item {
 	}
 }
 
-impl Default for Item {
-	fn default() -> Self {
-		Self {
-			id: "minecraft:air".to_string(),
-			count: 0,
-			components: Vec::new(),
-		}
-	}
-}
-
-impl From<Vec<Item>> for NbtTag {
-	fn from(value: Vec<Item>) -> Self {
+impl From<Vec<Slot>> for NbtTag {
+	fn from(value: Vec<Slot>) -> Self {
 		return NbtTag::List(
 			"Items".to_string(),
 			value
 				.iter()
 				.enumerate()
-				.filter(|(_, item)| item.id != "minecraft:air" && item.count != 0)
+				.filter(|(_, item)| item.id != 0 && item.count != 0)
 				.map(|(i, item)| {
 					NbtListTag::TagCompound(vec![
 						NbtTag::Byte("Slot".to_string(), i as u8),
-						NbtTag::String("id".to_string(), item.id.clone()),
-						NbtTag::Int("count".to_string(), item.count as i32),
+						NbtTag::String("id".to_string(), data::items::get_item_name_by_id(item.id).to_string()),
+						NbtTag::Int("count".to_string(), item.count),
 						NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
 					])
 				})
@@ -70,105 +53,42 @@ impl From<Vec<Item>> for NbtTag {
 	}
 }
 
-impl From<Item> for NbtTag {
-	fn from(value: Item) -> Self {
+impl From<Slot> for NbtTag {
+	fn from(value: Slot) -> Self {
 		return NbtTag::TagCompound(
 			"Item".to_string(),
 			vec![
 				NbtTag::Byte("Slot".to_string(), 1),
-				NbtTag::String("id".to_string(), value.id.clone()),
-				NbtTag::Int("count".to_string(), value.count as i32),
+				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).to_string()),
+				NbtTag::Int("count".to_string(), value.count),
 				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
 			],
 		);
 	}
 }
 
-impl From<Item> for Vec<NbtTag> {
-	fn from(value: Item) -> Self {
+impl From<Slot> for Vec<NbtTag> {
+	fn from(value: Slot) -> Self {
 		return vec![
-			NbtTag::String("id".to_string(), value.id.clone()),
-			NbtTag::Int("count".to_string(), value.count as i32),
+			NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).to_string()),
+			NbtTag::Int("count".to_string(), value.count),
 			NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
 		];
 	}
 }
 
-impl From<NbtTag> for Item {
+impl From<NbtTag> for Slot {
 	fn from(value: NbtTag) -> Self {
 		return Self {
-			id: value.get_child("id").unwrap_or(&NbtTag::String("".to_string(), "minecraft:air".to_string())).as_string().to_string(),
-			count: value.get_child("count").unwrap_or(&NbtTag::Int("".to_string(), 0)).as_int() as u8,
-			components: Vec::new(), //missing nbt to SlotComponent conversion
-		};
-	}
-}
-
-impl From<&Item> for Slot {
-	fn from(value: &Item) -> Self {
-		return Slot {
-			item_count: value.count as i32,
-			item_id: data::items::get_items().iter().find(|y| y.0 == &value.id).unwrap().1.id,
-			components_to_add: value.components.clone(),
+			id: data::items::get_item_id_by_name(
+				value.get_child("id").unwrap_or(&NbtTag::String("".to_string(), "minecraft:air".to_string())).as_string(),
+			),
+			count: value.get_child("count").unwrap_or(&NbtTag::Int("".to_string(), 0)).as_int(),
+			components_to_add: Vec::new(), //missing nbt to SlotComponent conversion
 			components_to_remove: Vec::new(),
 		};
 	}
 }
-
-impl From<Slot> for Item {
-	fn from(value: Slot) -> Self {
-		return Self {
-			id: data::items::get_item_name_by_id(value.item_id).to_string(),
-			count: value.item_count as u8,
-			components: value.components_to_add,
-		};
-	}
-}
-
-impl From<Option<Slot>> for Item {
-	fn from(value: Option<Slot>) -> Self {
-		let Some(value) = value else {
-			return Self {
-				id: "minecraft:air".to_string(),
-				count: 0,
-				components: Vec::new(),
-			};
-		};
-
-		return Self {
-			id: data::items::get_item_name_by_id(value.item_id).to_string(),
-			count: value.item_count as u8,
-			components: value.components_to_add,
-		};
-	}
-}
-
-impl From<Item> for Slot {
-	fn from(value: Item) -> Self {
-		return Self {
-			item_count: value.count as i32,
-			item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
-			components_to_add: value.components,
-			components_to_remove: Vec::new(),
-		};
-	}
-}
-
-impl From<Item> for Option<Slot> {
-	fn from(value: Item) -> Self {
-		return if value.count == 0 {
-			None
-		} else {
-			Some(Slot {
-				item_count: value.count as i32,
-				item_id: data::items::get_items().get(value.id.as_str()).unwrap().id,
-				components_to_add: value.components,
-				components_to_remove: Vec::new(),
-			})
-		};
-	}
-}
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BlockPredicate {
@@ -1405,8 +1325,8 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 	}
 
 	return Ok(Some(Slot {
-		item_count,
-		item_id,
+		count: item_count,
+		id: item_id,
 		components_to_add,
 		components_to_remove,
 	}));
@@ -1420,13 +1340,13 @@ pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
 		return output;
 	};
 
-	if input.item_count == 0 {
+	if input.count == 0 {
 		output.append(&mut crate::serialize::varint(0));
 		return output;
 	}
 
-	output.append(&mut crate::serialize::varint(input.item_count));
-	output.append(&mut crate::serialize::varint(input.item_id));
+	output.append(&mut crate::serialize::varint(input.count));
+	output.append(&mut crate::serialize::varint(input.id));
 	output.append(&mut crate::serialize::varint(input.components_to_add.len() as i32));
 	output.append(&mut crate::serialize::varint(input.components_to_remove.len() as i32));
 	for component_to_add in &input.components_to_add {
@@ -1465,8 +1385,8 @@ pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<d
 
 	//might have to do something about the components_to_add but probably not(?)
 	return Ok(Some(Slot {
-		item_count,
-		item_id,
+		count: item_count,
+		id: item_id,
 		components_to_add: Vec::new(),
 		components_to_remove,
 	}));
@@ -1480,13 +1400,13 @@ pub fn serialize_hashed_slot(input: Option<&Slot>) -> Vec<u8> {
 		return output;
 	};
 
-	if input.item_count == 0 {
+	if input.count == 0 {
 		output.append(&mut crate::serialize::boolean(false));
 		return output;
 	}
 
-	output.append(&mut crate::serialize::varint(input.item_count));
-	output.append(&mut crate::serialize::varint(input.item_id));
+	output.append(&mut crate::serialize::varint(input.count));
+	output.append(&mut crate::serialize::varint(input.id));
 	output.append(&mut crate::serialize::varint(input.components_to_add.len() as i32));
 	for component in &input.components_to_add {
 		output.append(&mut crate::serialize::varint(component.into()));

@@ -1,7 +1,7 @@
 #![allow(unused_mut)]
 #![allow(clippy::needless_return)]
 use std::collections::HashMap;
-pub use block_types::*;
+use basic_types::blocks::*;
 pub use block_get_blocks::*;
 pub use block_get_type_from_block_state_id::*;
 pub fn get_block_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> Block {

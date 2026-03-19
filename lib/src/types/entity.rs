@@ -809,7 +809,7 @@ pub trait CommonEntityTrait {
 	fn is_in_liquid(&self, dimension: &Dimension) -> bool {
 		//need to use self.get_common_entity_data_cloned() because Player doesnt implement self.get_common_entity_data()
 		let block_at_pos = dimension.get_block(self.get_common_entity_data_cloned().position.into()).unwrap_or_default();
-		return data::blocks::get_type_from_block_state_id(block_at_pos) == data::blocks::Type::Liquid;
+		return data::blocks::get_type_from_block_state_id(block_at_pos) == basic_types::blocks::Type::Liquid;
 	}
 }
 
@@ -845,7 +845,7 @@ impl CommonMob {
 			output.drop_chances = value.clone();
 		}
 		if let Some(value) = data.get_child("equipment") {
-			let mut equipment: HashMap<String, Item> = HashMap::new();
+			let mut equipment: HashMap<String, Slot> = HashMap::new();
 			if let Some(x) = value.get_child("head") {
 				equipment.insert("head".to_string(), x.clone().into());
 			}

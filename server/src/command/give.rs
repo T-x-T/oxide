@@ -39,10 +39,11 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		},
 		age: 0,
 		health: 5,
-		item: Item {
-			id: command.replace("give ", ""),
+		item: Slot {
+			id: data::items::get_item_id_by_name(command.replace("give ", "").as_str()),
 			count: 1,
-			components: Vec::new(),
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
 		},
 		owner: player.uuid,
 		pickup_delay: 0,

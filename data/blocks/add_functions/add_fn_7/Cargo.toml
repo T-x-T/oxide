@@ -1,8 +1,8 @@
 [package]
 name = "blocks_add_fn_7"
-version = "0.5.1"
+version = "0.6.0"
 edition = "2024"
 description = ""
 
 [dependencies]
-block_types = {path = "../../types", version = "*"}
+basic_types = {path = "../../../../basic_types", version = "*"}

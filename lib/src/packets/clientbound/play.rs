@@ -2770,8 +2770,8 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					EntityMetadataValue::OptionalTextComponent(nbt)
 				}
 				7 => EntityMetadataValue::Slot(crate::slot::deserialize_slot(&mut value)?.unwrap_or(Slot {
-					item_count: 0,
-					item_id: 0,
+					count: 0,
+					id: 0,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})),

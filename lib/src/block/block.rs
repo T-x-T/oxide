@@ -1,6 +1,6 @@
 use super::*;
 
-pub fn get_hardness(_block_id: u16, block: data::blocks::Block, _block_states: &HashMap<String, data::blocks::Block>) -> f32 {
+pub fn get_hardness(_block_id: u16, block: Block, _block_states: &HashMap<String, Block>) -> f32 {
 	if block.block_name.ends_with("_concrete") {
 		return 1.8;
 	} else if block.block_name.ends_with("terrcotta") {

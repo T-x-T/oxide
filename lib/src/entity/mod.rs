@@ -66,7 +66,7 @@ pub struct CommonMob {
 	pub death_loot_table_seed: Option<i64>,
 	pub death_time: i16,
 	pub drop_chances: NbtTag,
-	pub equipment: HashMap<String, Item>,
+	pub equipment: HashMap<String, Slot>,
 	pub fall_flying: u8,
 	pub health: f32,
 	pub home_location: (i32, i32, i32),

@@ -1,7 +1,0 @@
-[package]
-  name = "block_types"
-  version = "0.5.1"
-  edition = "2024"
-  description = ""
-
-[dependencies]

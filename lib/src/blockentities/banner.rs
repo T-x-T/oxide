@@ -20,11 +20,11 @@ impl CommonBlockEntity for Banner {
 		};
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Item] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Item> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return Vec::new();
 	}
 }

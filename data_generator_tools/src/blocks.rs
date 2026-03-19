@@ -13,7 +13,7 @@ pub fn generate() {
 	let mut output = String::new();
 
 	output += "#![allow(unused_mut)]\n#![allow(clippy::needless_return)]\nuse std::collections::HashMap;\n";
-	output += "pub use block_types::*;\n";
+	output += "use basic_types::blocks::*;\n";
 	output += "pub use block_get_blocks::*;\n";
 	output += "pub use block_get_type_from_block_state_id::*;\n";
 	output += get_block_from_block_state_id().as_str();
@@ -39,12 +39,12 @@ fn get_blocks() {
 
 	let mut cargo_toml_contents = "[package]
 name = \"block_get_blocks\"
-version = \"0.5.1\"
+version = \"0.6.0\"
 edition = \"2024\"
 description = \"\"
 
 [dependencies]
-block_types = {path = \"../types\", version = \"*\"}\n"
+basic_types = {path = \"../../../basic_types\", version = \"*\"}\n"
 		.to_string();
 
 	for i in 0..ADD_FNS_COUNT {
@@ -65,7 +65,7 @@ block_types = {path = \"../types\", version = \"*\"}\n"
 	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
 	output += "use std::collections::HashMap;\n";
-	output += "use block_types::*;\n";
+	output += "use basic_types::blocks::*;\n";
 	output += "pub fn get_blocks() -> HashMap<String, Block> {\n";
 	output += "\tlet mut output: HashMap<String, Block> = HashMap::new();\n";
 
@@ -123,7 +123,7 @@ fn get_blocks_add_functions() {
 	for x in blocks_json.as_object().unwrap().iter() {
 		let output_index = i % ADD_FNS_COUNT;
 		if outputs.len() <= output_index {
-			outputs.push("use block_types::*;\nuse std::collections::HashMap;\n".to_string());
+			outputs.push("use basic_types::blocks::*;\nuse std::collections::HashMap;\n".to_string());
 		}
 
 		let block = x.1.as_object().unwrap();
@@ -197,12 +197,12 @@ fn get_blocks_add_functions() {
 		let cargo_toml_contents = format!(
 			"[package]
 name = \"blocks_add_fn_{i}\"
-version = \"0.5.1\"
+version = \"0.6.0\"
 edition = \"2024\"
 description = \"\"
 
 [dependencies]
-block_types = {{path = \"../../types\", version = \"*\"}}"
+basic_types = {{path = \"../../../../basic_types\", version = \"*\"}}"
 		);
 		let mut file = std::fs::OpenOptions::new()
 			.read(true)
@@ -230,7 +230,7 @@ fn block_types() {
 	let mut output = String::new();
 	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 
-	output += "#![allow(clippy::needless_return)]\n";
+	output += "//auto-generated from data_generator_tools; DONT EDIT MANUALLY\n#![allow(clippy::needless_return)]\n";
 	output += structs().as_str();
 	output += impl_type().as_str();
 	output += property_enums().as_str();
@@ -251,7 +251,7 @@ fn block_types() {
 
 	output = output.replace("\"", "");
 
-	let path = std::path::PathBuf::from("../data/blocks/types/src/lib.rs");
+	let path = std::path::PathBuf::from("../basic_types/src/blocks.rs");
 
 	let mut file = std::fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
 
@@ -492,7 +492,7 @@ fn get_type_from_block_state_id() {
 	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
 	output += "#![allow(clippy::needless_return)]\n";
-	output += "use block_types::*;\n";
+	output += "use basic_types::blocks::*;\n";
 	output += "pub fn get_type_from_block_state_id(block_state_id: u16) -> Type {\n";
 	output += "\treturn match block_state_id {\n";
 

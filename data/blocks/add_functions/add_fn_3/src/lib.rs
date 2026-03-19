@@ -1,4 +1,4 @@
-use block_types::*;
+use basic_types::blocks::*;
 use std::collections::HashMap;
 pub fn add_acaciafencegate(map: &mut HashMap<String, Block>) {
 	let mut block = Block { block_type: Type::FenceGate, properties: vec![Property::FenceGateFacing(FenceGateFacing::North),Property::FenceGateFacing(FenceGateFacing::South),Property::FenceGateFacing(FenceGateFacing::West),Property::FenceGateFacing(FenceGateFacing::East),Property::FenceGateInWall(FenceGateInWall::True),Property::FenceGateInWall(FenceGateInWall::False),Property::FenceGateOpen(FenceGateOpen::True),Property::FenceGateOpen(FenceGateOpen::False),Property::FenceGatePowered(FenceGatePowered::True),Property::FenceGatePowered(FenceGatePowered::False),], states: vec![], default_state: 7, block_name: "minecraft:acacia_fence_gate" };

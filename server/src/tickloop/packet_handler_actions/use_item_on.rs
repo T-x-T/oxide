@@ -47,12 +47,12 @@ pub fn process(
 		let used_item_id = player
 			.get_held_item(true)
 			.unwrap_or(&Slot {
-				item_count: 0,
-				item_id: 0,
+				count: 0,
+				id: 0,
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			})
-			.item_id;
+			.id;
 		let used_item_name = data::items::get_item_name_by_id(used_item_id);
 		let pitch = player.get_pitch();
 
@@ -88,11 +88,11 @@ pub fn process(
 			};
 
 			let hand_slot = hand_slot.clone();
-			let new_hand_slot = if hand_slot.item_count == 1 {
+			let new_hand_slot = if hand_slot.count == 1 {
 				None
 			} else {
 				Some(Slot {
-					item_count: hand_slot.item_count - 1,
+					count: hand_slot.count - 1,
 					..hand_slot
 				})
 			};
@@ -109,10 +109,10 @@ pub fn process(
 			Ok(res) => {
 				let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
 				//Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
-				if block.block_type == data::blocks::Type::WallSign
-					|| block.block_type == data::blocks::Type::StandingSign
-					|| block.block_type == data::blocks::Type::WallHangingSign
-					|| block.block_type == data::blocks::Type::CeilingHangingSign
+				if block.block_type == basic_types::blocks::Type::WallSign
+					|| block.block_type == basic_types::blocks::Type::StandingSign
+					|| block.block_type == basic_types::blocks::Type::WallHangingSign
+					|| block.block_type == basic_types::blocks::Type::CeilingHangingSign
 				{
 					game.send_packet(
 						&peer_addr,
