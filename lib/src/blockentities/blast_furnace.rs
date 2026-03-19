@@ -31,7 +31,9 @@ impl CommonBlockEntity for BlastFurnace {
 				}
 			}
 
-			if self.inventory[1].id != data::items::get_item_id_by_name("minecraft:coal") && self.lit_time_remaining == 0 {
+			if game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) == 0
+				&& self.lit_time_remaining == 0
+			{
 				self.reset_state(players, game);
 				return;
 			}
@@ -43,7 +45,8 @@ impl CommonBlockEntity for BlastFurnace {
 						count: self.inventory[1].count - 1,
 						..self.inventory[1].clone()
 					};
-					self.lit_time_remaining = 1600;
+					self.lit_time_remaining =
+						(game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16;
 				} else {
 					self.cooking_time_spent = 0;
 					can_cook = false;
@@ -113,7 +116,7 @@ impl CommonBlockEntity for BlastFurnace {
 					crate::packets::clientbound::play::SetContainerProperty {
 						window_id: 1,
 						property: 1, //max fuel burn time
-						value: 1600, //ticks fuel should burn for
+						value: (game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16, //ticks fuel should burn for
 					}
 					.try_into()
 					.unwrap(),
