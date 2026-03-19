@@ -72,6 +72,56 @@ impl RecipeManager {
 
 		return None;
 	}
+
+	pub fn get_smoking_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+		for recipe in self.recipes.values() {
+			match recipe {
+				Recipe::Smoking(recipe) => {
+					let mut tag_resolved_ingredient_options: Vec<&str> = Vec::new();
+					for ingredient_option in &recipe.ingredient {
+						let mut tag_resolved_ingredient_option: Vec<&str> = if ingredient_option.starts_with("#") {
+							data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+						} else {
+							vec![ingredient_option]
+						};
+						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
+					}
+
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+						return Some(*recipe.clone());
+					}
+				}
+				_ => continue,
+			}
+		}
+
+		return None;
+	}
+
+	pub fn get_blasting_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+		for recipe in self.recipes.values() {
+			match recipe {
+				Recipe::Blasting(recipe) => {
+					let mut tag_resolved_ingredient_options: Vec<&str> = Vec::new();
+					for ingredient_option in &recipe.ingredient {
+						let mut tag_resolved_ingredient_option: Vec<&str> = if ingredient_option.starts_with("#") {
+							data::tags::get_item().get(ingredient_option.replace("#minecraft:", "").as_str()).unwrap().clone()
+						} else {
+							vec![ingredient_option]
+						};
+						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
+					}
+
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+						return Some(*recipe.clone());
+					}
+				}
+				_ => continue,
+			}
+		}
+
+		return None;
+	}
 }
 
 fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {

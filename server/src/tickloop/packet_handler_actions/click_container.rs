@@ -173,6 +173,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					&mut players,
 					players_clone,
 				);
+				block_entity.set_needs_ticking(true);
 			}
 			BlockEntity::BrewingStand(brewing_stand) => {
 				let items = brewing_stand.get_contained_items_mut();
@@ -300,6 +301,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					&mut players,
 					players_clone,
 				);
+				block_entity.set_needs_ticking(true);
 			}
 			BlockEntity::TrappedChest(trapped_chest) => {
 				let items = trapped_chest.get_contained_items_mut();

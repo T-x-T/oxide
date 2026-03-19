@@ -343,6 +343,8 @@ impl BlockEntity {
 		#[allow(clippy::single_match)]
 		match self {
 			BlockEntity::Furnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+			BlockEntity::BlastFurnace(furnace) => furnace.needs_ticking = new_needs_ticking,
+			BlockEntity::Smoker(furnace) => furnace.needs_ticking = new_needs_ticking,
 			_ => (),
 		}
 	}
@@ -350,6 +352,8 @@ impl BlockEntity {
 	pub fn get_needs_ticking(&self) -> bool {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.needs_ticking,
+			BlockEntity::BlastFurnace(furnace) => furnace.needs_ticking,
+			BlockEntity::Smoker(furnace) => furnace.needs_ticking,
 			_ => false,
 		};
 	}
