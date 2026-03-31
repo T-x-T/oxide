@@ -15,7 +15,7 @@ fn main() {
 }
 
 fn set_client_up(server_address: &str) -> client_lib::Client {
-	let (client, read_queue) = client_lib::Client::connect(server_address, "e2e_test", 1).unwrap();
+	let (client, read_queue) = client_lib::Client::connect(server_address, "e2e_test", 150749604613628858574844632630809034217).unwrap();
 
 	let state = client.get_connection_state();
 	let mut send_stream = client.get_send_stream_cloned();

@@ -30,6 +30,7 @@ pub fn status(server_address: &str) {
 			{
 				println!("test passed");
 			} else {
+				println!("{parsed_packet:?}");
 				println!("test failed");
 			}
 		}),
@@ -59,6 +60,7 @@ pub fn join(server_address: &str) {
 			if parsed_packet.username == username && parsed_packet.uuid == uuid {
 				println!("test passed");
 			} else {
+				println!("{parsed_packet:?}");
 				println!("test failed");
 			}
 		}),
