@@ -30,7 +30,7 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
 }
 
 pub fn u128_to_uuid_without_dashes(input: u128) -> String {
-	return format!("{input:x}").to_string();
+	return format!("{input:32x}").to_string().replace(" ", "0");
 }
 
 pub fn u128_to_uuid_with_dashes(input: u128) -> String {
@@ -61,5 +61,17 @@ mod test {
 	fn works_for_me_with_dashes() {
 		let res = u128_to_uuid_with_dashes(290780920670370370148908686767547353505);
 		assert_eq!(res, "dac25e44-d102-4f3b-8199-78ed62d209a1".to_string());
+	}
+
+	#[test]
+	fn works_for_one_without_dashes() {
+		let res = u128_to_uuid_without_dashes(1);
+		assert_eq!(res, "00000000000000000000000000000001".to_string());
+	}
+
+	#[test]
+	fn works_for_one_with_dashes() {
+		let res = u128_to_uuid_with_dashes(1);
+		assert_eq!(res, "00000000-0000-0000-0000-000000000001".to_string());
 	}
 }

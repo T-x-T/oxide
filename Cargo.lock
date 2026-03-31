@@ -120,6 +120,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2fd1289c04a9ea8cb22300a459a72a385d7c73d3259e2ed7dcb2af674838cfa9"
 
 [[package]]
+name = "client_lib"
+version = "0.1.0"
+dependencies = [
+ "lib",
+]
+
+[[package]]
 name = "crc32fast"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -168,6 +175,14 @@ name = "data_generator_tools"
 version = "0.6.0"
 dependencies = [
  "jzon",
+]
+
+[[package]]
+name = "e2e_tests"
+version = "0.1.0"
+dependencies = [
+ "client_lib",
+ "lib",
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ use super::*;
 pub struct Handshake {
 	pub protocol_version: i32,
 	pub server_address: String,
-	pub sever_port: u16,
+	pub server_port: u16,
 	pub next_state: HandshakeNextStates,
 }
 
@@ -55,7 +55,7 @@ impl TryFrom<Vec<u8>> for Handshake {
 		return Ok(Handshake {
 			protocol_version: crate::deserialize::varint(&mut value)?,
 			server_address: crate::deserialize::string(&mut value)?,
-			sever_port: crate::deserialize::unsigned_short(&mut value)?,
+			server_port: crate::deserialize::unsigned_short(&mut value)?,
 			next_state: crate::deserialize::varint(&mut value)?.try_into()?,
 		});
 	}
@@ -68,7 +68,7 @@ impl TryFrom<Handshake> for Vec<u8> {
 		let mut output: Vec<u8> = Vec::new();
 		output.append(&mut crate::serialize::varint(value.protocol_version));
 		output.append(&mut crate::serialize::string(&value.server_address));
-		output.append(&mut crate::serialize::unsigned_short(value.sever_port));
+		output.append(&mut crate::serialize::unsigned_short(value.server_port));
 		output.append(&mut crate::serialize::varint(value.next_state as i32));
 
 		return Ok(output);

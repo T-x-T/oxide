@@ -441,6 +441,46 @@ impl TryFrom<Vec<u8>> for Interact {
 }
 
 //
+// MARK: 0x1b serverbound keep alive (play)
+//
+
+#[derive(Debug, Clone)]
+pub struct ServerboundKeepAlive {
+	pub keep_alive_id: i64,
+}
+
+impl Packet for ServerboundKeepAlive {
+	const PACKET_ID: u8 = 0x1b;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ServerboundKeepAlive> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ServerboundKeepAlive) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::long(value.keep_alive_id));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ServerboundKeepAlive {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(ServerboundKeepAlive {
+			keep_alive_id: crate::deserialize::long(&mut value)?,
+		});
+	}
+}
+//
 // MARK: 0x1d set player position
 //
 

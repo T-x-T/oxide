@@ -1,0 +1,8 @@
+[package]
+name = "e2e_tests"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lib = {path = "../lib", version = "*"}
+client_lib = {path = "../client_lib", version = "*"}
