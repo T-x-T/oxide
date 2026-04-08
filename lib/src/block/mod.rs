@@ -35,7 +35,14 @@ pub fn get_block_state_id(
 	cursor_position_z: f32,
 	block_states: &HashMap<String, Block>,
 ) -> Vec<(u16, BlockPosition)> {
-	let block = data::blocks::get_block_from_name(used_item_name, block_states);
+	let block_name = match used_item_name {
+		"minecraft:wheat_seeds" => "minecraft:wheat",
+		"minecraft:carrot" => "minecraft:carrots",
+		"minecraft:potato" => "minecraft:potatoes",
+		"minecraft:beetroot_seeds" => "minecraft:beetroots",
+		_ => used_item_name,
+	};
+	let block = data::blocks::get_block_from_name(block_name, block_states);
 	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
 	match block.block_type {
