@@ -33,9 +33,21 @@ pub fn process(
 	let block_id_at_location = dimension.get_block(location).unwrap_or_default();
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
-	let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
+	let blocks_to_place: Vec<(u16, BlockPosition)> = if (block_type_at_location.has_right_click_behavior()
+		|| data::tags::get_item()
+			.get("hoes")
+			.unwrap()
+			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id)))
+		&& !player.is_sneaking()
+	{
 		//Don't place block, because player right clicked something that does something when right clicked
-		let block_interaction_result = lib::block::interact_with_block_at(location, block_id_at_location, face, &game.block_state_data);
+		let block_interaction_result = lib::block::interact_with_block_at(
+			location,
+			block_id_at_location,
+			face,
+			&game.block_state_data,
+			player.get_selected_inventory_slot(),
+		);
 		block_interaction_result
 			.handle(dimension, location, player, players_clone, block_id_at_location, game.clone())
 			.inspect_err(|x| {
