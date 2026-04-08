@@ -66,11 +66,11 @@ fn handle_packet(
 			}
 		}
 		lib::ConnectionState::Configuration => {
-			match packet_id {
-				_ => {
-					//println!("received unkown packet in clientbound::configuration with id 0x{packet_id:02x}");
-				}
-			};
+			// match packet_id {
+			// 	_ => {
+			// 		//println!("received unkown packet in clientbound::configuration with id 0x{packet_id:02x}");
+			// 	}
+			// };
 		}
 		lib::ConnectionState::Play => {
 			match packet_id {
