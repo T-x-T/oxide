@@ -1,22 +1,16 @@
 use super::*;
 
-#[allow(clippy::too_many_arguments)]
 pub fn process(
 	peer_addr: SocketAddr,
-	location: BlockPosition,
-	face: u8,
-	cursor_position_x: f32,
-	cursor_position_y: f32,
-	cursor_position_z: f32,
-	sequence_id: i32,
+	parsed_packet: lib::packets::serverbound::play::UseItemOn,
 	game: Arc<Game>,
 	players_clone: &[Player],
 ) {
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
-	let mut new_block_location = location;
-	match face {
+	let mut new_block_location = parsed_packet.location;
+	match parsed_packet.face {
 		0 => new_block_location.y -= 1,
 		1 => new_block_location.y += 1,
 		2 => new_block_location.z -= 1,
@@ -30,7 +24,7 @@ pub fn process(
 	let gamemode = player.get_gamemode();
 
 	let dimension = world.dimensions.get("minecraft:overworld").unwrap();
-	let block_id_at_location = dimension.get_block(location).unwrap_or_default();
+	let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
 	let blocks_to_place: Vec<(u16, BlockPosition)> = if (block_type_at_location.has_right_click_behavior()
@@ -42,16 +36,19 @@ pub fn process(
 	{
 		//Don't place block, because player right clicked something that does something when right clicked
 		let block_interaction_result = lib::block::interact_with_block_at(
-			location,
+			parsed_packet.location,
 			block_id_at_location,
-			face,
+			parsed_packet.face,
 			&game.block_state_data,
 			player.get_selected_inventory_slot(),
 		);
 		block_interaction_result
-			.handle(dimension, location, player, players_clone, block_id_at_location, game.clone())
+			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, game.clone())
 			.inspect_err(|x| {
-				println!("lib::block::interact_with_block_at({location:?}, {block_id_at_location}, {face}) call resulted in error {x:?}")
+				println!(
+					"lib::block::interact_with_block_at({:?}, {block_id_at_location}, {}) call resulted in error {x:?}",
+					parsed_packet.location, parsed_packet.face
+				)
 			})
 			.unwrap_or_default()
 	} else {
@@ -81,15 +78,15 @@ pub fn process(
 		}
 
 		let block_state_ids = lib::block::get_block_state_id(
-			face,
+			parsed_packet.face,
 			player_get_looking_cardinal_direction,
 			pitch,
 			world.dimensions.get_mut("minecraft:overworld").unwrap(),
 			new_block_location,
 			used_item_name,
-			cursor_position_x,
-			cursor_position_y,
-			cursor_position_z,
+			parsed_packet.cursor_position_x,
+			parsed_packet.cursor_position_y,
+			parsed_packet.cursor_position_z,
 			&game.block_state_data,
 		);
 
@@ -143,11 +140,11 @@ pub fn process(
 						.dimensions
 						.get("minecraft:overworld")
 						.unwrap()
-						.get_chunk_from_position(location)
+						.get_chunk_from_position(parsed_packet.location)
 						.unwrap()
 						.block_entities
 						.iter()
-						.find(|x| x.get_position() == location)
+						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
 						block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
@@ -228,7 +225,7 @@ pub fn process(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 		lib::packets::clientbound::play::AcknowledgeBlockChange {
-			sequence_id,
+			sequence_id: parsed_packet.sequence,
 		}
 		.try_into()
 		.unwrap(),
