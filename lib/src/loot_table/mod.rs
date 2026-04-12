@@ -74,16 +74,16 @@ fn evaluate_loot_table(
 ) -> Vec<Slot> {
 	let mut rng = rng();
 	let mut output: Vec<Slot> = Vec::new();
-	for pool in &loot_table.pools {
+	'pool: for pool in &loot_table.pools {
 		for condition in &pool.conditions {
 			if !evaluate_condition(condition, block_state_id, block_states, &Some(used_tool.clone())) {
-				return Vec::new();
+				continue 'pool;
 			}
 		}
 
 		let valid_entries = get_valid_entries_from_pool_entries(&pool.entries, block_state_id, block_states, &Some(used_tool.clone()));
 		let Some(chosen_entry) = valid_entries.choose(&mut rng) else {
-			return Vec::new();
+			continue 'pool;
 		};
 
 		match &chosen_entry.entry_type {
@@ -105,22 +105,21 @@ fn evaluate_loot_table(
 			LootTablePoolEntrySingletonType::LootTableId(loot_table_id) => {
 				let Some(loot_table) = loot_tables.get("blocks").unwrap().get(loot_table_id) else {
 					println!("didnt find loot table for {block_name}");
-					continue;
+					continue 'pool;
 				};
 
-				return evaluate_loot_table(loot_table, block_state_id, used_tool, block_states, loot_tables, block_name);
+				output.append(&mut evaluate_loot_table(loot_table, block_state_id, used_tool, block_states, loot_tables, block_name));
 			}
 			LootTablePoolEntrySingletonType::LootTableCustom(loot_table) => {
-				return evaluate_loot_table(loot_table, block_state_id, used_tool, block_states, loot_tables, block_name);
+				output.append(&mut evaluate_loot_table(loot_table, block_state_id, used_tool, block_states, loot_tables, block_name));
 			}
-			LootTablePoolEntrySingletonType::Dynamic(_) => return Vec::new(),
-			LootTablePoolEntrySingletonType::Empty => return Vec::new(),
+			LootTablePoolEntrySingletonType::Dynamic(_) => continue 'pool,
+			LootTablePoolEntrySingletonType::Empty => continue 'pool,
 		}
 		for function in &pool.functions {
 			output = apply_function(function, output, block_state_id, block_states, &Some(used_tool.clone()));
 		}
 	}
-
 	return output;
 }
 
@@ -255,7 +254,6 @@ fn evaluate_condition(
 					return false;
 				}
 			}
-
 			true
 		}
 		Predicate::DamageSourceProperties(_predicate_damage_source_properties) => {
@@ -362,7 +360,6 @@ fn apply_function(
 ) -> Vec<Slot> {
 	let conditions = function.conditions.clone();
 	for condition in conditions {
-		println!("{condition:?}");
 		if !evaluate_condition(&condition, block_state_id, block_states, used_tool) {
 			return items;
 		}
