@@ -393,6 +393,7 @@ dependencies = [
  "data",
  "flate2",
  "lib",
+ "rand",
 ]
 
 [[package]]

@@ -7,6 +7,7 @@ use lib::types::*;
 
 mod packet_handler_actions;
 mod process_entity_tick_outcome;
+mod random_tick;
 mod send_keepalives;
 mod tick_blockentities;
 mod tick_entities;
@@ -59,8 +60,12 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	let duration_tick_entities = std::time::Instant::now() - now;
 
 	let now = std::time::Instant::now();
-	tick_players::process(game, &players_clone);
+	tick_players::process(game.clone(), &players_clone);
 	let duration_tick_players = std::time::Instant::now() - now;
+
+	let now = std::time::Instant::now();
+	random_tick::process(game.clone(), &players_clone);
+	let duration_random_tick = std::time::Instant::now() - now;
 
 	return TickTimings {
 		save_all: duration_save_all,

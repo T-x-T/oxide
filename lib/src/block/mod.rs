@@ -7,14 +7,18 @@ use std::error::Error;
 use std::sync::Arc;
 
 mod barell;
+mod beetroot;
 #[allow(clippy::module_inception)]
 mod block;
+mod carrot;
 mod chest;
+mod crop;
 mod door;
 mod ender_chest;
 mod fence;
 mod fencegate;
 mod iron_bars;
+mod potato;
 mod rotated_pillar;
 mod slab;
 mod stained_glass_pane;
@@ -289,6 +293,22 @@ pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32
 		Type::Block => block::get_hardness(block_id, block, block_states),
 		Type::TallDryGrass => 0.0,
 		Type::DoublePlant => 0.0,
+		Type::Crop => 0.0,
+		Type::Carrot => 0.0,
+		Type::Potato => 0.0,
+		Type::Beetroot => 0.0,
 		_ => 1.0,
+	};
+}
+
+pub fn tick(current_block_state_id: u16, block_states: &HashMap<String, Block>) -> u16 {
+	let block_type = data::blocks::get_type_from_block_state_id(current_block_state_id);
+
+	return match block_type {
+		Type::Crop => crop::tick(current_block_state_id, block_states),
+		Type::Carrot => carrot::tick(current_block_state_id, block_states),
+		Type::Potato => potato::tick(current_block_state_id, block_states),
+		Type::Beetroot => beetroot::tick(current_block_state_id, block_states),
+		_ => current_block_state_id,
 	};
 }

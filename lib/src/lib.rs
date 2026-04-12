@@ -19,6 +19,7 @@ pub mod utils;
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 pub const VIEW_DISTANCE: i8 = 10;
 pub const ITEM_PICKUP_DISTANCE: f64 = 1.0;
+pub const RANDOM_TICK_SPEED: u8 = 255;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
