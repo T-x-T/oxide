@@ -23,6 +23,7 @@ pub struct TickTimings {
 	pub tick_entities: std::time::Duration,
 	pub tick_players: std::time::Duration,
 	pub packet_handler_actions: std::time::Duration,
+	pub random_tick: std::time::Duration,
 }
 
 pub fn tick(game: Arc<Game>) -> TickTimings {
@@ -75,5 +76,6 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 		tick_entities: duration_tick_entities,
 		tick_players: duration_tick_players,
 		packet_handler_actions: duration_packet_handler_actions,
+		random_tick: duration_random_tick,
 	};
 }
