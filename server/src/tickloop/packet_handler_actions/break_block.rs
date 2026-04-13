@@ -182,27 +182,6 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 	for block_to_update in blocks_to_update {
 		let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
-		if let Some(new_block) = res {
-			match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block) {
-				Ok(_) => {
-					for player in players.iter() {
-						game.send_packet(
-							&player.peer_socket_address,
-							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							lib::packets::clientbound::play::BlockUpdate {
-								location: block_to_update,
-								block_id: new_block as i32,
-							}
-							.try_into()
-							.unwrap(),
-						);
-					}
-				}
-				Err(err) => {
-					println!("couldn't place block because {err}");
-					continue;
-				}
-			}
-		};
+		res.handle(&mut world, block_to_update, &mut players, game.clone());
 	}
 }

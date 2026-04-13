@@ -201,9 +201,9 @@ pub fn get_block_state_id(
 	return output;
 }
 
-pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Option<u16> {
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, _block_id: u16) -> BlockUpdateOutcome {
 	let Ok(block_state_id) = dimension.get_block(position) else {
-		return None;
+		return BlockUpdateOutcome::DoNothing;
 	};
 
 	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
@@ -215,12 +215,12 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 		};
 
 		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
-			return Some(0);
+			return BlockUpdateOutcome::ChangeOwnBlockId(0);
 		};
 
 		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 		if block_type != Type::Door {
-			return Some(0);
+			return BlockUpdateOutcome::ChangeOwnBlockId(0);
 		}
 	}
 	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) {
@@ -230,16 +230,16 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 		};
 
 		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
-			return Some(0);
+			return BlockUpdateOutcome::ChangeOwnBlockId(0);
 		};
 
 		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 		if block_type != Type::Door {
-			return Some(0);
+			return BlockUpdateOutcome::ChangeOwnBlockId(0);
 		}
 	}
 
-	return None;
+	return BlockUpdateOutcome::DoNothing;
 }
 
 #[cfg(test)]

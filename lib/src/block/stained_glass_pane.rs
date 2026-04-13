@@ -83,9 +83,9 @@ pub fn get_block_state_id(
 	return output;
 }
 
-pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Option<u16> {
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, _block_id: u16) -> BlockUpdateOutcome {
 	let Ok(block_state_id) = dimension.get_block(position) else {
-		return None;
+		return BlockUpdateOutcome::DoNothing;
 	};
 
 	let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id, block_states);
@@ -95,9 +95,9 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 	let new_block_state_id = res.first().unwrap().0;
 
 	if block_state_id == new_block_state_id {
-		return None;
+		return BlockUpdateOutcome::DoNothing;
 	} else {
-		return Some(new_block_state_id);
+		return BlockUpdateOutcome::ChangeOwnBlockId(new_block_state_id);
 	}
 }
 

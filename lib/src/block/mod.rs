@@ -133,25 +133,135 @@ pub fn get_block_state_id(
 	return output;
 }
 
+#[derive(Debug)]
+pub enum BlockUpdateOutcome {
+	DoNothing,
+	ChangeOwnBlockId(u16),
+	DestroyAndDropSelf(u16),
+}
+
+impl BlockUpdateOutcome {
+	pub fn handle(self, world: &mut World, position: BlockPosition, players: &mut [Player], game: Arc<Game>) {
+		match self {
+			BlockUpdateOutcome::DoNothing => return,
+			BlockUpdateOutcome::ChangeOwnBlockId(new_block_id) => {
+				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(position, new_block_id).unwrap();
+
+				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+					let block_entity = world
+						.dimensions
+						.get("minecraft:overworld")
+						.unwrap()
+						.get_chunk_from_position(position)
+						.unwrap()
+						.block_entities
+						.iter()
+						.find(|x| x.get_position() == position)
+						.unwrap();
+					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+					block_entity.remove_self(&game.entity_id_manager, players, world, game.clone());
+				}
+
+				for player in players.iter() {
+					game.send_packet(
+						&player.peer_socket_address,
+						crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+						crate::packets::clientbound::play::BlockUpdate {
+							location: position,
+							block_id: new_block_id as i32,
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
+			}
+			BlockUpdateOutcome::DestroyAndDropSelf(old_block_id) => {
+				for player in players.iter() {
+					game.send_packet(
+						&player.peer_socket_address,
+						crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+						crate::packets::clientbound::play::BlockUpdate {
+							location: position,
+							block_id: 0,
+						}
+						.try_into()
+						.unwrap(),
+					);
+				}
+
+				let items_to_drop = crate::loot_table::get_block_drops(&game.loot_tables, old_block_id, &Slot::default(), &game.block_state_data);
+
+				for item_to_drop in items_to_drop {
+					if item_to_drop.id != 0 {
+						let new_entity = crate::entity::ItemEntity {
+							common: crate::entity::CommonEntity {
+								position: EntityPosition {
+									x: position.x as f64 + 0.5,
+									y: position.y as f64,
+									z: position.z as f64 + 0.5,
+									yaw: 0.0,
+									pitch: 0.0,
+								},
+								velocity: EntityPosition::default(),
+								uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+								entity_id: game.entity_id_manager.get_new(),
+								..Default::default()
+							},
+							age: 0,
+							health: 5,
+							item: item_to_drop,
+							owner: 0,
+							pickup_delay: 0,
+							thrower: 0,
+						};
+
+						let packet = new_entity.to_spawn_entity_packet();
+
+						let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+							entity_id: new_entity.get_common_entity_data().entity_id,
+							metadata: new_entity.get_metadata(),
+						};
+
+						world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
+
+						players.iter().for_each(|x| {
+							game.send_packet(
+								&x.peer_socket_address,
+								crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+								packet.clone().try_into().unwrap(),
+							);
+							game.send_packet(
+								&x.peer_socket_address,
+								crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+								metadata_packet.clone().try_into().unwrap(),
+							);
+						});
+					}
+				}
+			}
+		}
+	}
+}
+
 pub fn update(
-	position_of_changed_block: BlockPosition,
+	position: BlockPosition,
 	dimension: &Dimension,
 	block_states: &HashMap<String, Block>,
-) -> Result<Option<u16>, Box<dyn Error>> {
-	let block_state_id = dimension.get_block(position_of_changed_block)?;
+) -> Result<BlockUpdateOutcome, Box<dyn Error>> {
+	let block_state_id = dimension.get_block(position)?;
 	let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 
 	let res = match block_type {
-		Type::Stair => stair::update(position_of_changed_block, dimension, block_states),
-		Type::IronBars => iron_bars::update(position_of_changed_block, dimension, block_states),
-		Type::StainedGlassPane => stained_glass_pane::update(position_of_changed_block, dimension, block_states),
-		Type::Fence => fence::update(position_of_changed_block, dimension, block_states),
-		Type::Door => door::update(position_of_changed_block, dimension, block_states),
-		Type::Crop => crop::update(position_of_changed_block, dimension, block_states),
-		Type::Beetroot => beetroot::update(position_of_changed_block, dimension, block_states),
-		Type::Carrot => carrot::update(position_of_changed_block, dimension, block_states),
-		Type::Potato => potato::update(position_of_changed_block, dimension, block_states),
-		_ => None,
+		Type::Stair => stair::update(position, dimension, block_states, block_state_id),
+		Type::IronBars => iron_bars::update(position, dimension, block_states, block_state_id),
+		Type::StainedGlassPane => stained_glass_pane::update(position, dimension, block_states, block_state_id),
+		Type::Fence => fence::update(position, dimension, block_states, block_state_id),
+		Type::Door => door::update(position, dimension, block_states, block_state_id),
+		Type::Crop => crop::update(position, dimension, block_states, block_state_id),
+		Type::Beetroot => beetroot::update(position, dimension, block_states, block_state_id),
+		Type::Carrot => carrot::update(position, dimension, block_states, block_state_id),
+		Type::Potato => potato::update(position, dimension, block_states, block_state_id),
+		_ => BlockUpdateOutcome::DoNothing,
 	};
 
 	return Ok(res);

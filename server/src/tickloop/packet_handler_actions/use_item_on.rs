@@ -188,26 +188,14 @@ pub fn process(
 	blocks_to_update.sort();
 	blocks_to_update.dedup();
 
-	let mut updated_blocks: Vec<(u16, BlockPosition)> = Vec::new();
 	for block_to_update in blocks_to_update {
 		let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
-		if let Some(new_block) = res {
-			match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block) {
-				Ok(_) => {
-					updated_blocks.push((new_block, block_to_update));
-				}
-				Err(err) => {
-					println!("couldn't place block because {err}");
-					continue;
-				}
-			}
-		};
+		res.handle(&mut world, block_to_update, &mut players, game.clone());
 	}
 
-	let all_changed_blocks: Vec<(u16, BlockPosition)> = vec![blocks_to_place, updated_blocks].into_iter().flatten().collect();
 
 	for player in players.iter() {
-		for block in &all_changed_blocks {
+		for block in &blocks_to_place {
 			game.send_packet(
 				&player.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
@@ -220,7 +208,6 @@ pub fn process(
 			);
 		}
 	}
-
 	game.send_packet(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
