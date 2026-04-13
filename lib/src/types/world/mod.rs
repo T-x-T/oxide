@@ -237,7 +237,7 @@ impl Chunk {
 		};
 	}
 
-	pub fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
+	fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
 		self.modified = true;
 		let position_in_chunk = position_global.convert_to_position_in_chunk();
 		let section_id = (position_in_chunk.y + 64) / 16;

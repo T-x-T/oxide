@@ -15,6 +15,7 @@ mod chest;
 mod crop;
 mod door;
 mod ender_chest;
+mod farm;
 mod fence;
 mod fencegate;
 mod iron_bars;
@@ -301,14 +302,20 @@ pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32
 	};
 }
 
-pub fn tick(current_block_state_id: u16, block_states: &HashMap<String, Block>) -> u16 {
+pub fn tick(
+	current_block_state_id: u16,
+	dimension: &Dimension,
+	block_position: BlockPosition,
+	block_states: &HashMap<String, Block>,
+) -> u16 {
 	let block_type = data::blocks::get_type_from_block_state_id(current_block_state_id);
 
 	return match block_type {
-		Type::Crop => crop::tick(current_block_state_id, block_states),
-		Type::Carrot => carrot::tick(current_block_state_id, block_states),
-		Type::Potato => potato::tick(current_block_state_id, block_states),
-		Type::Beetroot => beetroot::tick(current_block_state_id, block_states),
+		Type::Crop => crop::tick(current_block_state_id, dimension, block_position, block_states),
+		Type::Carrot => carrot::tick(current_block_state_id, dimension, block_position, block_states),
+		Type::Potato => potato::tick(current_block_state_id, dimension, block_position, block_states),
+		Type::Beetroot => beetroot::tick(current_block_state_id, dimension, block_position, block_states),
+		Type::Farm => farm::tick(current_block_state_id, dimension, block_position, block_states),
 		_ => current_block_state_id,
 	};
 }
