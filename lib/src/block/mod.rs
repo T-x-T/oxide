@@ -134,19 +134,23 @@ pub fn get_block_state_id(
 }
 
 pub fn update(
-	position: BlockPosition,
+	position_of_changed_block: BlockPosition,
 	dimension: &Dimension,
 	block_states: &HashMap<String, Block>,
 ) -> Result<Option<u16>, Box<dyn Error>> {
-	let block_state_id = dimension.get_block(position)?;
+	let block_state_id = dimension.get_block(position_of_changed_block)?;
 	let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 
 	let res = match block_type {
-		Type::Stair => stair::update(position, dimension, block_states),
-		Type::IronBars => iron_bars::update(position, dimension, block_states),
-		Type::StainedGlassPane => stained_glass_pane::update(position, dimension, block_states),
-		Type::Fence => fence::update(position, dimension, block_states),
-		Type::Door => door::update(position, dimension, block_states),
+		Type::Stair => stair::update(position_of_changed_block, dimension, block_states),
+		Type::IronBars => iron_bars::update(position_of_changed_block, dimension, block_states),
+		Type::StainedGlassPane => stained_glass_pane::update(position_of_changed_block, dimension, block_states),
+		Type::Fence => fence::update(position_of_changed_block, dimension, block_states),
+		Type::Door => door::update(position_of_changed_block, dimension, block_states),
+		Type::Crop => crop::update(position_of_changed_block, dimension, block_states),
+		Type::Beetroot => beetroot::update(position_of_changed_block, dimension, block_states),
+		Type::Carrot => carrot::update(position_of_changed_block, dimension, block_states),
+		Type::Potato => potato::update(position_of_changed_block, dimension, block_states),
 		_ => None,
 	};
 

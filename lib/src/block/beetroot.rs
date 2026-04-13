@@ -18,3 +18,14 @@ pub fn tick(
 		return current_block_state_id;
 	}
 }
+
+pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>) -> Option<u16> {
+	if let Ok(block_id_to_check) = dimension.get_block(position) {
+		//destroy self if were no longer on farmland
+		if data::blocks::get_block_name_from_block_state_id(block_id_to_check, block_states) != "minecraft:farmland" {
+			return Some(0);
+		}
+	}
+
+	return None;
+}
