@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::net::{SocketAddr, TcpStream};
 use std::sync::Mutex;
 use std::sync::atomic::AtomicI32;
+use std::sync::mpsc::Sender;
 
 use dashmap::DashMap;
 
@@ -19,7 +20,7 @@ pub struct Game {
 	pub block_state_data: HashMap<String, basic_types::blocks::Block>,
 	pub connections: DashMap<SocketAddr, Connection>,
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
-	pub packet_send_queues: DashMap<SocketAddr, Vec<RawPacket>>,
+	pub packet_send_queues: DashMap<SocketAddr, Sender<RawPacket>>,
 	pub default_gamemode: Gamemode,
 	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	pub recipe_manager: RecipeManager,
@@ -36,7 +37,7 @@ impl Game {
 
 	//TODO: maybe move this into something similar to EntityIdManager, so we dont have to pass a reference to entire Game struct _everywhere_
 	pub fn send_packet(&self, peer_addr: &SocketAddr, packet_id: u8, packet_data: Vec<u8>) {
-		self.packet_send_queues.entry(*peer_addr).or_default().push((packet_id, packet_data));
+		self.packet_send_queues.get(peer_addr).unwrap().send((packet_id, packet_data)).unwrap();
 	}
 }
 

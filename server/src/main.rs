@@ -8,7 +8,9 @@ use std::error::Error;
 use std::io::Write;
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::Path;
+use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
+
 
 mod command;
 mod packet_handlers;
@@ -133,26 +135,13 @@ fn initialize_server() {
 				return;
 			};
 
-			loop {
-				if !game.connections.contains_key(&peer_addr) {
-					break;
+			let (tx, rx) = channel();
+			game.packet_send_queues.insert(peer_addr, tx);
+
+			for (packet_id, packet_data) in rx.iter() {
+				if send_packet(&stream, packet_id, packet_data).is_err() {
+					return;
 				}
-
-				let Some(mut queue) = game.packet_send_queues.get_mut(&peer_addr) else {
-					continue;
-				};
-				if !queue.is_empty() {
-					let packet = queue.remove(0);
-					drop(queue);
-					//println!("{}", packet.0);
-					if send_packet(&stream, packet.0, packet.1).is_err() {
-						return;
-					}
-				} else {
-					drop(queue);
-				};
-
-				std::thread::sleep(std::time::Duration::from_millis(1));
 			}
 		});
 	}
