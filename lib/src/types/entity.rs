@@ -462,6 +462,8 @@ pub trait CommonEntityTrait {
 	}
 
 	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
 		if self.is_mob() {
 			let mob_data = self.get_mob_data_mut();
 
@@ -583,9 +585,15 @@ pub trait CommonEntityTrait {
 				);
 			}
 
-			return vec![EntityTickOutcome::Updated];
+			output.push(EntityTickOutcome::Updated);
 		}
 
+		output.append(&mut self.extra_tick(dimension, players, game));
+
+		return output;
+	}
+
+	fn extra_tick(&mut self, _dimension: &Dimension, _players: &[Player], _game: Arc<Game>) -> Vec<EntityTickOutcome> {
 		return Vec::new();
 	}
 
