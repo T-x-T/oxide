@@ -4,21 +4,25 @@ use super::*;
 pub struct Cat {
 	pub common: CommonEntity,
 	pub mob: CommonMob,
+	pub breedable_mob: BreedableMob,
 }
 
 impl CommonEntityTrait for Cat {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
-		let mob = CommonMob::from_nbt(extra_nbt);
+		let mob = CommonMob::from_nbt(extra_nbt.clone());
+		let breedable_mob = BreedableMob::from_nbt(extra_nbt);
 
 		return Self {
 			common: data,
 			mob,
+			breedable_mob,
 		};
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
-		return vec![];
+		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
+
 
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:cat");

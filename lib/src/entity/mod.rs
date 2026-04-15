@@ -86,3 +86,12 @@ pub struct CommonMob {
 	pub wander_to: Option<BlockPosition>,
 	pub wandered_for: u16,
 }
+
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct BreedableMob {
+	pub age: i32,
+	pub age_locked: bool,
+	pub forced_age: i32,
+	pub in_love: i32,
+	pub love_cause: u128,
+}

@@ -993,6 +993,49 @@ impl CommonMob {
 	}
 }
 
+impl BreedableMob {
+	pub fn from_nbt(data: NbtListTag) -> BreedableMob {
+		let mut output = BreedableMob::default();
+
+		if let Some(value) = data.get_child("Age") {
+			output.age = value.as_int();
+		}
+		if let Some(value) = data.get_child("AgeLocked") {
+			output.age_locked = value.as_byte() == 1;
+		}
+		if let Some(value) = data.get_child("ForcedAge") {
+			output.forced_age = value.as_int();
+		}
+		if let Some(value) = data.get_child("InLove") {
+			output.in_love = value.as_int();
+		}
+		if let Some(value) = data.get_child("LoveCause") {
+			output.love_cause =
+				value.as_int_array().into_iter().enumerate().map(|x| (x.1 as u128) << (32 * (3 - x.0))).reduce(|a, b| a | b).unwrap();
+		}
+
+		return output;
+	}
+
+	pub fn to_nbt(&self) -> Vec<NbtTag> {
+		return vec![
+			NbtTag::Int("Age".to_string(), self.age),
+			NbtTag::Byte("AgeLocked".to_string(), if self.age_locked { 1 } else { 0 }),
+			NbtTag::Int("ForcedAge".to_string(), self.forced_age),
+			NbtTag::Int("InLove".to_string(), self.in_love),
+			NbtTag::IntArray(
+				"LoveCause".to_string(),
+				vec![
+					(self.love_cause >> 96) as i32,
+					(self.love_cause << 32 >> 96) as i32,
+					(self.love_cause << 64 >> 96) as i32,
+					(self.love_cause << 96 >> 96) as i32,
+				],
+			),
+		];
+	}
+}
+
 pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) -> Option<Entity> {
 	return match entity_type {
 		"minecraft:armadillo" => Some(Entity::Armadillo(Armadillo::new(common_data, extra_nbt))),
