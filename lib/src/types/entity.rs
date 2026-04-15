@@ -324,6 +324,25 @@ impl Entity {
 			Entity::Player(x) => x.damage(damage, game, players),
 		};
 	}
+
+	pub fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+		return match self {
+			Entity::Armadillo(x) => x.feed(held_item, game, players_clone),
+			Entity::Cat(x) => x.feed(held_item, game, players_clone),
+			Entity::ChestMinecart(x) => x.feed(held_item, game, players_clone),
+			Entity::Chicken(x) => x.feed(held_item, game, players_clone),
+			Entity::Cow(x) => x.feed(held_item, game, players_clone),
+			Entity::Creeper(x) => x.feed(held_item, game, players_clone),
+			Entity::Donkey(x) => x.feed(held_item, game, players_clone),
+			Entity::Horse(x) => x.feed(held_item, game, players_clone),
+			Entity::Item(x) => x.feed(held_item, game, players_clone),
+			Entity::Parrot(x) => x.feed(held_item, game, players_clone),
+			Entity::Pig(x) => x.feed(held_item, game, players_clone),
+			Entity::Rabbit(x) => x.feed(held_item, game, players_clone),
+			Entity::Sheep(x) => x.feed(held_item, game, players_clone),
+			Entity::Player(x) => x.feed(held_item, game, players_clone),
+		};
+	}
 }
 
 pub trait CommonEntityTrait {
@@ -818,6 +837,11 @@ pub trait CommonEntityTrait {
 		//need to use self.get_common_entity_data_cloned() because Player doesnt implement self.get_common_entity_data()
 		let block_at_pos = dimension.get_block(self.get_common_entity_data_cloned().position.into()).unwrap_or_default();
 		return data::blocks::get_type_from_block_state_id(block_at_pos) == basic_types::blocks::Type::Liquid;
+	}
+
+	//returns true if feeding was successfull, to signal to caller that players inventory needs updating
+	fn feed(&mut self, _held_item: &Slot, _game: Arc<Game>, _players_clone: &[Player]) -> bool {
+		return false;
 	}
 }
 

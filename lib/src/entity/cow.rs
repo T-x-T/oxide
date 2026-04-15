@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use crate::packets::Packet;
+
 use super::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -23,6 +27,39 @@ impl CommonEntityTrait for Cow {
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
+	}
+
+	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+		if held_item.id == data::items::get_item_id_by_name(FOOD) {
+			self.breedable_mob.in_love = 30 * 20;
+
+			for player in players_clone {
+				game.send_packet(
+					&player.peer_socket_address,
+					crate::packets::clientbound::play::Particle::PACKET_ID,
+					crate::packets::clientbound::play::Particle {
+						long_distance: false,
+						always_visible: false,
+						x: self.get_common_entity_data().position.x,
+						y: self.get_common_entity_data().position.y + 1.0,
+						z: self.get_common_entity_data().position.z,
+						offset_x: 0.2,
+						offset_y: 0.2,
+						offset_z: 0.2,
+						max_speed: 1.0,
+						particle_count: 8,
+						particle_id: 45,
+						particle_data: (),
+					}
+					.try_into()
+					.unwrap(),
+				);
+			}
+
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	fn extra_tick(&mut self, _dimension: &Dimension, players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {

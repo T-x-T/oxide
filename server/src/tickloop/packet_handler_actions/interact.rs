@@ -9,7 +9,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: Interact, game: Arc<Game>, 
 	if players.iter().find(|x| x.entity_id == parsed_packet.entity_id).is_some() {
 		target_is_player(parsed_packet, game.clone(), players, players_clone, peer_addr);
 	} else {
-		target_is_entity(parsed_packet, game.clone(), world, players, peer_addr);
+		target_is_entity(parsed_packet, game.clone(), world, players, peer_addr, players_clone);
 	}
 }
 
@@ -42,8 +42,9 @@ fn target_is_entity(
 	mut world: std::sync::MutexGuard<World>,
 	mut players: std::sync::MutexGuard<Vec<Player>>,
 	peer_addr: SocketAddr,
+	players_clone: &[Player],
 ) {
-	let player = players.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 	let held_item = player.get_held_item(true);
 
 	let Some(entity) = world
@@ -205,5 +206,19 @@ fn target_is_entity(
 		}
 	} else {
 		//interact at
+		if let Some(held_item) = player.get_held_item(true)
+			&& held_item.count > 0
+		{
+			let success = entity.feed(held_item, game.clone(), players_clone);
+			if success {
+				let mut held_item = held_item.clone();
+				held_item.count -= 1;
+				if held_item.count == 0 {
+					player.set_selected_inventory_slot(None, players_clone, game);
+				} else {
+					player.set_selected_inventory_slot(Some(held_item), players_clone, game);
+				}
+			}
+		}
 	}
 }
