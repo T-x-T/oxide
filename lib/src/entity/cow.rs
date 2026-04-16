@@ -62,7 +62,7 @@ impl CommonEntityTrait for Cow {
 		}
 	}
 
-	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
 		let in_range_cows_in_love: Vec<&Cow> = if self.breedable_mob.breeding_with.is_some() {
@@ -138,6 +138,25 @@ impl CommonEntityTrait for Cow {
 			self.breedable_mob.in_love -= 1;
 		}
 
+		if self.breedable_mob.age < -1 && !self.breedable_mob.age_locked {
+			self.breedable_mob.age += 1;
+		} else if self.breedable_mob.age == -1 && !self.breedable_mob.age_locked {
+			self.breedable_mob.age = 0;
+
+			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+				entity_id: self.get_common_entity_data().entity_id,
+				metadata: self.get_metadata(),
+			};
+
+			for player in players {
+				game.send_packet(
+					&player.peer_socket_address,
+					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+					metadata_packet.clone().try_into().unwrap(),
+				);
+			}
+		}
+
 		return output;
 	}
 
@@ -152,7 +171,10 @@ impl CommonEntityTrait for Cow {
 				value: EntityMetadataValue::Boolean(true),
 			}]
 		} else {
-			vec![]
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(false),
+			}]
 		}
 	}
 
