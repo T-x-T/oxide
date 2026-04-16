@@ -94,4 +94,6 @@ pub struct BreedableMob {
 	pub forced_age: i32,
 	pub in_love: i32,
 	pub love_cause: u128,
+	pub breeding_with: Option<i32>,
+	pub breeding_time_left: i32,
 }

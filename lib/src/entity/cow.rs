@@ -65,9 +65,19 @@ impl CommonEntityTrait for Cow {
 	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
-		let in_range_cows_in_love: Vec<&Cow> = if self.breedable_mob.in_love > 0 {
-			self.breedable_mob.in_love -= 1;
+		let in_range_cows_in_love: Vec<&Cow> = if self.breedable_mob.breeding_with.is_some() {
+			let breeding_with =
+				dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == self.breedable_mob.breeding_with.unwrap());
 
+			if let Some(breeding_with) = breeding_with {
+				vec![match breeding_with {
+					Entity::Cow(cow) => cow,
+					_ => panic!("cow breeding with entity that is not a cow"),
+				}]
+			} else {
+				vec![]
+			}
+		} else if self.breedable_mob.in_love > 0 {
 			dimension
 				.entities
 				.iter()
@@ -100,6 +110,21 @@ impl CommonEntityTrait for Cow {
 		};
 
 		if !in_range_cows_in_love.is_empty() {
+			if self.breedable_mob.breeding_time_left == 0 && self.breedable_mob.breeding_with.is_some() {
+				self.breedable_mob.breeding_with = None;
+				self.breedable_mob.in_love = 0;
+				output.push(EntityTickOutcome::DoneBreeding(
+					self.get_common_entity_data().entity_id,
+					in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id,
+				));
+			} else {
+				if self.breedable_mob.breeding_with.is_none() {
+					self.breedable_mob.breeding_with = Some(in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id);
+					self.breedable_mob.breeding_time_left = 5 * 20;
+				} else {
+					self.breedable_mob.breeding_time_left -= 1;
+				}
+			}
 			self.get_common_entity_data_mut().velocity =
 				(in_range_cows_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);
@@ -107,6 +132,10 @@ impl CommonEntityTrait for Cow {
 			self.get_common_entity_data_mut().velocity =
 				(in_range_players_with_food.first().unwrap().get_position() - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);
+		}
+
+		if self.breedable_mob.in_love > 0 {
+			self.breedable_mob.in_love -= 1;
 		}
 
 		return output;
@@ -117,7 +146,14 @@ impl CommonEntityTrait for Cow {
 	}
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
-		return Vec::new();
+		if self.breedable_mob.age < 0 {
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(true),
+			}]
+		} else {
+			vec![]
+		}
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {

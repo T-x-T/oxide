@@ -1,7 +1,9 @@
 use super::*;
+use lib::entity::CommonEntity;
 use lib::packets::Packet;
 
 pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Game>, players_clone: &[Player], dimension: &mut Dimension) {
+	let mut already_bred_pairs: Vec<(i32, i32)> = Vec::new();
 	for outcome in entity_tick_outcomes {
 		match outcome.1 {
 			EntityTickOutcome::SelfDied => {
@@ -105,6 +107,55 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						metadata_packet.clone().try_into().unwrap(),
 					);
 				});
+			}
+			EntityTickOutcome::DoneBreeding(a, b) => {
+				if !already_bred_pairs.contains(&(a, b)) && !already_bred_pairs.contains(&(b, a)) {
+					already_bred_pairs.push((a, b));
+					let entity_a = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == a).unwrap();
+					let entity_b = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == b).unwrap();
+
+					if entity_a.get_type() != entity_b.get_type() {
+						println!("bred two entities of different types!!\na: {entity_a:?}\nb: {entity_b:?}");
+						continue;
+					}
+
+					let mut entity = entity::new(
+						&data::entities::get_name_from_id(entity_a.get_type()),
+						CommonEntity {
+							position: entity_a.get_common_entity_data().position,
+							velocity: EntityPosition::default(),
+							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+							entity_id: game.entity_id_manager.get_new(),
+							..Default::default()
+						},
+						NbtListTag::TagCompound(Vec::new()),
+					)
+					.unwrap();
+
+					entity.set_age(-(20 * 60 * 20));
+
+					let spawn_packet = entity.to_spawn_entity_packet();
+
+					let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+						entity_id: entity.get_common_entity_data().entity_id,
+						metadata: entity.get_metadata(),
+					};
+
+					dimension.add_entity(entity);
+
+					players_clone.iter().for_each(|x| {
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+							spawn_packet.clone().try_into().unwrap(),
+						);
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+							metadata_packet.clone().try_into().unwrap(),
+						);
+					});
+				}
 			}
 		}
 	}

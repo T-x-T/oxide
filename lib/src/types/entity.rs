@@ -34,6 +34,7 @@ pub enum EntityTickOutcome {
 	Updated,
 	DamageSelf(f32),
 	SummonEntity(Box<Entity>),
+	DoneBreeding(i32, i32),
 }
 
 #[derive(Debug)]
@@ -341,6 +342,14 @@ impl Entity {
 			Entity::Rabbit(x) => x.feed(held_item, game, players_clone),
 			Entity::Sheep(x) => x.feed(held_item, game, players_clone),
 			Entity::Player(x) => x.feed(held_item, game, players_clone),
+		};
+	}
+
+	pub fn set_age(&mut self, new_age: i32) {
+		match self {
+			Entity::Cow(x) => x.breedable_mob.age = new_age,
+			Entity::Cat(x) => x.breedable_mob.age = new_age,
+			_ => (),
 		};
 	}
 }
