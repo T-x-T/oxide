@@ -132,7 +132,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					)
 					.unwrap();
 
-					entity.set_age(-(20 * 60 * 20));
+					entity.set_age(-lib::MOB_GROW_UP_TICKS);
 
 					let spawn_packet = entity.to_spawn_entity_packet();
 

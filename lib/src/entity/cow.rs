@@ -30,36 +30,40 @@ impl CommonEntityTrait for Cow {
 	}
 
 	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
-		if held_item.id == data::items::get_item_id_by_name(FOOD) {
-			self.breedable_mob.in_love = 30 * 20;
-
-			for player in players_clone {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::Particle::PACKET_ID,
-					crate::packets::clientbound::play::Particle {
-						long_distance: false,
-						always_visible: false,
-						x: self.get_common_entity_data().position.x,
-						y: self.get_common_entity_data().position.y + 1.0,
-						z: self.get_common_entity_data().position.z,
-						offset_x: 0.2,
-						offset_y: 0.2,
-						offset_z: 0.2,
-						max_speed: 1.0,
-						particle_count: 8,
-						particle_id: 45,
-						particle_data: (),
-					}
-					.try_into()
-					.unwrap(),
-				);
-			}
-
-			return true;
-		} else {
+		if self.breedable_mob.age != 0 {
 			return false;
 		}
+
+		if held_item.id != data::items::get_item_id_by_name(FOOD) {
+			return false;
+		}
+
+		self.breedable_mob.in_love = 30 * 20;
+
+		for player in players_clone {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::Particle::PACKET_ID,
+				crate::packets::clientbound::play::Particle {
+					long_distance: false,
+					always_visible: false,
+					x: self.get_common_entity_data().position.x,
+					y: self.get_common_entity_data().position.y + 1.0,
+					z: self.get_common_entity_data().position.z,
+					offset_x: 0.2,
+					offset_y: 0.2,
+					offset_z: 0.2,
+					max_speed: 1.0,
+					particle_count: 8,
+					particle_id: 45,
+					particle_data: (),
+				}
+				.try_into()
+				.unwrap(),
+			);
+		}
+
+		return true;
 	}
 
 	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
@@ -113,14 +117,15 @@ impl CommonEntityTrait for Cow {
 			if self.breedable_mob.breeding_time_left == 0 && self.breedable_mob.breeding_with.is_some() {
 				self.breedable_mob.breeding_with = None;
 				self.breedable_mob.in_love = 0;
+				self.breedable_mob.age = crate::MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS;
 				output.push(EntityTickOutcome::DoneBreeding(
 					self.get_common_entity_data().entity_id,
 					in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id,
-				));
+				))
 			} else {
 				if self.breedable_mob.breeding_with.is_none() {
 					self.breedable_mob.breeding_with = Some(in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id);
-					self.breedable_mob.breeding_time_left = 5 * 20;
+					self.breedable_mob.breeding_time_left = crate::MOB_TIME_TO_PRODUCE_BABY_TICKS;
 				} else {
 					self.breedable_mob.breeding_time_left -= 1;
 				}
@@ -155,6 +160,8 @@ impl CommonEntityTrait for Cow {
 					metadata_packet.clone().try_into().unwrap(),
 				);
 			}
+		} else if self.breedable_mob.age > 0 {
+			self.breedable_mob.age -= 1;
 		}
 
 		return output;
