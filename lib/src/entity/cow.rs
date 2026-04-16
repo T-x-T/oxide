@@ -62,8 +62,28 @@ impl CommonEntityTrait for Cow {
 		}
 	}
 
-	fn extra_tick(&mut self, _dimension: &Dimension, players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
+		let in_range_cows_in_love: Vec<&Cow> = if self.breedable_mob.in_love > 0 {
+			self.breedable_mob.in_love -= 1;
+
+			dimension
+				.entities
+				.iter()
+				.filter(|x| x.get_common_entity_data().entity_id != self.get_common_entity_data().entity_id)
+				.filter_map(|x| match x {
+					Entity::Cow(cow) => Some(cow),
+					_ => None,
+				})
+				.filter(|x| x.breedable_mob.in_love > 0)
+				.filter(|x| {
+					x.get_common_entity_data().position.distance_to(self.get_common_entity_data().position) <= crate::MOB_BREEDING_ATTRACTION_RADIUS
+				})
+				.collect()
+		} else {
+			vec![]
+		};
 
 		let in_range_players_with_food: Vec<&Player> = players
 			.iter()
@@ -71,14 +91,19 @@ impl CommonEntityTrait for Cow {
 			.filter(|x| x.get_held_item(true).is_some_and(|item| item.id == data::items::get_item_id_by_name(FOOD)))
 			.collect();
 
-		if !in_range_players_with_food.is_empty() {
-			let speed = EntityPosition {
-				x: 0.025,
-				y: 0.001,
-				z: 0.025,
-				yaw: 1.0,
-				pitch: 1.0,
-			};
+		let speed = EntityPosition {
+			x: 0.025,
+			y: 0.001,
+			z: 0.025,
+			yaw: 1.0,
+			pitch: 1.0,
+		};
+
+		if !in_range_cows_in_love.is_empty() {
+			self.get_common_entity_data_mut().velocity =
+				(in_range_cows_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
+			output.push(EntityTickOutcome::Updated);
+		} else if !in_range_players_with_food.is_empty() {
 			self.get_common_entity_data_mut().velocity =
 				(in_range_players_with_food.first().unwrap().get_position() - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);

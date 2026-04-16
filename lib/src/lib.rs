@@ -21,6 +21,7 @@ pub const VIEW_DISTANCE: i8 = 10;
 pub const ITEM_PICKUP_DISTANCE: f64 = 1.0;
 pub const RANDOM_TICK_SPEED: u8 = 255; //TODO: set back to 3 at some point
 pub const MOB_FOOD_ATTRACTION_RADIUS: f64 = 8.0;
+pub const MOB_BREEDING_ATTRACTION_RADIUS: f64 = 8.0;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {

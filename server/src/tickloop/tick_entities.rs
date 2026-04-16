@@ -3,6 +3,8 @@ use super::*;
 pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	for dimension in &mut game.world.lock().unwrap().dimensions {
 		let mut entities = std::mem::take(&mut dimension.1.entities);
+		//Kinda dangerous, because we will silently overwrite dimension.entities at the end of the tick
+		dimension.1.entities = entities.clone();
 		let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
 		for entity in &mut entities {
 			let outcomes = entity.tick(dimension.1, players_clone, game.clone());
