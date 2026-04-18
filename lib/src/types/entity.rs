@@ -349,13 +349,16 @@ impl Entity {
 		match self {
 			Entity::Cow(x) => x.breedable_mob.age = new_age,
 			Entity::Cat(x) => x.breedable_mob.age = new_age,
-			_ => (),
+			Entity::Sheep(x) => x.breedable_mob.age = new_age,
+			_ => println!("tried setting age on entity that doesnt support it: {self:?}"),
 		};
 	}
 }
 
 pub trait CommonEntityTrait {
-	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self;
+	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self
+	where
+		Self: Sized;
 	fn from_nbt(value: NbtListTag, entity_id_manager: &EntityIdManager) -> Self
 	where
 		Self: std::marker::Sized,
@@ -1121,14 +1124,15 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 	fn tick_breedable_mob(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
-		let in_range_cows_in_love: Vec<&Cow> = if self.get_breedable_data().breeding_with.is_some() {
+		let in_range_peers_in_love: Vec<Box<&dyn BreedableMobTrait>> = if self.get_breedable_data().breeding_with.is_some() {
 			let breeding_with =
 				dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == self.get_breedable_data().breeding_with.unwrap());
 
 			if let Some(breeding_with) = breeding_with {
 				vec![match breeding_with {
-					Entity::Cow(cow) => cow,
-					_ => panic!("cow breeding with entity that is not a cow"),
+					Entity::Cow(x) => Box::new(x),
+					Entity::Sheep(x) => Box::new(x),
+					_ => panic!("tick_breedable_mob called on a mob that cannot be bred"),
 				}]
 			} else {
 				vec![]
@@ -1138,11 +1142,15 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 				.entities
 				.iter()
 				.filter(|x| x.get_common_entity_data().entity_id != self.get_common_entity_data().entity_id)
-				.filter_map(|x| match x {
-					Entity::Cow(cow) => Some(cow),
-					_ => None,
+				.filter_map(|x| {
+					let res: Option<Box<&dyn BreedableMobTrait>> = match x {
+						Entity::Cow(x) => Some(Box::new(x)),
+						Entity::Sheep(x) => Some(Box::new(x)),
+						_ => None,
+					};
+					return res;
 				})
-				.filter(|x| x.breedable_mob.in_love > 0)
+				.filter(|x| x.get_breedable_data().in_love > 0)
 				.filter(|x| {
 					x.get_common_entity_data().position.distance_to(self.get_common_entity_data().position) <= crate::MOB_BREEDING_ATTRACTION_RADIUS
 				})
@@ -1165,25 +1173,25 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 			pitch: 1.0,
 		};
 
-		if !in_range_cows_in_love.is_empty() {
+		if !in_range_peers_in_love.is_empty() {
 			if self.get_breedable_data().breeding_time_left == 0 && self.get_breedable_data().breeding_with.is_some() {
 				self.get_breedable_data_mut().breeding_with = None;
 				self.get_breedable_data_mut().in_love = 0;
 				self.get_breedable_data_mut().age = crate::MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS;
 				output.push(EntityTickOutcome::DoneBreeding(
 					self.get_common_entity_data().entity_id,
-					in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id,
+					in_range_peers_in_love.first().unwrap().get_common_entity_data().entity_id,
 				))
 			} else {
 				if self.get_breedable_data().breeding_with.is_none() {
-					self.get_breedable_data_mut().breeding_with = Some(in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id);
+					self.get_breedable_data_mut().breeding_with = Some(in_range_peers_in_love.first().unwrap().get_common_entity_data().entity_id);
 					self.get_breedable_data_mut().breeding_time_left = crate::MOB_TIME_TO_PRODUCE_BABY_TICKS;
 				} else {
 					self.get_breedable_data_mut().breeding_time_left -= 1;
 				}
 			}
 			self.get_common_entity_data_mut().velocity =
-				(in_range_cows_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
+				(in_range_peers_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);
 		} else if !in_range_players_with_food.is_empty() {
 			self.get_common_entity_data_mut().velocity =
