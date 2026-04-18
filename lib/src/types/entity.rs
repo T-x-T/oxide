@@ -1077,6 +1077,149 @@ impl BreedableMob {
 	}
 }
 
+pub trait BreedableMobTrait: CommonEntityTrait {
+	fn get_breedable_data(&self) -> &BreedableMob;
+	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
+	fn get_food(&self) -> &'static str;
+	fn feed_breedable_mob(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+		if self.get_breedable_data().age != 0 {
+			return false;
+		}
+
+		if held_item.id != data::items::get_item_id_by_name(self.get_food()) {
+			return false;
+		}
+
+		self.get_breedable_data_mut().in_love = 30 * 20;
+
+		for player in players_clone {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::Particle::PACKET_ID,
+				crate::packets::clientbound::play::Particle {
+					long_distance: false,
+					always_visible: false,
+					x: self.get_common_entity_data().position.x,
+					y: self.get_common_entity_data().position.y + 1.0,
+					z: self.get_common_entity_data().position.z,
+					offset_x: 0.2,
+					offset_y: 0.2,
+					offset_z: 0.2,
+					max_speed: 1.0,
+					particle_count: 8,
+					particle_id: 45,
+					particle_data: (),
+				}
+				.try_into()
+				.unwrap(),
+			);
+		}
+
+		return true;
+	}
+
+	fn tick_breedable_mob(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
+		let in_range_cows_in_love: Vec<&Cow> = if self.get_breedable_data().breeding_with.is_some() {
+			let breeding_with =
+				dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == self.get_breedable_data().breeding_with.unwrap());
+
+			if let Some(breeding_with) = breeding_with {
+				vec![match breeding_with {
+					Entity::Cow(cow) => cow,
+					_ => panic!("cow breeding with entity that is not a cow"),
+				}]
+			} else {
+				vec![]
+			}
+		} else if self.get_breedable_data().in_love > 0 {
+			dimension
+				.entities
+				.iter()
+				.filter(|x| x.get_common_entity_data().entity_id != self.get_common_entity_data().entity_id)
+				.filter_map(|x| match x {
+					Entity::Cow(cow) => Some(cow),
+					_ => None,
+				})
+				.filter(|x| x.breedable_mob.in_love > 0)
+				.filter(|x| {
+					x.get_common_entity_data().position.distance_to(self.get_common_entity_data().position) <= crate::MOB_BREEDING_ATTRACTION_RADIUS
+				})
+				.collect()
+		} else {
+			vec![]
+		};
+
+		let in_range_players_with_food: Vec<&Player> = players
+			.iter()
+			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= crate::MOB_FOOD_ATTRACTION_RADIUS)
+			.filter(|x| x.get_held_item(true).is_some_and(|item| item.id == data::items::get_item_id_by_name(self.get_food())))
+			.collect();
+
+		let speed = EntityPosition {
+			x: 0.025,
+			y: 0.001,
+			z: 0.025,
+			yaw: 1.0,
+			pitch: 1.0,
+		};
+
+		if !in_range_cows_in_love.is_empty() {
+			if self.get_breedable_data().breeding_time_left == 0 && self.get_breedable_data().breeding_with.is_some() {
+				self.get_breedable_data_mut().breeding_with = None;
+				self.get_breedable_data_mut().in_love = 0;
+				self.get_breedable_data_mut().age = crate::MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS;
+				output.push(EntityTickOutcome::DoneBreeding(
+					self.get_common_entity_data().entity_id,
+					in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id,
+				))
+			} else {
+				if self.get_breedable_data().breeding_with.is_none() {
+					self.get_breedable_data_mut().breeding_with = Some(in_range_cows_in_love.first().unwrap().get_common_entity_data().entity_id);
+					self.get_breedable_data_mut().breeding_time_left = crate::MOB_TIME_TO_PRODUCE_BABY_TICKS;
+				} else {
+					self.get_breedable_data_mut().breeding_time_left -= 1;
+				}
+			}
+			self.get_common_entity_data_mut().velocity =
+				(in_range_cows_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
+			output.push(EntityTickOutcome::Updated);
+		} else if !in_range_players_with_food.is_empty() {
+			self.get_common_entity_data_mut().velocity =
+				(in_range_players_with_food.first().unwrap().get_position() - self.get_common_entity_data().position) * speed;
+			output.push(EntityTickOutcome::Updated);
+		}
+
+		if self.get_breedable_data().in_love > 0 {
+			self.get_breedable_data_mut().in_love -= 1;
+		}
+
+		if self.get_breedable_data().age < -1 && !self.get_breedable_data().age_locked {
+			self.get_breedable_data_mut().age += 1;
+		} else if self.get_breedable_data().age == -1 && !self.get_breedable_data().age_locked {
+			self.get_breedable_data_mut().age = 0;
+
+			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+				entity_id: self.get_common_entity_data().entity_id,
+				metadata: self.get_metadata(),
+			};
+
+			for player in players {
+				game.send_packet(
+					&player.peer_socket_address,
+					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+					metadata_packet.clone().try_into().unwrap(),
+				);
+			}
+		} else if self.get_breedable_data().age > 0 {
+			self.get_breedable_data_mut().age -= 1;
+		}
+
+		return output;
+	}
+}
+
 pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) -> Option<Entity> {
 	return match entity_type {
 		"minecraft:armadillo" => Some(Entity::Armadillo(Armadillo::new(common_data, extra_nbt))),

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 use crate::types::*;
