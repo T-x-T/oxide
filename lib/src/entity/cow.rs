@@ -7,7 +7,7 @@ pub struct Cow {
 	pub breedable_mob: BreedableMob,
 }
 
-const FOOD: &str = "minecraft:wheat";
+const FOOD: &[&str] = &["minecraft:wheat"];
 
 impl CommonEntityTrait for Cow {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
@@ -94,7 +94,7 @@ impl BreedableMobTrait for Cow {
 		return &mut self.breedable_mob;
 	}
 
-	fn get_food(&self) -> &'static str {
+	fn get_food(&self) -> &[&'static str] {
 		return FOOD;
 	}
 }

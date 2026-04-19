@@ -347,8 +347,14 @@ impl Entity {
 
 	pub fn set_age(&mut self, new_age: i32) {
 		match self {
-			Entity::Cow(x) => x.breedable_mob.age = new_age,
+			Entity::Armadillo(x) => x.breedable_mob.age = new_age,
 			Entity::Cat(x) => x.breedable_mob.age = new_age,
+			Entity::Chicken(x) => x.breedable_mob.age = new_age,
+			Entity::Cow(x) => x.breedable_mob.age = new_age,
+			Entity::Donkey(x) => x.breedable_mob.age = new_age,
+			Entity::Horse(x) => x.breedable_mob.age = new_age,
+			Entity::Pig(x) => x.breedable_mob.age = new_age,
+			Entity::Rabbit(x) => x.breedable_mob.age = new_age,
 			Entity::Sheep(x) => x.breedable_mob.age = new_age,
 			_ => println!("tried setting age on entity that doesnt support it: {self:?}"),
 		};
@@ -1083,13 +1089,13 @@ impl BreedableMob {
 pub trait BreedableMobTrait: CommonEntityTrait {
 	fn get_breedable_data(&self) -> &BreedableMob;
 	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
-	fn get_food(&self) -> &'static str;
+	fn get_food(&self) -> &[&'static str];
 	fn feed_breedable_mob(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
 		if self.get_breedable_data().age != 0 {
 			return false;
 		}
 
-		if held_item.id != data::items::get_item_id_by_name(self.get_food()) {
+		if !self.get_food().contains(&data::items::get_item_name_by_id(held_item.id)) {
 			return false;
 		}
 
@@ -1130,7 +1136,14 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 
 			if let Some(breeding_with) = breeding_with {
 				vec![match breeding_with {
+					Entity::Armadillo(x) => Box::new(x),
+					Entity::Cat(x) => Box::new(x),
+					Entity::Chicken(x) => Box::new(x),
 					Entity::Cow(x) => Box::new(x),
+					Entity::Donkey(x) => Box::new(x),
+					Entity::Horse(x) => Box::new(x),
+					Entity::Pig(x) => Box::new(x),
+					Entity::Rabbit(x) => Box::new(x),
 					Entity::Sheep(x) => Box::new(x),
 					_ => panic!("tick_breedable_mob called on a mob that cannot be bred"),
 				}]
@@ -1144,7 +1157,14 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 				.filter(|x| x.get_common_entity_data().entity_id != self.get_common_entity_data().entity_id)
 				.filter_map(|x| {
 					let res: Option<Box<&dyn BreedableMobTrait>> = match x {
+						Entity::Armadillo(x) => Some(Box::new(x)),
+						Entity::Cat(x) => Some(Box::new(x)),
+						Entity::Chicken(x) => Some(Box::new(x)),
 						Entity::Cow(x) => Some(Box::new(x)),
+						Entity::Donkey(x) => Some(Box::new(x)),
+						Entity::Horse(x) => Some(Box::new(x)),
+						Entity::Pig(x) => Some(Box::new(x)),
+						Entity::Rabbit(x) => Some(Box::new(x)),
 						Entity::Sheep(x) => Some(Box::new(x)),
 						_ => None,
 					};
@@ -1162,7 +1182,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		let in_range_players_with_food: Vec<&Player> = players
 			.iter()
 			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= crate::MOB_FOOD_ATTRACTION_RADIUS)
-			.filter(|x| x.get_held_item(true).is_some_and(|item| item.id == data::items::get_item_id_by_name(self.get_food())))
+			.filter(|x| x.get_held_item(true).is_some_and(|item| self.get_food().contains(&data::items::get_item_name_by_id(item.id))))
 			.collect();
 
 		let speed = EntityPosition {

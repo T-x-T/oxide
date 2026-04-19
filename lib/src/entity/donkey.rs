@@ -7,6 +7,8 @@ pub struct Donkey {
 	pub breedable_mob: BreedableMob,
 }
 
+const FOOD: &[&str] = &["minecraft:golden_apple", "minecraft:enchanted_golden_apple", "minecraft:golden_carrot"];
+
 impl CommonEntityTrait for Donkey {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
@@ -23,12 +25,30 @@ impl CommonEntityTrait for Donkey {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
+	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+		return self.feed_breedable_mob(held_item, game, players_clone);
+	}
+
+	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+		return self.tick_breedable_mob(dimension, players, game);
+	}
+
 	fn get_type(&self) -> i32 {
 		return data::entities::get_id_from_name("minecraft:donkey");
 	}
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
-		return Vec::new();
+		if self.breedable_mob.age < 0 {
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(true),
+			}]
+		} else {
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(false),
+			}]
+		}
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
@@ -62,5 +82,19 @@ impl CommonEntityTrait for Donkey {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.5, 0.3965);
+	}
+}
+
+impl BreedableMobTrait for Donkey {
+	fn get_breedable_data(&self) -> &BreedableMob {
+		return &self.breedable_mob;
+	}
+
+	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob {
+		return &mut self.breedable_mob;
+	}
+
+	fn get_food(&self) -> &[&'static str] {
+		return FOOD;
 	}
 }
