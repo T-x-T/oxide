@@ -414,12 +414,15 @@ impl Player {
 		let mut inventory = vec![None; 46];
 		player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
 			let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
-			inventory[slot_index] = Some(Slot {
-				count: x.get_child("count").unwrap().as_int(),
-				id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let count = x.get_child("count").unwrap().as_int();
+			if count > 0 {
+				inventory[slot_index] = Some(Slot {
+					count,
+					id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+			}
 		});
 
 		if let Some(equipment) = player_data.get_child("equipment") {
