@@ -5,9 +5,9 @@ use super::*;
 pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	let mut world = game.world.lock().unwrap();
 	let mut players = game.players.lock().unwrap();
-	let mut blocks_to_update: Vec<(BlockPosition, u16)> = Vec::new();
 
-	for dimension in world.dimensions.values() {
+	for dimension in world.dimensions.values_mut() {
+		let mut blocks_to_update: Vec<(BlockPosition, u16)> = Vec::new();
 		for chunk in dimension.chunks.values() {
 			for chunk_section_index in 0..chunk.sections.len() {
 				let mut rng = rand::rng();
@@ -36,40 +36,32 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 			}
 		}
-	}
 
-	for (position, new_block_id) in blocks_to_update {
-		let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(position, new_block_id).unwrap();
+		for (position, new_block_id) in blocks_to_update {
+			let res = dimension.overwrite_block(position, new_block_id).unwrap();
 
-		#[allow(clippy::collapsible_if)]
-		if let Some(res) = res {
-			if matches!(res, BlockOverwriteOutcome::DestroyBlockentity) {
-				let block_entity = world
-					.dimensions
-					.get("minecraft:overworld")
-					.unwrap()
-					.get_chunk_from_position(position)
-					.unwrap()
-					.block_entities
-					.iter()
-					.find(|x| x.get_position() == position)
-					.unwrap();
-				let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-				block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
-			}
-		};
-
-		for player in players_clone {
-			game.send_packet(
-				&player.peer_socket_address,
-				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-				lib::packets::clientbound::play::BlockUpdate {
-					location: position,
-					block_id: new_block_id as i32,
+			#[allow(clippy::collapsible_if)]
+			if let Some(res) = res {
+				if matches!(res, BlockOverwriteOutcome::DestroyBlockentity) {
+					let block_entity =
+						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
+					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+					block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
 				}
-				.try_into()
-				.unwrap(),
-			);
+			};
+
+			for player in players_clone {
+				game.send_packet(
+					&player.peer_socket_address,
+					lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+					lib::packets::clientbound::play::BlockUpdate {
+						location: position,
+						block_id: new_block_id as i32,
+					}
+					.try_into()
+					.unwrap(),
+				);
+			}
 		}
 	}
 }

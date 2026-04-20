@@ -141,25 +141,17 @@ pub enum BlockUpdateOutcome {
 }
 
 impl BlockUpdateOutcome {
-	pub fn handle(self, world: &mut World, position: BlockPosition, players: &mut [Player], game: Arc<Game>) {
+	pub fn handle(self, dimension: &mut Dimension, position: BlockPosition, players: &mut [Player], game: Arc<Game>) {
 		match self {
 			BlockUpdateOutcome::DoNothing => return,
 			BlockUpdateOutcome::ChangeOwnBlockId(new_block_id) => {
-				let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(position, new_block_id).unwrap();
+				let res = dimension.overwrite_block(position, new_block_id).unwrap();
 
 				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-					let block_entity = world
-						.dimensions
-						.get("minecraft:overworld")
-						.unwrap()
-						.get_chunk_from_position(position)
-						.unwrap()
-						.block_entities
-						.iter()
-						.find(|x| x.get_position() == position)
-						.unwrap();
+					let block_entity =
+						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
 					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-					block_entity.remove_self(&game.entity_id_manager, players, world, game.clone());
+					block_entity.remove_self(&game.entity_id_manager, players, dimension, game.clone());
 				}
 
 				for player in players.iter() {
@@ -222,7 +214,7 @@ impl BlockUpdateOutcome {
 							metadata: new_entity.get_metadata(),
 						};
 
-						world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
+						dimension.add_entity(Entity::Item(new_entity));
 
 						players.iter().for_each(|x| {
 							game.send_packet(

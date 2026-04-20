@@ -4,9 +4,11 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
+	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+
 	let player_clone = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().clone();
 
-	let old_block_id = world.dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
+	let old_block_id = dimension.get_block(location).unwrap();
 
 	if player_clone.get_gamemode() == Gamemode::Survival {
 		let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
@@ -80,7 +82,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 					metadata: new_entity.get_metadata(),
 				};
 
-				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(new_entity));
+				dimension.add_entity(Entity::Item(new_entity));
 
 				players.iter().for_each(|x| {
 					game.send_packet(
@@ -98,20 +100,13 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		}
 	}
 
-	let res = world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(location, 0).unwrap();
+
+	let res = dimension.overwrite_block(location, 0).unwrap();
 	if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-		let block_entity = world
-			.dimensions
-			.get("minecraft:overworld")
-			.unwrap()
-			.get_chunk_from_position(location)
-			.unwrap()
-			.block_entities
-			.iter()
-			.find(|x| x.get_position() == location)
-			.unwrap();
+		let block_entity =
+			dimension.get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.get_position() == location).unwrap();
 		let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-		block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
+		block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
 	}
 
 	players
@@ -181,7 +176,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 	];
 
 	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
-		res.handle(&mut world, block_to_update, &mut players, game.clone());
+		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
+		res.handle(dimension, block_to_update, &mut players, game.clone());
 	}
 }

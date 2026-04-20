@@ -36,6 +36,12 @@ fn target_is_player(
 	}
 }
 
+// --------------
+//  WARNING! Does std::mem::take on world.dimensions and dimension.entities!
+//  This needs to be put back before function returns, otherwise chaos ensues
+//  (Yes this is probably stupid, but its just a quick hack I swear)
+// --------------
+
 fn target_is_entity(
 	parsed_packet: Interact,
 	game: Arc<Game>,
@@ -44,17 +50,17 @@ fn target_is_entity(
 	peer_addr: SocketAddr,
 	players_clone: &[Player],
 ) {
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let mut dimensions = std::mem::take(&mut world.dimensions);
+	let dimension = dimensions.get_mut("minecraft:overworld").unwrap();
+
+	let mut entities = std::mem::take(&mut dimension.entities);
+
+	let player = players_clone.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 	let held_item = player.get_held_item(true);
 
-	let Some(entity) = world
-		.dimensions
-		.get_mut("minecraft:overworld")
-		.unwrap()
-		.entities
-		.iter_mut()
-		.find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id)
-	else {
+	let Some(entity) = entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
+		dimension.entities = entities;
+		world.dimensions = dimensions;
 		return;
 	};
 	let entity_id = entity.get_common_entity_data().entity_id;
@@ -68,6 +74,8 @@ fn target_is_entity(
 			let mob_data = entity.get_mob_data_mut();
 
 			if mob_data.hurt_time > 0 {
+				dimension.entities = entities;
+				world.dimensions = dimensions;
 				return;
 			}
 
@@ -114,98 +122,10 @@ fn target_is_entity(
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
-		if data::entities::get_name_from_id(entity.get_type()) == "minecraft:creeper"
-			&& held_item.is_some()
-			&& held_item.unwrap().id == data::items::get_item_id_by_name("minecraft:flint_and_steel")
-		{
-			//right clicked a creeper with flint and steel -> explode!
-			entity.get_mob_data_mut().health = 0.0;
-
-			let explosion_packet = lib::packets::clientbound::play::Explosion {
-				x: entity.get_common_entity_data().position.x,
-				y: entity.get_common_entity_data().position.y,
-				z: entity.get_common_entity_data().position.z,
-				radius: 2.0,
-				block_count: 64,
-				player_delta_velocity: None,
-				particle_id: 23,
-				particle_data: (),
-				sound: 616,
-			};
-
-			let creeper_position = BlockPosition::from(entity.get_common_entity_data().position);
-			for x in (creeper_position.x - 2)..creeper_position.x + 2 {
-				for y in (creeper_position.y - 2)..creeper_position.y + 2 {
-					for z in (creeper_position.z - 2)..creeper_position.z + 2 {
-						let res = world
-							.dimensions
-							.get_mut("minecraft:overworld")
-							.unwrap()
-							.overwrite_block(
-								BlockPosition {
-									x,
-									y,
-									z,
-								},
-								0,
-							)
-							.unwrap();
-						if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
-							let block_entity = world
-								.dimensions
-								.get("minecraft:overworld")
-								.unwrap()
-								.get_chunk_from_position(BlockPosition {
-									x,
-									y,
-									z,
-								})
-								.unwrap()
-								.block_entities
-								.iter()
-								.find(|a| {
-									a.get_position()
-										== BlockPosition {
-											x,
-											y,
-											z,
-										}
-								})
-								.unwrap();
-							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-							block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
-						}
-
-						for player in players.iter() {
-							game.send_packet(
-								&player.peer_socket_address,
-								lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-								lib::packets::clientbound::play::BlockUpdate {
-									location: BlockPosition {
-										x,
-										y,
-										z,
-									},
-									block_id: 0,
-								}
-								.try_into()
-								.unwrap(),
-							);
-						}
-					}
-				}
-			}
-
-			players.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::Explosion::PACKET_ID,
-					explosion_packet.clone().try_into().unwrap(),
-				);
-			});
-		}
-	} else {
-		//interact at
+		match entity {
+			Entity::Creeper(x) => x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players),
+			_ => (),
+		};
 		if let Some(held_item) = player.get_held_item(true)
 			&& held_item.count > 0
 		{
@@ -213,6 +133,7 @@ fn target_is_entity(
 			if success {
 				let mut held_item = held_item.clone();
 				held_item.count -= 1;
+				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 				if held_item.count == 0 {
 					player.set_selected_inventory_slot(None, players_clone, game);
 				} else {
@@ -220,5 +141,10 @@ fn target_is_entity(
 				}
 			}
 		}
+	} else {
+		//interact at
 	}
+
+	dimension.entities = entities;
+	world.dimensions = dimensions;
 }

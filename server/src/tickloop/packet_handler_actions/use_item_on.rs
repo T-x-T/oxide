@@ -136,10 +136,8 @@ pub fn process(
 				}
 				#[allow(clippy::collapsible_if)]
 				if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-					if let Some(block_entity) = world
-						.dimensions
-						.get("minecraft:overworld")
-						.unwrap()
+					let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+					if let Some(block_entity) = dimension
 						.get_chunk_from_position(parsed_packet.location)
 						.unwrap()
 						.block_entities
@@ -147,7 +145,7 @@ pub fn process(
 						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-						block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
+						block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
 					};
 				}
 
@@ -188,9 +186,10 @@ pub fn process(
 	blocks_to_update.sort();
 	blocks_to_update.dedup();
 
+	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
-		res.handle(&mut world, block_to_update, &mut players, game.clone());
+		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
+		res.handle(dimension, block_to_update, &mut players, game.clone());
 	}
 
 

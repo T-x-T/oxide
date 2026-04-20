@@ -861,6 +861,17 @@ pub trait CommonEntityTrait {
 	fn feed(&mut self, _held_item: &Slot, _game: Arc<Game>, _players_clone: &[Player]) -> bool {
 		return false;
 	}
+
+	fn interact(
+		&mut self,
+		_held_item: &Slot,
+		_game: Arc<Game>,
+		_dimension: &mut Dimension,
+		_players_clone: &[Player],
+		_players: &mut [Player],
+	) {
+		return;
+	}
 }
 
 impl CommonMob {
