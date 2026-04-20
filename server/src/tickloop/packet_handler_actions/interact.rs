@@ -123,9 +123,15 @@ fn target_is_entity(
 	} else if parsed_packet.interact_type == 0 {
 		//interact
 		match entity {
-			Entity::Creeper(x) => x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players),
+			Entity::Creeper(x) => {
+				x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid)
+			}
+			Entity::Cow(x) => {
+				x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid)
+			}
 			_ => (),
 		};
+
 		if let Some(held_item) = player.get_held_item(true)
 			&& held_item.count > 0
 		{

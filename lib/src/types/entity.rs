@@ -869,6 +869,7 @@ pub trait CommonEntityTrait {
 		_dimension: &mut Dimension,
 		_players_clone: &[Player],
 		_players: &mut [Player],
+		_player_uuid: u128,
 	) {
 		return;
 	}

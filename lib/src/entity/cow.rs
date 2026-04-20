@@ -21,6 +21,33 @@ impl CommonEntityTrait for Cow {
 		};
 	}
 
+	fn interact(
+		&mut self,
+		held_item: &Slot,
+		game: Arc<Game>,
+		_dimension: &mut Dimension,
+		players_clone: &[Player],
+		players: &mut [Player],
+		player_uuid: u128,
+	) {
+		if held_item.id <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
+			return;
+		}
+
+		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
+
+		player.set_selected_inventory_slot(
+			Some(Slot {
+				count: 1,
+				id: data::items::get_item_id_by_name("minecraft:milk_bucket"),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			}),
+			players_clone,
+			game,
+		);
+	}
+
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}

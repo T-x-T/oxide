@@ -39,7 +39,15 @@ impl CommonEntityTrait for Creeper {
 		return output;
 	}
 
-	fn interact(&mut self, held_item: &Slot, game: Arc<Game>, dimension: &mut Dimension, players_clone: &[Player], players: &mut [Player]) {
+	fn interact(
+		&mut self,
+		held_item: &Slot,
+		game: Arc<Game>,
+		dimension: &mut Dimension,
+		players_clone: &[Player],
+		players: &mut [Player],
+		_player_uuid: u128,
+	) {
 		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel") {
 			//right clicked a creeper with flint and steel -> explode!
 			self.get_mob_data_mut().health = 0.0;
