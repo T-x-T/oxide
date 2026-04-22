@@ -35,6 +35,7 @@ pub enum EntityTickOutcome {
 	DamageSelf(f32),
 	SummonEntity(Box<Entity>),
 	DoneBreeding(i32, i32),
+	ReplaceBlock(BlockPosition, u16),
 }
 
 #[derive(Debug)]
@@ -48,6 +49,12 @@ pub enum AiBehavior {
 pub enum AiExecutionResult {
 	DoNothing,
 	ApplyVelocity(EntityPosition),
+}
+
+#[derive(Debug)]
+pub enum EntityInteractResult {
+	DoNothing,
+	AddEntity(Box<Entity>),
 }
 
 impl Entity {
@@ -233,6 +240,33 @@ impl Entity {
 			velocity_x: 0,
 			velocity_y: 0,
 			velocity_z: 0,
+		};
+	}
+
+	pub fn interact(
+		&mut self,
+		held_item: &Slot,
+		game: Arc<Game>,
+		dimension: &mut Dimension,
+		players_clone: &[Player],
+		players: &mut [Player],
+		player_uuid: u128,
+	) -> EntityInteractResult {
+		return match self {
+			Entity::Armadillo(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Cat(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::ChestMinecart(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Chicken(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Cow(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Creeper(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Donkey(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Horse(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Item(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Parrot(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Pig(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Rabbit(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Sheep(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Player(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
 		};
 	}
 
@@ -870,8 +904,8 @@ pub trait CommonEntityTrait {
 		_players_clone: &[Player],
 		_players: &mut [Player],
 		_player_uuid: u128,
-	) {
-		return;
+	) -> EntityInteractResult {
+		return EntityInteractResult::DoNothing;
 	}
 }
 

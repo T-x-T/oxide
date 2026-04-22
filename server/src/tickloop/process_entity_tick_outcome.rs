@@ -3,6 +3,8 @@ use lib::entity::CommonEntity;
 use lib::packets::Packet;
 
 pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Game>, players_clone: &[Player], dimension: &mut Dimension) {
+	let mut players = game.players.lock().unwrap();
+
 	let mut already_bred_pairs: Vec<(i32, i32)> = Vec::new();
 	for outcome in entity_tick_outcomes {
 		match outcome.1 {
@@ -156,6 +158,65 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						);
 					});
 				}
+			}
+			EntityTickOutcome::ReplaceBlock(block_position, block_state_id) => {
+				if let Ok(res) = dimension.overwrite_block(block_position, block_state_id) {
+					#[allow(clippy::collapsible_if)]
+					if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
+						if let Some(block_entity) =
+							dimension.get_chunk_from_position(block_position).unwrap().block_entities.iter().find(|x| x.get_position() == block_position)
+						{
+							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+							block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+						};
+					}
+
+					let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
+					blocks_to_update.append(&mut vec![
+						BlockPosition {
+							x: block_position.x + 1,
+							..block_position
+						},
+						BlockPosition {
+							x: block_position.x - 1,
+							..block_position
+						},
+						BlockPosition {
+							y: block_position.y + 1,
+							..block_position
+						},
+						BlockPosition {
+							y: block_position.y - 1,
+							..block_position
+						},
+						BlockPosition {
+							z: block_position.z + 1,
+							..block_position
+						},
+						BlockPosition {
+							z: block_position.z - 1,
+							..block_position
+						},
+					]);
+
+					for block_to_update in blocks_to_update {
+						let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
+						res.handle(dimension, block_to_update, &mut players, game.clone());
+					}
+
+					for player in players_clone {
+						game.send_packet(
+							&player.peer_socket_address,
+							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+							lib::packets::clientbound::play::BlockUpdate {
+								location: block_position,
+								block_id: block_state_id as i32,
+							}
+							.try_into()
+							.unwrap(),
+						);
+					}
+				};
 			}
 		}
 	}

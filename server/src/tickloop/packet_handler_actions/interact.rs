@@ -122,16 +122,6 @@ fn target_is_entity(
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
-		match entity {
-			Entity::Creeper(x) => {
-				x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid)
-			}
-			Entity::Cow(x) => {
-				x.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid)
-			}
-			_ => (),
-		};
-
 		if let Some(held_item) = player.get_held_item(true)
 			&& held_item.count > 0
 		{
@@ -141,12 +131,46 @@ fn target_is_entity(
 				held_item.count -= 1;
 				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 				if held_item.count == 0 {
-					player.set_selected_inventory_slot(None, players_clone, game);
+					player.set_selected_inventory_slot(None, players_clone, game.clone());
 				} else {
-					player.set_selected_inventory_slot(Some(held_item), players_clone, game);
+					player.set_selected_inventory_slot(Some(held_item), players_clone, game.clone());
 				}
 			}
 		}
+
+		let res = entity.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid);
+
+		match res {
+			EntityInteractResult::DoNothing => (),
+			EntityInteractResult::AddEntity(new_entity) => {
+				let spawn_packet = new_entity.to_spawn_entity_packet();
+
+				let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+					entity_id: new_entity.get_common_entity_data().entity_id,
+					metadata: new_entity.get_metadata(),
+				};
+
+				dimension.entities = entities;
+				world.dimensions = dimensions;
+
+				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(*new_entity);
+
+				players_clone.iter().for_each(|x| {
+					game.send_packet(
+						&x.peer_socket_address,
+						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+						spawn_packet.clone().try_into().unwrap(),
+					);
+					game.send_packet(
+						&x.peer_socket_address,
+						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+						metadata_packet.clone().try_into().unwrap(),
+					);
+				});
+
+				return;
+			}
+		};
 	} else {
 		//interact at
 	}

@@ -29,9 +29,9 @@ impl CommonEntityTrait for Cow {
 		players_clone: &[Player],
 		players: &mut [Player],
 		player_uuid: u128,
-	) {
+	) -> EntityInteractResult {
 		if held_item.id <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
-			return;
+			return EntityInteractResult::DoNothing;
 		}
 
 		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
@@ -46,6 +46,8 @@ impl CommonEntityTrait for Cow {
 			players_clone,
 			game,
 		);
+
+		return EntityInteractResult::DoNothing;
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
