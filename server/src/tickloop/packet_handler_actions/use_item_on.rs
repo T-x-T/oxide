@@ -51,6 +51,45 @@ pub fn process(
 				)
 			})
 			.unwrap_or_default()
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket")) {
+		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
+		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id, &game.block_state_data);
+		if block_name == "minecraft:water" {
+			let held_item = player.get_held_item(true).unwrap();
+			if held_item.count > 1 {
+				let slot = Slot {
+					count: held_item.count - 1,
+					..held_item.clone()
+				};
+				player.set_selected_inventory_slot(Some(slot), players_clone, game.clone());
+			} else {
+				player.set_selected_inventory_slot(None, players_clone, game.clone());
+			}
+			let water_bucket_slot = Slot {
+				count: 1,
+				id: data::items::get_item_id_by_name("minecraft:water_bucket"),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			};
+			player.add_item_to_inventory(water_bucket_slot, players_clone, game.clone());
+			vec![(0, new_block_location)]
+		} else {
+			vec![]
+		}
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket")) {
+		let bucket_slot = Slot {
+			count: 1,
+			id: data::items::get_item_id_by_name("minecraft:bucket"),
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, game.clone());
+
+		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
+		let full_water_block_id = water_block.states[water_block.default_state].id;
+
+		vec![(full_water_block_id, new_block_location)]
 	} else {
 		//Let's go - we can place a block
 		let used_item_id = player

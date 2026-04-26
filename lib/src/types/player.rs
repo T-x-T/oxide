@@ -1193,14 +1193,8 @@ impl Player {
 		return self.is_mining;
 	}
 
-	//returns true when item pickup was succesfull and false when not
-	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
-		if self.is_dead {
-			return false;
-		}
 
-		let slot = item.clone();
-
+	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], game: Arc<Game>) -> bool {
 		let slot_indecies = [
 			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
 			33, 34, 35,
@@ -1238,7 +1232,20 @@ impl Player {
 
 		if inventory_updated {
 			self.set_inventory_and_inform_client(inventory, players, game.clone());
+		}
 
+		return inventory_updated;
+	}
+
+	//returns true when item pickup was succesfull and false when not
+	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+		if self.is_dead {
+			return false;
+		}
+
+		let inventory_updated = self.add_item_to_inventory(item.clone(), players, game.clone());
+
+		if inventory_updated {
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
 				collected_entity_id: item_entity_id,
 				collector_entity_id: self.entity_id,
