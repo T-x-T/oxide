@@ -1,7 +1,11 @@
 use super::*;
+use lib::entity::CommonEntity;
 use lib::packets::Packet;
 
 pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Game>, players_clone: &[Player], dimension: &mut Dimension) {
+	let mut players = game.players.lock().unwrap();
+
+	let mut already_bred_pairs: Vec<(i32, i32)> = Vec::new();
 	for outcome in entity_tick_outcomes {
 		match outcome.1 {
 			EntityTickOutcome::SelfDied => {
@@ -75,7 +79,6 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				dimension.entities.retain(|x| !entity_ids.contains(&x.get_common_entity_data().entity_id));
 			}
 			EntityTickOutcome::DamageSelf(damage) => {
-				let mut players = game.players.lock().unwrap();
 				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == outcome.0) {
 					entity.damage(damage, game.clone(), players_clone);
 				};
@@ -105,6 +108,114 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						metadata_packet.clone().try_into().unwrap(),
 					);
 				});
+			}
+			EntityTickOutcome::DoneBreeding(a, b) => {
+				if !already_bred_pairs.contains(&(a, b)) && !already_bred_pairs.contains(&(b, a)) {
+					already_bred_pairs.push((a, b));
+					let entity_a = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == a).unwrap();
+					let entity_b = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == b).unwrap();
+
+					if entity_a.get_type() != entity_b.get_type() {
+						println!("bred two entities of different types!!\na: {entity_a:?}\nb: {entity_b:?}");
+						continue;
+					}
+
+					let mut entity = entity::new(
+						&data::entities::get_name_from_id(entity_a.get_type()),
+						CommonEntity {
+							position: entity_a.get_common_entity_data().position,
+							velocity: EntityPosition::default(),
+							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+							entity_id: game.entity_id_manager.get_new(),
+							..Default::default()
+						},
+						NbtListTag::TagCompound(Vec::new()),
+					)
+					.unwrap();
+
+					entity.set_age(-lib::MOB_GROW_UP_TICKS);
+
+					let spawn_packet = entity.to_spawn_entity_packet();
+
+					let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
+						entity_id: entity.get_common_entity_data().entity_id,
+						metadata: entity.get_metadata(),
+					};
+
+					dimension.add_entity(entity);
+
+					players_clone.iter().for_each(|x| {
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+							spawn_packet.clone().try_into().unwrap(),
+						);
+						game.send_packet(
+							&x.peer_socket_address,
+							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+							metadata_packet.clone().try_into().unwrap(),
+						);
+					});
+				}
+			}
+			EntityTickOutcome::ReplaceBlock(block_position, block_state_id) => {
+				if let Ok(res) = dimension.overwrite_block(block_position, block_state_id) {
+					#[allow(clippy::collapsible_if)]
+					if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
+						if let Some(block_entity) =
+							dimension.get_chunk_from_position(block_position).unwrap().block_entities.iter().find(|x| x.get_position() == block_position)
+						{
+							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+							block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+						};
+					}
+
+					let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
+					blocks_to_update.append(&mut vec![
+						BlockPosition {
+							x: block_position.x + 1,
+							..block_position
+						},
+						BlockPosition {
+							x: block_position.x - 1,
+							..block_position
+						},
+						BlockPosition {
+							y: block_position.y + 1,
+							..block_position
+						},
+						BlockPosition {
+							y: block_position.y - 1,
+							..block_position
+						},
+						BlockPosition {
+							z: block_position.z + 1,
+							..block_position
+						},
+						BlockPosition {
+							z: block_position.z - 1,
+							..block_position
+						},
+					]);
+
+					for block_to_update in blocks_to_update {
+						let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
+						res.handle(dimension, block_to_update, &mut players, game.clone());
+					}
+
+					for player in players_clone {
+						game.send_packet(
+							&player.peer_socket_address,
+							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+							lib::packets::clientbound::play::BlockUpdate {
+								location: block_position,
+								block_id: block_state_id as i32,
+							}
+							.try_into()
+							.unwrap(),
+						);
+					}
+				};
 			}
 		}
 	}

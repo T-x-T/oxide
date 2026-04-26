@@ -7,6 +7,7 @@ use lib::types::*;
 
 mod packet_handler_actions;
 mod process_entity_tick_outcome;
+mod random_tick;
 mod send_keepalives;
 mod tick_blockentities;
 mod tick_entities;
@@ -22,6 +23,7 @@ pub struct TickTimings {
 	pub tick_entities: std::time::Duration,
 	pub tick_players: std::time::Duration,
 	pub packet_handler_actions: std::time::Duration,
+	pub random_tick: std::time::Duration,
 }
 
 pub fn tick(game: Arc<Game>) -> TickTimings {
@@ -59,8 +61,12 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	let duration_tick_entities = std::time::Instant::now() - now;
 
 	let now = std::time::Instant::now();
-	tick_players::process(game, &players_clone);
+	tick_players::process(game.clone(), &players_clone);
 	let duration_tick_players = std::time::Instant::now() - now;
+
+	let now = std::time::Instant::now();
+	random_tick::process(game.clone(), &players_clone);
+	let duration_random_tick = std::time::Instant::now() - now;
 
 	return TickTimings {
 		save_all: duration_save_all,
@@ -70,5 +76,6 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 		tick_entities: duration_tick_entities,
 		tick_players: duration_tick_players,
 		packet_handler_actions: duration_packet_handler_actions,
+		random_tick: duration_random_tick,
 	};
 }

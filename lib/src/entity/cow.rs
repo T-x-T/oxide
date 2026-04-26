@@ -4,20 +4,62 @@ use super::*;
 pub struct Cow {
 	pub common: CommonEntity,
 	pub mob: CommonMob,
+	pub breedable_mob: BreedableMob,
 }
+
+const FOOD: &[&str] = &["minecraft:wheat"];
 
 impl CommonEntityTrait for Cow {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
-		let mob = CommonMob::from_nbt(extra_nbt);
+		let mob = CommonMob::from_nbt(extra_nbt.clone());
+		let breedable_mob = BreedableMob::from_nbt(extra_nbt);
 
 		return Self {
 			common: data,
 			mob,
+			breedable_mob,
 		};
 	}
 
+	fn interact(
+		&mut self,
+		held_item: &Slot,
+		game: Arc<Game>,
+		_dimension: &mut Dimension,
+		players_clone: &[Player],
+		players: &mut [Player],
+		player_uuid: u128,
+	) -> EntityInteractResult {
+		if held_item.id <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
+			return EntityInteractResult::DoNothing;
+		}
+
+		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
+
+		player.set_selected_inventory_slot(
+			Some(Slot {
+				count: 1,
+				id: data::items::get_item_id_by_name("minecraft:milk_bucket"),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			}),
+			players_clone,
+			game,
+		);
+
+		return EntityInteractResult::DoNothing;
+	}
+
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
-		return vec![];
+		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
+	}
+
+	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+		return self.feed_breedable_mob(held_item, game, players_clone);
+	}
+
+	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+		return self.tick_breedable_mob(dimension, players, game);
 	}
 
 	fn get_type(&self) -> i32 {
@@ -25,7 +67,17 @@ impl CommonEntityTrait for Cow {
 	}
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
-		return Vec::new();
+		if self.breedable_mob.age < 0 {
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(true),
+			}]
+		} else {
+			vec![EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Boolean(false),
+			}]
+		}
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
@@ -59,5 +111,19 @@ impl CommonEntityTrait for Cow {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.4, 0.9);
+	}
+}
+
+impl BreedableMobTrait for Cow {
+	fn get_breedable_data(&self) -> &BreedableMob {
+		return &self.breedable_mob;
+	}
+
+	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob {
+		return &mut self.breedable_mob;
+	}
+
+	fn get_food(&self) -> &[&'static str] {
+		return FOOD;
 	}
 }

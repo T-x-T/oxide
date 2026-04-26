@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 use crate::types::*;
@@ -85,4 +86,15 @@ pub struct CommonMob {
 	pub alive_for_ticks: i32,
 	pub wander_to: Option<BlockPosition>,
 	pub wandered_for: u16,
+}
+
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct BreedableMob {
+	pub age: i32,
+	pub age_locked: bool,
+	pub forced_age: i32,
+	pub in_love: i32,
+	pub love_cause: u128,
+	pub breeding_with: Option<i32>,
+	pub breeding_time_left: i32,
 }

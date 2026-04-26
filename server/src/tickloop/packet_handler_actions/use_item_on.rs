@@ -1,22 +1,18 @@
+use lib::blocks::Type;
+
 use super::*;
 
-#[allow(clippy::too_many_arguments)]
 pub fn process(
 	peer_addr: SocketAddr,
-	location: BlockPosition,
-	face: u8,
-	cursor_position_x: f32,
-	cursor_position_y: f32,
-	cursor_position_z: f32,
-	sequence_id: i32,
+	parsed_packet: lib::packets::serverbound::play::UseItemOn,
 	game: Arc<Game>,
 	players_clone: &[Player],
 ) {
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
-	let mut new_block_location = location;
-	match face {
+	let mut new_block_location = parsed_packet.location;
+	match parsed_packet.face {
 		0 => new_block_location.y -= 1,
 		1 => new_block_location.y += 1,
 		2 => new_block_location.z -= 1,
@@ -30,18 +26,72 @@ pub fn process(
 	let gamemode = player.get_gamemode();
 
 	let dimension = world.dimensions.get("minecraft:overworld").unwrap();
-	let block_id_at_location = dimension.get_block(location).unwrap_or_default();
+	let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
-	let blocks_to_place: Vec<(u16, BlockPosition)> = if block_type_at_location.has_right_click_behavior() && !player.is_sneaking() {
+	let blocks_to_place: Vec<(u16, BlockPosition)> = if (block_type_at_location.has_right_click_behavior()
+		|| data::tags::get_item()
+			.get("hoes")
+			.unwrap()
+			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id)))
+		&& !player.is_sneaking()
+	{
 		//Don't place block, because player right clicked something that does something when right clicked
-		let block_interaction_result = lib::block::interact_with_block_at(location, block_id_at_location, face, &game.block_state_data);
+		let block_interaction_result = lib::block::interact_with_block_at(
+			parsed_packet.location,
+			block_id_at_location,
+			parsed_packet.face,
+			&game.block_state_data,
+			player.get_selected_inventory_slot(),
+		);
 		block_interaction_result
-			.handle(dimension, location, player, players_clone, block_id_at_location, game.clone())
+			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, game.clone())
 			.inspect_err(|x| {
-				println!("lib::block::interact_with_block_at({location:?}, {block_id_at_location}, {face}) call resulted in error {x:?}")
+				println!(
+					"lib::block::interact_with_block_at({:?}, {block_id_at_location}, {}) call resulted in error {x:?}",
+					parsed_packet.location, parsed_packet.face
+				)
 			})
 			.unwrap_or_default()
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket")) {
+		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
+		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id, &game.block_state_data);
+		if block_name == "minecraft:water" {
+			let held_item = player.get_held_item(true).unwrap();
+			if held_item.count > 1 {
+				let slot = Slot {
+					count: held_item.count - 1,
+					..held_item.clone()
+				};
+				player.set_selected_inventory_slot(Some(slot), players_clone, game.clone());
+			} else {
+				player.set_selected_inventory_slot(None, players_clone, game.clone());
+			}
+			let water_bucket_slot = Slot {
+				count: 1,
+				id: data::items::get_item_id_by_name("minecraft:water_bucket"),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			};
+			player.add_item_to_inventory(water_bucket_slot, players_clone, game.clone());
+			vec![(0, new_block_location)]
+		} else {
+			vec![]
+		}
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket")) {
+		let bucket_slot = Slot {
+			count: 1,
+			id: data::items::get_item_id_by_name("minecraft:bucket"),
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+
+		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, game.clone());
+
+		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
+		let full_water_block_id = water_block.states[water_block.default_state].id;
+
+		vec![(full_water_block_id, new_block_location)]
 	} else {
 		//Let's go - we can place a block
 		let used_item_id = player
@@ -53,7 +103,18 @@ pub fn process(
 				components_to_remove: Vec::new(),
 			})
 			.id;
-		let used_item_name = data::items::get_item_name_by_id(used_item_id);
+		let mut used_item_name = data::items::get_item_name_by_id(used_item_id);
+
+		if block_type_at_location == Type::Farm {
+			used_item_name = match used_item_name {
+				"minecraft:wheat_seeds" => "minecraft:wheat",
+				"minecraft:carrot" => "minecraft:carrots",
+				"minecraft:potato" => "minecraft:potatoes",
+				"minecraft:beetroot_seeds" => "minecraft:beetroots",
+				_ => used_item_name,
+			};
+		}
+
 		let pitch = player.get_pitch();
 
 		if used_item_name.ends_with("spawn_egg") {
@@ -69,15 +130,15 @@ pub fn process(
 		}
 
 		let block_state_ids = lib::block::get_block_state_id(
-			face,
+			parsed_packet.face,
 			player_get_looking_cardinal_direction,
 			pitch,
 			world.dimensions.get_mut("minecraft:overworld").unwrap(),
 			new_block_location,
 			used_item_name,
-			cursor_position_x,
-			cursor_position_y,
-			cursor_position_z,
+			parsed_packet.cursor_position_x,
+			parsed_packet.cursor_position_y,
+			parsed_packet.cursor_position_z,
 			&game.block_state_data,
 		);
 
@@ -127,18 +188,16 @@ pub fn process(
 				}
 				#[allow(clippy::collapsible_if)]
 				if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-					if let Some(block_entity) = world
-						.dimensions
-						.get("minecraft:overworld")
-						.unwrap()
-						.get_chunk_from_position(location)
+					let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+					if let Some(block_entity) = dimension
+						.get_chunk_from_position(parsed_packet.location)
 						.unwrap()
 						.block_entities
 						.iter()
-						.find(|x| x.get_position() == location)
+						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-						block_entity.remove_self(&game.entity_id_manager, &mut players, &mut world, game.clone());
+						block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
 					};
 				}
 
@@ -179,26 +238,15 @@ pub fn process(
 	blocks_to_update.sort();
 	blocks_to_update.dedup();
 
-	let mut updated_blocks: Vec<(u16, BlockPosition)> = Vec::new();
+	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, world.dimensions.get("minecraft:overworld").unwrap(), &game.block_state_data).unwrap();
-		if let Some(new_block) = res {
-			match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_update, new_block) {
-				Ok(_) => {
-					updated_blocks.push((new_block, block_to_update));
-				}
-				Err(err) => {
-					println!("couldn't place block because {err}");
-					continue;
-				}
-			}
-		};
+		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
+		res.handle(dimension, block_to_update, &mut players, game.clone());
 	}
 
-	let all_changed_blocks: Vec<(u16, BlockPosition)> = vec![blocks_to_place, updated_blocks].into_iter().flatten().collect();
 
 	for player in players.iter() {
-		for block in &all_changed_blocks {
+		for block in &blocks_to_place {
 			game.send_packet(
 				&player.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
@@ -211,12 +259,11 @@ pub fn process(
 			);
 		}
 	}
-
 	game.send_packet(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 		lib::packets::clientbound::play::AcknowledgeBlockChange {
-			sequence_id,
+			sequence_id: parsed_packet.sequence,
 		}
 		.try_into()
 		.unwrap(),

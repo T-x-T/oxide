@@ -1398,6 +1398,79 @@ impl TryFrom<Vec<u8>> for WorldEvent {
 }
 
 //
+// MARK: 0x2e particle
+//
+
+#[derive(Debug, Clone)]
+pub struct Particle {
+	pub long_distance: bool,
+	pub always_visible: bool,
+	pub x: f64,
+	pub y: f64,
+	pub z: f64,
+	pub offset_x: f32,
+	pub offset_y: f32,
+	pub offset_z: f32,
+	pub max_speed: f32,
+	pub particle_count: i32,
+	pub particle_id: i32,
+	pub particle_data: (), //see https://minecraft.wiki/w/Java_Edition_protocol/Particles
+}
+
+impl Packet for Particle {
+	const PACKET_ID: u8 = 0x2e;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<Particle> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Particle) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::boolean(value.long_distance));
+		output.append(&mut crate::serialize::boolean(value.always_visible));
+		output.append(&mut crate::serialize::double(value.x));
+		output.append(&mut crate::serialize::double(value.y));
+		output.append(&mut crate::serialize::double(value.z));
+		output.append(&mut crate::serialize::float(value.offset_x));
+		output.append(&mut crate::serialize::float(value.offset_y));
+		output.append(&mut crate::serialize::float(value.offset_z));
+		output.append(&mut crate::serialize::float(value.max_speed));
+		output.append(&mut crate::serialize::int(value.particle_count));
+		output.append(&mut crate::serialize::varint(value.particle_id));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for Particle {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			long_distance: crate::deserialize::boolean(&mut value)?,
+			always_visible: crate::deserialize::boolean(&mut value)?,
+			x: crate::deserialize::double(&mut value)?,
+			y: crate::deserialize::double(&mut value)?,
+			z: crate::deserialize::double(&mut value)?,
+			offset_x: crate::deserialize::float(&mut value)?,
+			offset_y: crate::deserialize::float(&mut value)?,
+			offset_z: crate::deserialize::float(&mut value)?,
+			max_speed: crate::deserialize::float(&mut value)?,
+			particle_count: crate::deserialize::int(&mut value)?,
+			particle_id: crate::deserialize::varint(&mut value)?,
+			particle_data: (),
+		});
+	}
+}
+
+//
 // MARK: 0x30 Login
 //
 

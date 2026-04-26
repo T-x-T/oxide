@@ -118,4 +118,14 @@ impl CommonEntityTrait for ItemEntity {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.25, 0.25);
 	}
+
+	fn tick(&mut self, _dimension: &Dimension, _players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+		self.age += 1;
+
+		if self.age > 20 * 60 * 5 {
+			return vec![EntityTickOutcome::RemoveSelf];
+		}
+
+		return vec![EntityTickOutcome::Updated];
+	}
 }

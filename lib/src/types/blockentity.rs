@@ -294,7 +294,7 @@ impl BlockEntity {
 		};
 	}
 
-	pub fn remove_self(&self, entity_id_manager: &EntityIdManager, players: &mut [Player], world: &mut World, game: Arc<Game>) {
+	pub fn remove_self(&self, entity_id_manager: &EntityIdManager, players: &mut [Player], dimension: &mut Dimension, game: Arc<Game>) {
 		let items = self.get_contained_items_owned();
 
 		let mut entities: Vec<Entity> = Vec::new();
@@ -323,12 +323,9 @@ impl BlockEntity {
 			});
 		}
 
-		world.dimensions.get_mut("minecraft:overworld").unwrap().add_entities(entities);
+		dimension.add_entities(entities);
 
-		world
-			.dimensions
-			.get_mut("minecraft:overworld")
-			.unwrap()
+		dimension
 			.get_chunk_from_position_mut(self.get_position())
 			.unwrap()
 			.block_entities

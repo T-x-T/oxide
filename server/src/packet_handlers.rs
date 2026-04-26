@@ -745,18 +745,7 @@ pub mod play {
 
 	pub fn use_item_on(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
 		let parsed_packet = lib::packets::serverbound::play::UseItemOn::try_from(data.to_vec())?;
-		return Ok(Some(PacketHandlerAction::UseItemOn(
-			stream.peer_addr()?,
-			parsed_packet.hand as u8,
-			parsed_packet.location,
-			parsed_packet.face,
-			parsed_packet.cursor_position_x,
-			parsed_packet.cursor_position_y,
-			parsed_packet.cursor_position_z,
-			parsed_packet.inside_block,
-			parsed_packet.world_border_hit,
-			parsed_packet.sequence,
-		)));
+		return Ok(Some(PacketHandlerAction::UseItemOn(stream.peer_addr()?, parsed_packet)));
 	}
 
 	pub fn chat_message(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {

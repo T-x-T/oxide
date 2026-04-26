@@ -86,19 +86,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::BreakBlock(peer_addr, status, location, _face, sequence_id) => {
 				break_block::process(peer_addr, status, location, sequence_id, game.clone());
 			}
-			PacketHandlerAction::UseItemOn(
-				peer_addr,
-				_hand,
-				location,
-				face,
-				cursor_pos_x,
-				cursor_pos_y,
-				cursor_pos_z,
-				_inside_block,
-				_world_border_hit,
-				sequence_id,
-			) => {
-				use_item_on::process(peer_addr, location, face, cursor_pos_x, cursor_pos_y, cursor_pos_z, sequence_id, game.clone(), players_clone);
+			PacketHandlerAction::UseItemOn(peer_addr, parsed_packet) => {
+				use_item_on::process(peer_addr, parsed_packet, game.clone(), players_clone);
 			}
 			PacketHandlerAction::SendChatMessage(peer_addr, message, timestamp, salt) => {
 				send_chat_message::process(peer_addr, message, timestamp, salt, game.clone());

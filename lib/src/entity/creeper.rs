@@ -1,3 +1,5 @@
+use crate::packets::Packet;
+
 use super::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -35,6 +37,100 @@ impl CommonEntityTrait for Creeper {
 		output.append(&mut self.mob.to_nbt());
 
 		return output;
+	}
+
+	fn interact(
+		&mut self,
+		held_item: &Slot,
+		game: Arc<Game>,
+		dimension: &mut Dimension,
+		players_clone: &[Player],
+		players: &mut [Player],
+		_player_uuid: u128,
+	) -> EntityInteractResult {
+		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel") {
+			//right clicked a creeper with flint and steel -> explode!
+			self.get_mob_data_mut().health = 0.0;
+
+			let explosion_packet = crate::packets::clientbound::play::Explosion {
+				x: self.get_common_entity_data().position.x,
+				y: self.get_common_entity_data().position.y,
+				z: self.get_common_entity_data().position.z,
+				radius: 2.0,
+				block_count: 64,
+				player_delta_velocity: None,
+				particle_id: 23,
+				particle_data: (),
+				sound: 616,
+			};
+
+			let creeper_position = BlockPosition::from(self.get_common_entity_data().position);
+			for x in (creeper_position.x - 2)..creeper_position.x + 2 {
+				for y in (creeper_position.y - 2)..creeper_position.y + 2 {
+					for z in (creeper_position.z - 2)..creeper_position.z + 2 {
+						let res = dimension
+							.overwrite_block(
+								BlockPosition {
+									x,
+									y,
+									z,
+								},
+								0,
+							)
+							.unwrap();
+						if let Some(BlockOverwriteOutcome::DestroyBlockentity) = res {
+							let block_entity = dimension
+								.get_chunk_from_position(BlockPosition {
+									x,
+									y,
+									z,
+								})
+								.unwrap()
+								.block_entities
+								.iter()
+								.find(|a| {
+									a.get_position()
+										== BlockPosition {
+											x,
+											y,
+											z,
+										}
+								})
+								.unwrap();
+							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+							block_entity.remove_self(&game.entity_id_manager, players, dimension, game.clone());
+						}
+
+						for player in players_clone {
+							game.send_packet(
+								&player.peer_socket_address,
+								crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+								crate::packets::clientbound::play::BlockUpdate {
+									location: BlockPosition {
+										x,
+										y,
+										z,
+									},
+									block_id: 0,
+								}
+								.try_into()
+								.unwrap(),
+							);
+						}
+					}
+				}
+			}
+
+			players_clone.iter().for_each(|x| {
+				game.send_packet(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::Explosion::PACKET_ID,
+					explosion_packet.clone().try_into().unwrap(),
+				);
+			});
+		}
+
+		return EntityInteractResult::DoNothing;
 	}
 
 	fn get_type(&self) -> i32 {

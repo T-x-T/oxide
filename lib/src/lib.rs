@@ -18,7 +18,13 @@ pub mod utils;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 pub const VIEW_DISTANCE: i8 = 10;
-pub const ITEM_PICKUP_DISTANCE: f64 = 1.0;
+pub const ITEM_PICKUP_DISTANCE: f64 = 1.25;
+pub const RANDOM_TICK_SPEED: u8 = 3;
+pub const MOB_FOOD_ATTRACTION_RADIUS: f64 = 8.0;
+pub const MOB_BREEDING_ATTRACTION_RADIUS: f64 = 8.0;
+pub const MOB_TIME_TO_PRODUCE_BABY_TICKS: i32 = 50;
+pub const MOB_GROW_UP_TICKS: i32 = 20 * 60 * 20;
+pub const MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS: i32 = 5 * 60 * 20;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
