@@ -1,3 +1,5 @@
+use rand::{Rng, rng};
+
 use super::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -37,7 +39,45 @@ impl CommonEntityTrait for Chicken {
 	}
 
 	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
-		return self.tick_breedable_mob(dimension, players, game);
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+		let mut rng = rng();
+
+		if rng.random_ratio(1, 10_000) {
+			let egg_slot = Slot {
+				count: 1,
+				id: data::items::get_item_id_by_name("minecraft:egg"),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			};
+
+			let item_entity = ItemEntity {
+				common: CommonEntity {
+					position: self.common.position,
+					velocity: EntityPosition {
+						x: 0.0,
+						y: 1.0,
+						z: 0.0,
+						yaw: 0.0,
+						pitch: 0.0,
+					},
+					uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+					entity_id: game.entity_id_manager.get_new(),
+					..Default::default()
+				},
+				age: 0,
+				health: 5,
+				item: egg_slot,
+				owner: 0,
+				pickup_delay: 0,
+				thrower: 0,
+			};
+
+			output.push(EntityTickOutcome::SummonEntity(Box::new(Entity::Item(item_entity))));
+		}
+
+
+		output.append(&mut self.tick_breedable_mob(dimension, players, game));
+		return output;
 	}
 
 	fn get_type(&self) -> i32 {

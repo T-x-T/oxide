@@ -79,7 +79,6 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				dimension.entities.retain(|x| !entity_ids.contains(&x.get_common_entity_data().entity_id));
 			}
 			EntityTickOutcome::DamageSelf(damage) => {
-				let mut players = game.players.lock().unwrap();
 				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == outcome.0) {
 					entity.damage(damage, game.clone(), players_clone);
 				};
