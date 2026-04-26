@@ -1,3 +1,5 @@
+use lib::blocks::Type;
+
 use super::*;
 
 pub fn process(
@@ -101,7 +103,18 @@ pub fn process(
 				components_to_remove: Vec::new(),
 			})
 			.id;
-		let used_item_name = data::items::get_item_name_by_id(used_item_id);
+		let mut used_item_name = data::items::get_item_name_by_id(used_item_id);
+
+		if block_type_at_location == Type::Farm {
+			used_item_name = match used_item_name {
+				"minecraft:wheat_seeds" => "minecraft:wheat",
+				"minecraft:carrot" => "minecraft:carrots",
+				"minecraft:potato" => "minecraft:potatoes",
+				"minecraft:beetroot_seeds" => "minecraft:beetroots",
+				_ => used_item_name,
+			};
+		}
+
 		let pitch = player.get_pitch();
 
 		if used_item_name.ends_with("spawn_egg") {
