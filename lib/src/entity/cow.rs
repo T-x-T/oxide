@@ -30,7 +30,7 @@ impl CommonEntityTrait for Cow {
 		players: &mut [Player],
 		player_uuid: u128,
 	) -> EntityInteractResult {
-		if held_item.id <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
+		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
 			return EntityInteractResult::DoNothing;
 		}
 
