@@ -1141,7 +1141,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 			return false;
 		}
 
-		if !self.get_food().contains(&data::items::get_item_name_by_id(held_item.id)) {
+		if !self.get_food().contains(&data::items::get_item_name_by_id(held_item.id).unwrap()) {
 			return false;
 		}
 
@@ -1228,7 +1228,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		let in_range_players_with_food: Vec<&Player> = players
 			.iter()
 			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= crate::MOB_FOOD_ATTRACTION_RADIUS)
-			.filter(|x| x.get_held_item(true).is_some_and(|item| self.get_food().contains(&data::items::get_item_name_by_id(item.id))))
+			.filter(|x| x.get_held_item(true).is_some_and(|item| self.get_food().contains(&data::items::get_item_name_by_id(item.id).unwrap())))
 			.collect();
 
 		let speed = EntityPosition {

@@ -89,7 +89,7 @@ fn evaluate_loot_table(
 		match &chosen_entry.entry_type {
 			LootTablePoolEntrySingletonType::Item(item) => {
 				let item = Slot {
-					id: data::items::get_item_id_by_name(item),
+					id: data::items::get_item_id_by_name(item).unwrap(),
 					count: 1,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
@@ -297,7 +297,7 @@ fn evaluate_condition(
 				})
 				.collect();
 
-			if !items.contains(&data::items::get_item_name_by_id(used_tool.id)) {
+			if !items.contains(&data::items::get_item_name_by_id(used_tool.id).unwrap()) {
 				return false;
 			}
 
@@ -458,7 +458,7 @@ mod test {
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
 
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:ancient_debris"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:ancient_debris").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -496,7 +496,7 @@ mod test {
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:diamond"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:diamond").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -552,7 +552,7 @@ mod test {
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -572,7 +572,7 @@ mod test {
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -612,7 +612,7 @@ mod test {
 		let mut counts: Vec<i32> = Vec::new();
 		for _ in 0..100 {
 			let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:raw_copper"));
+			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:raw_copper").unwrap());
 			counts.push(res[0].count);
 		}
 		counts.sort();
@@ -640,7 +640,7 @@ mod test {
 		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -679,7 +679,7 @@ mod test {
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:short_grass"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:short_grass").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -699,7 +699,7 @@ mod test {
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
 		if !res.is_empty() {
-			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:wheat_seeds"));
+			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:wheat_seeds").unwrap());
 		}
 	}
 
@@ -719,7 +719,7 @@ mod test {
 		let block = block_states.get("minecraft:basalt").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:basalt"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:basalt").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -757,7 +757,7 @@ mod test {
 		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:waxed_weathered_cut_copper_slab"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:waxed_weathered_cut_copper_slab").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 
@@ -795,7 +795,7 @@ mod test {
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:tall_dry_grass"));
+		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:tall_dry_grass").unwrap());
 		assert_eq!(res[0].count, 1);
 	}
 

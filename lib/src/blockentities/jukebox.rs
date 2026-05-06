@@ -36,7 +36,7 @@ impl From<Jukebox> for Vec<NbtTag> {
 		let mut output = vec![NbtTag::TagCompound(
 			"RecordItem".to_string(),
 			vec![
-				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.record_item.id).to_string()),
+				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.record_item.id).unwrap().to_string()),
 				NbtTag::Int("count".to_string(), value.record_item.count),
 				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
 			],
@@ -65,7 +65,7 @@ impl TryFrom<NbtListTag> for Jukebox {
 
 		let record_item_raw = value.get_child("RecordItem").unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new())).clone();
 		let record_item = Slot {
-			id: data::items::get_item_id_by_name(record_item_raw.get_child("id").unwrap().as_string()),
+			id: data::items::get_item_id_by_name(record_item_raw.get_child("id").unwrap().as_string()).unwrap(),
 			count: record_item_raw.get_child("count").unwrap().as_int(),
 			components_to_add: Vec::new(),
 			components_to_remove: Vec::new(),

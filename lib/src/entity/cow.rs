@@ -30,7 +30,7 @@ impl CommonEntityTrait for Cow {
 		players: &mut [Player],
 		player_uuid: u128,
 	) -> EntityInteractResult {
-		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
+		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket").unwrap() {
 			return EntityInteractResult::DoNothing;
 		}
 
@@ -39,7 +39,7 @@ impl CommonEntityTrait for Cow {
 		player.set_selected_inventory_slot(
 			Some(Slot {
 				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:milk_bucket"),
+				id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			}),

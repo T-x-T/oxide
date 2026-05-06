@@ -33,7 +33,7 @@ pub fn process(
 		|| data::tags::get_item()
 			.get("hoes")
 			.unwrap()
-			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id)))
+			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id).unwrap()))
 		&& !player.is_sneaking()
 	{
 		//Don't place block, because player right clicked something that does something when right clicked
@@ -53,7 +53,8 @@ pub fn process(
 				)
 			})
 			.unwrap_or_default()
-	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket")) {
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket").unwrap())
+	{
 		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
 		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id, &game.block_state_data);
 		if block_name == "minecraft:water" {
@@ -69,7 +70,7 @@ pub fn process(
 			}
 			let water_bucket_slot = Slot {
 				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:water_bucket"),
+				id: data::items::get_item_id_by_name("minecraft:water_bucket").unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			};
@@ -78,10 +79,13 @@ pub fn process(
 		} else {
 			vec![]
 		}
-	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket")) {
+	} else if player
+		.get_held_item(true)
+		.is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket").unwrap())
+	{
 		let bucket_slot = Slot {
 			count: 1,
-			id: data::items::get_item_id_by_name("minecraft:bucket"),
+			id: data::items::get_item_id_by_name("minecraft:bucket").unwrap(),
 			components_to_add: Vec::new(),
 			components_to_remove: Vec::new(),
 		};
@@ -103,7 +107,7 @@ pub fn process(
 				components_to_remove: Vec::new(),
 			})
 			.id;
-		let mut used_item_name = data::items::get_item_name_by_id(used_item_id);
+		let mut used_item_name = data::items::get_item_name_by_id(used_item_id).unwrap();
 
 		if block_type_at_location == Type::Farm {
 			used_item_name = match used_item_name {

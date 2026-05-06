@@ -51,7 +51,7 @@ impl TryFrom<NbtListTag> for DecoratedPot {
 		let mut item = Slot::default();
 		if let Some(raw_item) = value.get_child("Item") {
 			item = Slot {
-				id: data::items::get_item_id_by_name(raw_item.get_child("id").unwrap().as_string()),
+				id: data::items::get_item_id_by_name(raw_item.get_child("id").unwrap().as_string()).unwrap(),
 				count: raw_item.get_child("count").unwrap().as_int(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),

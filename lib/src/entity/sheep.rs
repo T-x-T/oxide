@@ -38,14 +38,14 @@ impl CommonEntityTrait for Sheep {
 		_players: &mut [Player],
 		player_uuid: u128,
 	) -> EntityInteractResult {
-		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:shears") && !self.sheared {
+		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:shears").unwrap() && !self.sheared {
 			self.sheared = true;
 
 			let mut rng = rng();
 			let wool_drops = rng.random_range(1..=3);
 			let wool_slot = Slot {
 				count: wool_drops,
-				id: data::items::get_item_id_by_name("minecraft:white_wool"),
+				id: data::items::get_item_id_by_name("minecraft:white_wool").unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			};

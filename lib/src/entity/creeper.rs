@@ -48,7 +48,7 @@ impl CommonEntityTrait for Creeper {
 		players: &mut [Player],
 		_player_uuid: u128,
 	) -> EntityInteractResult {
-		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel") {
+		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel").unwrap() {
 			//right clicked a creeper with flint and steel -> explode!
 			self.get_mob_data_mut().health = 0.0;
 

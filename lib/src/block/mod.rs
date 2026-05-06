@@ -318,7 +318,10 @@ pub fn interact_with_block_at(
 ) -> BlockInteractionResult {
 	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
-		&& data::tags::get_item().get("hoes").unwrap().contains(&data::items::get_item_name_by_id(used_tool.clone().unwrap_or_default().id))
+		&& data::tags::get_item()
+			.get("hoes")
+			.unwrap()
+			.contains(&data::items::get_item_name_by_id(used_tool.clone().unwrap_or_default().id).unwrap())
 	{
 		let block = data::blocks::get_block_from_name("minecraft:farmland", block_states);
 		let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FarmMoisture(FarmMoisture::Num0))).unwrap().id;

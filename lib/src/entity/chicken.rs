@@ -45,7 +45,7 @@ impl CommonEntityTrait for Chicken {
 		if rng.random_ratio(1, 10_000) {
 			let egg_slot = Slot {
 				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:egg"),
+				id: data::items::get_item_id_by_name("minecraft:egg").unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			};

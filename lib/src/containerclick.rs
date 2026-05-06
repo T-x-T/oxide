@@ -163,7 +163,7 @@ fn handle_click(left_click: bool, orig_inventory_item: Option<Slot>, orig_cursor
 				let item_count_cursor = orig_cursor_item.count;
 				let item_count_chest = orig_inventory_item.count;
 				let max_stack_size =
-					data::items::get_items().get(&data::items::get_item_name_by_id(orig_inventory_item.id)).unwrap().max_stack_size as i32;
+					data::items::get_items().get(&data::items::get_item_name_by_id(orig_inventory_item.id).unwrap()).unwrap().max_stack_size as i32;
 				if left_click {
 					//put all down
 					let left_over_item_count = if ((item_count_chest + item_count_cursor) - max_stack_size).is_negative() {
@@ -265,7 +265,7 @@ fn handle_shift_click(
 			return (new_chest_inventory, new_player_inventory);
 		}
 		let max_stack_size = data::items::get_items()
-			.get(&data::items::get_item_name_by_id(orig_player_inventory[player_inventory_index].clone().unwrap().id))
+			.get(&data::items::get_item_name_by_id(orig_player_inventory[player_inventory_index].clone().unwrap().id).unwrap())
 			.unwrap()
 			.max_stack_size as i32;
 
@@ -311,7 +311,7 @@ fn handle_shift_click(
 		}
 
 		let max_stack_size = data::items::get_items()
-			.get(&data::items::get_item_name_by_id(orig_chest_inventory[clicked_slot].clone().unwrap().id))
+			.get(&data::items::get_item_name_by_id(orig_chest_inventory[clicked_slot].clone().unwrap().id).unwrap())
 			.unwrap()
 			.max_stack_size as i32;
 

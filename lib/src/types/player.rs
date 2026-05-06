@@ -254,7 +254,7 @@ impl CommonEntityTrait for Player {
 
 				if let Some(hand_slot) = self.get_held_item(true) {
 					let all_items = data::items::get_items();
-					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.id)).unwrap();
+					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.id).unwrap()).unwrap();
 
 					if let Some(nutrition) = item_data.nutrition {
 						self.add_nutrition(nutrition);
@@ -418,7 +418,7 @@ impl Player {
 			if count > 0 {
 				inventory[slot_index] = Some(Slot {
 					count,
-					id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				});
@@ -429,7 +429,7 @@ impl Player {
 			if let Some(head) = equipment.get_child("head") {
 				inventory[5] = Some(Slot {
 					count: head.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -437,7 +437,7 @@ impl Player {
 			if let Some(chest) = equipment.get_child("chest") {
 				inventory[6] = Some(Slot {
 					count: chest.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -445,7 +445,7 @@ impl Player {
 			if let Some(legs) = equipment.get_child("legs") {
 				inventory[7] = Some(Slot {
 					count: legs.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -453,7 +453,7 @@ impl Player {
 			if let Some(feet) = equipment.get_child("feet") {
 				inventory[8] = Some(Slot {
 					count: feet.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -461,7 +461,7 @@ impl Player {
 			if let Some(offhand) = equipment.get_child("offhand") {
 				inventory[45] = Some(Slot {
 					count: offhand.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				})
@@ -581,7 +581,7 @@ impl Player {
 						NbtListTag::TagCompound(vec![
 							NbtTag::Byte("Slot".to_string(), x.0 as u8),
 							NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().id).to_string()),
+							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().id).unwrap().to_string()),
 						])
 					})
 					.collect(),
@@ -595,7 +595,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
 							),
 						],
 					),
@@ -605,7 +605,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
 							),
 						],
 					),
@@ -615,7 +615,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
 							),
 						],
 					),
@@ -625,7 +625,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
 							),
 						],
 					),
@@ -635,7 +635,7 @@ impl Player {
 							NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).count),
 							NbtTag::String(
 								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).id).to_string(),
+								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
 							),
 						],
 					),
@@ -1209,7 +1209,7 @@ impl Player {
 			if let Some(inventory_slot) = &mut inventory[slot_index] {
 				if inventory_slot.id == slot.id
 					&& inventory_slot.count
-						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.id)).unwrap().max_stack_size as i32
+						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.id).unwrap()).unwrap().max_stack_size as i32
 				{
 					inventory_slot.count += 1;
 					inventory_updated = true;

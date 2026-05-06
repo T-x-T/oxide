@@ -43,7 +43,7 @@ impl From<Vec<Slot>> for NbtTag {
 				.map(|(i, item)| {
 					NbtListTag::TagCompound(vec![
 						NbtTag::Byte("Slot".to_string(), i as u8),
-						NbtTag::String("id".to_string(), data::items::get_item_name_by_id(item.id).to_string()),
+						NbtTag::String("id".to_string(), data::items::get_item_name_by_id(item.id).unwrap().to_string()),
 						NbtTag::Int("count".to_string(), item.count),
 						NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
 					])
@@ -59,7 +59,7 @@ impl From<Slot> for NbtTag {
 			"Item".to_string(),
 			vec![
 				NbtTag::Byte("Slot".to_string(), 1),
-				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).to_string()),
+				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).unwrap().to_string()),
 				NbtTag::Int("count".to_string(), value.count),
 				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
 			],
@@ -70,7 +70,7 @@ impl From<Slot> for NbtTag {
 impl From<Slot> for Vec<NbtTag> {
 	fn from(value: Slot) -> Self {
 		return vec![
-			NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).to_string()),
+			NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).unwrap().to_string()),
 			NbtTag::Int("count".to_string(), value.count),
 			NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
 		];
@@ -82,7 +82,8 @@ impl From<NbtTag> for Slot {
 		return Self {
 			id: data::items::get_item_id_by_name(
 				value.get_child("id").unwrap_or(&NbtTag::String("".to_string(), "minecraft:air".to_string())).as_string(),
-			),
+			)
+			.unwrap(),
 			count: value.get_child("count").unwrap_or(&NbtTag::Int("".to_string(), 0)).as_int(),
 			components_to_add: Vec::new(), //missing nbt to SlotComponent conversion
 			components_to_remove: Vec::new(),

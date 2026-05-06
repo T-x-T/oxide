@@ -31,7 +31,7 @@ impl CommonBlockEntity for BlastFurnace {
 				}
 			}
 
-			if game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) == 0
+			if game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) == 0
 				&& self.lit_time_remaining == 0
 			{
 				self.reset_state(players, game);
@@ -46,7 +46,8 @@ impl CommonBlockEntity for BlastFurnace {
 						..self.inventory[1].clone()
 					};
 					self.lit_time_remaining =
-						(game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16;
+						(game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) as f64 * 0.5)
+							as i16;
 				} else {
 					self.cooking_time_spent = 0;
 					can_cook = false;
@@ -57,7 +58,7 @@ impl CommonBlockEntity for BlastFurnace {
 				if self.cooking_time_spent == 0 {
 					self.cooking_time_spent = 1;
 				} else if self.cooking_time_spent == self.current_recipe.as_ref().unwrap().cooking_time.unwrap_or(200) as i16 {
-					if self.inventory[2].id == data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id) {
+					if self.inventory[2].id == data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id).unwrap() {
 						self.inventory[2] = Slot {
 							count: self.inventory[2].count + 1,
 							..self.inventory[2].clone()
@@ -67,7 +68,7 @@ impl CommonBlockEntity for BlastFurnace {
 					} else {
 						self.inventory[2] = Slot {
 							count: 1,
-							id: data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id),
+							id: data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id).unwrap(),
 							components_to_add: Vec::new(),
 							components_to_remove: Vec::new(),
 						};
@@ -116,7 +117,8 @@ impl CommonBlockEntity for BlastFurnace {
 					crate::packets::clientbound::play::SetContainerProperty {
 						window_id: 1,
 						property: 1, //max fuel burn time
-						value: (game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16, //ticks fuel should burn for
+						value: (game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) as f64 * 0.5)
+							as i16, //ticks fuel should burn for
 					}
 					.try_into()
 					.unwrap(),
@@ -240,7 +242,7 @@ impl TryFrom<NbtListTag> for BlastFurnace {
 		if let Some(items) = value.get_child("Items") {
 			for entry in items.as_list() {
 				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
-					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
 					count: entry.get_child("count").unwrap().as_int(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),

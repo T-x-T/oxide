@@ -62,7 +62,7 @@ impl TryFrom<NbtListTag> for Campfire {
 			.as_list()
 			.iter()
 			.map(|entry| Slot {
-				id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+				id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
 				count: entry.get_child("count").unwrap().as_int(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
