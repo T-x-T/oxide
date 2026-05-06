@@ -36,16 +36,24 @@ impl CommonEntityTrait for Cow {
 
 		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
 
-		player.set_selected_inventory_slot(
-			Some(Slot {
-				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			}),
-			players_clone,
-			game,
-		);
+		let held_item = player.get_held_item(true).unwrap();
+		if held_item.count > 1 {
+			let slot = Slot {
+				count: held_item.count - 1,
+				..held_item.clone()
+			};
+			player.set_selected_inventory_slot(Some(slot), players_clone, game.clone());
+		} else {
+			player.set_selected_inventory_slot(None, players_clone, game.clone());
+		}
+
+		let milk_bucket_slot = Slot {
+			count: 1,
+			id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		player.add_item_to_inventory(milk_bucket_slot, players_clone, game.clone());
 
 		return EntityInteractResult::DoNothing;
 	}
