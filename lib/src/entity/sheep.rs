@@ -1,7 +1,5 @@
 use rand::{Rng, rng};
 
-use crate::packets::Packet;
-
 use super::*;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -72,18 +70,7 @@ impl CommonEntityTrait for Sheep {
 				thrower: player_uuid,
 			};
 
-			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
-				entity_id: self.get_common_entity_data().entity_id,
-				metadata: self.get_metadata(),
-			};
-
-			for player in players_clone {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					metadata_packet.clone().try_into().unwrap(),
-				);
-			}
+			self.resend_metadata_to_players(players_clone, game);
 
 			return EntityInteractResult::AddEntity(Box::new(Entity::Item(item_entity)));
 		} else {
@@ -124,18 +111,7 @@ impl CommonEntityTrait for Sheep {
 
 					self.sheared = false;
 
-					let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
-						entity_id: self.get_common_entity_data().entity_id,
-						metadata: self.get_metadata(),
-					};
-
-					for player in players {
-						game.send_packet(
-							&player.peer_socket_address,
-							crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-							metadata_packet.clone().try_into().unwrap(),
-						);
-					}
+					self.resend_metadata_to_players(players, game.clone());
 				}
 			}
 		}

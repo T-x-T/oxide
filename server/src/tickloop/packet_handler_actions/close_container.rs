@@ -18,25 +18,17 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 
 				let spawn_packet = item_entity.to_spawn_entity_packet();
 
-				let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-					entity_id: item_entity.get_common_entity_data().entity_id,
-					metadata: item_entity.get_metadata(),
-				};
-
-				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
-
 				players_clone.iter().for_each(|x| {
 					game.send_packet(
 						&x.peer_socket_address,
 						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 						spawn_packet.clone().try_into().unwrap(),
 					);
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-						metadata_packet.clone().try_into().unwrap(),
-					);
 				});
+
+				item_entity.resend_metadata_to_players(players_clone, game.clone());
+
+				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
 			}
 		}
 
@@ -51,25 +43,17 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 
 			let spawn_packet = item_entity.to_spawn_entity_packet();
 
-			let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-				entity_id: item_entity.get_common_entity_data().entity_id,
-				metadata: item_entity.get_metadata(),
-			};
-
-			world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
-
 			players_clone.iter().for_each(|x| {
 				game.send_packet(
 					&x.peer_socket_address,
 					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					spawn_packet.clone().try_into().unwrap(),
 				);
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					metadata_packet.clone().try_into().unwrap(),
-				);
 			});
+
+			item_entity.resend_metadata_to_players(players_clone, game.clone());
+
+			world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
 		});
 
 		if let Some(position) = player.opened_inventory_at {

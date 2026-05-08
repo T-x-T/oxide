@@ -907,6 +907,21 @@ pub trait CommonEntityTrait {
 	) -> EntityInteractResult {
 		return EntityInteractResult::DoNothing;
 	}
+
+	fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>) {
+		let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+			entity_id: self.get_common_entity_data().entity_id,
+			metadata: self.get_metadata(),
+		};
+
+		for player in players_clone {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				metadata_packet.clone().try_into().unwrap(),
+			);
+		}
+	}
 }
 
 impl CommonMob {
@@ -1274,18 +1289,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		} else if self.get_breedable_data().age == -1 && !self.get_breedable_data().age_locked {
 			self.get_breedable_data_mut().age = 0;
 
-			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
-				entity_id: self.get_common_entity_data().entity_id,
-				metadata: self.get_metadata(),
-			};
-
-			for player in players {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					metadata_packet.clone().try_into().unwrap(),
-				);
-			}
+			self.resend_metadata_to_players(players, game);
 		} else if self.get_breedable_data().age > 0 {
 			self.get_breedable_data_mut().age -= 1;
 		}

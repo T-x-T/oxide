@@ -302,25 +302,17 @@ impl BlockEntity {
 			let new_entity = item.get_entity(self.get_position().into(), entity_id_manager.get_new());
 			let spawn_packet = new_entity.to_spawn_entity_packet();
 
-			let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
-				entity_id: new_entity.get_common_entity_data().entity_id,
-				metadata: new_entity.get_metadata(),
-			};
-
-			entities.push(Entity::Item(new_entity));
-
 			players.iter().for_each(|x| {
 				game.send_packet(
 					&x.peer_socket_address,
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					spawn_packet.clone().try_into().unwrap(),
 				);
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					metadata_packet.clone().try_into().unwrap(),
-				);
 			});
+
+			new_entity.resend_metadata_to_players(players, game.clone());
+
+			entities.push(Entity::Item(new_entity));
 		}
 
 		dimension.add_entities(entities);

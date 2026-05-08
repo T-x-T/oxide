@@ -34,11 +34,6 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 
 
 			let summon_packet = chicken.to_spawn_entity_packet();
-			let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-				entity_id: chicken.get_common_entity_data().entity_id,
-				metadata: chicken.get_metadata(),
-			};
-			dimension.add_entity(Entity::Chicken(chicken));
 
 			for player in players.iter() {
 				game.send_packet(
@@ -46,12 +41,11 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					summon_packet.clone().try_into().unwrap(),
 				);
-				game.send_packet(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					metadata_packet.clone().try_into().unwrap(),
-				);
 			}
+
+			chicken.resend_metadata_to_players(&players, game.clone());
+
+			dimension.add_entity(Entity::Chicken(chicken));
 		}
 	} else {
 		player.eat();
