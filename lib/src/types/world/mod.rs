@@ -6,9 +6,12 @@ use super::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Debug;
+use std::sync::Arc;
 
 use crate::SPAWN_CHUNK_RADIUS;
+use crate::entity::{CommonEntity, ItemEntity};
 use crate::loader::WorldLoader;
+use crate::packets::Packet;
 use crate::types::position::BlockPosition;
 
 pub struct World {
@@ -199,6 +202,49 @@ impl Dimension {
 			self.get_chunk_from_position_mut(entity.get_common_entity_data().position.into()).unwrap().modified = true;
 		}
 		self.entities.append(&mut entities);
+	}
+
+	pub fn summon_item(
+		&mut self,
+		position: EntityPosition,
+		slot: Slot,
+		player_uuid: Option<u128>,
+		players_clone: &[Player],
+		game: Arc<Game>,
+	) {
+		let new_entity = ItemEntity {
+			common: CommonEntity {
+				position: EntityPosition {
+					x: position.x + 0.5,
+					z: position.z + 0.5,
+					..position
+				},
+				velocity: EntityPosition::default(),
+				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+				entity_id: game.entity_id_manager.get_new(),
+				..Default::default()
+			},
+			age: 0,
+			health: 5,
+			item: slot,
+			owner: player_uuid.unwrap_or_default(),
+			pickup_delay: 0,
+			thrower: player_uuid.unwrap_or_default(),
+		};
+
+		let spawn_packet = new_entity.to_spawn_entity_packet();
+
+		for player in players_clone {
+			game.send_packet(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+				spawn_packet.clone().try_into().unwrap(),
+			);
+		}
+
+		new_entity.resend_metadata_to_players(players_clone, game.clone());
+
+		self.add_entity(Entity::Item(new_entity));
 	}
 }
 

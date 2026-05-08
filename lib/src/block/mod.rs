@@ -178,41 +178,7 @@ impl BlockUpdateOutcome {
 
 				for item_to_drop in items_to_drop {
 					if item_to_drop.id != 0 {
-						let new_entity = crate::entity::ItemEntity {
-							common: crate::entity::CommonEntity {
-								position: EntityPosition {
-									x: position.x as f64 + 0.5,
-									y: position.y as f64,
-									z: position.z as f64 + 0.5,
-									yaw: 0.0,
-									pitch: 0.0,
-								},
-								velocity: EntityPosition::default(),
-								uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-								entity_id: game.entity_id_manager.get_new(),
-								..Default::default()
-							},
-							age: 0,
-							health: 5,
-							item: item_to_drop,
-							owner: 0,
-							pickup_delay: 0,
-							thrower: 0,
-						};
-
-						let packet = new_entity.to_spawn_entity_packet();
-
-						players.iter().for_each(|x| {
-							game.send_packet(
-								&x.peer_socket_address,
-								crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-								packet.clone().try_into().unwrap(),
-							);
-						});
-
-						new_entity.resend_metadata_to_players(players, game.clone());
-
-						dimension.add_entity(Entity::Item(new_entity));
+						dimension.summon_item(position.into(), item_to_drop, None, players, game.clone());
 					}
 				}
 			}
