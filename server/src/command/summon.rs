@@ -58,7 +58,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let packet = new_entity.to_spawn_entity_packet();
 
-	game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap().add_entity(new_entity);
+	let player = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().add_entity(new_entity);
 
 	players.iter().for_each(|x| {
 		game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap())

@@ -12,23 +12,13 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 		let mut inventory_updated = false;
 		for i in 1..=4 {
 			let slot = &mut inventory[i];
-			if slot.as_ref().is_some_and(|x| x.count > 0) {
+			if let Some(slot) = slot
+				&& slot.count > 0
+			{
 				inventory_updated = true;
-				let item_entity = slot.take().unwrap().get_entity(player.get_position(), game.entity_id_manager.get_new());
+				let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 
-				let spawn_packet = item_entity.to_spawn_entity_packet();
-
-				players_clone.iter().for_each(|x| {
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-						spawn_packet.clone().try_into().unwrap(),
-					);
-				});
-
-				item_entity.resend_metadata_to_players(players_clone, game.clone());
-
-				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
+				dimension.summon_item(player.get_position(), slot.clone(), None, players_clone, game.clone());
 			}
 		}
 
@@ -37,23 +27,9 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 		}
 	} else {
 		let player_position = player.get_position();
+		let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 		player.crafting_table_slots.iter_mut().filter(|x| x.count > 0).for_each(|x| {
-			let item_entity = x.get_entity(player_position, game.entity_id_manager.get_new());
-			*x = Slot::default();
-
-			let spawn_packet = item_entity.to_spawn_entity_packet();
-
-			players_clone.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-					spawn_packet.clone().try_into().unwrap(),
-				);
-			});
-
-			item_entity.resend_metadata_to_players(players_clone, game.clone());
-
-			world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(Entity::Item(item_entity));
+			dimension.summon_item(player_position, x.clone(), None, players_clone, game.clone());
 		});
 
 		if let Some(position) = player.opened_inventory_at {
@@ -70,7 +46,7 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 							location: position,
 							action_id: 1,
 							action_parameter: 0,
-							block_type: world.dimensions.get("minecraft:overworld").unwrap().get_block(position).unwrap() as i32,
+							block_type: world.dimensions.get(player.get_dimension()).unwrap().get_block(position).unwrap() as i32,
 						}
 						.try_into()
 						.unwrap(),

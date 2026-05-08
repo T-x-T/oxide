@@ -55,7 +55,7 @@ pub fn handle_packet(
 			lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream),
 			lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream),
 			lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data),
-			lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(&mut packet.data),
+			lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(stream, &mut packet.data),
 			lib::packets::serverbound::play::PlayerInput::PACKET_ID => play::player_input(stream, &mut packet.data),
 			lib::packets::serverbound::play::Interact::PACKET_ID => play::interact(stream, &mut packet.data),
 			lib::packets::serverbound::play::ChangeGamemode::PACKET_ID => play::change_gamemode(stream, &mut packet.data),
@@ -783,9 +783,10 @@ pub mod play {
 		return Ok(Some(PacketHandlerAction::CloseContainer(stream.peer_addr()?, parsed_packet.window_id)));
 	}
 
-	pub fn update_sign(data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+	pub fn update_sign(stream: &TcpStream, data: &mut [u8]) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
 		let parsed_packet = lib::packets::serverbound::play::UpdateSign::try_from(data.to_vec())?;
 		return Ok(Some(PacketHandlerAction::UpdateSign(
+			stream.peer_addr().unwrap(),
 			parsed_packet.location,
 			parsed_packet.is_front_text,
 			[parsed_packet.line_1, parsed_packet.line_2, parsed_packet.line_3, parsed_packet.line_4],

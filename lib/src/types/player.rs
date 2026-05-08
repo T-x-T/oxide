@@ -50,6 +50,7 @@ pub struct Player {
 	exhaustion_sprinting_for_meters: f64,
 	is_sprinting: bool,
 	pub crafting_table_slots: [Slot; 9],
+	dimension: String,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -88,6 +89,7 @@ impl Clone for Player {
 			exhaustion_sprinting_for_meters: self.exhaustion_sprinting_for_meters,
 			is_sprinting: self.is_sprinting,
 			crafting_table_slots: self.crafting_table_slots.clone(),
+			dimension: self.dimension.clone(),
 		}
 	}
 }
@@ -397,6 +399,7 @@ impl Player {
 					Slot::default(),
 					Slot::default(),
 				],
+				dimension: "minecraft:overworld".to_string(),
 			};
 
 			return player;
@@ -536,6 +539,7 @@ impl Player {
 				Slot::default(),
 				Slot::default(),
 			],
+			dimension: "minecraft:overworld".to_string(), //TODO: load from nbt, reset to default spawn location when dimension is unkown to us
 		};
 
 		return player;
@@ -788,7 +792,7 @@ impl Player {
 		block_states: &HashMap<String, Block>,
 		game: Arc<Game>,
 	) -> Result<(), Box<dyn Error>> {
-		let dimension = &mut world.dimensions.get_mut("minecraft:overworld").unwrap();
+		let dimension = &mut world.dimensions.get_mut(&self.dimension).unwrap();
 		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition {
 			x: chunk_x,
 			y: 0,
@@ -1337,14 +1341,14 @@ impl Player {
 			crate::packets::clientbound::play::Respawn::PACKET_ID,
 			crate::packets::clientbound::play::Respawn {
 				dimension_type: 0,
-				dimension_name: "minecraft:overworld".to_string(),
+				dimension_name: self.dimension.clone(),
 				hashed_seed: 1,
 				game_mode: self.get_gamemode(),
 				previous_gamemode: self.get_gamemode() as i8,
 				is_debug: false,
 				is_flat: false,
 				has_death_location: true,
-				death_dimension_name: Some("minecraft:overworld".to_string()),
+				death_dimension_name: Some(self.dimension.clone()),
 				death_location: Some(self.get_position().into()),
 				portal_cooldown: 123,
 				sea_level: 64,
@@ -1504,5 +1508,9 @@ impl Player {
 
 	pub fn stop_eating(&mut self) {
 		self.started_eating_ticks_ago = 0;
+	}
+
+	pub fn get_dimension(&self) -> &str {
+		return &self.dimension;
 	}
 }

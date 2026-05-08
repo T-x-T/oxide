@@ -98,7 +98,7 @@ impl CommonEntityTrait for Creeper {
 								})
 								.unwrap();
 							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-							block_entity.remove_self(&game.entity_id_manager, players, dimension, game.clone());
+							block_entity.remove_self(players, dimension, game.clone());
 						}
 
 						for player in players_clone {

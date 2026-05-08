@@ -3,8 +3,6 @@ use std::sync::Arc;
 
 use basic_types::blocks::Type;
 
-use crate::packets::Packet;
-
 use super::*;
 
 #[derive(Debug, Clone)]
@@ -294,28 +292,12 @@ impl BlockEntity {
 		};
 	}
 
-	pub fn remove_self(&self, entity_id_manager: &EntityIdManager, players: &mut [Player], dimension: &mut Dimension, game: Arc<Game>) {
+	pub fn remove_self(&self, players: &mut [Player], dimension: &mut Dimension, game: Arc<Game>) {
 		let items = self.get_contained_items_owned();
 
-		let mut entities: Vec<Entity> = Vec::new();
 		for item in items {
-			let new_entity = item.get_entity(self.get_position().into(), entity_id_manager.get_new());
-			let spawn_packet = new_entity.to_spawn_entity_packet();
-
-			players.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-					spawn_packet.clone().try_into().unwrap(),
-				);
-			});
-
-			new_entity.resend_metadata_to_players(players, game.clone());
-
-			entities.push(Entity::Item(new_entity));
+			dimension.summon_item(self.get_position().into(), item, None, players, game.clone());
 		}
-
-		dimension.add_entities(entities);
 
 		dimension
 			.get_chunk_from_position_mut(self.get_position())

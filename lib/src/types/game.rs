@@ -57,7 +57,7 @@ pub enum PacketHandlerAction {
 	SendCommand(SocketAddr, String),
 	ClickContainer(SocketAddr, crate::packets::serverbound::play::ClickContainer),
 	CloseContainer(SocketAddr, i32),
-	UpdateSign(BlockPosition, bool, [String; 4]),
+	UpdateSign(SocketAddr, BlockPosition, bool, [String; 4]),
 	PlayerInput(SocketAddr, crate::packets::serverbound::play::PlayerInput),
 	Interact(SocketAddr, crate::packets::serverbound::play::Interact),
 	NewPlayer(SocketAddr, TcpStream),

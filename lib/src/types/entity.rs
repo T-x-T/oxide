@@ -393,6 +393,25 @@ impl Entity {
 			_ => println!("tried setting age on entity that doesnt support it: {self:?}"),
 		};
 	}
+
+	pub fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>) {
+		return match self {
+			Entity::Armadillo(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Cat(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::ChestMinecart(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Chicken(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Cow(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Creeper(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Donkey(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Horse(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Item(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Parrot(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Pig(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Player(x) => x.resend_metadata_to_players(players_clone, game),
+		};
+	}
 }
 
 pub trait CommonEntityTrait {

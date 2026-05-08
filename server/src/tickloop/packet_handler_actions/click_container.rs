@@ -131,7 +131,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 	let mut dimensions = std::mem::take(&mut game.world.lock().unwrap().dimensions);
 
 	let player_currently_interacts_with_crafting_table = dimensions
-		.get("minecraft:overworld")
+		.get(player.get_dimension())
 		.unwrap()
 		.get_block(position)
 		.is_ok_and(|x| game.block_state_data.get("minecraft:crafting_table").unwrap().states.first().unwrap().id == x);
@@ -143,7 +143,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 		.collect::<Vec<TcpStream>>();
 
 	let block_entity =
-		dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(position).unwrap().try_get_block_entity_mut(position);
+		dimensions.get_mut(player.get_dimension()).unwrap().get_chunk_from_position_mut(position).unwrap().try_get_block_entity_mut(position);
 
 	if let Some(mut block_entity) = block_entity {
 		match &mut block_entity {

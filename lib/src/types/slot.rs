@@ -1,7 +1,5 @@
 use std::error::Error;
 
-use crate::entity::ItemEntity;
-
 use super::*;
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -10,26 +8,6 @@ pub struct Slot {
 	pub id: i32,
 	pub components_to_add: Vec<SlotComponent>,
 	pub components_to_remove: Vec<i32>,
-}
-
-impl Slot {
-	pub fn get_entity(&self, position: EntityPosition, entity_id: i32) -> ItemEntity {
-		return ItemEntity {
-			common: crate::entity::CommonEntity {
-				position,
-				velocity: EntityPosition::default(),
-				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-				entity_id,
-				..Default::default()
-			},
-			age: 0,
-			health: 5,
-			item: self.clone(),
-			owner: 0,
-			pickup_delay: 0,
-			thrower: 0,
-		};
-	}
 }
 
 impl From<Vec<Slot>> for NbtTag {

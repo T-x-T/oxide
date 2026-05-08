@@ -46,7 +46,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					let block_entity =
 						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
 					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-					block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+					block_entity.remove_self(&mut players, dimension, game.clone());
 				}
 			};
 

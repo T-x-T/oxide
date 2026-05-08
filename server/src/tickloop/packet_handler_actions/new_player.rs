@@ -31,7 +31,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			enable_respawn_screen: true,
 			do_limited_crafting: false,
 			dimension_type: 0,
-			dimension_name: "minecraft:overworld".to_string(),
+			dimension_name: new_player.get_dimension().to_string(),
 			hashed_seed: 1,
 			game_mode: new_player.get_gamemode() as u8,
 			previous_game_mode: -1,
@@ -134,6 +134,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	let new_player_selected_slot = new_player.get_selected_slot();
 	let new_player_entity_metadata = new_player.get_metadata();
 	let new_player_gamemode = new_player.get_gamemode();
+	let new_player_dimension = new_player.get_dimension().to_string();
 
 	//send player list to newly connected player
 	game.send_packet(
@@ -254,7 +255,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
 				entity_id: player.entity_id,
-				on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
+				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
 			}
@@ -335,7 +336,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
 				entity_id: player.entity_id,
-				on_ground: player.is_on_ground(world.dimensions.get("minecraft:overworld").unwrap()),
+				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
 			}
@@ -355,7 +356,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	}
 
 
-	for entity in &world.dimensions.get("minecraft:overworld").unwrap().entities {
+	for entity in &world.dimensions.get(&new_player_dimension).unwrap().entities {
 		game.send_packet(
 			&peer_addr,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,

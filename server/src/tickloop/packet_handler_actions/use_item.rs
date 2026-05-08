@@ -13,7 +13,7 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 		let mut rng = rng();
 		if rng.random_ratio(1, 8) {
 			let mut world = game.world.lock().unwrap();
-			let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+			let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 			let chicken = lib::entity::Chicken {
 				common: CommonEntity {
 					position: player.get_position(),

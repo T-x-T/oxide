@@ -101,8 +101,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::CloseContainer(peer_addr, window_id) => {
 				close_container::process(peer_addr, window_id, game.clone(), players_clone);
 			}
-			PacketHandlerAction::UpdateSign(location, _is_front, text) => {
-				update_sign::process(location, text, game.clone());
+			PacketHandlerAction::UpdateSign(peer_addr, location, _is_front, text) => {
+				update_sign::process(peer_addr, location, text, game.clone());
 			}
 			PacketHandlerAction::PlayerInput(peer_addr, parsed_packet) => {
 				let players_clone = game.players.lock().unwrap().clone();

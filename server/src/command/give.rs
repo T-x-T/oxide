@@ -52,7 +52,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		components_to_remove: Vec::new(),
 	};
 
-	game.world.lock().unwrap().dimensions.get_mut("minecraft:overworld").unwrap().summon_item(
+	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().summon_item(
 		position,
 		slot,
 		Some(player.uuid),

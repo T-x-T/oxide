@@ -25,7 +25,7 @@ pub fn process(
 	let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
 	let gamemode = player.get_gamemode();
 
-	let dimension = world.dimensions.get("minecraft:overworld").unwrap();
+	let dimension = world.dimensions.get(player.get_dimension()).unwrap();
 	let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
@@ -122,7 +122,7 @@ pub fn process(
 		let pitch = player.get_pitch();
 
 		if used_item_name.ends_with("spawn_egg") {
-			let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+			let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 			lib::create_and_spawn_entity_from_egg(
 				used_item_name,
 				game.entity_id_manager.get_new(),
@@ -137,7 +137,7 @@ pub fn process(
 			parsed_packet.face,
 			player_get_looking_cardinal_direction,
 			pitch,
-			world.dimensions.get_mut("minecraft:overworld").unwrap(),
+			world.dimensions.get_mut(player.get_dimension()).unwrap(),
 			new_block_location,
 			used_item_name,
 			parsed_packet.cursor_position_x,
@@ -169,8 +169,9 @@ pub fn process(
 	};
 
 	let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
+	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 	for block_to_place in &blocks_to_place {
-		match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
+		match dimension.overwrite_block(block_to_place.1, block_to_place.0) {
 			Ok(res) => {
 				let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
 				//Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
@@ -192,7 +193,6 @@ pub fn process(
 				}
 				#[allow(clippy::collapsible_if)]
 				if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-					let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 					if let Some(block_entity) = dimension
 						.get_chunk_from_position(parsed_packet.location)
 						.unwrap()
@@ -201,7 +201,7 @@ pub fn process(
 						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-						block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+						block_entity.remove_self(&mut players, dimension, game.clone());
 					};
 				}
 
@@ -242,7 +242,6 @@ pub fn process(
 	blocks_to_update.sort();
 	blocks_to_update.dedup();
 
-	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 	for block_to_update in blocks_to_update {
 		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
 		res.handle(dimension, block_to_update, &mut players, game.clone());

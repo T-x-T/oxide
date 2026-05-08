@@ -4,14 +4,14 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
-	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
-
 	let player_clone = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().clone();
+
+	let dimension = world.dimensions.get_mut(player_clone.get_dimension()).unwrap();
 
 	let old_block_id = dimension.get_block(location).unwrap();
 
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	if player_clone.get_gamemode() == Gamemode::Survival {
-		let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 		let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);
 		if status == 0 && block_hardness != 0.0 {
 			player.start_mining();
@@ -64,7 +64,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		let block_entity =
 			dimension.get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.get_position() == location).unwrap();
 		let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-		block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+		block_entity.remove_self(&mut players, dimension, game.clone());
 	}
 
 	players

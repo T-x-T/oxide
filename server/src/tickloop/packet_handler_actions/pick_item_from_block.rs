@@ -8,7 +8,7 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, 
 		return;
 	}
 
-	let picked_block = game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().get_block(location).unwrap();
+	let picked_block = game.world.lock().unwrap().dimensions.get(player.get_dimension()).unwrap().get_block(location).unwrap();
 	let picked_block_name = game.block_state_data.iter().find(|x| x.1.states.iter().any(|x| x.id == picked_block)).unwrap().0.clone();
 	let item_id = data::items::get_items()
 		.get(picked_block_name.as_str())
