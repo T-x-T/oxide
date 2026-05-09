@@ -112,7 +112,7 @@ mod test {
 		#[test]
 		fn no_connections() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:iron_bars", &block_states);
 
 			let block_state_id = block
@@ -154,7 +154,7 @@ mod test {
 		#[test]
 		fn north_and_west_connected() {
 			let block_states = data::blocks::get_blocks();
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:iron_bars", &block_states);
 
 			let block_state_id_to_place = block
@@ -241,7 +241,7 @@ mod test {
 		#[test]
 		fn all_sides_connected() {
 			let block_states = data::blocks::get_blocks();
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:iron_bars", &block_states);
 
 			let block_state_id_to_place = block

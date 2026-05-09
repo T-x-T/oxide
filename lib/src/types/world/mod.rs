@@ -23,6 +23,7 @@ pub struct World {
 pub struct Dimension {
 	pub chunks: HashMap<(i32, i32), Chunk>,
 	pub entities: Vec<Entity>,
+	pub name: String,
 }
 
 #[derive(Debug, Clone)]
@@ -59,11 +60,22 @@ impl World {
 			let now = std::time::Instant::now();
 			println!("loading existing world");
 			default_spawn_location = loader.get_default_spawn_location();
-			dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, entity_id_manager, block_states));
+			dimensions.insert(
+				"minecraft:overworld".to_string(),
+				Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:overworld"),
+			);
+			dimensions.insert(
+				"minecraft:the_nether".to_string(),
+				Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:the_nether"),
+			);
+			dimensions
+				.insert("minecraft:the_end".to_string(), Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:the_end"));
 			println!("finished loading existing world in {:.2?}", now.elapsed());
 		} else {
 			println!("create new world");
-			dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
+			dimensions.insert("minecraft:overworld".to_string(), Dimension::new("minecraft:overworld"));
+			dimensions.insert("minecraft:the_nether".to_string(), Dimension::new("minecraft:the_nether"));
+			dimensions.insert("minecraft:the_end".to_string(), Dimension::new("minecraft:the_end"));
 			default_spawn_location = BlockPosition {
 				x: 0,
 				y: -48,
@@ -85,7 +97,7 @@ impl World {
 
 impl Dimension {
 	#[allow(clippy::new_without_default)]
-	pub fn new() -> Self {
+	pub fn new(dimension_name: &str) -> Self {
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
@@ -97,6 +109,7 @@ impl Dimension {
 		return Self {
 			chunks,
 			entities: Vec::new(),
+			name: dimension_name.to_string(),
 		};
 	}
 
@@ -104,20 +117,22 @@ impl Dimension {
 		loader: &impl loader::WorldLoader,
 		entity_id_manager: &EntityIdManager,
 		block_states: &HashMap<String, Block>,
+		dimension_name: &str,
 	) -> Self {
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 		let mut entities: Vec<Entity> = Vec::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.insert((x as i32, z as i32), loader.load_chunk(x as i32, z as i32, block_states));
-				entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager));
+				chunks.insert((x as i32, z as i32), loader.load_chunk(x as i32, z as i32, block_states, dimension_name));
+				entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager, dimension_name));
 			}
 		}
 
 		return Self {
 			chunks,
 			entities,
+			name: dimension_name.to_string(),
 		};
 	}
 
@@ -173,7 +188,7 @@ impl Dimension {
 		block_states: &HashMap<String, Block>,
 	) {
 		{
-			loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states);
+			loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states, &self.name);
 		}
 		for chunk in &mut self.chunks {
 			chunk.1.modified = false;

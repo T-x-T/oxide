@@ -49,7 +49,7 @@ mod test {
 		#[test]
 		fn top() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_log", &block_states);
 
 			let block_state_id =
@@ -86,7 +86,7 @@ mod test {
 		#[test]
 		fn east() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_log", &block_states);
 
 			let block_state_id =

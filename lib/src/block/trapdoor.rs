@@ -192,7 +192,7 @@ mod test {
 		#[test]
 		fn north_bottom() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_trapdoor", &block_states);
 
 			let block_state_id = block
@@ -239,7 +239,7 @@ mod test {
 		#[test]
 		fn east_top() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_trapdoor", &block_states);
 
 			let block_state_id = block

@@ -20,7 +20,7 @@ pub struct Loader {
 impl super::InnerWorldLoader for Loader {}
 
 impl super::WorldLoader for Loader {
-	fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>) -> Chunk {
+	fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>, dimension_name: &str) -> Chunk {
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
@@ -218,7 +218,7 @@ impl super::WorldLoader for Loader {
 		};
 	}
 
-	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager) -> Vec<Entity> {
+	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager, dimension_name: &str) -> Vec<Entity> {
 		let mut output: Vec<Entity> = Vec::new();
 
 		let region = chunk_to_region(x, z);
@@ -319,6 +319,7 @@ impl super::WorldLoader for Loader {
 		default_spawn_location: BlockPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, Block>,
+		dimension_name: &str,
 	) {
 		println!("start saving world with {} chunks to disk", chunks.len());
 		let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();

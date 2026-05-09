@@ -810,10 +810,10 @@ impl Player {
 		let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
-			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z, block_states);
+			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z, block_states, self.get_dimension());
 			dimension.chunks.insert((new_chunk.x, new_chunk.z), new_chunk);
 
-			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger);
+			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger, self.get_dimension());
 			dimension.entities.append(&mut new_entities);
 
 			dimension
