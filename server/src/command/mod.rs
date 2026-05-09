@@ -1,3 +1,4 @@
+mod dimension;
 mod gamemode;
 mod give;
 mod hi;
@@ -26,6 +27,7 @@ pub fn init(game: &mut Game) {
 	summon::init(game);
 	give::init(game);
 	gamemode::init(game);
+	dimension::init(game);
 }
 
 
