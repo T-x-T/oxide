@@ -17,7 +17,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	);
 	let mut players = game.players.lock().unwrap();
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::Login::PACKET_ID,
 		lib::packets::clientbound::play::Login {
@@ -47,12 +47,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			portal_cooldown: 123,
 			sea_level: 64,
 			enforces_secure_chat: false,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 		lib::packets::clientbound::play::SynchronizePlayerPosition {
@@ -66,36 +64,30 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			yaw: new_player.get_position().yaw,
 			pitch: new_player.get_position().pitch,
 			flags: 0,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::GameEvent::PACKET_ID,
 		lib::packets::clientbound::play::GameEvent {
 			event: 13,
 			value: 0.0,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::EntityEvent::PACKET_ID,
 		lib::packets::clientbound::play::EntityEvent {
 			entity_id: new_player.entity_id,
 			entity_status: 28, //set op permission level 4
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
 	new_player.send_health_and_food_to_client(game.clone());
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::SetContainerContent::PACKET_ID,
 		lib::packets::clientbound::play::SetContainerContent {
@@ -103,9 +95,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			state_id: 1,
 			slot_data: new_player.get_inventory().clone(),
 			carried_item: None,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
@@ -118,14 +108,12 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	}
 	println!("send chunks: {:?}", std::time::Instant::now() - now);
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::SetHeldItem::PACKET_ID,
 		lib::packets::clientbound::play::SetHeldItem {
 			slot: new_player.get_selected_slot(),
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
 	let new_player_uuid = new_player.uuid;
@@ -141,7 +129,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	let new_player_dimension = new_player.get_dimension().to_string();
 
 	//send player list to newly connected player
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
 		lib::packets::clientbound::play::PlayerInfoUpdate {
@@ -164,38 +152,32 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 					)
 				})
 				.collect(),
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
 	players.push(new_player);
 
 	//update player list for already connected players
-	players.iter().for_each(|x| {
-		game.send_packet(
-			&x.peer_socket_address,
-			lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
-			lib::packets::clientbound::play::PlayerInfoUpdate {
-				actions: 255,
-				players: vec![(
-					new_player_uuid,
-					vec![
-						lib::packets::clientbound::play::PlayerAction::AddPlayer(new_player_display_name.clone(), vec![]),
-						lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
-						lib::packets::clientbound::play::PlayerAction::UpdateGameMode(new_player_gamemode as u8 as i32),
-						lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
-						lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
-						lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
-						lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
-						lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
-					],
-				)],
-			}
-			.try_into()
-			.unwrap(),
-		);
-	});
+	game.packet_sender.send_packet_to_everyone(
+		&players,
+		lib::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
+		lib::packets::clientbound::play::PlayerInfoUpdate {
+			actions: 255,
+			players: vec![(
+				new_player_uuid,
+				vec![
+					lib::packets::clientbound::play::PlayerAction::AddPlayer(new_player_display_name.clone(), vec![]),
+					lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
+					lib::packets::clientbound::play::PlayerAction::UpdateGameMode(new_player_gamemode as u8 as i32),
+					lib::packets::clientbound::play::PlayerAction::UpdateListed(true),
+					lib::packets::clientbound::play::PlayerAction::UpdateLatency(0),
+					lib::packets::clientbound::play::PlayerAction::UpdateDisplayName(None),
+					lib::packets::clientbound::play::PlayerAction::UpdateListPriority(0),
+					lib::packets::clientbound::play::PlayerAction::UpdateHat(true),
+				],
+			)],
+		},
+	);
 
 	//Spawn other already connected player entities for newly joined player
 	for player in players.iter() {
@@ -203,7 +185,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			continue;
 		}
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 			lib::packets::clientbound::play::SpawnEntity {
@@ -220,23 +202,19 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				velocity_x: 0,
 				velocity_y: 0,
 				velocity_z: 0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 			lib::packets::clientbound::play::SetEntityMetadata {
 				entity_id: player.entity_id,
 				metadata: new_player_entity_metadata.clone(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SetEquipment::PACKET_ID,
 			lib::packets::clientbound::play::SetEquipment {
@@ -249,12 +227,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 					(4, player.get_inventory()[6].clone()),
 					(5, player.get_inventory()[5].clone()),
 				],
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
@@ -262,19 +238,15 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 			lib::packets::clientbound::play::SetHeadRotation {
 				entity_id: player.entity_id,
 				head_yaw: player.get_yaw_u8(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 
@@ -284,7 +256,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			continue;
 		}
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 			lib::packets::clientbound::play::SpawnEntity {
@@ -301,23 +273,19 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				velocity_x: 0,
 				velocity_y: 0,
 				velocity_z: 0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 			lib::packets::clientbound::play::SetEntityMetadata {
 				entity_id: new_player_entity_id,
 				metadata: new_player_entity_metadata.clone(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SetEquipment::PACKET_ID,
 			lib::packets::clientbound::play::SetEquipment {
@@ -330,12 +298,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 					(4, new_player_inventory[6].clone()),
 					(5, new_player_inventory[5].clone()),
 				],
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
@@ -343,54 +309,46 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 			lib::packets::clientbound::play::SetHeadRotation {
 				entity_id: player.entity_id,
 				head_yaw: player.get_yaw_u8(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 
 
 	for entity in &world.dimensions.get(&new_player_dimension).unwrap().entities {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-			entity.to_spawn_entity_packet().try_into().unwrap(),
+			entity.to_spawn_entity_packet(),
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 			lib::packets::clientbound::play::SetEntityMetadata {
 				entity_id: entity.get_common_entity_data().entity_id,
 				metadata: entity.get_metadata(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::Commands::PACKET_ID,
 		lib::packets::clientbound::play::Commands {
 			nodes: crate::command::get_command_packet_data(game.clone()),
 			root_index: 0,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::SetTabListHeaderAndFooter::PACKET_ID,
 		lib::packets::clientbound::play::SetTabListHeaderAndFooter {
@@ -401,8 +359,6 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				NbtTag::String("color".to_string(), "gray".to_string()),
 				NbtTag::Byte("italic".to_string(), 1),
 			]),
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 }

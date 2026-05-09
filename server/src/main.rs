@@ -53,7 +53,9 @@ fn initialize_server() {
 		block_state_data: block_states,
 		connections: DashMap::new(),
 		packet_handler_actions: Mutex::new(Vec::new()),
-		packet_send_queues: DashMap::new(),
+		packet_sender: PacketSender {
+			packet_send_queues: DashMap::new(),
+		},
 		default_gamemode,
 		loot_tables,
 		recipe_manager: RecipeManager::new(recipes),
@@ -136,7 +138,7 @@ fn initialize_server() {
 			};
 
 			let (tx, rx) = channel();
-			game.packet_send_queues.insert(peer_addr, tx);
+			game.packet_sender.packet_send_queues.insert(peer_addr, tx);
 
 			for (packet_id, packet_data) in rx.iter() {
 				if send_packet(&stream, packet_id, packet_data).is_err() {
@@ -165,32 +167,26 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
 		player_to_remove.save_to_disk();
-		players.iter().for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-				lib::packets::clientbound::play::PlayerInfoRemove {
-					uuids: vec![player_to_remove.uuid],
-				}
-				.try_into()
-				.unwrap(),
-			);
 
-			game.send_packet(
-				&x.peer_socket_address,
-				lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-				lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: vec![player_to_remove.entity_id],
-				}
-				.try_into()
-				.unwrap(),
-			);
-		});
+		game.packet_sender.send_packet_to_everyone(
+			&players,
+			lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
+			lib::packets::clientbound::play::PlayerInfoRemove {
+				uuids: vec![player_to_remove.uuid],
+			},
+		);
+		game.packet_sender.send_packet_to_everyone(
+			&players,
+			lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+			lib::packets::clientbound::play::RemoveEntities {
+				entity_ids: vec![player_to_remove.entity_id],
+			},
+		);
 	}
 
 	game.connections.remove(peer_addr);
 
-	game.packet_send_queues.remove(peer_addr);
+	game.packet_sender.packet_send_queues.remove(peer_addr);
 	players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 

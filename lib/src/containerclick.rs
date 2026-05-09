@@ -42,7 +42,7 @@ pub fn handle(
 				//Chest inventory got changed
 				chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().unwrap_or_default();
 				for stream in streams_with_container_opened {
-					game.send_packet(
+					game.packet_sender.send_packet_to_player(
 						&stream.peer_addr().unwrap(),
 						crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerSlot {
@@ -50,9 +50,7 @@ pub fn handle(
 							state_id: 1,
 							slot: parsed_packet.slot,
 							slot_data: new_inventory_item.clone(),
-						}
-						.try_into()
-						.unwrap(),
+						},
 					);
 				}
 			} else {
@@ -74,7 +72,7 @@ pub fn handle(
 		if parsed_packet.window_id == 0 {
 			println!("no shift clicking in your inventory!");
 			let player = players.iter().find(|x| x.uuid == player_uuid).unwrap();
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 				crate::packets::clientbound::play::SetContainerContent {
@@ -82,9 +80,7 @@ pub fn handle(
 					state_id: 1,
 					slot_data: player.get_inventory().clone(),
 					carried_item: orig_cursor_item.clone(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		} else {
 			let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
@@ -98,7 +94,7 @@ pub fn handle(
 				chest_items.clone_from_slice(&new_chest_items);
 
 				for stream in streams_with_container_opened {
-					game.send_packet(
+					game.packet_sender.send_packet_to_player(
 						&stream.peer_addr().unwrap(),
 						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerContent {
@@ -106,9 +102,7 @@ pub fn handle(
 							state_id: 1,
 							slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
 							carried_item: None,
-						}
-						.try_into()
-						.unwrap(),
+						},
 					);
 				}
 			}
@@ -123,7 +117,7 @@ pub fn handle(
 		}
 	} else {
 		//this just resets the inventory of the container and player if we dont know how to handle the used mode
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -131,11 +125,9 @@ pub fn handle(
 				state_id: 1,
 				slot_data: chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect(),
 				carried_item: orig_cursor_item.clone(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -143,9 +135,7 @@ pub fn handle(
 				state_id: 1,
 				slot_data: players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone(),
 				carried_item: orig_cursor_item,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 }

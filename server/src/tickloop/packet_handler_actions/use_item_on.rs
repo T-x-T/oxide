@@ -180,15 +180,13 @@ pub fn process(
 					|| block.block_type == basic_types::blocks::Type::WallHangingSign
 					|| block.block_type == basic_types::blocks::Type::CeilingHangingSign
 				{
-					game.send_packet(
+					game.packet_sender.send_packet_to_player(
 						&peer_addr,
 						lib::packets::clientbound::play::OpenSignEditor::PACKET_ID,
 						lib::packets::clientbound::play::OpenSignEditor {
 							location: block_to_place.1,
 							is_front_text: true,
-						}
-						.try_into()
-						.unwrap(),
+						},
 					);
 				}
 				#[allow(clippy::collapsible_if)]
@@ -250,25 +248,21 @@ pub fn process(
 
 	for player in players.iter() {
 		for block in &blocks_to_place {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
 				lib::packets::clientbound::play::BlockUpdate {
 					location: block.1,
 					block_id: block.0 as i32,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 	}
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 		lib::packets::clientbound::play::AcknowledgeBlockChange {
 			sequence_id: parsed_packet.sequence,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 }

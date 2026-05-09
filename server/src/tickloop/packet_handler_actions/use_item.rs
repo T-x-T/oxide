@@ -35,15 +35,14 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 
 			let summon_packet = chicken.to_spawn_entity_packet();
 
-			for player in players.iter() {
-				game.send_packet(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-					summon_packet.clone().try_into().unwrap(),
-				);
-			}
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				&players,
+				&dimension.name,
+				lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+				summon_packet,
+			);
 
-			chicken.resend_metadata_to_players(&players, game.clone());
+			chicken.resend_metadata_to_players(&players, game.clone(), &dimension.name);
 
 			dimension.add_entity(Entity::Chicken(chicken));
 		}

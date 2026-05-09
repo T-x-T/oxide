@@ -147,32 +147,26 @@ impl BlockUpdateOutcome {
 					block_entity.remove_self(players, dimension, game.clone());
 				}
 
-				for player in players.iter() {
-					game.send_packet(
-						&player.peer_socket_address,
-						crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-						crate::packets::clientbound::play::BlockUpdate {
-							location: position,
-							block_id: new_block_id as i32,
-						}
-						.try_into()
-						.unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players,
+					&dimension.name,
+					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+					crate::packets::clientbound::play::BlockUpdate {
+						location: position,
+						block_id: new_block_id as i32,
+					},
+				);
 			}
 			BlockUpdateOutcome::DestroyAndDropSelf(old_block_id) => {
-				for player in players.iter() {
-					game.send_packet(
-						&player.peer_socket_address,
-						crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-						crate::packets::clientbound::play::BlockUpdate {
-							location: position,
-							block_id: 0,
-						}
-						.try_into()
-						.unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players,
+					&dimension.name,
+					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+					crate::packets::clientbound::play::BlockUpdate {
+						location: position,
+						block_id: 0,
+					},
+				);
 
 				let items_to_drop = crate::loot_table::get_block_drops(&game.loot_tables, old_block_id, &Slot::default(), &game.block_state_data);
 
@@ -234,31 +228,27 @@ impl BlockInteractionResult {
 			BlockInteractionResult::OpenInventory(window_type) => {
 				player.open_inventory(window_type, position, game.clone(), dimension);
 
-				players.iter().for_each(|x| {
-					game.send_packet(
-						&x.peer_socket_address,
-						crate::packets::clientbound::play::BlockAction::PACKET_ID,
-						crate::packets::clientbound::play::BlockAction {
-							location: position,
-							action_id: 1,
-							action_parameter: 1,
-							block_type: block_id_at_location as i32,
-						}
-						.try_into()
-						.unwrap(),
-					);
-				});
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players,
+					&dimension.name,
+					crate::packets::clientbound::play::BlockAction::PACKET_ID,
+					crate::packets::clientbound::play::BlockAction {
+						location: position,
+						action_id: 1,
+						action_parameter: 1,
+						block_type: block_id_at_location as i32,
+					},
+				);
 				Ok(Vec::new())
 			}
 			BlockInteractionResult::OpenSignEditor => {
-				game.send_packet(
+				game.packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					crate::packets::clientbound::play::OpenSignEditor::PACKET_ID,
 					crate::packets::clientbound::play::OpenSignEditor {
 						location: position,
 						is_front_text: true,
-					}
-					.try_into()?,
+					},
 				);
 				Ok(Vec::new())
 			}

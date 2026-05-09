@@ -37,10 +37,10 @@ pub fn process(peer_addr: SocketAddr, message: String, timestamp: i64, salt: i64
 	for player in players.iter_mut() {
 		packet_to_send.global_index = player.chat_message_index;
 		player.chat_message_index += 1;
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::PlayerChatMessage::PACKET_ID,
-			packet_to_send.clone().try_into().unwrap(),
+			packet_to_send.clone(),
 		);
 	}
 }

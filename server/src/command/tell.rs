@@ -29,7 +29,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 			return Ok(());
 		};
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
@@ -38,8 +38,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 					NbtTag::String("text".to_string(), "Couldn't find that player :(".to_string()),
 				]),
 				overlay: false,
-			}
-			.try_into()?,
+			},
 		);
 
 		return Ok(());
@@ -51,7 +50,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		"console".to_string()
 	};
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&target_player.peer_socket_address,
 		lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 		lib::packets::clientbound::play::SystemChatMessage {
@@ -63,8 +62,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 				),
 			]),
 			overlay: false,
-		}
-		.try_into()?,
+		},
 	);
 
 	return Ok(());

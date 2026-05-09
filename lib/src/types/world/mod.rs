@@ -251,15 +251,14 @@ impl Dimension {
 
 		let spawn_packet = new_entity.to_spawn_entity_packet();
 
-		for player in players_clone {
-			game.send_packet(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				spawn_packet.clone().try_into().unwrap(),
-			);
-		}
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players_clone,
+			&self.name,
+			crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+			spawn_packet,
+		);
 
-		new_entity.resend_metadata_to_players(players_clone, game.clone());
+		new_entity.resend_metadata_to_players(players_clone, game.clone(), &self.name);
 
 		self.add_entity(Entity::Item(new_entity));
 	}

@@ -12,14 +12,12 @@ pub fn process(game: Arc<Game>, players_clone: Vec<Player>) {
 				if player.connection_stream.peek(useless_buf_no_one_crates_about).is_err() {
 					crate::disconnect_player(&player.peer_socket_address, game.clone());
 				}
-				game.send_packet(
+				game.packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					lib::packets::clientbound::play::ClientboundKeepAlive::PACKET_ID,
 					lib::packets::clientbound::play::ClientboundKeepAlive {
 						keep_alive_id: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as i64,
-					}
-					.try_into()
-					.unwrap(),
+					},
 				);
 			}
 		});

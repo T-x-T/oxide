@@ -25,8 +25,8 @@ impl CommonEntityTrait for Cat {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
-		return self.feed_breedable_mob(held_item, game, players_clone);
+	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
+		return self.feed_breedable_mob(held_item, game, players_clone, dimension_name);
 	}
 
 	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {

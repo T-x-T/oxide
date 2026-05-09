@@ -7,7 +7,7 @@ pub struct Comparator {
 }
 
 impl CommonBlockEntity for Comparator {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
+	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
 		return;
 	}
 

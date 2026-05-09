@@ -31,7 +31,7 @@ impl CommonEntityTrait for Sheep {
 		&mut self,
 		held_item: &Slot,
 		game: Arc<Game>,
-		_dimension: &mut Dimension,
+		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],
 		player_uuid: u128,
@@ -70,7 +70,7 @@ impl CommonEntityTrait for Sheep {
 				thrower: player_uuid,
 			};
 
-			self.resend_metadata_to_players(players_clone, game);
+			self.resend_metadata_to_players(players_clone, game, &dimension.name);
 
 			return EntityInteractResult::AddEntity(Box::new(Entity::Item(item_entity)));
 		} else {
@@ -89,8 +89,8 @@ impl CommonEntityTrait for Sheep {
 		.collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
-		return self.feed_breedable_mob(held_item, game, players_clone);
+	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
+		return self.feed_breedable_mob(held_item, game, players_clone, dimension_name);
 	}
 
 	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
@@ -111,7 +111,7 @@ impl CommonEntityTrait for Sheep {
 
 					self.sheared = false;
 
-					self.resend_metadata_to_players(players, game.clone());
+					self.resend_metadata_to_players(players, game.clone(), &dimension.name);
 				}
 			}
 		}

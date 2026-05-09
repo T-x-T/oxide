@@ -14,26 +14,24 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					entity_status: 3,
 				};
 
-				for player in players_clone {
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::EntityEvent::PACKET_ID,
-						entity_event_packet.clone().try_into().unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::EntityEvent::PACKET_ID,
+					entity_event_packet,
+				);
 			}
 			EntityTickOutcome::RemoveSelf => {
 				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
 					entity_ids: vec![outcome.0],
 				};
 
-				for player in players_clone {
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-						remove_entities_packet.clone().try_into().unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					remove_entities_packet,
+				);
 
 				if let Some(chunk) = dimension.get_chunk_from_position_mut(
 					dimension
@@ -68,13 +66,12 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					entity_ids: entity_ids.clone(),
 				};
 
-				for player in players_clone {
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-						remove_entities_packet.clone().try_into().unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					remove_entities_packet,
+				);
 
 				dimension.entities.retain(|x| !entity_ids.contains(&x.get_common_entity_data().entity_id));
 			}
@@ -96,18 +93,18 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				dimension.add_entity(*entity);
 
-				players_clone.iter().for_each(|x| {
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-						spawn_packet.clone().try_into().unwrap(),
-					);
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-						metadata_packet.clone().try_into().unwrap(),
-					);
-				});
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet,
+				);
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+					metadata_packet,
+				);
 			}
 			EntityTickOutcome::DoneBreeding(a, b) => {
 				if !already_bred_pairs.contains(&(a, b)) && !already_bred_pairs.contains(&(b, a)) {
@@ -144,18 +141,18 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 					dimension.add_entity(entity);
 
-					players_clone.iter().for_each(|x| {
-						game.send_packet(
-							&x.peer_socket_address,
-							lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-							spawn_packet.clone().try_into().unwrap(),
-						);
-						game.send_packet(
-							&x.peer_socket_address,
-							lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-							metadata_packet.clone().try_into().unwrap(),
-						);
-					});
+					game.packet_sender.send_packet_to_everyone_in_dimension(
+						players_clone,
+						&dimension.name,
+						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+						spawn_packet,
+					);
+					game.packet_sender.send_packet_to_everyone_in_dimension(
+						players_clone,
+						&dimension.name,
+						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+						metadata_packet,
+					);
 				}
 			}
 			EntityTickOutcome::ReplaceBlock(block_position, block_state_id) => {
@@ -203,18 +200,15 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						res.handle(dimension, block_to_update, &mut players, game.clone());
 					}
 
-					for player in players_clone {
-						game.send_packet(
-							&player.peer_socket_address,
-							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							lib::packets::clientbound::play::BlockUpdate {
-								location: block_position,
-								block_id: block_state_id as i32,
-							}
-							.try_into()
-							.unwrap(),
-						);
-					}
+					game.packet_sender.send_packet_to_everyone_in_dimension(
+						players_clone,
+						&dimension.name,
+						lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+						lib::packets::clientbound::play::BlockUpdate {
+							location: block_position,
+							block_id: block_state_id as i32,
+						},
+					);
 				};
 			}
 		}

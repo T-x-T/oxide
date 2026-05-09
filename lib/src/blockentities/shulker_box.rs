@@ -8,7 +8,7 @@ pub struct ShulkerBox {
 }
 
 impl CommonBlockEntity for ShulkerBox {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
+	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
 		return;
 	}
 

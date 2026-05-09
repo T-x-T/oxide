@@ -41,14 +41,13 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		return Ok(());
 	};
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&stream.peer_addr()?,
 		lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 		lib::packets::clientbound::play::SystemChatMessage {
 			content: NbtTag::Root(vec![NbtTag::String("type".to_string(), "text".to_string()), NbtTag::String("text".to_string(), reply_msg)]),
 			overlay: false,
-		}
-		.try_into()?,
+		},
 	);
 
 	return Ok(());

@@ -265,15 +265,13 @@ impl CommonEntityTrait for Player {
 						self.add_saturation(saturation);
 					}
 
-					game.send_packet(
+					game.packet_sender.send_packet_to_player(
 						&self.peer_socket_address,
 						crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 						crate::packets::clientbound::play::EntityEvent {
 							entity_id: self.entity_id,
 							entity_status: 9,
-						}
-						.try_into()
-						.unwrap(),
+						},
 					);
 
 					let selected_slot = self.get_selected_inventory_slot().clone();
@@ -334,13 +332,12 @@ impl CommonEntityTrait for Player {
 			yaw: 0.0,
 		};
 
-		players.iter().for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
-				hurt_animation_packet.clone().try_into().unwrap(),
-			);
-		});
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players,
+			&self.dimension,
+			crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
+			hurt_animation_packet,
+		);
 	}
 }
 
@@ -728,14 +725,13 @@ impl Player {
 		.convert_to_coordinates_of_chunk();
 
 		if old_chunk_position != new_chunk_position {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetCenterChunk::PACKET_ID,
 				crate::packets::clientbound::play::SetCenterChunk {
 					chunk_x: new_chunk_position.x,
 					chunk_z: new_chunk_position.z,
-				}
-				.try_into()?,
+				},
 			);
 
 			let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::VIEW_DISTANCE as i32
@@ -903,7 +899,7 @@ impl Player {
 			})
 			.collect();
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight {
@@ -918,8 +914,7 @@ impl Player {
 				empty_block_light_mask: vec![!block_light_mask],
 				sky_light_arrays,
 				block_light_arrays,
-			}
-			.try_into()?,
+			},
 		);
 
 		return Ok(());
@@ -940,16 +935,14 @@ impl Player {
 	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player], game: Arc<Game>) {
 		self.selected_slot = slot;
 
-		players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
-			game.send_packet(
+		players.iter().filter(|x| x.get_dimension() == self.get_dimension()).filter(|x| x.uuid != self.uuid).for_each(|x| {
+			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
 					entity_id: self.entity_id,
 					equipment: vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())],
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		});
 	}
@@ -969,15 +962,13 @@ impl Player {
 	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
 		self.inventory[slot as usize] = item.clone();
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
 			crate::packets::clientbound::play::SetPlayerInventorySlot {
 				slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
 				slot: (self.get_selected_slot()) as i32,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		if (slot <= 4 || (9..=44).contains(&slot)) && self.get_selected_slot() + 36 != slot {
@@ -998,22 +989,20 @@ impl Player {
 				});
 			};
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
 					entity_id: self.entity_id,
 					equipment,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		});
 	}
 	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
 		self.set_inventory_and_dont_inform_client(items);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1021,9 +1010,7 @@ impl Player {
 				state_id: 1,
 				slot_data: self.inventory.clone(),
 				carried_item: self.cursor_item.clone(),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
@@ -1036,15 +1023,13 @@ impl Player {
 				(5, self.inventory[5].clone()),
 			];
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
 					entity_id: self.entity_id,
 					equipment,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		});
 	}
@@ -1054,21 +1039,19 @@ impl Player {
 	}
 
 	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, location: BlockPosition, game: Arc<Game>, dimension: &Dimension) {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::OpenScreen::PACKET_ID,
 			crate::packets::clientbound::play::OpenScreen {
 				window_id: 1,
 				window_type: inventory as i32,
 				window_title: NbtTag::Root(vec![NbtTag::String("text".to_string(), "".to_string())]),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		self.opened_inventory_at = Some(location);
 		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 				crate::packets::clientbound::play::SetContainerContent {
@@ -1076,9 +1059,7 @@ impl Player {
 					state_id: 1,
 					slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
 					carried_item: None,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		};
 	}
@@ -1086,13 +1067,12 @@ impl Player {
 	pub fn close_inventory(&mut self, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 		self.opened_inventory_at = None;
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CloseContainer::PACKET_ID,
 			crate::packets::clientbound::play::CloseContainer {
 				window_id: 1,
-			}
-			.try_into()?,
+			},
 		);
 
 		return Ok(());
@@ -1131,7 +1111,7 @@ impl Player {
 				continue;
 			}
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
@@ -1140,9 +1120,7 @@ impl Player {
 						index: 6,
 						value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }),
 					}],
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 	}
@@ -1154,28 +1132,24 @@ impl Player {
 	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 		self.gamemode = gamemode;
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
 				event: 3,
 				value: self.gamemode as u8 as f32,
-			}
-			.try_into()?,
+			},
 		);
 
-		players.iter().for_each(|player| {
-			game.send_packet(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
-				crate::packets::clientbound::play::PlayerInfoUpdate {
-					actions: 0x04,
-					players: vec![(self.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
-				}
-				.try_into()
-				.unwrap(),
-			);
-		});
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players,
+			&self.dimension,
+			crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
+			crate::packets::clientbound::play::PlayerInfoUpdate {
+				actions: 0x04,
+				players: vec![(self.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
+			},
+		);
 
 		return Ok(());
 	}
@@ -1265,13 +1239,12 @@ impl Player {
 				pickup_item_count: item.count,
 			};
 
-			for player in players {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::PickupItem::PACKET_ID,
-					pickup_item_packet.clone().try_into().unwrap(),
-				);
-			}
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				players,
+				&self.dimension,
+				crate::packets::clientbound::play::PickupItem::PACKET_ID,
+				pickup_item_packet,
+			);
 		}
 
 		return inventory_updated;
@@ -1280,7 +1253,7 @@ impl Player {
 	//returns vec of entities to summon upon death (for dropping the inventory items)
 	pub fn die(&mut self, game: Arc<Game>, players: &[Player]) -> Vec<Entity> {
 		self.is_dead = true;
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CombatDeath::PACKET_ID,
 			crate::packets::clientbound::play::CombatDeath {
@@ -1289,9 +1262,7 @@ impl Player {
 					NbtTag::String("type".to_string(), "text".to_string()),
 					NbtTag::String("text".to_string(), "haha you dieded".to_string()),
 				]),
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		let mut entities_to_summon: Vec<Entity> = Vec::new();
@@ -1320,14 +1291,12 @@ impl Player {
 			}
 
 			players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
-				game.send_packet(
+				game.packet_sender.send_packet_to_player(
 					&x.peer_socket_address,
 					crate::packets::clientbound::play::RemoveEntities::PACKET_ID,
 					crate::packets::clientbound::play::RemoveEntities {
 						entity_ids: vec![self.entity_id],
-					}
-					.try_into()
-					.unwrap(),
+					},
 				);
 			});
 
@@ -1345,7 +1314,7 @@ impl Player {
 		self.fall_distance = 0.0;
 		self.last_position = world.default_spawn_location.into();
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::Respawn::PACKET_ID,
 			crate::packets::clientbound::play::Respawn {
@@ -1366,9 +1335,7 @@ impl Player {
 				portal_cooldown: 123,
 				sea_level: 64,
 				data_kept: 0x00,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		self
@@ -1385,7 +1352,7 @@ impl Player {
 
 		for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
 			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
-				game.send_packet(
+				game.packet_sender.send_packet_to_player(
 					&other_stream.peer_addr().unwrap(),
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
@@ -1402,25 +1369,21 @@ impl Player {
 						velocity_x: 0,
 						velocity_y: 0,
 						velocity_z: 0,
-					}
-					.try_into()
-					.unwrap(),
+					},
 				);
 			}
 		}
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
 				entity_status: 28, //set op permission level 4
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 			crate::packets::clientbound::play::SynchronizePlayerPosition {
@@ -1434,25 +1397,21 @@ impl Player {
 				yaw: self.get_position().yaw,
 				pitch: self.get_position().pitch,
 				flags: 0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
 				event: 13,
 				value: 0.0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		self.is_dead = false;
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1460,9 +1419,7 @@ impl Player {
 				state_id: 1,
 				slot_data: self.get_inventory().clone(),
 				carried_item: None,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 
@@ -1480,16 +1437,14 @@ impl Player {
 	}
 
 	pub fn send_health_and_food_to_client(&self, game: Arc<Game>) {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetHealth::PACKET_ID,
 			crate::packets::clientbound::play::SetHealth {
 				health: self.health,
 				food: self.food_level as i32,
 				food_saturation: self.food_saturation_level,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 	}
 
@@ -1536,7 +1491,7 @@ impl Player {
 		self.dimension = new_dimension_name.to_string();
 		self.position = world.default_spawn_location.into();
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::Respawn::PACKET_ID,
 			crate::packets::clientbound::play::Respawn {
@@ -1557,9 +1512,7 @@ impl Player {
 				portal_cooldown: 0,
 				sea_level: 64,
 				data_kept: 0x00,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		self
@@ -1576,7 +1529,7 @@ impl Player {
 
 		for other_stream in players_clone.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
 			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
-				game.send_packet(
+				game.packet_sender.send_packet_to_player(
 					&other_stream.peer_addr().unwrap(),
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
@@ -1593,25 +1546,21 @@ impl Player {
 						velocity_x: 0,
 						velocity_y: 0,
 						velocity_z: 0,
-					}
-					.try_into()
-					.unwrap(),
+					},
 				);
 			}
 		}
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
 				entity_status: 28, //set op permission level 4
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 			crate::packets::clientbound::play::SynchronizePlayerPosition {
@@ -1625,23 +1574,19 @@ impl Player {
 				yaw: self.get_position().yaw,
 				pitch: self.get_position().pitch,
 				flags: 0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
 				event: 13,
 				value: 0.0,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1649,9 +1594,7 @@ impl Player {
 				state_id: 1,
 				slot_data: self.get_inventory().clone(),
 				carried_item: None,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 
 		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
@@ -1667,7 +1610,7 @@ impl Player {
 				continue;
 			}
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
@@ -1684,23 +1627,19 @@ impl Player {
 					velocity_x: 0,
 					velocity_y: 0,
 					velocity_z: 0,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
 					entity_id: player.entity_id,
 					metadata: self.get_metadata(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -1713,12 +1652,10 @@ impl Player {
 						(4, player.get_inventory()[6].clone()),
 						(5, player.get_inventory()[5].clone()),
 					],
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
@@ -1726,19 +1663,15 @@ impl Player {
 					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
 					entity_id: player.entity_id,
 					head_yaw: player.get_yaw_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 
@@ -1748,7 +1681,7 @@ impl Player {
 				continue;
 			}
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
@@ -1765,23 +1698,19 @@ impl Player {
 					velocity_x: 0,
 					velocity_y: 0,
 					velocity_z: 0,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
 					entity_id: self.entity_id,
 					metadata: self.get_metadata(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -1794,12 +1723,10 @@ impl Player {
 						(4, self.inventory[6].clone()),
 						(5, self.inventory[5].clone()),
 					],
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
@@ -1807,39 +1734,33 @@ impl Player {
 					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
 					entity_id: player.entity_id,
 					head_yaw: player.get_yaw_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 
 
 		for entity in &world.dimensions.get(new_dimension_name).unwrap().entities {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				entity.to_spawn_entity_packet().try_into().unwrap(),
+				entity.to_spawn_entity_packet(),
 			);
 
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
 					entity_id: entity.get_common_entity_data().entity_id,
 					metadata: entity.get_metadata(),
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 	}

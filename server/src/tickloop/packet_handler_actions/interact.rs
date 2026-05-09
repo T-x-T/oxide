@@ -107,25 +107,25 @@ fn target_is_entity(
 				CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
 			};
 
-			players.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					entity_metadata_packet.clone().try_into().unwrap(),
-				);
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::HurtAnimation::PACKET_ID,
-					hurt_animation_packet.clone().try_into().unwrap(),
-				);
-			});
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				&players,
+				&dimension.name,
+				lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				entity_metadata_packet,
+			);
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				&players,
+				&dimension.name,
+				lib::packets::clientbound::play::HurtAnimation::PACKET_ID,
+				hurt_animation_packet,
+			);
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
 		if let Some(held_item) = player.get_held_item(true)
 			&& held_item.count > 0
 		{
-			let success = entity.feed(held_item, game.clone(), players_clone);
+			let success = entity.feed(held_item, game.clone(), players_clone, &dimension.name);
 			if success {
 				let mut held_item = held_item.clone();
 				held_item.count -= 1;
@@ -143,20 +143,20 @@ fn target_is_entity(
 		match res {
 			EntityInteractResult::DoNothing => (),
 			EntityInteractResult::AddEntity(new_entity) => {
+				let dimension_name = dimension.name.clone();
 				dimension.entities = entities;
 				world.dimensions = dimensions;
 
 				let spawn_packet = new_entity.to_spawn_entity_packet();
 
-				for player in players_clone {
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-						spawn_packet.clone().try_into().unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension_name,
+					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet,
+				);
 
-				new_entity.resend_metadata_to_players(players_clone, game);
+				new_entity.resend_metadata_to_players(players_clone, game, &dimension_name);
 
 				world.dimensions.get_mut(player.get_dimension()).unwrap().add_entity(*new_entity);
 

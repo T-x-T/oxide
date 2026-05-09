@@ -117,7 +117,7 @@ pub fn process(
 	for other_player in player_clone.iter() {
 		if other_player.peer_socket_address != peer_addr {
 			for packet in &packets {
-				game.send_packet(&other_player.peer_socket_address, packet.0, packet.1.clone());
+				game.packet_sender.send_packet_to_player(&other_player.peer_socket_address, packet.0, packet.1.clone());
 			}
 		}
 	}

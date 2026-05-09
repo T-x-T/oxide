@@ -7,7 +7,7 @@ pub struct StructureBlock {
 }
 
 impl CommonBlockEntity for StructureBlock {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
+	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
 		return;
 	}
 

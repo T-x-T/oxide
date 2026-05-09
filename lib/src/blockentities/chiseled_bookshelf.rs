@@ -9,7 +9,7 @@ pub struct ChiseledBookshelf {
 }
 
 impl CommonBlockEntity for ChiseledBookshelf {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
+	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
 		return;
 	}
 

@@ -70,15 +70,13 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				for other_player in players_clone.iter() {
 					if other_player.peer_socket_address != peer_addr {
-						game.send_packet(
+						game.packet_sender.send_packet_to_player(
 							&other_player.peer_socket_address,
 							lib::packets::clientbound::play::EntityAnimation::PACKET_ID,
 							lib::packets::clientbound::play::EntityAnimation {
 								entity_id,
 								animation: if hand == 0 { 0 } else { 3 },
-							}
-							.try_into()
-							.unwrap(),
+							},
 						);
 					}
 				}

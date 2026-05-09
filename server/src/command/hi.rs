@@ -15,7 +15,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) ->
 		println!("Hi back :)");
 		return Ok(());
 	};
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&stream.peer_addr()?,
 		lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 		lib::packets::clientbound::play::SystemChatMessage {
@@ -24,8 +24,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) ->
 				NbtTag::String("text".to_string(), "Hi back :)".to_string()),
 			]),
 			overlay: true,
-		}
-		.try_into()?,
+		},
 	);
 
 	return Ok(());

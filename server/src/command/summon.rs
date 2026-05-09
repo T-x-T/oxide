@@ -40,7 +40,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	);
 
 	let Some(new_entity) = new_entity else {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
@@ -49,8 +49,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 					NbtTag::String("text".to_string(), format!("cant summon unknown entity {}", command.replace("summon ", "").as_str())),
 				]),
 				overlay: false,
-			}
-			.try_into()?,
+			},
 		);
 		println!("cant summon unknown entity {}", command.replace("summon ", "").as_str());
 		return Ok(());
@@ -61,9 +60,12 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let player = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
 	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().add_entity(new_entity);
 
-	players.iter().for_each(|x| {
-		game.send_packet(&x.peer_socket_address, lib::packets::clientbound::play::SpawnEntity::PACKET_ID, packet.clone().try_into().unwrap())
-	});
+	game.packet_sender.send_packet_to_everyone_in_dimension(
+		&players,
+		player.get_dimension(),
+		lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+		packet,
+	);
 
 	return Ok(());
 }

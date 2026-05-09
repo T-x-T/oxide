@@ -15,26 +15,22 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);
 		if status == 0 && block_hardness != 0.0 {
 			player.start_mining();
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&peer_addr,
 				lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 				lib::packets::clientbound::play::AcknowledgeBlockChange {
 					sequence_id,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 			return;
 		} else if status == 1 {
 			player.finish_mining();
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&peer_addr,
 				lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 				lib::packets::clientbound::play::AcknowledgeBlockChange {
 					sequence_id,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 			return;
 		} else if status == 2 || (status == 0 && block_hardness == 0.0) {
@@ -70,40 +66,34 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 	players
 		.iter()
 		.inspect(|x| {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
 				lib::packets::clientbound::play::BlockUpdate {
 					location,
 					block_id: 0,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		})
 		.filter(|x| x.peer_socket_address != peer_addr)
 		.for_each(|x| {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::WorldEvent::PACKET_ID,
 				lib::packets::clientbound::play::WorldEvent {
 					event: 2001,
 					location,
 					data: old_block_id as i32,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		});
 
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 		lib::packets::clientbound::play::AcknowledgeBlockChange {
 			sequence_id,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
 
 	let blocks_to_update = [

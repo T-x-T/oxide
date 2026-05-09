@@ -101,33 +101,29 @@ impl CommonEntityTrait for Creeper {
 							block_entity.remove_self(players, dimension, game.clone());
 						}
 
-						for player in players_clone {
-							game.send_packet(
-								&player.peer_socket_address,
-								crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-								crate::packets::clientbound::play::BlockUpdate {
-									location: BlockPosition {
-										x,
-										y,
-										z,
-									},
-									block_id: 0,
-								}
-								.try_into()
-								.unwrap(),
-							);
-						}
+						game.packet_sender.send_packet_to_everyone_in_dimension(
+							players_clone,
+							&dimension.name,
+							crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+							crate::packets::clientbound::play::BlockUpdate {
+								location: BlockPosition {
+									x,
+									y,
+									z,
+								},
+								block_id: 0,
+							},
+						);
 					}
 				}
 			}
 
-			players_clone.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::Explosion::PACKET_ID,
-					explosion_packet.clone().try_into().unwrap(),
-				);
-			});
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				players_clone,
+				&dimension.name,
+				crate::packets::clientbound::play::Explosion::PACKET_ID,
+				explosion_packet,
+			);
 		}
 
 		return EntityInteractResult::DoNothing;

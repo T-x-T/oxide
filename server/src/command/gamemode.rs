@@ -29,7 +29,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		"adventure" => basic_types::Gamemode::Adventure,
 		"spectator" => basic_types::Gamemode::Spectator,
 		_ => {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&stream.peer_addr()?,
 				lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 				lib::packets::clientbound::play::SystemChatMessage {
@@ -38,8 +38,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 						NbtTag::String("text".to_string(), format!("invalid gamemode {gamemode}")),
 					]),
 					overlay: false,
-				}
-				.try_into()?,
+				},
 			);
 			return Ok(());
 		}

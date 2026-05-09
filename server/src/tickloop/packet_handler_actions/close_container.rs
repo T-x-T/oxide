@@ -38,20 +38,17 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 			//Close chest animation logic, to close chest when no players are using it anymore
 			if number_of_players_with_container_opened == 1 {
 				//1, because we havent called close_inventory() on current player yet
-				players_clone.iter().for_each(|x| {
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::BlockAction::PACKET_ID,
-						lib::packets::clientbound::play::BlockAction {
-							location: position,
-							action_id: 1,
-							action_parameter: 0,
-							block_type: world.dimensions.get(player.get_dimension()).unwrap().get_block(position).unwrap() as i32,
-						}
-						.try_into()
-						.unwrap(),
-					);
-				});
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::BlockAction::PACKET_ID,
+					lib::packets::clientbound::play::BlockAction {
+						location: position,
+						action_id: 1,
+						action_parameter: 0,
+						block_type: dimension.get_block(position).unwrap() as i32,
+					},
+				);
 			}
 		};
 

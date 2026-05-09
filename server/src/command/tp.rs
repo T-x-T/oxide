@@ -33,7 +33,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let arg_string = command.replace("tp ", "");
 	if arg_string.is_empty() {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
@@ -42,8 +42,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 					NbtTag::String("text".to_string(), "missing a destination to teleport to".to_string()),
 				]),
 				overlay: false,
-			}
-			.try_into()?,
+			},
 		);
 	}
 
@@ -61,7 +60,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		let z: f64 = str::parse(z).unwrap_or_default();
 
 		if x > 30_000_000.0 || y > 30_000_000.0 || z > 30_000_000.0 || x < -30_000_000.0 || y < -30_000_000.0 || z < -30_000_000.0 {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&stream.peer_addr()?,
 				lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 				lib::packets::clientbound::play::SystemChatMessage {
@@ -70,8 +69,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 						NbtTag::String("text".to_string(), "coordinates must be between -30 million and +30 million".to_string()),
 					]),
 					overlay: false,
-				}
-				.try_into()?,
+				},
 			);
 
 			return Ok(());
@@ -101,7 +99,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	)?;
 
 	sending_player.current_teleport_id += 1;
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&stream.peer_addr()?,
 		lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 		lib::packets::clientbound::play::SynchronizePlayerPosition {
@@ -115,13 +113,12 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 			yaw: target_coordinates.yaw,
 			pitch: target_coordinates.pitch,
 			flags: 0,
-		}
-		.try_into()?,
+		},
 	);
 
 	for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
 		if other_stream.peer_addr().unwrap() != stream.peer_addr().unwrap() {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&other_stream.peer_addr()?,
 				lib::packets::clientbound::play::TeleportEntity::PACKET_ID,
 				lib::packets::clientbound::play::TeleportEntity {
@@ -135,8 +132,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 					yaw: target_coordinates.yaw,
 					pitch: target_coordinates.pitch,
 					on_ground: true,
-				}
-				.try_into()?,
+				},
 			);
 		}
 	}

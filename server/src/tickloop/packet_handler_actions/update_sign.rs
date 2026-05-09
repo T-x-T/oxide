@@ -30,11 +30,10 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, text: [String; 4]
 		nbt_data: NbtTag::Root(blockentity.clone().into()),
 	};
 
-	for player in players.iter() {
-		game.send_packet(
-			&player.peer_socket_address,
-			lib::packets::clientbound::play::BlockEntityData::PACKET_ID,
-			packet_to_send.clone().try_into().unwrap(),
-		);
-	}
+	game.packet_sender.send_packet_to_everyone_in_dimension(
+		&players,
+		player.get_dimension(),
+		lib::packets::clientbound::play::BlockEntityData::PACKET_ID,
+		packet_to_send,
+	);
 }

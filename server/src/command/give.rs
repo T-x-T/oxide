@@ -29,7 +29,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let item_name = command.replace("give ", "");
 	let Some(item_id) = data::items::get_item_id_by_name(&item_name) else {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
@@ -38,8 +38,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 					NbtTag::String("text".to_string(), format!("Unkown item: {item_name}",)),
 				]),
 				overlay: false,
-			}
-			.try_into()?,
+			},
 		);
 
 		return Ok(());

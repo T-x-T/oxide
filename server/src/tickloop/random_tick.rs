@@ -50,18 +50,15 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 			};
 
-			for player in players_clone {
-				game.send_packet(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-					lib::packets::clientbound::play::BlockUpdate {
-						location: position,
-						block_id: new_block_id as i32,
-					}
-					.try_into()
-					.unwrap(),
-				);
-			}
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				players_clone,
+				&dimension.name,
+				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+				lib::packets::clientbound::play::BlockUpdate {
+					location: position,
+					block_id: new_block_id as i32,
+				},
+			);
 		}
 	}
 }

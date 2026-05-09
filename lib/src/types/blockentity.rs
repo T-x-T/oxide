@@ -56,61 +56,61 @@ pub enum BlockEntity {
 }
 
 pub trait CommonBlockEntity {
-	fn tick(&mut self, players: &[Player], game: Arc<Game>);
+	fn tick(&mut self, players: &[Player], game: Arc<Game>, dimension_name: &str);
 	fn new(position: BlockPosition) -> Self;
 	fn get_contained_items_mut(&mut self) -> &mut [Slot];
 	fn get_contained_items_owned(&self) -> Vec<Slot>;
 }
 
 impl BlockEntity {
-	pub fn tick(&mut self, players: &[Player], game: Arc<Game>) {
+	pub fn tick(&mut self, players: &[Player], game: Arc<Game>, dimension_name: &str) {
 		match self {
-			BlockEntity::Furnace(furnace) => furnace.tick(players, game),
-			BlockEntity::Chest(chest) => chest.tick(players, game),
-			BlockEntity::Sign(sign) => sign.tick(players, game),
-			BlockEntity::Barrel(barrel) => barrel.tick(players, game),
-			BlockEntity::Bed(bed) => bed.tick(players, game),
-			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, game),
-			BlockEntity::Beacon(beacon) => beacon.tick(players, game),
-			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, game),
-			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, game),
-			BlockEntity::CommandBlock(command_block) => command_block.tick(players, game),
-			BlockEntity::Crafter(crafter) => crafter.tick(players, game),
-			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, game),
-			BlockEntity::Dropper(dropper) => dropper.tick(players, game),
-			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, game),
-			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, game),
-			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, game),
-			BlockEntity::Hopper(hopper) => hopper.tick(players, game),
-			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, game),
-			BlockEntity::Smoker(smoker) => smoker.tick(players, game),
-			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, game),
-			BlockEntity::Banner(banner) => banner.tick(players, game),
-			BlockEntity::Beehive(beehive) => beehive.tick(players, game),
-			BlockEntity::Bell(bell) => bell.tick(players, game),
-			BlockEntity::BrushableBlock(brushable_block) => brushable_block.tick(players, game),
-			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.tick(players, game),
-			BlockEntity::Campfire(campfire) => campfire.tick(players, game),
-			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.tick(players, game),
-			BlockEntity::Comparator(comperator) => comperator.tick(players, game),
-			BlockEntity::Conduit(conduit) => conduit.tick(players, game),
-			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.tick(players, game),
-			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.tick(players, game),
-			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.tick(players, game),
-			BlockEntity::EndGateway(end_gateway) => end_gateway.tick(players, game),
-			BlockEntity::EndPortal(end_portal) => end_portal.tick(players, game),
-			BlockEntity::Jukebox(jukebox) => jukebox.tick(players, game),
-			BlockEntity::Lectern(lectern) => lectern.tick(players, game),
-			BlockEntity::Piston(piston) => piston.tick(players, game),
-			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.tick(players, game),
-			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.tick(players, game),
-			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.tick(players, game),
-			BlockEntity::ShulkerBox(shulker_box) => shulker_box.tick(players, game),
-			BlockEntity::Skull(skull) => skull.tick(players, game),
-			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.tick(players, game),
-			BlockEntity::StructureBlock(structure_block) => structure_block.tick(players, game),
-			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.tick(players, game),
-			BlockEntity::Vault(vault) => vault.tick(players, game),
+			BlockEntity::Furnace(furnace) => furnace.tick(players, game, dimension_name),
+			BlockEntity::Chest(chest) => chest.tick(players, game, dimension_name),
+			BlockEntity::Sign(sign) => sign.tick(players, game, dimension_name),
+			BlockEntity::Barrel(barrel) => barrel.tick(players, game, dimension_name),
+			BlockEntity::Bed(bed) => bed.tick(players, game, dimension_name),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, game, dimension_name),
+			BlockEntity::Beacon(beacon) => beacon.tick(players, game, dimension_name),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, game, dimension_name),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, game, dimension_name),
+			BlockEntity::CommandBlock(command_block) => command_block.tick(players, game, dimension_name),
+			BlockEntity::Crafter(crafter) => crafter.tick(players, game, dimension_name),
+			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, game, dimension_name),
+			BlockEntity::Dropper(dropper) => dropper.tick(players, game, dimension_name),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, game, dimension_name),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, game, dimension_name),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, game, dimension_name),
+			BlockEntity::Hopper(hopper) => hopper.tick(players, game, dimension_name),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, game, dimension_name),
+			BlockEntity::Smoker(smoker) => smoker.tick(players, game, dimension_name),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, game, dimension_name),
+			BlockEntity::Banner(banner) => banner.tick(players, game, dimension_name),
+			BlockEntity::Beehive(beehive) => beehive.tick(players, game, dimension_name),
+			BlockEntity::Bell(bell) => bell.tick(players, game, dimension_name),
+			BlockEntity::BrushableBlock(brushable_block) => brushable_block.tick(players, game, dimension_name),
+			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.tick(players, game, dimension_name),
+			BlockEntity::Campfire(campfire) => campfire.tick(players, game, dimension_name),
+			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.tick(players, game, dimension_name),
+			BlockEntity::Comparator(comperator) => comperator.tick(players, game, dimension_name),
+			BlockEntity::Conduit(conduit) => conduit.tick(players, game, dimension_name),
+			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.tick(players, game, dimension_name),
+			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.tick(players, game, dimension_name),
+			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.tick(players, game, dimension_name),
+			BlockEntity::EndGateway(end_gateway) => end_gateway.tick(players, game, dimension_name),
+			BlockEntity::EndPortal(end_portal) => end_portal.tick(players, game, dimension_name),
+			BlockEntity::Jukebox(jukebox) => jukebox.tick(players, game, dimension_name),
+			BlockEntity::Lectern(lectern) => lectern.tick(players, game, dimension_name),
+			BlockEntity::Piston(piston) => piston.tick(players, game, dimension_name),
+			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.tick(players, game, dimension_name),
+			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.tick(players, game, dimension_name),
+			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.tick(players, game, dimension_name),
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.tick(players, game, dimension_name),
+			BlockEntity::Skull(skull) => skull.tick(players, game, dimension_name),
+			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.tick(players, game, dimension_name),
+			BlockEntity::StructureBlock(structure_block) => structure_block.tick(players, game, dimension_name),
+			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.tick(players, game, dimension_name),
+			BlockEntity::Vault(vault) => vault.tick(players, game, dimension_name),
 		}
 	}
 
@@ -293,9 +293,7 @@ impl BlockEntity {
 	}
 
 	pub fn remove_self(&self, players: &mut [Player], dimension: &mut Dimension, game: Arc<Game>) {
-		let items = self.get_contained_items_owned();
-
-		for item in items {
+		for item in self.get_contained_items_owned() {
 			dimension.summon_item(self.get_position().into(), item, None, players, game.clone());
 		}
 

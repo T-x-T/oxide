@@ -360,22 +360,22 @@ impl Entity {
 		};
 	}
 
-	pub fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+	pub fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
 		return match self {
-			Entity::Armadillo(x) => x.feed(held_item, game, players_clone),
-			Entity::Cat(x) => x.feed(held_item, game, players_clone),
-			Entity::ChestMinecart(x) => x.feed(held_item, game, players_clone),
-			Entity::Chicken(x) => x.feed(held_item, game, players_clone),
-			Entity::Cow(x) => x.feed(held_item, game, players_clone),
-			Entity::Creeper(x) => x.feed(held_item, game, players_clone),
-			Entity::Donkey(x) => x.feed(held_item, game, players_clone),
-			Entity::Horse(x) => x.feed(held_item, game, players_clone),
-			Entity::Item(x) => x.feed(held_item, game, players_clone),
-			Entity::Parrot(x) => x.feed(held_item, game, players_clone),
-			Entity::Pig(x) => x.feed(held_item, game, players_clone),
-			Entity::Rabbit(x) => x.feed(held_item, game, players_clone),
-			Entity::Sheep(x) => x.feed(held_item, game, players_clone),
-			Entity::Player(x) => x.feed(held_item, game, players_clone),
+			Entity::Armadillo(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Cat(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::ChestMinecart(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Chicken(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Cow(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Creeper(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Donkey(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Horse(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Item(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Parrot(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Pig(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Rabbit(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Sheep(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Player(x) => x.feed(held_item, game, players_clone, dimension_name),
 		};
 	}
 
@@ -394,22 +394,22 @@ impl Entity {
 		};
 	}
 
-	pub fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>) {
+	pub fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>, dimension_name: &str) {
 		return match self {
-			Entity::Armadillo(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Cat(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::ChestMinecart(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Chicken(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Cow(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Creeper(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Donkey(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Horse(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Item(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Parrot(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Pig(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, game),
-			Entity::Player(x) => x.resend_metadata_to_players(players_clone, game),
+			Entity::Armadillo(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Cat(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::ChestMinecart(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Chicken(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Cow(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Creeper(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Donkey(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Horse(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Item(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Parrot(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Pig(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Player(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
 		};
 	}
 }
@@ -667,13 +667,12 @@ pub trait CommonEntityTrait {
 				on_ground: self.is_on_ground(dimension),
 			};
 
-			for player in players {
-				game.send_packet(
-					&player.peer_socket_address,
-					crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
-					packet.clone().try_into().unwrap(),
-				);
-			}
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				players,
+				&dimension.name,
+				crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
+				packet,
+			);
 
 			output.push(EntityTickOutcome::Updated);
 		}
@@ -911,7 +910,7 @@ pub trait CommonEntityTrait {
 	}
 
 	//returns true if feeding was successfull, to signal to caller that players inventory needs updating
-	fn feed(&mut self, _held_item: &Slot, _game: Arc<Game>, _players_clone: &[Player]) -> bool {
+	fn feed(&mut self, _held_item: &Slot, _game: Arc<Game>, _players_clone: &[Player], _dimension_name: &str) -> bool {
 		return false;
 	}
 
@@ -927,19 +926,18 @@ pub trait CommonEntityTrait {
 		return EntityInteractResult::DoNothing;
 	}
 
-	fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>) {
+	fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>, dimension_name: &str) {
 		let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
 			entity_id: self.get_common_entity_data().entity_id,
 			metadata: self.get_metadata(),
 		};
 
-		for player in players_clone {
-			game.send_packet(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-				metadata_packet.clone().try_into().unwrap(),
-			);
-		}
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players_clone,
+			dimension_name,
+			crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+			metadata_packet,
+		);
 	}
 }
 
@@ -1170,7 +1168,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 	fn get_breedable_data(&self) -> &BreedableMob;
 	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
 	fn get_food(&self) -> &[&'static str];
-	fn feed_breedable_mob(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
+	fn feed_breedable_mob(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
 		if self.get_breedable_data().age != 0 {
 			return false;
 		}
@@ -1181,28 +1179,25 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 
 		self.get_breedable_data_mut().in_love = 30 * 20;
 
-		for player in players_clone {
-			game.send_packet(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::Particle::PACKET_ID,
-				crate::packets::clientbound::play::Particle {
-					long_distance: false,
-					always_visible: false,
-					x: self.get_common_entity_data().position.x,
-					y: self.get_common_entity_data().position.y + 1.0,
-					z: self.get_common_entity_data().position.z,
-					offset_x: 0.2,
-					offset_y: 0.2,
-					offset_z: 0.2,
-					max_speed: 1.0,
-					particle_count: 8,
-					particle_id: 45,
-					particle_data: (),
-				}
-				.try_into()
-				.unwrap(),
-			);
-		}
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players_clone,
+			dimension_name,
+			crate::packets::clientbound::play::Particle::PACKET_ID,
+			crate::packets::clientbound::play::Particle {
+				long_distance: false,
+				always_visible: false,
+				x: self.get_common_entity_data().position.x,
+				y: self.get_common_entity_data().position.y + 1.0,
+				z: self.get_common_entity_data().position.z,
+				offset_x: 0.2,
+				offset_y: 0.2,
+				offset_z: 0.2,
+				max_speed: 1.0,
+				particle_count: 8,
+				particle_id: 45,
+				particle_data: (),
+			},
+		);
 
 		return true;
 	}
@@ -1308,7 +1303,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		} else if self.get_breedable_data().age == -1 && !self.get_breedable_data().age_locked {
 			self.get_breedable_data_mut().age = 0;
 
-			self.resend_metadata_to_players(players, game);
+			self.resend_metadata_to_players(players, game, &dimension.name);
 		} else if self.get_breedable_data().age > 0 {
 			self.get_breedable_data_mut().age -= 1;
 		}
@@ -1380,13 +1375,12 @@ pub fn create_and_spawn_entity(
 
 		dimension.add_entity(new_entity);
 
-		players.iter().for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				packet.clone().try_into().unwrap(),
-			)
-		});
+		game.packet_sender.send_packet_to_everyone_in_dimension(
+			players,
+			&dimension.name,
+			crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+			packet,
+		);
 	};
 }
 
