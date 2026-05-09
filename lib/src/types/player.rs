@@ -482,6 +482,14 @@ impl Player {
 			};
 		};
 
+		let default_string_tag = NbtTag::String(String::new(), String::new());
+		let raw_dimension = player_data.get_child("Dimension").unwrap_or(&default_string_tag).as_string();
+		let dimension = if ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"].contains(&raw_dimension) {
+			raw_dimension
+		} else {
+			"minecraft:overworld"
+		};
+
 		let entity_id = game.entity_id_manager.get_new();
 		let player = Self {
 			position: EntityPosition {
@@ -539,7 +547,7 @@ impl Player {
 				Slot::default(),
 				Slot::default(),
 			],
-			dimension: "minecraft:overworld".to_string(), //TODO: load from nbt, reset to default spawn location when dimension is unkown to us
+			dimension: dimension.to_string(),
 		};
 
 		return player;
@@ -573,6 +581,7 @@ impl Player {
 			NbtTag::Float("foodSaturationLevel".to_string(), self.food_saturation_level),
 			NbtTag::Int("foodTickTimer".to_string(), self.food_tick_timer as i32),
 			NbtTag::Double("fall_distance".to_string(), self.fall_distance),
+			NbtTag::String("Dimension".to_string(), self.get_dimension().to_string()),
 			NbtTag::List(
 				"Inventory".to_string(),
 				self
