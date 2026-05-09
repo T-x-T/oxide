@@ -24,6 +24,7 @@ pub struct Dimension {
 	pub chunks: HashMap<(i32, i32), Chunk>,
 	pub entities: Vec<Entity>,
 	pub name: String,
+	pub lowest_block_y: i16,
 }
 
 #[derive(Debug, Clone)]
@@ -99,11 +100,13 @@ impl World {
 impl Dimension {
 	#[allow(clippy::new_without_default)]
 	pub fn new(dimension_name: &str) -> Self {
+		let lowest_block_y = if dimension_name == "minecraft:overworld" { -64i16 } else { 0 };
+		let chunk_sections = if dimension_name == "minecraft:overworld" { 24 } else { 16 };
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.insert((x as i32, z as i32), Chunk::new(x as i32, z as i32));
+				chunks.insert((x as i32, z as i32), Chunk::new(x as i32, z as i32, chunk_sections));
 			}
 		}
 
@@ -111,6 +114,7 @@ impl Dimension {
 			chunks,
 			entities: Vec::new(),
 			name: dimension_name.to_string(),
+			lowest_block_y,
 		};
 	}
 
@@ -134,6 +138,7 @@ impl Dimension {
 			chunks,
 			entities,
 			name: dimension_name.to_string(),
+			lowest_block_y: if dimension_name == "minecraft:overworld" { -64i16 } else { 0 },
 		};
 	}
 
@@ -158,6 +163,7 @@ impl Dimension {
 	}
 
 	pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
+		let lowest_block_y = self.lowest_block_y;
 		let chunk = self.get_chunk_from_position_mut(position);
 		if chunk.is_none() {
 			return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -166,7 +172,7 @@ impl Dimension {
 			return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
 		}
 
-		return Ok(chunk.unwrap().set_block(position, block_state_id));
+		return Ok(chunk.unwrap().set_block(position, block_state_id, lowest_block_y));
 	}
 
 	pub fn get_block(&self, position: BlockPosition) -> Result<u16, Box<dyn Error>> {
@@ -178,7 +184,7 @@ impl Dimension {
 			return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
 		}
 
-		let block_state_id = chunk.unwrap().get_block(position.convert_to_position_in_chunk());
+		let block_state_id = chunk.unwrap().get_block(position.convert_to_position_in_chunk(), self.lowest_block_y);
 		return Ok(block_state_id);
 	}
 
@@ -260,7 +266,7 @@ impl Dimension {
 }
 
 impl Chunk {
-	pub fn new(chunk_x: i32, chunk_z: i32) -> Self {
+	pub fn new(chunk_x: i32, chunk_z: i32, chunk_sections: u8) -> Self {
 		let filled_chunk_sections = vec![
 			ChunkSection {
 				blocks: vec![1; 4096],
@@ -277,7 +283,7 @@ impl Chunk {
 				sky_lights: vec![0xFF; 2048],
 				block_lights: vec![]
 			};
-			23
+			chunk_sections as usize - 1
 		];
 		let mut all_chunk_sections = filled_chunk_sections.clone();
 		all_chunk_sections.append(&mut empty_chunk_sections.clone());
@@ -294,14 +300,18 @@ impl Chunk {
 		};
 	}
 
-	fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
+	fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16, lowest_block_y: i16) -> Option<BlockOverwriteOutcome> {
 		self.modified = true;
 		let position_in_chunk = position_global.convert_to_position_in_chunk();
-		let section_id = (position_in_chunk.y + 64) / 16;
-		let block_id =
-			position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
 		if self.sections[section_id as usize].blocks.is_empty() {
 			self.sections[section_id as usize].blocks = [0; 4096].to_vec();
+		}
+		if block_id < 0 {
+			return None;
 		}
 		self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
 
@@ -317,12 +327,12 @@ impl Chunk {
 		return destroy_blockentity;
 	}
 
-	pub fn get_block(&self, position_in_chunk: BlockPosition) -> u16 {
-		if position_in_chunk.y < -64 {
+	pub fn get_block(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> u16 {
+		if position_in_chunk.y < lowest_block_y {
 			return 0;
 		}
 
-		let section_id = (position_in_chunk.y + 64) / 16;
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
 
 		if section_id as usize >= self.sections.len() {
 			return 0;
@@ -332,8 +342,9 @@ impl Chunk {
 			return 0;
 		}
 
-		let block_id =
-			position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
 		return self.sections[section_id as usize].blocks[block_id as usize];
 	}
 

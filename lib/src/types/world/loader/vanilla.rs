@@ -21,6 +21,7 @@ impl super::InnerWorldLoader for Loader {}
 
 impl super::WorldLoader for Loader {
 	fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>, dimension_name: &str) -> Chunk {
+		let chunk_sections = if dimension_name == "minecraft:overworld" { 24 } else { 16 };
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
@@ -30,7 +31,7 @@ impl super::WorldLoader for Loader {
 		region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
 		if !fs::exists(&region_file_path).unwrap() {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		let mut region_file = File::open(region_file_path).unwrap();
@@ -47,7 +48,7 @@ impl super::WorldLoader for Loader {
 		let chunk_length_padded = chunk_location_bytes[0] as i32 * 4096;
 
 		if chunk_offset == 0 && chunk_length_padded == 0 {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		region_file.seek(SeekFrom::Start(chunk_offset as u64)).unwrap();
@@ -79,7 +80,7 @@ impl super::WorldLoader for Loader {
 		let chunk_nbt = crate::deserialize::nbt_disk(&mut uncompressed_data).unwrap();
 
 		if chunk_nbt.get_child("Status").unwrap().as_string() != "minecraft:full" {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		let biome_ids = data::biomes::get_biome_ids();
