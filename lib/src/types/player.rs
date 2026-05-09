@@ -927,7 +927,7 @@ impl Player {
 
 	fn get_playerdata_path(uuid: u128) -> PathBuf {
 		let mut path = PathBuf::new();
-		path.push(Path::new("./world/playerdata/"));
+		path.push(Path::new("./world/players/data"));
 		path.push(Path::new(&crate::utils::u128_to_uuid_with_dashes(uuid)));
 		path.set_extension("dat");
 		return path;

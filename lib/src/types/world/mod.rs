@@ -91,7 +91,8 @@ impl World {
 	}
 
 	pub fn save_to_disk(&mut self, block_states: &HashMap<String, Block>) {
-		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location, block_states));
+		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, block_states));
+		self.loader.write_level_dat(self.default_spawn_location);
 	}
 }
 
@@ -181,14 +182,9 @@ impl Dimension {
 		return Ok(block_state_id);
 	}
 
-	pub fn save_to_disk(
-		&mut self,
-		loader: &(impl WorldLoader + ?Sized),
-		default_spawn_location: BlockPosition,
-		block_states: &HashMap<String, Block>,
-	) {
+	pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), block_states: &HashMap<String, Block>) {
 		{
-			loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states, &self.name);
+			loader.save_to_disk(&self.chunks, self, block_states, &self.name);
 		}
 		for chunk in &mut self.chunks {
 			chunk.1.modified = false;

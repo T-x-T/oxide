@@ -13,10 +13,10 @@ pub trait WorldLoader: InnerWorldLoader + std::fmt::Debug + Send {
 	fn save_to_disk(
 		&self,
 		chunks: &HashMap<(i32, i32), Chunk>,
-		default_spawn_location: BlockPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, Block>,
 		dimension_name: &str,
 	);
 	fn get_default_spawn_location(&self) -> BlockPosition;
+	fn write_level_dat(&self, default_spawn_location: BlockPosition);
 }
