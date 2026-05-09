@@ -13,7 +13,6 @@ use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
@@ -169,10 +168,17 @@ impl CommonEntityTrait for Player {
 		return self.is_on_ground_at(dimension, self.position);
 	}
 
-	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 		if self.health <= 0.0 {
-			for entity in self.die(game.clone(), players) {
+			for entity in self.die(packet_sender, entity_id_manager, players) {
 				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
 			}
 		} else if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
@@ -183,10 +189,10 @@ impl CommonEntityTrait for Player {
 					if self.food_level > 17 {
 						if self.health < 20.0 {
 							self.food_exhaustion_level += 1.0;
-							self.heal(1.0, game.clone());
+							self.heal(1.0, packet_sender);
 						}
 					} else {
-						self.damage(1.0, game.clone(), players);
+						self.damage(1.0, packet_sender, players);
 					}
 				} else {
 					self.food_tick_timer += 1;
@@ -242,10 +248,10 @@ impl CommonEntityTrait for Player {
 				self.food_exhaustion_level -= 4.0;
 				if self.food_saturation_level > 0.0 {
 					self.food_saturation_level -= 1.0;
-					self.send_health_and_food_to_client(game.clone());
+					self.send_health_and_food_to_client(packet_sender);
 				} else if self.food_level > 0 {
 					self.food_level -= 1;
-					self.send_health_and_food_to_client(game.clone());
+					self.send_health_and_food_to_client(packet_sender);
 				}
 			}
 
@@ -265,7 +271,7 @@ impl CommonEntityTrait for Player {
 						self.add_saturation(saturation);
 					}
 
-					game.packet_sender.send_packet_to_player(
+					packet_sender.send_packet_to_player(
 						&self.peer_socket_address,
 						crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 						crate::packets::clientbound::play::EntityEvent {
@@ -286,7 +292,7 @@ impl CommonEntityTrait for Player {
 							})
 						}
 					});
-					self.set_selected_inventory_slot(selected_slot.flatten(), players, game.clone());
+					self.set_selected_inventory_slot(selected_slot.flatten(), players, packet_sender);
 				};
 			}
 		}
@@ -300,7 +306,7 @@ impl CommonEntityTrait for Player {
 			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
 			.filter_map(|x| {
 				if let Entity::Item(item) = x {
-					if self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, game.clone()) {
+					if self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, packet_sender) {
 						Some(item.get_common_entity_data().entity_id)
 					} else {
 						None
@@ -318,21 +324,21 @@ impl CommonEntityTrait for Player {
 		return output;
 	}
 
-	fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+	fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
 		if self.gamemode == Gamemode::Creative || self.gamemode == Gamemode::Spectator {
 			return;
 		}
 		self.health -= damage;
 		self.food_exhaustion_level += 0.1;
 
-		self.send_health_and_food_to_client(game.clone());
+		self.send_health_and_food_to_client(packet_sender);
 
 		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
 			entity_id: self.entity_id,
 			yaw: 0.0,
 		};
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players,
 			&self.dimension,
 			crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
@@ -346,12 +352,13 @@ impl Player {
 		display_name: String,
 		uuid: u128,
 		peer_socket_address: SocketAddr,
-		game: Arc<Game>,
+		entity_id_manager: &EntityIdManager,
+		default_gamemode: &Gamemode,
 		connection_stream: TcpStream,
 		default_spawn_location: BlockPosition,
 	) -> Self {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
-			let entity_id = game.entity_id_manager.get_new();
+			let entity_id = entity_id_manager.get_new();
 			let player = Self {
 				position: default_spawn_location.into(),
 				last_position: default_spawn_location.into(),
@@ -370,7 +377,7 @@ impl Player {
 				cursor_item: None,
 				is_sneaking: false,
 				chat_message_index: 0,
-				gamemode: game.default_gamemode,
+				gamemode: *default_gamemode,
 				mining_for_ticks: 0,
 				is_mining: false,
 				health: 20.0,
@@ -468,7 +475,7 @@ impl Player {
 			}
 		}
 
-		let mut parsed_gamemode = game.default_gamemode;
+		let mut parsed_gamemode = *default_gamemode;
 		if let Some(gamemode) = player_data.get_child("playerGameType") {
 			match gamemode.as_int() {
 				0 => parsed_gamemode = Gamemode::Survival,
@@ -487,7 +494,7 @@ impl Player {
 			"minecraft:overworld"
 		};
 
-		let entity_id = game.entity_id_manager.get_new();
+		let entity_id = entity_id_manager.get_new();
 		let player = Self {
 			position: EntityPosition {
 				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -702,7 +709,7 @@ impl Player {
 		world: &mut World,
 		entity_id_manger: &EntityIdManager,
 		block_states: &HashMap<String, Block>,
-		game: Arc<Game>,
+		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		let old_x = self.position.x;
 		let old_z = self.position.z;
@@ -725,7 +732,7 @@ impl Player {
 		.convert_to_coordinates_of_chunk();
 
 		if old_chunk_position != new_chunk_position {
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetCenterChunk::PACKET_ID,
 				crate::packets::clientbound::play::SetCenterChunk {
@@ -755,7 +762,7 @@ impl Player {
 			let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
 
 			for chunk_coords in chunks_missing {
-				self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states, game.clone())?;
+				self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states, packet_sender)?;
 			}
 		}
 
@@ -768,11 +775,11 @@ impl Player {
 		world: &mut World,
 		entity_id_manger: &EntityIdManager,
 		block_states: &HashMap<String, Block>,
-		game: Arc<Game>,
+		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		self.position.yaw = new_position.yaw;
 		self.position.pitch = new_position.pitch;
-		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, game)?;
+		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, packet_sender)?;
 
 		return Ok(self.get_position());
 	}
@@ -795,7 +802,7 @@ impl Player {
 		chunk_z: i32,
 		entity_id_manger: &EntityIdManager,
 		block_states: &HashMap<String, Block>,
-		game: Arc<Game>,
+		packet_sender: &PacketSender,
 	) -> Result<(), Box<dyn Error>> {
 		let dimension = &mut world.dimensions.get_mut(&self.dimension).unwrap();
 		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition {
@@ -899,7 +906,7 @@ impl Player {
 			})
 			.collect();
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight {
@@ -932,11 +939,11 @@ impl Player {
 		return self.selected_slot;
 	}
 
-	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player], game: Arc<Game>) {
+	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player], packet_sender: &PacketSender) {
 		self.selected_slot = slot;
 
 		players.iter().filter(|x| x.get_dimension() == self.get_dimension()).filter(|x| x.uuid != self.uuid).for_each(|x| {
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -951,18 +958,18 @@ impl Player {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
-		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, game);
+	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player], packet_sender: &PacketSender) {
+		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, packet_sender);
 	}
 
 	pub fn get_selected_inventory_slot(&self) -> &Option<Slot> {
 		return &self.get_inventory()[(self.get_selected_slot() + 36) as usize];
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], game: Arc<Game>) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], packet_sender: &PacketSender) {
 		self.inventory[slot as usize] = item.clone();
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
 			crate::packets::clientbound::play::SetPlayerInventorySlot {
@@ -989,7 +996,7 @@ impl Player {
 				});
 			};
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -999,10 +1006,11 @@ impl Player {
 			);
 		});
 	}
-	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], game: Arc<Game>) {
+
+	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_and_dont_inform_client(items);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1023,7 +1031,7 @@ impl Player {
 				(5, self.inventory[5].clone()),
 			];
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -1038,8 +1046,14 @@ impl Player {
 		self.inventory = items.clone();
 	}
 
-	pub fn open_inventory(&mut self, inventory: data::inventory::Inventory, location: BlockPosition, game: Arc<Game>, dimension: &Dimension) {
-		game.packet_sender.send_packet_to_player(
+	pub fn open_inventory(
+		&mut self,
+		inventory: data::inventory::Inventory,
+		location: BlockPosition,
+		packet_sender: &PacketSender,
+		dimension: &Dimension,
+	) {
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::OpenScreen::PACKET_ID,
 			crate::packets::clientbound::play::OpenScreen {
@@ -1051,7 +1065,7 @@ impl Player {
 
 		self.opened_inventory_at = Some(location);
 		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 				crate::packets::clientbound::play::SetContainerContent {
@@ -1064,10 +1078,10 @@ impl Player {
 		};
 	}
 
-	pub fn close_inventory(&mut self, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	pub fn close_inventory(&mut self, packet_sender: &PacketSender) -> Result<(), Box<dyn Error>> {
 		self.opened_inventory_at = None;
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CloseContainer::PACKET_ID,
 			crate::packets::clientbound::play::CloseContainer {
@@ -1098,7 +1112,7 @@ impl Player {
 		return self.is_sneaking;
 	}
 
-	pub fn set_sneaking(&mut self, is_sneaking: bool, players: &[Player], game: Arc<Game>) {
+	pub fn set_sneaking(&mut self, is_sneaking: bool, players: &[Player], packet_sender: &PacketSender) {
 		//No need to do anything if is_sneaking didnt change
 		if self.is_sneaking == is_sneaking {
 			return;
@@ -1111,7 +1125,7 @@ impl Player {
 				continue;
 			}
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
@@ -1129,10 +1143,10 @@ impl Player {
 		return self.position;
 	}
 
-	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], packet_sender: &PacketSender) -> Result<(), Box<dyn Error>> {
 		self.gamemode = gamemode;
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
@@ -1141,7 +1155,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players,
 			&self.dimension,
 			crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
@@ -1181,7 +1195,7 @@ impl Player {
 	}
 
 
-	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], game: Arc<Game>) -> bool {
+	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], packet_sender: &PacketSender) -> bool {
 		let slot_indecies = [
 			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
 			33, 34, 35,
@@ -1218,19 +1232,19 @@ impl Player {
 		}
 
 		if inventory_updated {
-			self.set_inventory_and_inform_client(inventory, players, game.clone());
+			self.set_inventory_and_inform_client(inventory, players, packet_sender);
 		}
 
 		return inventory_updated;
 	}
 
 	//returns true when item pickup was succesfull and false when not
-	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], game: Arc<Game>) -> bool {
+	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], packet_sender: &PacketSender) -> bool {
 		if self.is_dead {
 			return false;
 		}
 
-		let inventory_updated = self.add_item_to_inventory(item.clone(), players, game.clone());
+		let inventory_updated = self.add_item_to_inventory(item.clone(), players, packet_sender);
 
 		if inventory_updated {
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
@@ -1239,7 +1253,7 @@ impl Player {
 				pickup_item_count: item.count,
 			};
 
-			game.packet_sender.send_packet_to_everyone_in_dimension(
+			packet_sender.send_packet_to_everyone_in_dimension(
 				players,
 				&self.dimension,
 				crate::packets::clientbound::play::PickupItem::PACKET_ID,
@@ -1251,9 +1265,9 @@ impl Player {
 	}
 
 	//returns vec of entities to summon upon death (for dropping the inventory items)
-	pub fn die(&mut self, game: Arc<Game>, players: &[Player]) -> Vec<Entity> {
+	pub fn die(&mut self, packet_sender: &PacketSender, entity_id_manager: &EntityIdManager, players: &[Player]) -> Vec<Entity> {
 		self.is_dead = true;
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CombatDeath::PACKET_ID,
 			crate::packets::clientbound::play::CombatDeath {
@@ -1275,7 +1289,7 @@ impl Player {
 							position: self.get_position(),
 							velocity: EntityPosition::default(),
 							uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-							entity_id: game.entity_id_manager.get_new(),
+							entity_id: entity_id_manager.get_new(),
 							..Default::default()
 						},
 						age: 0,
@@ -1291,7 +1305,7 @@ impl Player {
 			}
 
 			players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
-				game.packet_sender.send_packet_to_player(
+				packet_sender.send_packet_to_player(
 					&x.peer_socket_address,
 					crate::packets::clientbound::play::RemoveEntities::PACKET_ID,
 					crate::packets::clientbound::play::RemoveEntities {
@@ -1306,7 +1320,14 @@ impl Player {
 		return entities_to_summon;
 	}
 
-	pub fn respawn(&mut self, game: Arc<Game>, players: &[Player], world: &mut World) {
+	pub fn respawn(
+		&mut self,
+		players: &[Player],
+		world: &mut World,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, Block>,
+	) {
 		self.health = 20.0;
 		self.food_level = 20;
 		self.food_exhaustion_level = 0.0;
@@ -1314,7 +1335,7 @@ impl Player {
 		self.fall_distance = 0.0;
 		self.last_position = world.default_spawn_location.into();
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::Respawn::PACKET_ID,
 			crate::packets::clientbound::play::Respawn {
@@ -1344,15 +1365,15 @@ impl Player {
 				world.default_spawn_location.y as f64,
 				world.default_spawn_location.z as f64,
 				world,
-				&game.entity_id_manager,
-				&game.block_state_data,
-				game.clone(),
+				entity_id_manager,
+				block_state_data,
+				packet_sender,
 			)
 			.unwrap();
 
 		for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
 			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
-				game.packet_sender.send_packet_to_player(
+				packet_sender.send_packet_to_player(
 					&other_stream.peer_addr().unwrap(),
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
@@ -1374,7 +1395,7 @@ impl Player {
 			}
 		}
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
@@ -1383,7 +1404,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 			crate::packets::clientbound::play::SynchronizePlayerPosition {
@@ -1400,7 +1421,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
@@ -1411,7 +1432,7 @@ impl Player {
 
 		self.is_dead = false;
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1427,17 +1448,17 @@ impl Player {
 		return self.health;
 	}
 
-	fn heal(&mut self, heal_amount: f32, game: Arc<Game>) {
+	fn heal(&mut self, heal_amount: f32, packet_sender: &PacketSender) {
 		self.health += heal_amount;
 		if self.health > 20.0 {
 			self.health = 20.0;
 		}
 
-		self.send_health_and_food_to_client(game);
+		self.send_health_and_food_to_client(packet_sender);
 	}
 
-	pub fn send_health_and_food_to_client(&self, game: Arc<Game>) {
-		game.packet_sender.send_packet_to_player(
+	pub fn send_health_and_food_to_client(&self, packet_sender: &PacketSender) {
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetHealth::PACKET_ID,
 			crate::packets::clientbound::play::SetHealth {
@@ -1482,7 +1503,15 @@ impl Player {
 		return &self.dimension;
 	}
 
-	pub fn change_dimension(&mut self, new_dimension_name: &str, players_clone: &[Player], world: &mut World, game: Arc<Game>) {
+	pub fn change_dimension(
+		&mut self,
+		new_dimension_name: &str,
+		players_clone: &[Player],
+		world: &mut World,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, Block>,
+	) {
 		if !world.dimensions.contains_key(new_dimension_name) {
 			println!("Player {} tried switching to dimension {new_dimension_name}, which doesn't exist!", self.display_name);
 			return;
@@ -1491,7 +1520,7 @@ impl Player {
 		self.dimension = new_dimension_name.to_string();
 		self.position = world.default_spawn_location.into();
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::Respawn::PACKET_ID,
 			crate::packets::clientbound::play::Respawn {
@@ -1521,15 +1550,15 @@ impl Player {
 				world.default_spawn_location.y as f64,
 				world.default_spawn_location.z as f64,
 				world,
-				&game.entity_id_manager,
-				&game.block_state_data,
-				game.clone(),
+				entity_id_manager,
+				block_state_data,
+				packet_sender,
 			)
 			.unwrap();
 
 		for other_stream in players_clone.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
 			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
-				game.packet_sender.send_packet_to_player(
+				packet_sender.send_packet_to_player(
 					&other_stream.peer_addr().unwrap(),
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
@@ -1551,7 +1580,7 @@ impl Player {
 			}
 		}
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
@@ -1560,7 +1589,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 			crate::packets::clientbound::play::SynchronizePlayerPosition {
@@ -1577,7 +1606,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
 			crate::packets::clientbound::play::GameEvent {
@@ -1586,7 +1615,7 @@ impl Player {
 			},
 		);
 
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -1601,7 +1630,7 @@ impl Player {
 
 		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
 			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
-				self.send_chunk(world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
+				self.send_chunk(world, x, z, entity_id_manager, block_state_data, packet_sender).unwrap();
 			}
 		}
 
@@ -1614,7 +1643,7 @@ impl Player {
 				continue;
 			}
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
@@ -1634,7 +1663,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
@@ -1643,7 +1672,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -1659,7 +1688,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
@@ -1669,7 +1698,7 @@ impl Player {
 					pitch: player.get_pitch_u8(),
 				},
 			);
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
@@ -1689,7 +1718,7 @@ impl Player {
 				continue;
 			}
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
@@ -1709,7 +1738,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
@@ -1718,7 +1747,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
@@ -1734,7 +1763,7 @@ impl Player {
 				},
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
@@ -1744,7 +1773,7 @@ impl Player {
 					pitch: player.get_pitch_u8(),
 				},
 			);
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
@@ -1756,13 +1785,13 @@ impl Player {
 
 
 		for entity in &world.dimensions.get(new_dimension_name).unwrap().entities {
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				entity.to_spawn_entity_packet(),
 			);
 
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {

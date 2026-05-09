@@ -45,7 +45,7 @@ pub fn process(
 			player.get_selected_inventory_slot(),
 		);
 		block_interaction_result
-			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, game.clone())
+			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, &game.packet_sender)
 			.inspect_err(|x| {
 				println!(
 					"lib::block::interact_with_block_at({:?}, {block_id_at_location}, {}) call resulted in error {x:?}",
@@ -64,9 +64,9 @@ pub fn process(
 					count: held_item.count - 1,
 					..held_item.clone()
 				};
-				player.set_selected_inventory_slot(Some(slot), players_clone, game.clone());
+				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
 			} else {
-				player.set_selected_inventory_slot(None, players_clone, game.clone());
+				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 			}
 			let water_bucket_slot = Slot {
 				count: 1,
@@ -74,7 +74,7 @@ pub fn process(
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			};
-			player.add_item_to_inventory(water_bucket_slot, players_clone, game.clone());
+			player.add_item_to_inventory(water_bucket_slot, players_clone, &game.packet_sender);
 			vec![(0, new_block_location)]
 		} else {
 			vec![]
@@ -90,7 +90,7 @@ pub fn process(
 			components_to_remove: Vec::new(),
 		};
 
-		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, game.clone());
+		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, &game.packet_sender);
 
 		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
 		let full_water_block_id = water_block.states[water_block.default_state].id;
@@ -129,7 +129,7 @@ pub fn process(
 				new_block_location,
 				dimension,
 				players_clone,
-				game.clone(),
+				&game.packet_sender,
 			);
 		}
 
@@ -162,7 +162,7 @@ pub fn process(
 				})
 			};
 
-			player.set_selected_inventory_slot(new_hand_slot, players_clone, game.clone());
+			player.set_selected_inventory_slot(new_hand_slot, players_clone, &game.packet_sender);
 		}
 
 		block_state_ids
@@ -199,7 +199,7 @@ pub fn process(
 						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-						block_entity.remove_self(&mut players, dimension, game.clone());
+						block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 					};
 				}
 
@@ -242,7 +242,15 @@ pub fn process(
 
 	for block_to_update in blocks_to_update {
 		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-		res.handle(dimension, block_to_update, &mut players, game.clone());
+		res.handle(
+			dimension,
+			block_to_update,
+			&mut players,
+			&game.packet_sender,
+			&game.entity_id_manager,
+			&game.block_state_data,
+			&game.loot_tables,
+		);
 	}
 
 

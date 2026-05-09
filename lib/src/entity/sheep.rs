@@ -30,11 +30,13 @@ impl CommonEntityTrait for Sheep {
 	fn interact(
 		&mut self,
 		held_item: &Slot,
-		game: Arc<Game>,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],
 		player_uuid: u128,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> EntityInteractResult {
 		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:shears").unwrap() && !self.sheared {
 			self.sheared = true;
@@ -59,7 +61,7 @@ impl CommonEntityTrait for Sheep {
 						pitch: 0.0,
 					},
 					uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-					entity_id: game.entity_id_manager.get_new(),
+					entity_id: entity_id_manager.get_new(),
 					..Default::default()
 				},
 				age: 0,
@@ -70,7 +72,7 @@ impl CommonEntityTrait for Sheep {
 				thrower: player_uuid,
 			};
 
-			self.resend_metadata_to_players(players_clone, game, &dimension.name);
+			self.resend_metadata_to_players(players_clone, packet_sender, &dimension.name);
 
 			return EntityInteractResult::AddEntity(Box::new(Entity::Item(item_entity)));
 		} else {
@@ -89,11 +91,18 @@ impl CommonEntityTrait for Sheep {
 		.collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
-		return self.feed_breedable_mob(held_item, game, players_clone, dimension_name);
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 
-	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn extra_tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 		if self.sheared {
 			let mut rng = rng();
@@ -104,19 +113,19 @@ impl CommonEntityTrait for Sheep {
 					..self.get_common_entity_data().position.into()
 				};
 				let block = dimension.get_block(position).unwrap_or(0);
-				let grass_block = data::blocks::get_block_from_name("minecraft:grass_block", &game.block_state_data);
+				let grass_block = data::blocks::get_block_from_name("minecraft:grass_block", block_state_data);
 				if block == grass_block.states[grass_block.default_state].id {
-					let dirt_block = data::blocks::get_block_from_name("minecraft:dirt", &game.block_state_data);
+					let dirt_block = data::blocks::get_block_from_name("minecraft:dirt", block_state_data);
 					output.push(EntityTickOutcome::ReplaceBlock(position, dirt_block.states[dirt_block.default_state].id));
 
 					self.sheared = false;
 
-					self.resend_metadata_to_players(players, game.clone(), &dimension.name);
+					self.resend_metadata_to_players(players, packet_sender, &dimension.name);
 				}
 			}
 		}
 
-		output.append(&mut self.tick_breedable_mob(dimension, players, game));
+		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager));
 		return output;
 	}
 

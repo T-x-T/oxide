@@ -30,5 +30,5 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, 
 		components_to_remove: Vec::new(),
 	};
 
-	player.set_selected_inventory_slot(Some(new_slot_data), players_clone, game.clone());
+	player.set_selected_inventory_slot(Some(new_slot_data), players_clone, &game.packet_sender);
 }

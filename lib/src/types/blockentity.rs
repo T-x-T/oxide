@@ -1,5 +1,4 @@
 use std::error::Error;
-use std::sync::Arc;
 
 use basic_types::blocks::Type;
 
@@ -56,61 +55,65 @@ pub enum BlockEntity {
 }
 
 pub trait CommonBlockEntity {
-	fn tick(&mut self, players: &[Player], game: Arc<Game>, dimension_name: &str);
+	fn tick(&mut self, _players: &[Player], _dimension_name: &str, _packet_sender: &PacketSender, _recipe_manager: &RecipeManager) {
+		return;
+	}
 	fn new(position: BlockPosition) -> Self;
 	fn get_contained_items_mut(&mut self) -> &mut [Slot];
 	fn get_contained_items_owned(&self) -> Vec<Slot>;
 }
 
 impl BlockEntity {
-	pub fn tick(&mut self, players: &[Player], game: Arc<Game>, dimension_name: &str) {
+	pub fn tick(&mut self, players: &[Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
 		match self {
-			BlockEntity::Furnace(furnace) => furnace.tick(players, game, dimension_name),
-			BlockEntity::Chest(chest) => chest.tick(players, game, dimension_name),
-			BlockEntity::Sign(sign) => sign.tick(players, game, dimension_name),
-			BlockEntity::Barrel(barrel) => barrel.tick(players, game, dimension_name),
-			BlockEntity::Bed(bed) => bed.tick(players, game, dimension_name),
-			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, game, dimension_name),
-			BlockEntity::Beacon(beacon) => beacon.tick(players, game, dimension_name),
-			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, game, dimension_name),
-			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, game, dimension_name),
-			BlockEntity::CommandBlock(command_block) => command_block.tick(players, game, dimension_name),
-			BlockEntity::Crafter(crafter) => crafter.tick(players, game, dimension_name),
-			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, game, dimension_name),
-			BlockEntity::Dropper(dropper) => dropper.tick(players, game, dimension_name),
-			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, game, dimension_name),
-			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, game, dimension_name),
-			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, game, dimension_name),
-			BlockEntity::Hopper(hopper) => hopper.tick(players, game, dimension_name),
-			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, game, dimension_name),
-			BlockEntity::Smoker(smoker) => smoker.tick(players, game, dimension_name),
-			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, game, dimension_name),
-			BlockEntity::Banner(banner) => banner.tick(players, game, dimension_name),
-			BlockEntity::Beehive(beehive) => beehive.tick(players, game, dimension_name),
-			BlockEntity::Bell(bell) => bell.tick(players, game, dimension_name),
-			BlockEntity::BrushableBlock(brushable_block) => brushable_block.tick(players, game, dimension_name),
-			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => calibrated_sculk_sensor.tick(players, game, dimension_name),
-			BlockEntity::Campfire(campfire) => campfire.tick(players, game, dimension_name),
-			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.tick(players, game, dimension_name),
-			BlockEntity::Comparator(comperator) => comperator.tick(players, game, dimension_name),
-			BlockEntity::Conduit(conduit) => conduit.tick(players, game, dimension_name),
-			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.tick(players, game, dimension_name),
-			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.tick(players, game, dimension_name),
-			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.tick(players, game, dimension_name),
-			BlockEntity::EndGateway(end_gateway) => end_gateway.tick(players, game, dimension_name),
-			BlockEntity::EndPortal(end_portal) => end_portal.tick(players, game, dimension_name),
-			BlockEntity::Jukebox(jukebox) => jukebox.tick(players, game, dimension_name),
-			BlockEntity::Lectern(lectern) => lectern.tick(players, game, dimension_name),
-			BlockEntity::Piston(piston) => piston.tick(players, game, dimension_name),
-			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.tick(players, game, dimension_name),
-			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.tick(players, game, dimension_name),
-			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.tick(players, game, dimension_name),
-			BlockEntity::ShulkerBox(shulker_box) => shulker_box.tick(players, game, dimension_name),
-			BlockEntity::Skull(skull) => skull.tick(players, game, dimension_name),
-			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.tick(players, game, dimension_name),
-			BlockEntity::StructureBlock(structure_block) => structure_block.tick(players, game, dimension_name),
-			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.tick(players, game, dimension_name),
-			BlockEntity::Vault(vault) => vault.tick(players, game, dimension_name),
+			BlockEntity::Furnace(furnace) => furnace.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Chest(chest) => chest.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Sign(sign) => sign.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Barrel(barrel) => barrel.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Bed(bed) => bed.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Beacon(beacon) => beacon.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::BrewingStand(brewing_stand) => brewing_stand.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::CommandBlock(command_block) => command_block.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Crafter(crafter) => crafter.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Dispenser(dispenser) => dispenser.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Dropper(dropper) => dropper.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::EnchantingTable(enchanting_table) => enchanting_table.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::EnderChest(ender_chest) => ender_chest.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::HangingSign(hanging_sign) => hanging_sign.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Hopper(hopper) => hopper.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Jigsaw(jigsaw) => jigsaw.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Smoker(smoker) => smoker.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::TrappedChest(trapped_chest) => trapped_chest.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Banner(banner) => banner.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Beehive(beehive) => beehive.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Bell(bell) => bell.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::BrushableBlock(brushable_block) => brushable_block.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::CalibratedSculkSensor(calibrated_sculk_sensor) => {
+				calibrated_sculk_sensor.tick(players, dimension_name, packet_sender, recipe_manager)
+			}
+			BlockEntity::Campfire(campfire) => campfire.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::ChiseledBookshelf(chiseled_bookshelf) => chiseled_bookshelf.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Comparator(comperator) => comperator.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Conduit(conduit) => conduit.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::CreakingHeart(creaking_heart) => creaking_heart.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::DaylightDetector(daylight_detector) => daylight_detector.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::DecoratedPot(decorated_pot) => decorated_pot.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::EndGateway(end_gateway) => end_gateway.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::EndPortal(end_portal) => end_portal.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Jukebox(jukebox) => jukebox.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Lectern(lectern) => lectern.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Piston(piston) => piston.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::SculkCatalyst(sculk_catalyst) => sculk_catalyst.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::SculkSensor(sculk_sensor) => sculk_sensor.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::SculkShrieker(sculk_shrieker) => sculk_shrieker.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::ShulkerBox(shulker_box) => shulker_box.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Skull(skull) => skull.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::SoulCampfire(soul_campfire) => soul_campfire.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::StructureBlock(structure_block) => structure_block.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::TrialSpawner(trial_spawner) => trial_spawner.tick(players, dimension_name, packet_sender, recipe_manager),
+			BlockEntity::Vault(vault) => vault.tick(players, dimension_name, packet_sender, recipe_manager),
 		}
 	}
 
@@ -292,9 +295,15 @@ impl BlockEntity {
 		};
 	}
 
-	pub fn remove_self(&self, players: &mut [Player], dimension: &mut Dimension, game: Arc<Game>) {
+	pub fn remove_self(
+		&self,
+		players: &mut [Player],
+		dimension: &mut Dimension,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+	) {
 		for item in self.get_contained_items_owned() {
-			dimension.summon_item(self.get_position().into(), item, None, players, game.clone());
+			dimension.summon_item(self.get_position().into(), item, None, players, packet_sender, entity_id_manager);
 		}
 
 		dimension
@@ -305,7 +314,7 @@ impl BlockEntity {
 		players
 			.iter_mut()
 			.filter(|player| player.opened_inventory_at.is_some_and(|pos| pos == self.get_position()))
-			.for_each(|x| x.close_inventory(game.clone()).unwrap());
+			.for_each(|x| x.close_inventory(packet_sender).unwrap());
 	}
 
 	pub fn set_needs_ticking(&mut self, new_needs_ticking: bool) {

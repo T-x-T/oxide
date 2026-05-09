@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 
 use rand::Rng;
 
@@ -246,27 +245,29 @@ impl Entity {
 	pub fn interact(
 		&mut self,
 		held_item: &Slot,
-		game: Arc<Game>,
-		dimension: &mut Dimension,
+		dim: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
 		player_uuid: u128,
+		packet_sndr: &PacketSender,
+		entity_id_mgr: &EntityIdManager,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
 	) -> EntityInteractResult {
 		return match self {
-			Entity::Armadillo(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Cat(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::ChestMinecart(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Chicken(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Cow(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Creeper(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Donkey(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Horse(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Item(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Parrot(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Pig(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Rabbit(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Sheep(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
-			Entity::Player(x) => x.interact(held_item, game, dimension, players_clone, players, player_uuid),
+			Entity::Armadillo(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Cat(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::ChestMinecart(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Chicken(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Cow(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Creeper(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Donkey(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Horse(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Item(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Parrot(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Pig(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Rabbit(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Sheep(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Player(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 		};
 	}
 
@@ -323,59 +324,66 @@ impl Entity {
 			Entity::Player(x) => x.get_metadata(),
 		};
 	}
-	pub fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+	pub fn tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		return match self {
-			Entity::Armadillo(x) => x.tick(dimension, players, game),
-			Entity::Cat(x) => x.tick(dimension, players, game),
-			Entity::ChestMinecart(x) => x.tick(dimension, players, game),
-			Entity::Chicken(x) => x.tick(dimension, players, game),
-			Entity::Cow(x) => x.tick(dimension, players, game),
-			Entity::Creeper(x) => x.tick(dimension, players, game),
-			Entity::Donkey(x) => x.tick(dimension, players, game),
-			Entity::Horse(x) => x.tick(dimension, players, game),
-			Entity::Item(x) => x.tick(dimension, players, game),
-			Entity::Parrot(x) => x.tick(dimension, players, game),
-			Entity::Pig(x) => x.tick(dimension, players, game),
-			Entity::Rabbit(x) => x.tick(dimension, players, game),
-			Entity::Sheep(x) => x.tick(dimension, players, game),
-			Entity::Player(x) => x.tick(dimension, players, game),
+			Entity::Armadillo(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Cat(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::ChestMinecart(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Chicken(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Cow(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Creeper(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Donkey(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Horse(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Item(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Parrot(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Pig(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Rabbit(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Sheep(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Player(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 		};
 	}
-	pub fn damage(&mut self, damage: f32, game: Arc<Game>, players: &[Player]) {
+	pub fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
 		return match self {
-			Entity::Armadillo(x) => x.damage(damage, game, players),
-			Entity::Cat(x) => x.damage(damage, game, players),
-			Entity::ChestMinecart(x) => x.damage(damage, game, players),
-			Entity::Chicken(x) => x.damage(damage, game, players),
-			Entity::Cow(x) => x.damage(damage, game, players),
-			Entity::Creeper(x) => x.damage(damage, game, players),
-			Entity::Donkey(x) => x.damage(damage, game, players),
-			Entity::Horse(x) => x.damage(damage, game, players),
-			Entity::Item(x) => x.damage(damage, game, players),
-			Entity::Parrot(x) => x.damage(damage, game, players),
-			Entity::Pig(x) => x.damage(damage, game, players),
-			Entity::Rabbit(x) => x.damage(damage, game, players),
-			Entity::Sheep(x) => x.damage(damage, game, players),
-			Entity::Player(x) => x.damage(damage, game, players),
+			Entity::Armadillo(x) => x.damage(damage, packet_sender, players),
+			Entity::Cat(x) => x.damage(damage, packet_sender, players),
+			Entity::ChestMinecart(x) => x.damage(damage, packet_sender, players),
+			Entity::Chicken(x) => x.damage(damage, packet_sender, players),
+			Entity::Cow(x) => x.damage(damage, packet_sender, players),
+			Entity::Creeper(x) => x.damage(damage, packet_sender, players),
+			Entity::Donkey(x) => x.damage(damage, packet_sender, players),
+			Entity::Horse(x) => x.damage(damage, packet_sender, players),
+			Entity::Item(x) => x.damage(damage, packet_sender, players),
+			Entity::Parrot(x) => x.damage(damage, packet_sender, players),
+			Entity::Pig(x) => x.damage(damage, packet_sender, players),
+			Entity::Rabbit(x) => x.damage(damage, packet_sender, players),
+			Entity::Sheep(x) => x.damage(damage, packet_sender, players),
+			Entity::Player(x) => x.damage(damage, packet_sender, players),
 		};
 	}
 
-	pub fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
+	pub fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return match self {
-			Entity::Armadillo(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Cat(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::ChestMinecart(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Chicken(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Cow(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Creeper(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Donkey(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Horse(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Item(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Parrot(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Pig(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Rabbit(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Sheep(x) => x.feed(held_item, game, players_clone, dimension_name),
-			Entity::Player(x) => x.feed(held_item, game, players_clone, dimension_name),
+			Entity::Armadillo(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Cat(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::ChestMinecart(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Chicken(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Cow(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Creeper(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Donkey(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Horse(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Item(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Parrot(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Pig(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Rabbit(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Sheep(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Player(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 		};
 	}
 
@@ -394,22 +402,22 @@ impl Entity {
 		};
 	}
 
-	pub fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>, dimension_name: &str) {
+	pub fn resend_metadata_to_players(&self, players_clone: &[Player], packet_sender: &PacketSender, dimension_name: &str) {
 		return match self {
-			Entity::Armadillo(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Cat(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::ChestMinecart(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Chicken(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Cow(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Creeper(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Donkey(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Horse(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Item(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Parrot(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Pig(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
-			Entity::Player(x) => x.resend_metadata_to_players(players_clone, game, dimension_name),
+			Entity::Armadillo(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Cat(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::ChestMinecart(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Chicken(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Cow(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Creeper(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Donkey(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Horse(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Item(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Parrot(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Pig(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Player(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 		};
 	}
 }
@@ -551,7 +559,14 @@ pub trait CommonEntityTrait {
 		panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
 	}
 
-	fn tick(&mut self, dimension: &Dimension, players: &[Player], game: Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
 		if self.is_mob() {
@@ -667,7 +682,7 @@ pub trait CommonEntityTrait {
 				on_ground: self.is_on_ground(dimension),
 			};
 
-			game.packet_sender.send_packet_to_everyone_in_dimension(
+			packet_sender.send_packet_to_everyone_in_dimension(
 				players,
 				&dimension.name,
 				crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
@@ -677,12 +692,19 @@ pub trait CommonEntityTrait {
 			output.push(EntityTickOutcome::Updated);
 		}
 
-		output.append(&mut self.extra_tick(dimension, players, game));
+		output.append(&mut self.extra_tick(dimension, players, packet_sender, entity_id_manager, block_state_data));
 
 		return output;
 	}
 
-	fn extra_tick(&mut self, _dimension: &Dimension, _players: &[Player], _game: Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn extra_tick(
+		&mut self,
+		_dimension: &Dimension,
+		_players: &[Player],
+		_packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		return Vec::new();
 	}
 
@@ -897,7 +919,7 @@ pub trait CommonEntityTrait {
 		};
 	}
 
-	fn damage(&mut self, damage: f32, _game: Arc<Game>, _players: &[Player]) {
+	fn damage(&mut self, damage: f32, _packet_sender: &PacketSender, _players: &[Player]) {
 		if self.is_mob() {
 			self.get_mob_data_mut().health -= damage;
 		}
@@ -910,29 +932,31 @@ pub trait CommonEntityTrait {
 	}
 
 	//returns true if feeding was successfull, to signal to caller that players inventory needs updating
-	fn feed(&mut self, _held_item: &Slot, _game: Arc<Game>, _players_clone: &[Player], _dimension_name: &str) -> bool {
+	fn feed(&mut self, _held_item: &Slot, _packet_sender: &PacketSender, _players_clone: &[Player], _dimension_name: &str) -> bool {
 		return false;
 	}
 
 	fn interact(
 		&mut self,
 		_held_item: &Slot,
-		_game: Arc<Game>,
 		_dimension: &mut Dimension,
 		_players_clone: &[Player],
 		_players: &mut [Player],
 		_player_uuid: u128,
+		_packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> EntityInteractResult {
 		return EntityInteractResult::DoNothing;
 	}
 
-	fn resend_metadata_to_players(&self, players_clone: &[Player], game: Arc<Game>, dimension_name: &str) {
+	fn resend_metadata_to_players(&self, players_clone: &[Player], packet_sender: &PacketSender, dimension_name: &str) {
 		let metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
 			entity_id: self.get_common_entity_data().entity_id,
 			metadata: self.get_metadata(),
 		};
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players_clone,
 			dimension_name,
 			crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
@@ -1168,7 +1192,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 	fn get_breedable_data(&self) -> &BreedableMob;
 	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
 	fn get_food(&self) -> &[&'static str];
-	fn feed_breedable_mob(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed_breedable_mob(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		if self.get_breedable_data().age != 0 {
 			return false;
 		}
@@ -1179,7 +1203,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 
 		self.get_breedable_data_mut().in_love = 30 * 20;
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players_clone,
 			dimension_name,
 			crate::packets::clientbound::play::Particle::PACKET_ID,
@@ -1202,7 +1226,13 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		return true;
 	}
 
-	fn tick_breedable_mob(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn tick_breedable_mob(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
 		let in_range_peers_in_love: Vec<Box<&dyn BreedableMobTrait>> = if self.get_breedable_data().breeding_with.is_some() {
@@ -1303,7 +1333,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		} else if self.get_breedable_data().age == -1 && !self.get_breedable_data().age_locked {
 			self.get_breedable_data_mut().age = 0;
 
-			self.resend_metadata_to_players(players, game, &dimension.name);
+			self.resend_metadata_to_players(players, packet_sender, &dimension.name);
 		} else if self.get_breedable_data().age > 0 {
 			self.get_breedable_data_mut().age -= 1;
 		}
@@ -1337,7 +1367,7 @@ pub fn create_and_spawn_entity_from_egg(
 	position: BlockPosition,
 	dimension: &mut Dimension,
 	players: &[Player],
-	game: Arc<Game>,
+	packet_sender: &PacketSender,
 ) {
 	let entity_type = spawn_egg_name.replace("_spawn_egg", "");
 	let entity_position = EntityPosition {
@@ -1347,7 +1377,7 @@ pub fn create_and_spawn_entity_from_egg(
 		yaw: 0.0,
 		pitch: 0.0,
 	};
-	create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players, game);
+	create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players, packet_sender);
 }
 
 pub fn create_and_spawn_entity(
@@ -1356,7 +1386,7 @@ pub fn create_and_spawn_entity(
 	position: EntityPosition,
 	dimension: &mut Dimension,
 	players: &[Player],
-	game: Arc<Game>,
+	packet_sender: &PacketSender,
 ) {
 	let new_entity = entity::new(
 		entity_type,
@@ -1375,7 +1405,7 @@ pub fn create_and_spawn_entity(
 
 		dimension.add_entity(new_entity);
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players,
 			&dimension.name,
 			crate::packets::clientbound::play::SpawnEntity::PACKET_ID,

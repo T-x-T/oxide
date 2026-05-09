@@ -95,7 +95,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		&mut game.world.lock().unwrap(),
 		&game.entity_id_manager,
 		&game.block_state_data,
-		game.clone(),
+		&game.packet_sender,
 	)?;
 
 	sending_player.current_teleport_id += 1;

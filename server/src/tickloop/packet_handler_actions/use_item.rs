@@ -42,7 +42,7 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 				summon_packet,
 			);
 
-			chicken.resend_metadata_to_players(&players, game.clone(), &dimension.name);
+			chicken.resend_metadata_to_players(&players, &game.packet_sender, &dimension.name);
 
 			dimension.add_entity(Entity::Chicken(chicken));
 		}

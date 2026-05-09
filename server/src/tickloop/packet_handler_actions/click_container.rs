@@ -17,10 +17,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet.clone(),
 					&mut inventory,
 					player_uuid,
-					game.clone(),
 					Vec::new(),
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 
@@ -97,7 +97,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						})
 						.collect(),
 					players_clone,
-					game.clone(),
+					&game.packet_sender,
 				);
 
 				game.packet_sender.send_packet_to_player(
@@ -149,10 +149,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::BlastFurnace(blast_furnace) => {
@@ -163,10 +163,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 				block_entity.set_needs_ticking(true);
 			}
@@ -178,10 +178,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Chest(chest) => {
@@ -192,10 +192,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Crafter(crafter) => {
@@ -206,10 +206,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Dispenser(dispenser) => {
@@ -220,10 +220,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Dropper(dropper) => {
@@ -234,10 +234,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Furnace(furnace) => {
@@ -248,10 +248,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 				block_entity.set_needs_ticking(true);
 			}
@@ -263,10 +263,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::ShulkerBox(shulker_box) => {
@@ -277,10 +277,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			BlockEntity::Smoker(smoker) => {
@@ -291,10 +291,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 				block_entity.set_needs_ticking(true);
 			}
@@ -306,10 +306,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					parsed_packet,
 					items,
 					player_uuid,
-					game.clone(),
 					streams_with_container_opened,
 					&mut players,
 					players_clone,
+					&game.packet_sender,
 				);
 			}
 			x => println!("can't handle click_container packet for entity {x:?}"),
@@ -325,10 +325,10 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				parsed_packet.clone(),
 				&mut items,
 				player_uuid,
-				game.clone(),
 				streams_with_container_opened,
 				&mut players,
 				players_clone,
+				&game.packet_sender,
 			);
 		}
 		items.remove(0); //remove empty result slot again

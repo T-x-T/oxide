@@ -6,7 +6,6 @@ use super::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Debug;
-use std::sync::Arc;
 
 use crate::SPAWN_CHUNK_RADIUS;
 use crate::entity::{CommonEntity, ItemEntity};
@@ -227,7 +226,8 @@ impl Dimension {
 		slot: Slot,
 		player_uuid: Option<u128>,
 		players_clone: &[Player],
-		game: Arc<Game>,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
 	) {
 		let new_entity = ItemEntity {
 			common: CommonEntity {
@@ -238,7 +238,7 @@ impl Dimension {
 				},
 				velocity: EntityPosition::default(),
 				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-				entity_id: game.entity_id_manager.get_new(),
+				entity_id: entity_id_manager.get_new(),
 				..Default::default()
 			},
 			age: 0,
@@ -251,14 +251,14 @@ impl Dimension {
 
 		let spawn_packet = new_entity.to_spawn_entity_packet();
 
-		game.packet_sender.send_packet_to_everyone_in_dimension(
+		packet_sender.send_packet_to_everyone_in_dimension(
 			players_clone,
 			&self.name,
 			crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 			spawn_packet,
 		);
 
-		new_entity.resend_metadata_to_players(players_clone, game.clone(), &self.name);
+		new_entity.resend_metadata_to_players(players_clone, packet_sender, &self.name);
 
 		self.add_entity(Entity::Item(new_entity));
 	}

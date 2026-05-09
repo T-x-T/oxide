@@ -34,11 +34,18 @@ impl CommonEntityTrait for Chicken {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player], dimension_name: &str) -> bool {
-		return self.feed_breedable_mob(held_item, game, players_clone, dimension_name);
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 
-	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn extra_tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 		let mut rng = rng();
 
@@ -61,7 +68,7 @@ impl CommonEntityTrait for Chicken {
 						pitch: 0.0,
 					},
 					uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
-					entity_id: game.entity_id_manager.get_new(),
+					entity_id: entity_id_manager.get_new(),
 					..Default::default()
 				},
 				age: 0,
@@ -76,7 +83,7 @@ impl CommonEntityTrait for Chicken {
 		}
 
 
-		output.append(&mut self.tick_breedable_mob(dimension, players, game));
+		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager));
 		return output;
 	}
 

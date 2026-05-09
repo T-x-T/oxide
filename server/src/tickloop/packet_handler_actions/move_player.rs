@@ -34,7 +34,7 @@ pub fn process(
 				&mut world,
 				&game.entity_id_manager,
 				&game.block_state_data,
-				game.clone(),
+				&game.packet_sender,
 			)
 			.unwrap();
 		vec![
@@ -71,7 +71,7 @@ pub fn process(
 				&mut world,
 				&game.entity_id_manager,
 				&game.block_state_data,
-				game.clone(),
+				&game.packet_sender,
 			)
 			.unwrap();
 		vec![(

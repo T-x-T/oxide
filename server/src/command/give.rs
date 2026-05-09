@@ -56,7 +56,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		slot,
 		Some(player.uuid),
 		&players,
-		game.clone(),
+		&game.packet_sender,
+		&game.entity_id_manager,
 	);
 
 	return Ok(());

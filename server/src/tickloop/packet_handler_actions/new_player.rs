@@ -11,7 +11,8 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		connection_player.player_name.clone().unwrap_or_default(),
 		connection_player.player_uuid.unwrap_or_default(),
 		peer_addr,
-		game.clone(),
+		&game.entity_id_manager,
+		&game.default_gamemode,
 		stream,
 		world.default_spawn_location,
 	);
@@ -85,7 +86,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		},
 	);
 
-	new_player.send_health_and_food_to_client(game.clone());
+	new_player.send_health_and_food_to_client(&game.packet_sender);
 
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
@@ -103,7 +104,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	let now = std::time::Instant::now();
 	for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 		for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {
-			new_player.send_chunk(&mut world, x, z, &game.entity_id_manager, &game.block_state_data, game.clone()).unwrap();
+			new_player.send_chunk(&mut world, x, z, &game.entity_id_manager, &game.block_state_data, &game.packet_sender).unwrap();
 		}
 	}
 	println!("send chunks: {:?}", std::time::Instant::now() - now);

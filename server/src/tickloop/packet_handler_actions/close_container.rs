@@ -18,18 +18,18 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 				inventory_updated = true;
 				let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 
-				dimension.summon_item(player.get_position(), slot.clone(), None, players_clone, game.clone());
+				dimension.summon_item(player.get_position(), slot.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager);
 			}
 		}
 
 		if inventory_updated {
-			player.set_inventory_and_inform_client(inventory, players_clone, game.clone());
+			player.set_inventory_and_inform_client(inventory, players_clone, &game.packet_sender);
 		}
 	} else {
 		let player_position = player.get_position();
 		let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 		player.crafting_table_slots.iter_mut().filter(|x| x.count > 0).for_each(|x| {
-			dimension.summon_item(player_position, x.clone(), None, players_clone, game.clone());
+			dimension.summon_item(player_position, x.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager);
 		});
 
 		if let Some(position) = player.opened_inventory_at {
@@ -52,6 +52,6 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 			}
 		};
 
-		player.close_inventory(game.clone()).unwrap();
+		player.close_inventory(&game.packet_sender).unwrap();
 	}
 }

@@ -4,7 +4,6 @@ use basic_types::blocks::*;
 use data::inventory::Inventory;
 use std::collections::HashMap;
 use std::error::Error;
-use std::sync::Arc;
 
 mod barell;
 mod beetroot;
@@ -134,7 +133,16 @@ pub enum BlockUpdateOutcome {
 }
 
 impl BlockUpdateOutcome {
-	pub fn handle(self, dimension: &mut Dimension, position: BlockPosition, players: &mut [Player], game: Arc<Game>) {
+	pub fn handle(
+		self,
+		dimension: &mut Dimension,
+		position: BlockPosition,
+		players: &mut [Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
+	) {
 		match self {
 			BlockUpdateOutcome::DoNothing => return,
 			BlockUpdateOutcome::ChangeOwnBlockId(new_block_id) => {
@@ -144,10 +152,10 @@ impl BlockUpdateOutcome {
 					let block_entity =
 						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
 					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-					block_entity.remove_self(players, dimension, game.clone());
+					block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
 				}
 
-				game.packet_sender.send_packet_to_everyone_in_dimension(
+				packet_sender.send_packet_to_everyone_in_dimension(
 					players,
 					&dimension.name,
 					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
@@ -158,7 +166,7 @@ impl BlockUpdateOutcome {
 				);
 			}
 			BlockUpdateOutcome::DestroyAndDropSelf(old_block_id) => {
-				game.packet_sender.send_packet_to_everyone_in_dimension(
+				packet_sender.send_packet_to_everyone_in_dimension(
 					players,
 					&dimension.name,
 					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
@@ -168,11 +176,11 @@ impl BlockUpdateOutcome {
 					},
 				);
 
-				let items_to_drop = crate::loot_table::get_block_drops(&game.loot_tables, old_block_id, &Slot::default(), &game.block_state_data);
+				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &Slot::default(), block_state_data);
 
 				for item_to_drop in items_to_drop {
 					if item_to_drop.id != 0 {
-						dimension.summon_item(position.into(), item_to_drop, None, players, game.clone());
+						dimension.summon_item(position.into(), item_to_drop, None, players, packet_sender, entity_id_manager);
 					}
 				}
 			}
@@ -221,14 +229,14 @@ impl BlockInteractionResult {
 		player: &mut Player,
 		players: &[Player],
 		block_id_at_location: u16,
-		game: Arc<Game>,
+		packet_sender: &PacketSender,
 	) -> Result<Vec<(u16, BlockPosition)>, Box<dyn Error>> {
 		match self {
 			BlockInteractionResult::OverwriteBlocks(blocks) => Ok(blocks),
 			BlockInteractionResult::OpenInventory(window_type) => {
-				player.open_inventory(window_type, position, game.clone(), dimension);
+				player.open_inventory(window_type, position, packet_sender, dimension);
 
-				game.packet_sender.send_packet_to_everyone_in_dimension(
+				packet_sender.send_packet_to_everyone_in_dimension(
 					players,
 					&dimension.name,
 					crate::packets::clientbound::play::BlockAction::PACKET_ID,
@@ -242,7 +250,7 @@ impl BlockInteractionResult {
 				Ok(Vec::new())
 			}
 			BlockInteractionResult::OpenSignEditor => {
-				game.packet_sender.send_packet_to_player(
+				packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					crate::packets::clientbound::play::OpenSignEditor::PACKET_ID,
 					crate::packets::clientbound::play::OpenSignEditor {

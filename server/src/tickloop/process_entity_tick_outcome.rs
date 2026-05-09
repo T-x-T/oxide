@@ -77,10 +77,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 			}
 			EntityTickOutcome::DamageSelf(damage) => {
 				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == outcome.0) {
-					entity.damage(damage, game.clone(), players_clone);
+					entity.damage(damage, &game.packet_sender, players_clone);
 				};
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == outcome.0) {
-					player.damage(damage, game.clone(), players_clone);
+					player.damage(damage, &game.packet_sender, players_clone);
 				};
 			}
 			EntityTickOutcome::SummonEntity(entity) => {
@@ -163,7 +163,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 							dimension.get_chunk_from_position(block_position).unwrap().block_entities.iter().find(|x| x.get_position() == block_position)
 						{
 							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-							block_entity.remove_self(&mut players, dimension, game.clone());
+							block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 						};
 					}
 
@@ -197,7 +197,15 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 					for block_to_update in blocks_to_update {
 						let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-						res.handle(dimension, block_to_update, &mut players, game.clone());
+						res.handle(
+							dimension,
+							block_to_update,
+							&mut players,
+							&game.packet_sender,
+							&game.entity_id_manager,
+							&game.block_state_data,
+							&game.loot_tables,
+						);
 					}
 
 					game.packet_sender.send_packet_to_everyone_in_dimension(

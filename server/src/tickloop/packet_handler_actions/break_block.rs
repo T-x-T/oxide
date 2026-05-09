@@ -49,7 +49,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 		for item_to_drop in items_to_drop {
 			if item_to_drop.id != 0 {
-				dimension.summon_item(location.into(), item_to_drop, None, &players, game.clone());
+				dimension.summon_item(location.into(), item_to_drop, None, &players, &game.packet_sender, &game.entity_id_manager);
 			}
 		}
 	}
@@ -60,7 +60,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		let block_entity =
 			dimension.get_chunk_from_position(location).unwrap().block_entities.iter().find(|x| x.get_position() == location).unwrap();
 		let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-		block_entity.remove_self(&mut players, dimension, game.clone());
+		block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 	}
 
 	players
@@ -125,6 +125,14 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 	for block_to_update in blocks_to_update {
 		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-		res.handle(dimension, block_to_update, &mut players, game.clone());
+		res.handle(
+			dimension,
+			block_to_update,
+			&mut players,
+			&game.packet_sender,
+			&game.entity_id_manager,
+			&game.block_state_data,
+			&game.loot_tables,
+		);
 	}
 }

@@ -7,10 +7,6 @@ pub struct SculkCatalyst {
 }
 
 impl CommonBlockEntity for SculkCatalyst {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
-		return;
-	}
-
 	fn new(position: BlockPosition) -> Self {
 		return Self {
 			position,

@@ -7,7 +7,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 		dimension.1.entities = entities.clone();
 		let mut entity_tick_outcomes: Vec<(i32, EntityTickOutcome)> = Vec::new();
 		for entity in &mut entities {
-			let outcomes = entity.tick(dimension.1, players_clone, game.clone());
+			let outcomes = entity.tick(dimension.1, players_clone, &game.packet_sender, &game.entity_id_manager, &game.block_state_data);
 			for outcome in outcomes {
 				entity_tick_outcomes.push((entity.get_common_entity_data().entity_id, outcome));
 			}

@@ -9,7 +9,7 @@ pub fn process(game: Arc<Game>, players: &[Player]) {
 		.unwrap()
 		.iter_mut()
 		.flat_map(|player| {
-			let outcomes = player.tick(dimension, players, game.clone());
+			let outcomes = player.tick(dimension, players, &game.packet_sender, &game.entity_id_manager, &game.block_state_data);
 			let mut output: Vec<(i32, EntityTickOutcome)> = Vec::new();
 			for outcome in outcomes {
 				output.push((player.entity_id, outcome));

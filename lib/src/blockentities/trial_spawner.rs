@@ -7,10 +7,6 @@ pub struct TrialSpawner {
 }
 
 impl CommonBlockEntity for TrialSpawner {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>, _dimension_name: &str) {
-		return;
-	}
-
 	fn new(position: BlockPosition) -> Self {
 		return Self {
 			position,

@@ -1,5 +1,4 @@
 use std::net::TcpStream;
-use std::sync::Arc;
 
 use crate::packets::Packet;
 use crate::types::*;
@@ -8,10 +7,10 @@ pub fn handle(
 	parsed_packet: crate::packets::serverbound::play::ClickContainer,
 	chest_items: &mut [Slot],
 	player_uuid: u128,
-	game: Arc<Game>,
 	streams_with_container_opened: Vec<TcpStream>,
 	players: &mut [Player],
 	players_clone: &[Player],
+	packet_sender: &PacketSender,
 ) {
 	const PLAYER_INVENTORY_STARTING_INDEX: i16 = 9;
 	let player_inventory_index = parsed_packet.slot - chest_items.len() as i16 + PLAYER_INVENTORY_STARTING_INDEX;
@@ -42,7 +41,7 @@ pub fn handle(
 				//Chest inventory got changed
 				chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().unwrap_or_default();
 				for stream in streams_with_container_opened {
-					game.packet_sender.send_packet_to_player(
+					packet_sender.send_packet_to_player(
 						&stream.peer_addr().unwrap(),
 						crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerSlot {
@@ -59,7 +58,7 @@ pub fn handle(
 					player_inventory_index as u8,
 					new_inventory_item,
 					players_clone,
-					game.clone(),
+					packet_sender,
 				);
 			}
 		}
@@ -72,7 +71,7 @@ pub fn handle(
 		if parsed_packet.window_id == 0 {
 			println!("no shift clicking in your inventory!");
 			let player = players.iter().find(|x| x.uuid == player_uuid).unwrap();
-			game.packet_sender.send_packet_to_player(
+			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 				crate::packets::clientbound::play::SetContainerContent {
@@ -94,7 +93,7 @@ pub fn handle(
 				chest_items.clone_from_slice(&new_chest_items);
 
 				for stream in streams_with_container_opened {
-					game.packet_sender.send_packet_to_player(
+					packet_sender.send_packet_to_player(
 						&stream.peer_addr().unwrap(),
 						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerContent {
@@ -111,13 +110,13 @@ pub fn handle(
 				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_and_inform_client(
 					new_player_inventory,
 					players_clone,
-					game.clone(),
+					packet_sender,
 				);
 			}
 		}
 	} else {
 		//this just resets the inventory of the container and player if we dont know how to handle the used mode
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
@@ -127,7 +126,7 @@ pub fn handle(
 				carried_item: orig_cursor_item.clone(),
 			},
 		);
-		game.packet_sender.send_packet_to_player(
+		packet_sender.send_packet_to_player(
 			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
