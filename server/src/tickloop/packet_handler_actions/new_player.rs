@@ -185,6 +185,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			continue;
 		}
 
+		if player.get_dimension() != new_player_dimension {
+			continue;
+		}
+
 		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
@@ -253,6 +257,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	//Spawn player entity for other players that are already connected
 	for player in players.iter() {
 		if player.peer_socket_address == peer_addr {
+			continue;
+		}
+
+		if player.get_dimension() != new_player_dimension {
 			continue;
 		}
 

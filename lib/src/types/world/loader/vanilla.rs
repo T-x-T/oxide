@@ -325,7 +325,7 @@ impl super::WorldLoader for Loader {
 		block_states: &HashMap<String, Block>,
 		dimension_name: &str,
 	) {
-		println!("start saving world with {} chunks to disk", chunks.len());
+		println!("start saving dimension {dimension_name} with {} chunks to disk", chunks.len());
 		let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
 		for chunk in chunks.values() {
 			let region = chunk_to_region(chunk.x, chunk.z);

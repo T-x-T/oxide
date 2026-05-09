@@ -1610,6 +1610,10 @@ impl Player {
 				continue;
 			}
 
+			if player.get_dimension() != self.get_dimension() {
+				continue;
+			}
+
 			game.packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
@@ -1678,6 +1682,10 @@ impl Player {
 		//Spawn player entity for other players that are already connected
 		for player in players_clone {
 			if player.uuid == self.uuid {
+				continue;
+			}
+
+			if player.dimension != self.get_dimension() {
 				continue;
 			}
 
