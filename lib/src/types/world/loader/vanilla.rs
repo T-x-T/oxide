@@ -103,7 +103,12 @@ impl super::WorldLoader for Loader {
 				sky_lights = sky_light_nbt.as_byte_array();
 			}
 
-			let biome_palette = x.get_child("biomes").unwrap().get_child("palette").unwrap().as_list();
+
+			let Some(biome_palette) = x.get_child("biomes") else {
+				continue;
+			};
+
+			let biome_palette = biome_palette.get_child("palette").unwrap().as_list();
 
 			let mut biomes: Vec<u8> = Vec::new();
 			if biome_palette.len() == 1 {

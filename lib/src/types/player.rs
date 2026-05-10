@@ -377,6 +377,7 @@ impl CommonEntityTrait for Player {
 	) {
 		self.dimension = new_dimension_name.to_string();
 		self.position = position.into();
+		self.loaded_chunks = Vec::new();
 
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,

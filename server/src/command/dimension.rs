@@ -27,7 +27,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let player = players.iter_mut().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
 
 	let default_spawn_location = world.default_spawn_location;
-	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
+	let dimension = world.dimensions.get_mut(command.replace("dimension ", "").as_str()).unwrap();
 
 	player.change_dimension(
 		command.replace("dimension ", "").as_str(),
