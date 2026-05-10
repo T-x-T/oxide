@@ -6,11 +6,11 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 	let mut players = game.players.lock().unwrap();
 
 	let mut already_bred_pairs: Vec<(i32, i32)> = Vec::new();
-	for outcome in entity_tick_outcomes {
-		match outcome.1 {
+	for (entity_id, outcome) in entity_tick_outcomes {
+		match outcome {
 			EntityTickOutcome::SelfDied => {
 				let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
-					entity_id: outcome.0,
+					entity_id,
 					entity_status: 3,
 				};
 
@@ -23,7 +23,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 			}
 			EntityTickOutcome::RemoveSelf => {
 				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: vec![outcome.0],
+					entity_ids: vec![entity_id],
 				};
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
@@ -37,7 +37,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					dimension
 						.entities
 						.iter()
-						.find(|x| x.get_common_entity_data().entity_id == outcome.0)
+						.find(|x| x.get_common_entity_data().entity_id == entity_id)
 						.unwrap()
 						.get_common_entity_data()
 						.position
@@ -45,14 +45,14 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				) {
 					chunk.modified = true;
 				};
-				dimension.entities.retain(|x| x.get_common_entity_data().entity_id != outcome.0);
+				dimension.entities.retain(|x| x.get_common_entity_data().entity_id != entity_id);
 			}
 			EntityTickOutcome::Updated => {
 				if let Some(chunk) = dimension.get_chunk_from_position_mut(
 					dimension
 						.entities
 						.iter()
-						.find(|x| x.get_common_entity_data().entity_id == outcome.0)
+						.find(|x| x.get_common_entity_data().entity_id == entity_id)
 						.unwrap()
 						.get_common_entity_data()
 						.position
@@ -76,10 +76,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				dimension.entities.retain(|x| !entity_ids.contains(&x.get_common_entity_data().entity_id));
 			}
 			EntityTickOutcome::DamageSelf(damage) => {
-				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == outcome.0) {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					entity.damage(damage, &game.packet_sender, players_clone);
 				};
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == outcome.0) {
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
 					player.damage(damage, &game.packet_sender, players_clone);
 				};
 			}
@@ -218,6 +218,23 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						},
 					);
 				};
+			}
+			EntityTickOutcome::ChangeDimension(new_dimension_name) => {
+				let mut entities = std::mem::take(&mut dimension.entities);
+				let entity = entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id).unwrap();
+				entity.change_dimension(
+					new_dimension_name.as_str(),
+					players_clone,
+					dimension,
+					&game.packet_sender,
+					BlockPosition {
+						x: 0,
+						y: 100,
+						z: 0,
+					},
+				);
+
+				dimension.entities = entities;
 			}
 		}
 	}

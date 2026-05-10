@@ -6,6 +6,7 @@ use super::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Debug;
+use std::sync::mpsc::{Receiver, Sender, channel};
 
 use crate::SPAWN_CHUNK_RADIUS;
 use crate::entity::{CommonEntity, ItemEntity};
@@ -24,6 +25,8 @@ pub struct Dimension {
 	pub entities: Vec<Entity>,
 	pub name: String,
 	pub lowest_block_y: i16,
+	pub chunks_loading_sender: Sender<(i32, i32)>,
+	pub chunks_loading_receiver: Option<Receiver<(i32, i32)>>,
 }
 
 #[derive(Debug, Clone)]
@@ -109,11 +112,14 @@ impl Dimension {
 			}
 		}
 
+		let (sender, receiver) = channel();
 		return Self {
 			chunks,
 			entities: Vec::new(),
 			name: dimension_name.to_string(),
 			lowest_block_y,
+			chunks_loading_sender: sender,
+			chunks_loading_receiver: Some(receiver),
 		};
 	}
 
@@ -133,11 +139,14 @@ impl Dimension {
 			}
 		}
 
+		let (sender, receiver) = channel();
 		return Self {
 			chunks,
 			entities,
 			name: dimension_name.to_string(),
 			lowest_block_y: if dimension_name == "minecraft:overworld" { -64i16 } else { 0 },
+			chunks_loading_sender: sender,
+			chunks_loading_receiver: Some(receiver),
 		};
 	}
 
@@ -261,6 +270,10 @@ impl Dimension {
 		new_entity.resend_metadata_to_players(players_clone, packet_sender, &self.name);
 
 		self.add_entity(Entity::Item(new_entity));
+	}
+
+	pub fn get_chunk_loading_receiver(&mut self) -> Receiver<(i32, i32)> {
+		return self.chunks_loading_receiver.take().unwrap();
 	}
 }
 

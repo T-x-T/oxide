@@ -2,7 +2,6 @@ use super::*;
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
-use basic_types::blocks::Block;
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -50,6 +49,7 @@ pub struct Player {
 	is_sprinting: bool,
 	pub crafting_table_slots: [Slot; 9],
 	dimension: String,
+	pub loaded_chunks: Vec<(i32, i32)>,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -89,6 +89,7 @@ impl Clone for Player {
 			is_sprinting: self.is_sprinting,
 			crafting_table_slots: self.crafting_table_slots.clone(),
 			dimension: self.dimension.clone(),
+			loaded_chunks: self.loaded_chunks.clone(),
 		}
 	}
 }
@@ -174,7 +175,7 @@ impl CommonEntityTrait for Player {
 		players: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
-		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 		if self.health <= 0.0 {
@@ -297,6 +298,26 @@ impl CommonEntityTrait for Player {
 			}
 		}
 
+		if self.last_position != self.position {
+			let position = EntityPosition {
+				x: self.get_position().x - 0.5,
+				z: self.get_position().z - 0.5,
+				..self.get_position()
+			};
+			let blocks_to_check = [
+				BlockPosition::from(position),
+				BlockPosition {
+					y: BlockPosition::from(position).y + 1,
+					..BlockPosition::from(position)
+				},
+			];
+
+			for block_to_check in blocks_to_check {
+				let block_state_id = dimension.get_block(block_to_check).unwrap_or_default();
+				if data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id) {}
+			}
+		}
+
 		self.last_position = self.position;
 
 		let own_position = self.get_position();
@@ -344,6 +365,289 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::HurtAnimation::PACKET_ID,
 			hurt_animation_packet,
 		);
+	}
+
+	fn change_dimension(
+		&mut self,
+		new_dimension_name: &str,
+		players_clone: &[Player],
+		dimension: &mut Dimension,
+		packet_sender: &PacketSender,
+		position: BlockPosition,
+	) {
+		self.dimension = new_dimension_name.to_string();
+		self.position = position.into();
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::Respawn::PACKET_ID,
+			crate::packets::clientbound::play::Respawn {
+				dimension_type: match new_dimension_name {
+					"minecraft:the_nether" => 3,
+					"minecraft:the_end" => 2,
+					_ => 0,
+				},
+				dimension_name: new_dimension_name.to_string(),
+				hashed_seed: 0,
+				game_mode: self.gamemode,
+				previous_gamemode: self.gamemode as i8,
+				is_debug: false,
+				is_flat: false,
+				has_death_location: false,
+				death_dimension_name: None,
+				death_location: None,
+				portal_cooldown: 0,
+				sea_level: 64,
+				data_kept: 0x00,
+			},
+		);
+
+		self.new_position(position.x as f64, position.y as f64, position.z as f64, dimension, packet_sender).unwrap();
+
+		for other_stream in players_clone.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
+			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
+				packet_sender.send_packet_to_player(
+					&other_stream.peer_addr().unwrap(),
+					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					crate::packets::clientbound::play::SpawnEntity {
+						entity_id: self.entity_id,
+						entity_uuid: self.uuid,
+						entity_type: data::entities::get_id_from_name("minecraft:player"),
+						x: self.get_position().x,
+						y: self.get_position().y,
+						z: self.get_position().z,
+						pitch: self.get_pitch_u8(),
+						yaw: self.get_yaw_u8(),
+						head_yaw: self.get_yaw_u8(),
+						data: 0,
+						velocity_x: 0,
+						velocity_y: 0,
+						velocity_z: 0,
+					},
+				);
+			}
+		}
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
+			crate::packets::clientbound::play::EntityEvent {
+				entity_id: self.entity_id,
+				entity_status: 28, //set op permission level 4
+			},
+		);
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
+			crate::packets::clientbound::play::SynchronizePlayerPosition {
+				teleport_id: self.current_teleport_id,
+				x: self.get_position().x,
+				y: self.get_position().y,
+				z: self.get_position().z,
+				velocity_x: 0.0,
+				velocity_y: 0.0,
+				velocity_z: 0.0,
+				yaw: self.get_position().yaw,
+				pitch: self.get_position().pitch,
+				flags: 0,
+			},
+		);
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::GameEvent::PACKET_ID,
+			crate::packets::clientbound::play::GameEvent {
+				event: 13,
+				value: 0.0,
+			},
+		);
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+			crate::packets::clientbound::play::SetContainerContent {
+				window_id: 0,
+				state_id: 1,
+				slot_data: self.get_inventory().clone(),
+				carried_item: None,
+			},
+		);
+
+		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
+
+		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
+			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
+				self.send_chunk(dimension, x, z, packet_sender).unwrap();
+			}
+		}
+
+		for player in players_clone {
+			if player.uuid == self.uuid {
+				continue;
+			}
+
+			if player.get_dimension() != self.get_dimension() {
+				continue;
+			}
+
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+				crate::packets::clientbound::play::SpawnEntity {
+					entity_id: player.entity_id,
+					entity_uuid: player.uuid,
+					entity_type: data::entities::get_id_from_name("minecraft:player"),
+					x: player.get_position().x,
+					y: player.get_position().y,
+					z: player.get_position().z,
+					pitch: player.get_pitch_u8(),
+					yaw: player.get_yaw_u8(),
+					head_yaw: player.get_yaw_u8(),
+					data: 0,
+					velocity_x: 0,
+					velocity_y: 0,
+					velocity_z: 0,
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				crate::packets::clientbound::play::SetEntityMetadata {
+					entity_id: player.entity_id,
+					metadata: self.get_metadata(),
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
+				crate::packets::clientbound::play::SetEquipment {
+					entity_id: player.entity_id,
+					equipment: vec![
+						(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
+						(1, player.get_inventory()[45].clone()),
+						(2, player.get_inventory()[8].clone()),
+						(3, player.get_inventory()[7].clone()),
+						(4, player.get_inventory()[6].clone()),
+						(5, player.get_inventory()[5].clone()),
+					],
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
+				crate::packets::clientbound::play::UpdateEntityRotation {
+					entity_id: player.entity_id,
+					on_ground: player.is_on_ground(dimension),
+					yaw: player.get_yaw_u8(),
+					pitch: player.get_pitch_u8(),
+				},
+			);
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
+				crate::packets::clientbound::play::SetHeadRotation {
+					entity_id: player.entity_id,
+					head_yaw: player.get_yaw_u8(),
+				},
+			);
+		}
+
+		//Spawn player entity for other players that are already connected
+		for player in players_clone {
+			if player.uuid == self.uuid {
+				continue;
+			}
+
+			if player.dimension != self.get_dimension() {
+				continue;
+			}
+
+			packet_sender.send_packet_to_player(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+				crate::packets::clientbound::play::SpawnEntity {
+					entity_id: self.entity_id,
+					entity_uuid: self.uuid,
+					entity_type: data::entities::get_id_from_name("minecraft:player"),
+					x: self.position.x,
+					y: self.position.y,
+					z: self.position.z,
+					pitch: 0,
+					yaw: 0,
+					head_yaw: 0,
+					data: 0,
+					velocity_x: 0,
+					velocity_y: 0,
+					velocity_z: 0,
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				crate::packets::clientbound::play::SetEntityMetadata {
+					entity_id: self.entity_id,
+					metadata: self.get_metadata(),
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
+				crate::packets::clientbound::play::SetEquipment {
+					entity_id: self.entity_id,
+					equipment: vec![
+						(0, self.inventory[(self.selected_slot + 36) as usize].clone()),
+						(1, self.inventory[45].clone()),
+						(2, self.inventory[8].clone()),
+						(3, self.inventory[7].clone()),
+						(4, self.inventory[6].clone()),
+						(5, self.inventory[5].clone()),
+					],
+				},
+			);
+
+			packet_sender.send_packet_to_player(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
+				crate::packets::clientbound::play::UpdateEntityRotation {
+					entity_id: player.entity_id,
+					on_ground: player.is_on_ground(dimension),
+					yaw: player.get_yaw_u8(),
+					pitch: player.get_pitch_u8(),
+				},
+			);
+			packet_sender.send_packet_to_player(
+				&player.peer_socket_address,
+				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
+				crate::packets::clientbound::play::SetHeadRotation {
+					entity_id: player.entity_id,
+					head_yaw: player.get_yaw_u8(),
+				},
+			);
+		}
+
+
+		for entity in &dimension.entities {
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+				entity.to_spawn_entity_packet(),
+			);
+
+			packet_sender.send_packet_to_player(
+				&self.peer_socket_address,
+				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				crate::packets::clientbound::play::SetEntityMetadata {
+					entity_id: entity.get_common_entity_data().entity_id,
+					metadata: entity.get_metadata(),
+				},
+			);
+		}
 	}
 }
 
@@ -404,6 +708,7 @@ impl Player {
 					Slot::default(),
 				],
 				dimension: "minecraft:overworld".to_string(),
+				loaded_chunks: Vec::new(),
 			};
 
 			return player;
@@ -552,6 +857,7 @@ impl Player {
 				Slot::default(),
 			],
 			dimension: dimension.to_string(),
+			loaded_chunks: Vec::new(),
 		};
 
 		return player;
@@ -706,9 +1012,7 @@ impl Player {
 		x: f64,
 		y: f64,
 		z: f64,
-		world: &mut World,
-		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, Block>,
+		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		let old_x = self.position.x;
@@ -741,14 +1045,7 @@ impl Player {
 				},
 			);
 
-			let old_chunk_coords: Vec<(i32, i32)> = (old_chunk_position.x - crate::VIEW_DISTANCE as i32
-				..=old_chunk_position.x + crate::VIEW_DISTANCE as i32)
-				.flat_map(|x| {
-					(old_chunk_position.z - crate::VIEW_DISTANCE as i32..=old_chunk_position.z + crate::VIEW_DISTANCE as i32)
-						.map(|z| (x, z))
-						.collect::<Vec<(i32, i32)>>()
-				})
-				.collect();
+			let old_chunk_coords = self.loaded_chunks.clone();
 
 			let new_chunk_coords: Vec<(i32, i32)> = (new_chunk_position.x - crate::VIEW_DISTANCE as i32
 				..=new_chunk_position.x + crate::VIEW_DISTANCE as i32)
@@ -762,7 +1059,7 @@ impl Player {
 			let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
 
 			for chunk_coords in chunks_missing {
-				self.send_chunk(world, chunk_coords.0, chunk_coords.1, entity_id_manger, block_states, packet_sender)?;
+				self.send_chunk(dimension, chunk_coords.0, chunk_coords.1, packet_sender)?;
 			}
 		}
 
@@ -772,14 +1069,12 @@ impl Player {
 	pub fn new_position_and_rotation(
 		&mut self,
 		new_position: EntityPosition,
-		world: &mut World,
-		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, Block>,
+		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		self.position.yaw = new_position.yaw;
 		self.position.pitch = new_position.pitch;
-		self.new_position(new_position.x, new_position.y, new_position.z, world, entity_id_manger, block_states, packet_sender)?;
+		self.new_position(new_position.x, new_position.y, new_position.z, dimension, packet_sender)?;
 
 		return Ok(self.get_position());
 	}
@@ -797,14 +1092,15 @@ impl Player {
 
 	pub fn send_chunk(
 		&mut self,
-		world: &mut World,
+		dimension: &Dimension,
 		chunk_x: i32,
 		chunk_z: i32,
-		entity_id_manger: &EntityIdManager,
-		block_states: &HashMap<String, Block>,
 		packet_sender: &PacketSender,
 	) -> Result<(), Box<dyn Error>> {
-		let dimension = &mut world.dimensions.get_mut(&self.dimension).unwrap();
+		if self.loaded_chunks.contains(&(chunk_x, chunk_z)) {
+			return Ok(());
+		}
+
 		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition {
 			x: chunk_x,
 			y: 0,
@@ -813,19 +1109,8 @@ impl Player {
 		let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
-			let new_chunk = (*world.loader).load_chunk(chunk_x, chunk_z, block_states, self.get_dimension());
-			dimension.chunks.insert((new_chunk.x, new_chunk.z), new_chunk);
-
-			let mut new_entities = (*world.loader).load_entities_in_chunk(chunk_x, chunk_z, entity_id_manger, self.get_dimension());
-			dimension.entities.append(&mut new_entities);
-
-			dimension
-				.get_chunk_from_chunk_position(BlockPosition {
-					x: chunk_x,
-					y: 0,
-					z: chunk_z,
-				})
-				.unwrap()
+			dimension.chunks_loading_sender.send((chunk_x, chunk_z)).unwrap();
+			return Ok(());
 		};
 		let all_chunk_sections = &chunk.sections;
 
@@ -923,6 +1208,8 @@ impl Player {
 				block_light_arrays,
 			},
 		);
+
+		self.loaded_chunks.push((chunk_x, chunk_z));
 
 		return Ok(());
 	}
@@ -1323,17 +1610,16 @@ impl Player {
 	pub fn respawn(
 		&mut self,
 		players: &[Player],
-		world: &mut World,
+		dimension: &mut Dimension,
+		default_spawn_location: BlockPosition,
 		packet_sender: &PacketSender,
-		entity_id_manager: &EntityIdManager,
-		block_state_data: &HashMap<String, Block>,
 	) {
 		self.health = 20.0;
 		self.food_level = 20;
 		self.food_exhaustion_level = 0.0;
 		self.food_saturation_level = 5.0;
 		self.fall_distance = 0.0;
-		self.last_position = world.default_spawn_location.into();
+		self.last_position = default_spawn_location.into();
 
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
@@ -1361,12 +1647,10 @@ impl Player {
 
 		self
 			.new_position(
-				world.default_spawn_location.x as f64,
-				world.default_spawn_location.y as f64,
-				world.default_spawn_location.z as f64,
-				world,
-				entity_id_manager,
-				block_state_data,
+				default_spawn_location.x as f64,
+				default_spawn_location.y as f64,
+				default_spawn_location.z as f64,
+				dimension,
 				packet_sender,
 			)
 			.unwrap();
@@ -1501,304 +1785,5 @@ impl Player {
 
 	pub fn get_dimension(&self) -> &str {
 		return &self.dimension;
-	}
-
-	pub fn change_dimension(
-		&mut self,
-		new_dimension_name: &str,
-		players_clone: &[Player],
-		world: &mut World,
-		packet_sender: &PacketSender,
-		entity_id_manager: &EntityIdManager,
-		block_state_data: &HashMap<String, Block>,
-	) {
-		if !world.dimensions.contains_key(new_dimension_name) {
-			println!("Player {} tried switching to dimension {new_dimension_name}, which doesn't exist!", self.display_name);
-			return;
-		};
-
-		self.dimension = new_dimension_name.to_string();
-		self.position = world.default_spawn_location.into();
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::Respawn::PACKET_ID,
-			crate::packets::clientbound::play::Respawn {
-				dimension_type: match new_dimension_name {
-					"minecraft:the_nether" => 3,
-					"minecraft:the_end" => 2,
-					_ => 0,
-				},
-				dimension_name: new_dimension_name.to_string(),
-				hashed_seed: 0,
-				game_mode: self.gamemode,
-				previous_gamemode: self.gamemode as i8,
-				is_debug: false,
-				is_flat: false,
-				has_death_location: false,
-				death_dimension_name: None,
-				death_location: None,
-				portal_cooldown: 0,
-				sea_level: 64,
-				data_kept: 0x00,
-			},
-		);
-
-		self
-			.new_position(
-				world.default_spawn_location.x as f64,
-				world.default_spawn_location.y as f64,
-				world.default_spawn_location.z as f64,
-				world,
-				entity_id_manager,
-				block_state_data,
-				packet_sender,
-			)
-			.unwrap();
-
-		for other_stream in players_clone.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
-			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
-				packet_sender.send_packet_to_player(
-					&other_stream.peer_addr().unwrap(),
-					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-					crate::packets::clientbound::play::SpawnEntity {
-						entity_id: self.entity_id,
-						entity_uuid: self.uuid,
-						entity_type: data::entities::get_id_from_name("minecraft:player"),
-						x: self.get_position().x,
-						y: self.get_position().y,
-						z: self.get_position().z,
-						pitch: self.get_pitch_u8(),
-						yaw: self.get_yaw_u8(),
-						head_yaw: self.get_yaw_u8(),
-						data: 0,
-						velocity_x: 0,
-						velocity_y: 0,
-						velocity_z: 0,
-					},
-				);
-			}
-		}
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
-			crate::packets::clientbound::play::EntityEvent {
-				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
-			},
-		);
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
-			crate::packets::clientbound::play::SynchronizePlayerPosition {
-				teleport_id: self.current_teleport_id,
-				x: self.get_position().x,
-				y: self.get_position().y,
-				z: self.get_position().z,
-				velocity_x: 0.0,
-				velocity_y: 0.0,
-				velocity_z: 0.0,
-				yaw: self.get_position().yaw,
-				pitch: self.get_position().pitch,
-				flags: 0,
-			},
-		);
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::GameEvent::PACKET_ID,
-			crate::packets::clientbound::play::GameEvent {
-				event: 13,
-				value: 0.0,
-			},
-		);
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 0,
-				state_id: 1,
-				slot_data: self.get_inventory().clone(),
-				carried_item: None,
-			},
-		);
-
-		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
-
-		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
-			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
-				self.send_chunk(world, x, z, entity_id_manager, block_state_data, packet_sender).unwrap();
-			}
-		}
-
-		for player in players_clone {
-			if player.uuid == self.uuid {
-				continue;
-			}
-
-			if player.get_dimension() != self.get_dimension() {
-				continue;
-			}
-
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				crate::packets::clientbound::play::SpawnEntity {
-					entity_id: player.entity_id,
-					entity_uuid: player.uuid,
-					entity_type: data::entities::get_id_from_name("minecraft:player"),
-					x: player.get_position().x,
-					y: player.get_position().y,
-					z: player.get_position().z,
-					pitch: player.get_pitch_u8(),
-					yaw: player.get_yaw_u8(),
-					head_yaw: player.get_yaw_u8(),
-					data: 0,
-					velocity_x: 0,
-					velocity_y: 0,
-					velocity_z: 0,
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: player.entity_id,
-					metadata: self.get_metadata(),
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment {
-					entity_id: player.entity_id,
-					equipment: vec![
-						(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
-						(1, player.get_inventory()[45].clone()),
-						(2, player.get_inventory()[8].clone()),
-						(3, player.get_inventory()[7].clone()),
-						(4, player.get_inventory()[6].clone()),
-						(5, player.get_inventory()[5].clone()),
-					],
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
-				crate::packets::clientbound::play::UpdateEntityRotation {
-					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
-					yaw: player.get_yaw_u8(),
-					pitch: player.get_pitch_u8(),
-				},
-			);
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-				crate::packets::clientbound::play::SetHeadRotation {
-					entity_id: player.entity_id,
-					head_yaw: player.get_yaw_u8(),
-				},
-			);
-		}
-
-		//Spawn player entity for other players that are already connected
-		for player in players_clone {
-			if player.uuid == self.uuid {
-				continue;
-			}
-
-			if player.dimension != self.get_dimension() {
-				continue;
-			}
-
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				crate::packets::clientbound::play::SpawnEntity {
-					entity_id: self.entity_id,
-					entity_uuid: self.uuid,
-					entity_type: data::entities::get_id_from_name("minecraft:player"),
-					x: self.position.x,
-					y: self.position.y,
-					z: self.position.z,
-					pitch: 0,
-					yaw: 0,
-					head_yaw: 0,
-					data: 0,
-					velocity_x: 0,
-					velocity_y: 0,
-					velocity_z: 0,
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: self.entity_id,
-					metadata: self.get_metadata(),
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment {
-					entity_id: self.entity_id,
-					equipment: vec![
-						(0, self.inventory[(self.selected_slot + 36) as usize].clone()),
-						(1, self.inventory[45].clone()),
-						(2, self.inventory[8].clone()),
-						(3, self.inventory[7].clone()),
-						(4, self.inventory[6].clone()),
-						(5, self.inventory[5].clone()),
-					],
-				},
-			);
-
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
-				crate::packets::clientbound::play::UpdateEntityRotation {
-					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
-					yaw: player.get_yaw_u8(),
-					pitch: player.get_pitch_u8(),
-				},
-			);
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-				crate::packets::clientbound::play::SetHeadRotation {
-					entity_id: player.entity_id,
-					head_yaw: player.get_yaw_u8(),
-				},
-			);
-		}
-
-
-		for entity in &world.dimensions.get(new_dimension_name).unwrap().entities {
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
-				entity.to_spawn_entity_packet(),
-			);
-
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: entity.get_common_entity_data().entity_id,
-					metadata: entity.get_metadata(),
-				},
-			);
-		}
 	}
 }

@@ -101,10 +101,11 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
 
+	let dimension = world.dimensions.get_mut(new_player.get_dimension()).unwrap();
 	let now = std::time::Instant::now();
 	for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 		for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {
-			new_player.send_chunk(&mut world, x, z, &game.entity_id_manager, &game.block_state_data, &game.packet_sender).unwrap();
+			new_player.send_chunk(dimension, x, z, &game.packet_sender).unwrap();
 		}
 	}
 	println!("send chunks: {:?}", std::time::Instant::now() - now);

@@ -88,15 +88,10 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let sending_player_entity_id = sending_player.entity_id;
 
-	sending_player.new_position(
-		target_coordinates.x,
-		target_coordinates.y,
-		target_coordinates.z,
-		&mut game.world.lock().unwrap(),
-		&game.entity_id_manager,
-		&game.block_state_data,
-		&game.packet_sender,
-	)?;
+	let mut world = game.world.lock().unwrap();
+	let dimension = world.dimensions.get_mut(sending_player.get_dimension()).unwrap();
+
+	sending_player.new_position(target_coordinates.x, target_coordinates.y, target_coordinates.z, dimension, &game.packet_sender)?;
 
 	sending_player.current_teleport_id += 1;
 	game.packet_sender.send_packet_to_player(

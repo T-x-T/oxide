@@ -9,11 +9,13 @@ pub fn process(
 ) {
 	let mut world = game.world.lock().unwrap();
 
-
 	let mut players = game.players.lock().unwrap();
+
 	let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else {
 		return;
 	};
+
+	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 
 	let player_entity_id = player.entity_id;
 	let old_position = player.get_position();
@@ -31,9 +33,7 @@ pub fn process(
 					yaw: rotation.unwrap().0,
 					pitch: rotation.unwrap().1,
 				},
-				&mut world,
-				&game.entity_id_manager,
-				&game.block_state_data,
+				dimension,
 				&game.packet_sender,
 			)
 			.unwrap();
@@ -63,17 +63,8 @@ pub fn process(
 			),
 		]
 	} else if position_updated {
-		let new_position = player
-			.new_position(
-				position.unwrap().0,
-				position.unwrap().1,
-				position.unwrap().2,
-				&mut world,
-				&game.entity_id_manager,
-				&game.block_state_data,
-				&game.packet_sender,
-			)
-			.unwrap();
+		let new_position =
+			player.new_position(position.unwrap().0, position.unwrap().1, position.unwrap().2, dimension, &game.packet_sender).unwrap();
 		vec![(
 			lib::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityPosition {

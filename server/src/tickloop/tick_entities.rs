@@ -1,7 +1,8 @@
 use super::*;
 
 pub fn process(game: Arc<Game>, players_clone: &[Player]) {
-	for dimension in &mut game.world.lock().unwrap().dimensions {
+	let mut world = game.world.lock().unwrap();
+	for dimension in &mut world.dimensions {
 		let mut entities = std::mem::take(&mut dimension.1.entities);
 		//Kinda dangerous, because we will silently overwrite dimension.entities at the end of the tick
 		dimension.1.entities = entities.clone();

@@ -35,6 +35,7 @@ pub enum EntityTickOutcome {
 	SummonEntity(Box<Entity>),
 	DoneBreeding(i32, i32),
 	ReplaceBlock(BlockPosition, u16),
+	ChangeDimension(String),
 }
 
 #[derive(Debug)]
@@ -418,6 +419,32 @@ impl Entity {
 			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Player(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+		};
+	}
+
+	pub fn change_dimension(
+		&mut self,
+		new_dimension_name: &str,
+		players_clone: &[Player],
+		dimension: &mut Dimension,
+		packet_sender: &PacketSender,
+		position: BlockPosition,
+	) {
+		return match self {
+			Entity::Armadillo(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Cat(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::ChestMinecart(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Chicken(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Cow(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Creeper(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Donkey(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Horse(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Item(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Parrot(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Pig(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Rabbit(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Sheep(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::Player(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
 		};
 	}
 }
@@ -962,6 +989,17 @@ pub trait CommonEntityTrait {
 			crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 			metadata_packet,
 		);
+	}
+
+	fn change_dimension(
+		&mut self,
+		_new_dimension_name: &str,
+		_players_clone: &[Player],
+		_dimension: &mut Dimension,
+		_packet_sender: &PacketSender,
+		_position: BlockPosition,
+	) {
+		return;
 	}
 }
 

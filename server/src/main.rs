@@ -67,6 +67,27 @@ fn initialize_server() {
 
 	terminal_input::init(game.clone());
 
+	let mut world = game.world.lock().unwrap();
+	let mut dimensions = std::mem::take(&mut world.dimensions);
+	for (dimension_name, dimension) in &mut dimensions {
+		let receiver = dimension.get_chunk_loading_receiver();
+		let game_clone = game.clone();
+		let dimension_name_clone = dimension_name.clone();
+		std::thread::spawn(move || {
+			let game = game_clone.clone();
+			for (chunk_x, chunk_z) in receiver.iter() {
+				let mut world = game.world.lock().unwrap();
+				let chunk = world.loader.load_chunk(chunk_x, chunk_z, &game.block_state_data, &dimension_name_clone);
+				let mut entities = world.loader.load_entities_in_chunk(chunk_x, chunk_z, &game.entity_id_manager, &dimension_name_clone);
+				let dimension = world.dimensions.get_mut(&dimension_name_clone).unwrap();
+				dimension.chunks.insert((chunk_x, chunk_z), chunk);
+				dimension.entities.append(&mut entities);
+			}
+		});
+	}
+	world.dimensions = dimensions;
+	drop(world);
+
 	let game_clone = game.clone();
 	std::thread::spawn(move || main_loop(game_clone));
 
