@@ -17,6 +17,7 @@ mod ender_chest;
 mod farm;
 mod fence;
 mod fencegate;
+mod fire;
 mod iron_bars;
 mod potato;
 mod rotated_pillar;
@@ -115,6 +116,7 @@ pub fn get_block_state_id(
 		Type::IronBars => output.append(&mut iron_bars::get_block_state_id(dimension, position, used_item_name, block_states)),
 		Type::StainedGlassPane => output.append(&mut stained_glass_pane::get_block_state_id(dimension, position, used_item_name, block_states)),
 		Type::Fence => output.append(&mut fence::get_block_state_id(dimension, position, used_item_name, block_states)),
+		Type::Fire => output.append(&mut fire::get_block_state_id(dimension, position, used_item_name, block_states)),
 		_ => (),
 	}
 
