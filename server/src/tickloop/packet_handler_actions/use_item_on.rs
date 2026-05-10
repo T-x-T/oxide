@@ -119,6 +119,10 @@ pub fn process(
 			};
 		}
 
+		if used_item_name == "minecraft:flint_and_steel" {
+			used_item_name = "minecraft:fire";
+		}
+
 		let pitch = player.get_pitch();
 
 		if used_item_name.ends_with("spawn_egg") {
