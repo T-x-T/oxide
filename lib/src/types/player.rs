@@ -314,7 +314,13 @@ impl CommonEntityTrait for Player {
 
 			for block_to_check in blocks_to_check {
 				let block_state_id = dimension.get_block(block_to_check).unwrap_or_default();
-				if data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id) {}
+				if data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id) {
+					if self.get_dimension() == "minecraft:overworld" {
+						output.push(EntityTickOutcome::ChangeDimension("minecraft:the_nether".to_string()));
+					} else {
+						output.push(EntityTickOutcome::ChangeDimension("minecraft:overworld".to_string()));
+					}
+				}
 			}
 		}
 

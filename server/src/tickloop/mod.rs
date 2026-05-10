@@ -9,6 +9,7 @@ mod packet_handler_actions;
 mod process_entity_tick_outcome;
 mod random_tick;
 mod send_keepalives;
+mod tasks;
 mod tick_blockentities;
 mod tick_entities;
 mod tick_players;
@@ -24,6 +25,7 @@ pub struct TickTimings {
 	pub tick_players: std::time::Duration,
 	pub packet_handler_actions: std::time::Duration,
 	pub random_tick: std::time::Duration,
+	pub tasks: std::time::Duration,
 }
 
 pub fn tick(game: Arc<Game>) -> TickTimings {
@@ -68,6 +70,10 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	random_tick::process(game.clone(), &players_clone);
 	let duration_random_tick = std::time::Instant::now() - now;
 
+	let now = std::time::Instant::now();
+	tasks::process(game.clone(), &players_clone);
+	let duration_tasks = std::time::Instant::now() - now;
+
 	return TickTimings {
 		save_all: duration_save_all,
 		clone_players: duration_clone_players,
@@ -77,5 +83,6 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 		tick_players: duration_tick_players,
 		packet_handler_actions: duration_packet_handler_actions,
 		random_tick: duration_random_tick,
+		tasks: duration_tasks,
 	};
 }

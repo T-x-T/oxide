@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use std::sync::atomic::AtomicI32;
 use std::sync::mpsc::Sender;
 
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 
 use super::*;
 
@@ -24,6 +24,7 @@ pub struct Game {
 	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	pub recipe_manager: RecipeManager,
 	pub packet_sender: PacketSender,
+	pub task_queue: DashSet<Task>,
 }
 
 impl Game {
@@ -103,4 +104,9 @@ impl PacketSender {
 			self.packet_send_queues.get(&x.peer_socket_address).unwrap().send((packet_id, packet_data.clone().try_into().unwrap())).unwrap()
 		});
 	}
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Task {
+	PlayerChangeDimension(u128, String, BlockPosition),
 }

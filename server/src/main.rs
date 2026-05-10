@@ -1,7 +1,7 @@
 #![allow(clippy::needless_return)]
 #![allow(clippy::needless_range_loop)]
 
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use lib::packets::Packet;
 use lib::types::*;
 use std::error::Error;
@@ -59,6 +59,7 @@ fn initialize_server() {
 		default_gamemode,
 		loot_tables,
 		recipe_manager: RecipeManager::new(recipes),
+		task_queue: DashSet::new(),
 	};
 
 	command::init(&mut game);
