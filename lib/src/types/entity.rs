@@ -23,6 +23,8 @@ pub enum Entity {
 	Rabbit(Rabbit),
 	Sheep(Sheep),
 	Player(Player),
+	EnderDragon(EnderDragon),
+	EndCrystal(EndCrystal),
 }
 
 #[derive(Debug, PartialEq)]
@@ -127,6 +129,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_common_entity_data(),
 			Entity::Sheep(x) => x.get_common_entity_data(),
 			Entity::Player(x) => x.get_common_entity_data(),
+			Entity::EnderDragon(x) => x.get_common_entity_data(),
+			Entity::EndCrystal(x) => x.get_common_entity_data(),
 		};
 	}
 
@@ -146,6 +150,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_common_entity_data_mut(),
 			Entity::Sheep(x) => x.get_common_entity_data_mut(),
 			Entity::Player(x) => x.get_common_entity_data_mut(),
+			Entity::EnderDragon(x) => x.get_common_entity_data_mut(),
+			Entity::EndCrystal(x) => x.get_common_entity_data_mut(),
 		};
 	}
 
@@ -165,6 +171,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_mob_data(),
 			Entity::Sheep(x) => x.get_mob_data(),
 			Entity::Player(x) => x.get_mob_data(),
+			Entity::EnderDragon(x) => x.get_mob_data(),
+			Entity::EndCrystal(x) => x.get_mob_data(),
 		};
 	}
 
@@ -184,6 +192,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_mob_data_mut(),
 			Entity::Sheep(x) => x.get_mob_data_mut(),
 			Entity::Player(x) => x.get_mob_data_mut(),
+			Entity::EnderDragon(x) => x.get_mob_data_mut(),
+			Entity::EndCrystal(x) => x.get_mob_data_mut(),
 		};
 	}
 
@@ -203,6 +213,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_type(),
 			Entity::Sheep(x) => x.get_type(),
 			Entity::Player(x) => x.get_type(),
+			Entity::EnderDragon(x) => x.get_type(),
+			Entity::EndCrystal(x) => x.get_type(),
 		};
 	}
 
@@ -222,6 +234,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.to_nbt_extras(),
 			Entity::Sheep(x) => x.to_nbt_extras(),
 			Entity::Player(x) => x.to_nbt_extras(),
+			Entity::EnderDragon(x) => x.to_nbt_extras(),
+			Entity::EndCrystal(x) => x.to_nbt_extras(),
 		};
 	}
 
@@ -269,6 +283,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::Sheep(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::Player(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::EnderDragon(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::EndCrystal(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 		};
 	}
 
@@ -304,6 +320,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.is_mob(),
 			Entity::Sheep(x) => x.is_mob(),
 			Entity::Player(x) => x.is_mob(),
+			Entity::EnderDragon(x) => x.is_mob(),
+			Entity::EndCrystal(x) => x.is_mob(),
 		};
 	}
 
@@ -323,6 +341,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.get_metadata(),
 			Entity::Sheep(x) => x.get_metadata(),
 			Entity::Player(x) => x.get_metadata(),
+			Entity::EnderDragon(x) => x.get_metadata(),
+			Entity::EndCrystal(x) => x.get_metadata(),
 		};
 	}
 	pub fn tick(
@@ -348,6 +368,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::Sheep(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::Player(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::EnderDragon(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::EndCrystal(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 		};
 	}
 	pub fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
@@ -366,6 +388,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.damage(damage, packet_sender, players),
 			Entity::Sheep(x) => x.damage(damage, packet_sender, players),
 			Entity::Player(x) => x.damage(damage, packet_sender, players),
+			Entity::EnderDragon(x) => x.damage(damage, packet_sender, players),
+			Entity::EndCrystal(x) => x.damage(damage, packet_sender, players),
 		};
 	}
 
@@ -385,6 +409,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::Sheep(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::Player(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::EnderDragon(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::EndCrystal(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 		};
 	}
 
@@ -419,6 +445,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Sheep(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Player(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::EnderDragon(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::EndCrystal(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 		};
 	}
 
@@ -445,6 +473,8 @@ impl Entity {
 			Entity::Rabbit(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
 			Entity::Sheep(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
 			Entity::Player(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::EnderDragon(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
+			Entity::EndCrystal(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position),
 		};
 	}
 }
@@ -1395,6 +1425,8 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 		"minecraft:pig" => Some(Entity::Pig(Pig::new(common_data, extra_nbt))),
 		"minecraft:rabbit" => Some(Entity::Rabbit(Rabbit::new(common_data, extra_nbt))),
 		"minecraft:sheep" => Some(Entity::Sheep(Sheep::new(common_data, extra_nbt))),
+		"minecraft:ender_dragon" => Some(Entity::EnderDragon(EnderDragon::new(common_data, extra_nbt))),
+		"minecraft:end_crystal" => Some(Entity::EndCrystal(EndCrystal::new(common_data, extra_nbt))),
 		_ => None,
 	};
 }
