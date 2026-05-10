@@ -6,6 +6,7 @@ mod panic;
 mod ping;
 mod print_players;
 mod saveall;
+mod setblock;
 mod summon;
 mod tell;
 mod tp;
@@ -28,6 +29,7 @@ pub fn init(game: &mut Game) {
 	give::init(game);
 	gamemode::init(game);
 	dimension::init(game);
+	setblock::init(game);
 }
 
 

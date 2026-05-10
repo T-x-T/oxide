@@ -7,7 +7,7 @@ pub fn init(game: &mut Game) {
 		name: "give".to_string(),
 		execute,
 		arguments: vec![CommandArgument {
-			name: "entity type".to_string(),
+			name: "item".to_string(),
 			properties: ParserProperty::ResourceKey("minecraft:item".to_string()),
 			next_arguments: Vec::new(),
 			optional: false,
