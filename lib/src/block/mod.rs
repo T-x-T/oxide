@@ -178,6 +178,15 @@ impl BlockUpdateOutcome {
 					},
 				);
 
+				let res = dimension.overwrite_block(position, 0).unwrap();
+
+				if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
+					let block_entity =
+						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
+					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
+					block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
+				}
+
 				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &Slot::default(), block_state_data);
 
 				for item_to_drop in items_to_drop {
