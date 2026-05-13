@@ -19,6 +19,7 @@ mod fence;
 mod fencegate;
 mod fire;
 mod iron_bars;
+mod nether_portal;
 mod potato;
 mod rotated_pillar;
 mod slab;
@@ -217,6 +218,7 @@ pub fn update(
 		Type::Beetroot => beetroot::update(position, dimension, block_states, block_state_id),
 		Type::Carrot => carrot::update(position, dimension, block_states, block_state_id),
 		Type::Potato => potato::update(position, dimension, block_states, block_state_id),
+		Type::NetherPortal => nether_portal::update(position, dimension, block_states, block_state_id),
 		_ => BlockUpdateOutcome::DoNothing,
 	};
 
