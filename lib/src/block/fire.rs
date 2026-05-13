@@ -4,21 +4,45 @@ pub fn get_block_state_id(
 	dimension: &Dimension,
 	position: BlockPosition,
 	_used_item_name: &str,
+	face: u8,
 	block_states: &HashMap<String, Block>,
 ) -> Vec<(u16, BlockPosition)> {
 	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
 	let obsidian_block_state_id = data::blocks::get_block_from_name("minecraft:obsidian", block_states).states.first().unwrap().id;
 
-	let block_state_id_below = dimension
-		.get_block(BlockPosition {
+	let position_to_check = match face {
+		0 => BlockPosition {
+			y: position.y + 1,
+			..position
+		},
+		1 => BlockPosition {
 			y: position.y - 1,
 			..position
-		})
-		.unwrap_or_default();
+		},
+		2 => BlockPosition {
+			z: position.z + 1,
+			..position
+		},
+		3 => BlockPosition {
+			z: position.z - 1,
+			..position
+		},
+		4 => BlockPosition {
+			x: position.x + 1,
+			..position
+		},
+		5 => BlockPosition {
+			x: position.x - 1,
+			..position
+		},
+		_ => panic!("invalid face {face}"),
+	};
+
+	let block_state_id = dimension.get_block(position_to_check).unwrap_or_default();
 
 	let mut valid = true;
-	if obsidian_block_state_id == block_state_id_below {
+	if obsidian_block_state_id == block_state_id {
 		let portal_blocks = get_portal_block_positions(dimension, position, block_states);
 		if !portal_blocks.is_empty() {
 			for position_to_check in &portal_blocks {
