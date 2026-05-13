@@ -128,7 +128,7 @@ pub fn get_block_state_id(
 	return output;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum BlockUpdateOutcome {
 	DoNothing,
 	ChangeOwnBlockId(u16),
@@ -200,7 +200,52 @@ impl BlockUpdateOutcome {
 	}
 }
 
-pub fn update(
+pub fn update_all_recursively(
+	dimension: &mut Dimension,
+	position: BlockPosition,
+	players: &mut [Player],
+	packet_sender: &PacketSender,
+	entity_id_manager: &EntityIdManager,
+	block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
+) {
+	let blocks_to_update = [
+		BlockPosition {
+			x: position.x + 1,
+			..position
+		},
+		BlockPosition {
+			x: position.x - 1,
+			..position
+		},
+		BlockPosition {
+			y: position.y + 1,
+			..position
+		},
+		BlockPosition {
+			y: position.y - 1,
+			..position
+		},
+		BlockPosition {
+			z: position.z + 1,
+			..position
+		},
+		BlockPosition {
+			z: position.z - 1,
+			..position
+		},
+	];
+
+	for block_to_update in blocks_to_update {
+		let res = crate::block::update(block_to_update, dimension, block_state_data).unwrap();
+		res.handle(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);
+		if !matches!(res, BlockUpdateOutcome::DoNothing) {
+			update_all_recursively(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);
+		}
+	}
+}
+
+fn update(
 	position: BlockPosition,
 	dimension: &Dimension,
 	block_states: &HashMap<String, Block>,

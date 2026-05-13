@@ -167,46 +167,15 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						};
 					}
 
-					let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
-					blocks_to_update.append(&mut vec![
-						BlockPosition {
-							x: block_position.x + 1,
-							..block_position
-						},
-						BlockPosition {
-							x: block_position.x - 1,
-							..block_position
-						},
-						BlockPosition {
-							y: block_position.y + 1,
-							..block_position
-						},
-						BlockPosition {
-							y: block_position.y - 1,
-							..block_position
-						},
-						BlockPosition {
-							z: block_position.z + 1,
-							..block_position
-						},
-						BlockPosition {
-							z: block_position.z - 1,
-							..block_position
-						},
-					]);
-
-					for block_to_update in blocks_to_update {
-						let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-						res.handle(
-							dimension,
-							block_to_update,
-							&mut players,
-							&game.packet_sender,
-							&game.entity_id_manager,
-							&game.block_state_data,
-							&game.loot_tables,
-						);
-					}
+					lib::block::update_all_recursively(
+						dimension,
+						block_position,
+						&mut players,
+						&game.packet_sender,
+						&game.entity_id_manager,
+						&game.block_state_data,
+						&game.loot_tables,
+					);
 
 					game.packet_sender.send_packet_to_everyone_in_dimension(
 						players_clone,

@@ -96,43 +96,13 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		},
 	);
 
-	let blocks_to_update = [
-		BlockPosition {
-			x: location.x + 1,
-			..location
-		},
-		BlockPosition {
-			x: location.x - 1,
-			..location
-		},
-		BlockPosition {
-			y: location.y + 1,
-			..location
-		},
-		BlockPosition {
-			y: location.y - 1,
-			..location
-		},
-		BlockPosition {
-			z: location.z + 1,
-			..location
-		},
-		BlockPosition {
-			z: location.z - 1,
-			..location
-		},
-	];
-
-	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-		res.handle(
-			dimension,
-			block_to_update,
-			&mut players,
-			&game.packet_sender,
-			&game.entity_id_manager,
-			&game.block_state_data,
-			&game.loot_tables,
-		);
-	}
+	lib::block::update_all_recursively(
+		dimension,
+		location,
+		&mut players,
+		&game.packet_sender,
+		&game.entity_id_manager,
+		&game.block_state_data,
+		&game.loot_tables,
+	);
 }

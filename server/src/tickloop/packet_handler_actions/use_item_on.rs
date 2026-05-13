@@ -172,7 +172,6 @@ pub fn process(
 		block_state_ids
 	};
 
-	let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
 	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 	for block_to_place in &blocks_to_place {
 		match dimension.overwrite_block(block_to_place.1, block_to_place.0) {
@@ -206,55 +205,12 @@ pub fn process(
 						block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 					};
 				}
-
-				blocks_to_update.append(&mut vec![
-					BlockPosition {
-						x: block_to_place.1.x + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						x: block_to_place.1.x - 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						y: block_to_place.1.y + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						y: block_to_place.1.y - 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						z: block_to_place.1.z + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						z: block_to_place.1.z - 1,
-						..block_to_place.1
-					},
-				]);
 			}
 			Err(err) => {
 				println!("couldn't place block because {err}");
 				continue;
 			}
 		};
-	}
-
-	blocks_to_update.sort();
-	blocks_to_update.dedup();
-
-	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-		res.handle(
-			dimension,
-			block_to_update,
-			&mut players,
-			&game.packet_sender,
-			&game.entity_id_manager,
-			&game.block_state_data,
-			&game.loot_tables,
-		);
 	}
 
 
@@ -277,4 +233,16 @@ pub fn process(
 			sequence_id: parsed_packet.sequence,
 		},
 	);
+
+	for block_to_place in blocks_to_place {
+		lib::block::update_all_recursively(
+			dimension,
+			block_to_place.1,
+			&mut players,
+			&game.packet_sender,
+			&game.entity_id_manager,
+			&game.block_state_data,
+			&game.loot_tables,
+		);
+	}
 }
