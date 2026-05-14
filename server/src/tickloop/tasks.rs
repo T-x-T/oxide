@@ -57,6 +57,217 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				if let Some(portal_location) = portal_location {
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, portal_location);
 				} else {
+					let obsidian_block_id =
+						data::blocks::get_block_from_name("minecraft:obsidian", &game.block_state_data).states.first().unwrap().id;
+					let nether_portal_block_id = *nether_portal_block_ids.first().unwrap();
+					let blocks_to_create = [
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y + 1,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y + 1,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y + 2,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y + 2,
+								z: new_position.z,
+							},
+							nether_portal_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y - 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x - 1,
+								y: new_position.y - 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y - 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 2,
+								y: new_position.y - 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y - 1,
+								z: new_position.z + 1,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y - 1,
+								z: new_position.z - 1,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y - 1,
+								z: new_position.z - 1,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y - 1,
+								z: new_position.z + 1,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x - 1,
+								y: new_position.y,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 2,
+								y: new_position.y,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x - 1,
+								y: new_position.y + 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 2,
+								y: new_position.y + 1,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x - 1,
+								y: new_position.y + 2,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 2,
+								y: new_position.y + 2,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x - 1,
+								y: new_position.y + 3,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 2,
+								y: new_position.y + 3,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x,
+								y: new_position.y + 3,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+						(
+							BlockPosition {
+								x: new_position.x + 1,
+								y: new_position.y + 3,
+								z: new_position.z,
+							},
+							obsidian_block_id,
+						),
+					];
+
+					for block_to_create in blocks_to_create {
+						dimension.overwrite_block(block_to_create.0, block_to_create.1).unwrap();
+						game.packet_sender.send_packet_to_everyone_in_dimension(
+							players_clone,
+							&new_dimension_name,
+							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+							lib::packets::clientbound::play::BlockUpdate {
+								location: block_to_create.0,
+								block_id: block_to_create.1 as i32,
+							},
+						);
+					}
+
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 				}
 			}
