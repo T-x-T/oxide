@@ -42,7 +42,9 @@ pub fn process(
 			block_id_at_location,
 			parsed_packet.face,
 			&game.block_state_data,
-			player.get_selected_inventory_slot(),
+			player,
+			players_clone,
+			&game.packet_sender,
 		);
 		block_interaction_result
 			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, &game.packet_sender)

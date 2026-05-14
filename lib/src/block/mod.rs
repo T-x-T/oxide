@@ -13,6 +13,7 @@ mod carrot;
 mod chest;
 mod crop;
 mod door;
+mod end_portal_frame;
 mod ender_chest;
 mod farm;
 mod fence;
@@ -328,14 +329,16 @@ pub fn interact_with_block_at(
 	block_id_at_location: u16,
 	face: u8,
 	block_states: &HashMap<String, Block>,
-	used_tool: &Option<Slot>,
+	player: &mut Player,
+	players_clone: &[Player],
+	packet_sender: &PacketSender,
 ) -> BlockInteractionResult {
 	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
 		&& data::tags::get_item()
 			.get("hoes")
 			.unwrap()
-			.contains(&data::items::get_item_name_by_id(used_tool.clone().unwrap_or_default().id).unwrap())
+			.contains(&data::items::get_item_name_by_id(player.get_held_item(true).cloned().unwrap_or_default().id).unwrap())
 	{
 		let block = data::blocks::get_block_from_name("minecraft:farmland", block_states);
 		let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FarmMoisture(FarmMoisture::Num0))).unwrap().id;
@@ -348,6 +351,9 @@ pub fn interact_with_block_at(
 		Type::Door => door::interact(location, block_id_at_location, face, block_states),
 		Type::Trapdoor => trapdoor::interact(location, block_id_at_location, face, block_states),
 		Type::FenceGate => fencegate::interact(location, block_id_at_location, face, block_states),
+		Type::EndPortalFrame => {
+			end_portal_frame::interact(location, block_id_at_location, face, player, players_clone, packet_sender, block_states)
+		}
 		Type::CraftingTable => BlockInteractionResult::OpenInventory(Inventory::Crafting),
 		Type::Chest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
 		Type::TrappedChest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),
