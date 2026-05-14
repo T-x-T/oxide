@@ -344,6 +344,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
 		let id: BlockEntityId = value.get_child("id").unwrap().as_string().try_into()?;
 
 		return Ok(match id {
+			BlockEntityId::Banner => BlockEntity::Banner(crate::blockentities::banner::Banner::try_from(value)?),
 			BlockEntityId::Barrel => BlockEntity::Barrel(crate::blockentities::barrel::Barrel::try_from(value)?),
 			BlockEntityId::Beacon => BlockEntity::Beacon(crate::blockentities::beacon::Beacon::try_from(value)?),
 			BlockEntityId::Bed => BlockEntity::Bed(crate::blockentities::bed::Bed::try_from(value)?),
@@ -358,6 +359,7 @@ impl TryFrom<NbtListTag> for BlockEntity {
 				BlockEntity::EnchantingTable(crate::blockentities::enchanting_table::EnchantingTable::try_from(value)?)
 			}
 			BlockEntityId::EnderChest => BlockEntity::EnderChest(crate::blockentities::ender_chest::EnderChest::try_from(value)?),
+			BlockEntityId::EndPortal => BlockEntity::EndPortal(crate::blockentities::end_portal::EndPortal::try_from(value)?),
 			BlockEntityId::Furnace => BlockEntity::Furnace(crate::blockentities::furnace::Furnace::try_from(value)?),
 			BlockEntityId::HangingSign => BlockEntity::HangingSign(crate::blockentities::hanging_sign::HangingSign::try_from(value)?),
 			BlockEntityId::Hopper => BlockEntity::Hopper(crate::blockentities::hopper::Hopper::try_from(value)?),
@@ -366,9 +368,36 @@ impl TryFrom<NbtListTag> for BlockEntity {
 			BlockEntityId::Sign => BlockEntity::Sign(crate::blockentities::sign::Sign::try_from(value)?),
 			BlockEntityId::Smoker => BlockEntity::Smoker(crate::blockentities::smoker::Smoker::try_from(value)?),
 			BlockEntityId::TrappedChest => BlockEntity::TrappedChest(crate::blockentities::trapped_chest::TrappedChest::try_from(value)?),
-			_ => {
-				return Err(Box::new(crate::CustomError::TriedParsingUnknown(format!("tried parsing unknown blockentity {id:?}"))));
+			BlockEntityId::Beehive => BlockEntity::Beehive(crate::blockentities::beehive::Beehive::try_from(value)?),
+			BlockEntityId::Bell => BlockEntity::Bell(crate::blockentities::bell::Bell::try_from(value)?),
+			BlockEntityId::BrushableBlock => BlockEntity::BrushableBlock(crate::blockentities::brushable_block::BrushableBlock::try_from(value)?),
+			BlockEntityId::CalibratedSculkSensor => {
+				BlockEntity::CalibratedSculkSensor(crate::blockentities::calibrated_sculk_sensor::CalibratedSculkSensor::try_from(value)?)
 			}
+			BlockEntityId::Campfire => BlockEntity::Campfire(crate::blockentities::campfire::Campfire::try_from(value)?),
+			BlockEntityId::ChiseledBookshelf => {
+				BlockEntity::ChiseledBookshelf(crate::blockentities::chiseled_bookshelf::ChiseledBookshelf::try_from(value)?)
+			}
+			BlockEntityId::Comperator => BlockEntity::Comparator(crate::blockentities::comparator::Comparator::try_from(value)?),
+			BlockEntityId::Conduit => BlockEntity::Conduit(crate::blockentities::conduit::Conduit::try_from(value)?),
+			BlockEntityId::CreakingHeart => BlockEntity::CreakingHeart(crate::blockentities::creaking_heart::CreakingHeart::try_from(value)?),
+			BlockEntityId::DaylightDetector => {
+				BlockEntity::DaylightDetector(crate::blockentities::daylight_detector::DaylightDetector::try_from(value)?)
+			}
+			BlockEntityId::DecoratedPot => BlockEntity::DecoratedPot(crate::blockentities::decorated_pot::DecoratedPot::try_from(value)?),
+			BlockEntityId::EndGateway => BlockEntity::EndGateway(crate::blockentities::end_gateway::EndGateway::try_from(value)?),
+			BlockEntityId::Jukebox => BlockEntity::Jukebox(crate::blockentities::jukebox::Jukebox::try_from(value)?),
+			BlockEntityId::Lectern => BlockEntity::Lectern(crate::blockentities::lectern::Lectern::try_from(value)?),
+			BlockEntityId::Piston => BlockEntity::Piston(crate::blockentities::piston::Piston::try_from(value)?),
+			BlockEntityId::ShulkerBox => BlockEntity::ShulkerBox(crate::blockentities::shulker_box::ShulkerBox::try_from(value)?),
+			BlockEntityId::Skull => BlockEntity::Skull(crate::blockentities::skull::Skull::try_from(value)?),
+			BlockEntityId::SculkCatalyst => BlockEntity::SculkCatalyst(crate::blockentities::sculk_catalyst::SculkCatalyst::try_from(value)?),
+			BlockEntityId::SculkSensor => BlockEntity::SculkSensor(crate::blockentities::sculk_sensor::SculkSensor::try_from(value)?),
+			BlockEntityId::SculkShrieker => BlockEntity::SculkShrieker(crate::blockentities::sculk_shrieker::SculkShrieker::try_from(value)?),
+			BlockEntityId::SoulCampfire => BlockEntity::SoulCampfire(crate::blockentities::soul_campfire::SoulCampfire::try_from(value)?),
+			BlockEntityId::StructureBlock => BlockEntity::StructureBlock(crate::blockentities::structure_block::StructureBlock::try_from(value)?),
+			BlockEntityId::TrialSpawner => BlockEntity::TrialSpawner(crate::blockentities::trial_spawner::TrialSpawner::try_from(value)?),
+			BlockEntityId::Vault => BlockEntity::Vault(crate::blockentities::vault::Vault::try_from(value)?),
 		});
 	}
 }
