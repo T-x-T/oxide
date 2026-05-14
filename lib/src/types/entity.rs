@@ -37,7 +37,8 @@ pub enum EntityTickOutcome {
 	SummonEntity(Box<Entity>),
 	DoneBreeding(i32, i32),
 	ReplaceBlock(BlockPosition, u16),
-	ChangeDimension(String),
+	UseNetherPortal(String), //target dimension
+	UseEndPortal(String),    //target dimension
 }
 
 #[derive(Debug)]

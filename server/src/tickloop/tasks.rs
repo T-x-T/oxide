@@ -6,7 +6,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 	for task in game.task_queue.iter() {
 		match task.clone() {
-			Task::PlayerChangeDimension(uuid, new_dimension_name) => {
+			Task::PlayerUseNetherPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
 
@@ -270,6 +270,23 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 				}
+			}
+			Task::PlayerUseEndPortal(uuid, new_dimension_name) => {
+				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				let default_spawn_location = world.default_spawn_location;
+				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
+
+				let new_position = if new_dimension_name == "minecraft:the_end" {
+					BlockPosition {
+						x: 100,
+						y: 49,
+						z: 0,
+					}
+				} else {
+					default_spawn_location
+				};
+
+				player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 			}
 		}
 	}

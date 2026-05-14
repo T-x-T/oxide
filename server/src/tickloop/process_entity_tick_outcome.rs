@@ -188,7 +188,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					);
 				};
 			}
-			EntityTickOutcome::ChangeDimension(new_dimension_name) => {
+			EntityTickOutcome::UseNetherPortal(new_dimension_name) => {
 				let mut entities = std::mem::take(&mut dimension.entities);
 				if let Some(_entity) = entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					todo!();
@@ -196,7 +196,20 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerChangeDimension(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task::PlayerUseNetherPortal(player.uuid, new_dimension_name));
+				}
+
+				dimension.entities = entities;
+			}
+			EntityTickOutcome::UseEndPortal(new_dimension_name) => {
+				let mut entities = std::mem::take(&mut dimension.entities);
+				if let Some(_entity) = entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
+					todo!();
+					//dont forget that entity needs to be put in the other dimension
+				}
+
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
+					game.task_queue.insert(Task::PlayerUseEndPortal(player.uuid, new_dimension_name));
 				}
 
 				dimension.entities = entities;

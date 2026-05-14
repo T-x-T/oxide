@@ -322,9 +322,9 @@ impl CommonEntityTrait for Player {
 				{
 					teleported = true;
 					if self.get_dimension() == "minecraft:overworld" {
-						output.push(EntityTickOutcome::ChangeDimension("minecraft:the_nether".to_string()));
+						output.push(EntityTickOutcome::UseNetherPortal("minecraft:the_nether".to_string()));
 					} else {
-						output.push(EntityTickOutcome::ChangeDimension("minecraft:overworld".to_string()));
+						output.push(EntityTickOutcome::UseNetherPortal("minecraft:overworld".to_string()));
 					}
 				}
 			}
@@ -332,6 +332,24 @@ impl CommonEntityTrait for Player {
 				self.portal_cooldown = 20;
 			} else if self.portal_cooldown > 0 {
 				self.portal_cooldown -= 1;
+			}
+		}
+
+		if self.last_position != self.position {
+			let position = EntityPosition {
+				x: self.get_position().x - 0.5,
+				z: self.get_position().z - 0.5,
+				..self.get_position()
+			};
+
+			let block_at_position = dimension.get_block(position.into()).unwrap_or_default();
+			let end_portal_block_id = data::blocks::get_block_from_name("minecraft:end_portal", block_state_data).states.first().unwrap().id;
+			if block_at_position == end_portal_block_id {
+				if self.get_dimension() == "minecraft:the_end" {
+					output.push(EntityTickOutcome::UseEndPortal("minecraft:overworld".to_string()));
+				} else {
+					output.push(EntityTickOutcome::UseEndPortal("minecraft:the_end".to_string()));
+				}
 			}
 		}
 
