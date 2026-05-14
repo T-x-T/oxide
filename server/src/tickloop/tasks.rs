@@ -276,17 +276,71 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				let default_spawn_location = world.default_spawn_location;
 				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
 
-				let new_position = if new_dimension_name == "minecraft:the_end" {
-					BlockPosition {
+				if new_dimension_name == "minecraft:the_end" {
+					let new_position = BlockPosition {
 						x: 100,
 						y: 49,
 						z: 0,
-					}
-				} else {
-					default_spawn_location
-				};
+					};
 
-				player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
+					let block_underneth = dimension
+						.get_block(BlockPosition {
+							x: 100,
+							y: 48,
+							z: 0,
+						})
+						.unwrap_or_default();
+
+					let obsidian_block_id =
+						data::blocks::get_block_from_name("minecraft:obsidian", &game.block_state_data).states.first().unwrap().id;
+
+					if block_underneth != obsidian_block_id {
+						for x in 98..=102 {
+							for z in -2..=2 {
+								let position = BlockPosition {
+									x,
+									y: 48,
+									z,
+								};
+								dimension.overwrite_block(position, obsidian_block_id).unwrap();
+								game.packet_sender.send_packet_to_everyone_in_dimension(
+									players_clone,
+									&new_dimension_name,
+									lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+									lib::packets::clientbound::play::BlockUpdate {
+										location: position,
+										block_id: obsidian_block_id as i32,
+									},
+								);
+							}
+						}
+						for x in 98..=102 {
+							for y in 49..=51 {
+								for z in -2..=2 {
+									let position = BlockPosition {
+										x,
+										y,
+										z,
+									};
+									dimension.overwrite_block(position, 0).unwrap();
+									game.packet_sender.send_packet_to_everyone_in_dimension(
+										players_clone,
+										&new_dimension_name,
+										lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+										lib::packets::clientbound::play::BlockUpdate {
+											location: position,
+											block_id: 0,
+										},
+									);
+								}
+							}
+						}
+					}
+
+					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
+				} else {
+					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, default_spawn_location);
+				};
 			}
 		}
 	}
