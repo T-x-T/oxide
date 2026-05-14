@@ -108,5 +108,5 @@ impl PacketSender {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Task {
-	PlayerChangeDimension(u128, String, BlockPosition),
+	PlayerChangeDimension(u128, String),
 }

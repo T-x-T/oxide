@@ -196,15 +196,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerChangeDimension(
-						player.uuid,
-						new_dimension_name,
-						BlockPosition {
-							x: 0,
-							y: 100,
-							z: 0,
-						},
-					));
+					game.task_queue.insert(Task::PlayerChangeDimension(player.uuid, new_dimension_name));
 				}
 
 				dimension.entities = entities;

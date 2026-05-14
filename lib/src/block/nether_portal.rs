@@ -2,7 +2,6 @@ use super::*;
 
 pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, block_id: u16) -> BlockUpdateOutcome {
 	let state = data::blocks::get_block_state_from_block_state_id(block_id, block_states);
-	println!("running for: {position:?}");
 	let positions_to_check = if state.properties.contains(&Property::NetherPortalAxis(NetherPortalAxis::X)) {
 		vec![
 			BlockPosition {
@@ -49,11 +48,8 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 
 
 	for position_to_check in positions_to_check {
-		println!("checking: {position_to_check:?}");
 		let actual_block = dimension.get_block(position_to_check);
-		println!("im a {actual_block:?}");
 		if actual_block.is_ok_and(|x| x != obsidian_block_state_id && x != portal_block_state_id_1 && x != portal_block_state_id_2) {
-			println!("delete me");
 			return BlockUpdateOutcome::ChangeOwnBlockId(0);
 		}
 	}

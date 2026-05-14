@@ -50,6 +50,7 @@ pub struct Player {
 	pub crafting_table_slots: [Slot; 9],
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
+	pub portal_cooldown: u8,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -90,6 +91,7 @@ impl Clone for Player {
 			crafting_table_slots: self.crafting_table_slots.clone(),
 			dimension: self.dimension.clone(),
 			loaded_chunks: self.loaded_chunks.clone(),
+			portal_cooldown: self.portal_cooldown,
 		}
 	}
 }
@@ -312,15 +314,24 @@ impl CommonEntityTrait for Player {
 				},
 			];
 
+			let mut teleported = false;
 			for block_to_check in blocks_to_check {
 				let block_state_id = dimension.get_block(block_to_check).unwrap_or_default();
-				if data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id) {
+				if self.portal_cooldown == 0
+					&& data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id)
+				{
+					teleported = true;
 					if self.get_dimension() == "minecraft:overworld" {
 						output.push(EntityTickOutcome::ChangeDimension("minecraft:the_nether".to_string()));
 					} else {
 						output.push(EntityTickOutcome::ChangeDimension("minecraft:overworld".to_string()));
 					}
 				}
+			}
+			if teleported {
+				self.portal_cooldown = 20;
+			} else if self.portal_cooldown > 0 {
+				self.portal_cooldown -= 1;
 			}
 		}
 
@@ -716,6 +727,7 @@ impl Player {
 				],
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
+				portal_cooldown: 0,
 			};
 
 			return player;
@@ -865,6 +877,7 @@ impl Player {
 			],
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
+			portal_cooldown: 0,
 		};
 
 		return player;
