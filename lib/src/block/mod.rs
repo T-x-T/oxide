@@ -343,6 +343,7 @@ pub fn interact_with_block_at(
 	player: &mut Player,
 	players_clone: &[Player],
 	packet_sender: &PacketSender,
+	dimension: &Dimension,
 ) -> BlockInteractionResult {
 	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
@@ -363,7 +364,7 @@ pub fn interact_with_block_at(
 		Type::Trapdoor => trapdoor::interact(location, block_id_at_location, face, block_states),
 		Type::FenceGate => fencegate::interact(location, block_id_at_location, face, block_states),
 		Type::EndPortalFrame => {
-			end_portal_frame::interact(location, block_id_at_location, face, player, players_clone, packet_sender, block_states)
+			end_portal_frame::interact(location, block_id_at_location, face, player, players_clone, packet_sender, block_states, dimension)
 		}
 		Type::CraftingTable => BlockInteractionResult::OpenInventory(Inventory::Crafting),
 		Type::Chest => BlockInteractionResult::OpenInventory(Inventory::Generic9x3),

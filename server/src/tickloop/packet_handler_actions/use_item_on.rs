@@ -45,6 +45,7 @@ pub fn process(
 			player,
 			players_clone,
 			&game.packet_sender,
+			dimension,
 		);
 		block_interaction_result
 			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, &game.packet_sender)
