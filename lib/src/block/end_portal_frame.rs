@@ -59,3 +59,40 @@ pub fn interact(
 		return BlockInteractionResult::OverwriteBlocks(vec![(new_block_state_id.unwrap().id, location)]);
 	}
 }
+
+pub fn get_block_state_id(
+	_face: u8,
+	cardinal_direction: CardinalDirection,
+	_dimension: &Dimension,
+	position: BlockPosition,
+	used_item_name: &str,
+	_cursor_position_x: f32,
+	_cursor_position_y: f32,
+	_cursor_position_z: f32,
+	block_states: &HashMap<String, Block>,
+) -> Vec<(u16, BlockPosition)> {
+	let block = data::blocks::get_block_from_name(used_item_name, block_states);
+	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
+
+	let facing = match cardinal_direction {
+		CardinalDirection::North => EndPortalFrameFacing::South,
+		CardinalDirection::East => EndPortalFrameFacing::West,
+		CardinalDirection::South => EndPortalFrameFacing::North,
+		CardinalDirection::West => EndPortalFrameFacing::East,
+	};
+
+	output.push((
+		block
+			.states
+			.iter()
+			.find(|x| {
+				x.properties.contains(&Property::EndPortalFrameFacing(facing.clone()))
+					&& x.properties.contains(&Property::EndPortalFrameEye(EndPortalFrameEye::False))
+			})
+			.unwrap()
+			.id,
+		position,
+	));
+
+	return output;
+}

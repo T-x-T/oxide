@@ -119,6 +119,17 @@ pub fn get_block_state_id(
 		Type::StainedGlassPane => output.append(&mut stained_glass_pane::get_block_state_id(dimension, position, used_item_name, block_states)),
 		Type::Fence => output.append(&mut fence::get_block_state_id(dimension, position, used_item_name, block_states)),
 		Type::Fire => output.append(&mut fire::get_block_state_id(dimension, position, used_item_name, face, block_states)),
+		Type::EndPortalFrame => output.append(&mut end_portal_frame::get_block_state_id(
+			face,
+			cardinal_direction,
+			dimension,
+			position,
+			used_item_name,
+			cursor_position_x,
+			cursor_position_y,
+			cursor_position_z,
+			block_states,
+		)),
 		_ => (),
 	}
 
