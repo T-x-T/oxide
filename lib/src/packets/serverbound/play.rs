@@ -211,6 +211,47 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 }
 
 //
+// MARK: 0x0a Chunk Batch Received
+//
+
+#[derive(Debug, Clone)]
+pub struct ChunkBatchReceived {
+	pub chunks_per_tick: f32,
+}
+
+impl Packet for ChunkBatchReceived {
+	const PACKET_ID: u8 = 0x0a;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ChunkBatchReceived> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ChunkBatchReceived) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::float(value.chunks_per_tick));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChunkBatchReceived {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			chunks_per_tick: crate::deserialize::float(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x0b client status
 //
 
