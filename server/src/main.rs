@@ -5,7 +5,7 @@ use dashmap::{DashMap, DashSet};
 use lib::packets::Packet;
 use lib::types::*;
 use std::error::Error;
-use std::io::Write;
+use std::io::{BufReader, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::Path;
 use std::sync::mpsc::channel;
@@ -107,31 +107,15 @@ fn initialize_server() {
 		let stream_clone = stream.try_clone().unwrap();
 		std::thread::spawn(move || {
 			let mut stream = stream_clone;
-			let game = game_clone.clone();
 			let peer_addr = stream.peer_addr().unwrap();
+			let mut buf_reader = BufReader::new(stream.try_clone().unwrap());
+			let game = game_clone.clone();
 			loop {
-				let mut peek_buf = [0; 1];
-
-				match stream.peek(&mut peek_buf) {
-					Ok(0) => {
-						println!("client disconnected.");
-						disconnect_player(&peer_addr, game.clone());
-						break;
-					}
-					Err(e) => {
-						eprintln!("error reading from client: {e}");
-						disconnect_player(&peer_addr, game.clone());
-						break;
-					}
-					_ => {}
-				}
-
-				let packet = lib::utils::read_packet(&stream);
-
-				// if stream.peer_addr().is_err() {
-				//   disconnect_player(&peer_addr, game.clone());
-				//   break;
-				// }
+				let Ok(packet) = lib::utils::read_packet(&mut buf_reader) else {
+					println!("client disconnected");
+					disconnect_player(&peer_addr, game.clone());
+					break;
+				};
 
 				let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game.clone());
 				if packet_handler_result.is_err() {

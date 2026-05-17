@@ -32,7 +32,7 @@ impl Client {
 		//Handle packets coming in on the client side
 		let read_stream_clone = read_stream.try_clone()?;
 		let join_handle = std::thread::spawn(move || {
-			let read_stream = read_stream_clone.try_clone().unwrap();
+			let mut read_stream = read_stream_clone.try_clone().unwrap();
 			loop {
 				if tx
 					.send(lib::Packet {
@@ -72,7 +72,7 @@ impl Client {
 				}
 				read_stream.set_read_timeout(None).unwrap();
 
-				let packet = lib::utils::read_packet(&read_stream);
+				let packet = lib::utils::read_packet(&mut read_stream).unwrap();
 				if tx.send(packet).is_err() {
 					println!("couldnt send received packet down the channel");
 					return;
