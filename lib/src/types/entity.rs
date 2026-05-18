@@ -39,6 +39,7 @@ pub enum EntityTickOutcome {
 	ReplaceBlock(BlockPosition, u16),
 	UseNetherPortal(String), //target dimension
 	UseEndPortal(String),    //target dimension
+	KilledBy(Box<Entity>),
 }
 
 #[derive(Debug)]

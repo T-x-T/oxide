@@ -1,5 +1,6 @@
 use super::*;
 use lib::entity::CommonEntity;
+use lib::loot_table;
 use lib::packets::Packet;
 
 pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Game>, players_clone: &[Player], dimension: &mut Dimension) {
@@ -20,6 +21,67 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					lib::packets::clientbound::play::EntityEvent::PACKET_ID,
 					entity_event_packet,
 				);
+
+				let entity_clone: Entity = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == entity_id).unwrap().clone();
+
+				let items_to_drop = loot_table::get_entity_drops(
+					&game.loot_tables,
+					&data::entities::get_name_from_id(entity_clone.get_type()),
+					&Slot::default(),
+					&game.block_state_data,
+					None,
+				);
+
+				for item_to_drop in items_to_drop {
+					dimension.summon_item(
+						entity_clone.get_common_entity_data().position,
+						item_to_drop,
+						None,
+						players_clone,
+						&game.packet_sender,
+						&game.entity_id_manager,
+					);
+				}
+			}
+			//Currently unused, might not be needed after all?
+			EntityTickOutcome::KilledBy(entity_clone) => {
+				let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
+					entity_id,
+					entity_status: 3,
+				};
+
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::EntityEvent::PACKET_ID,
+					entity_event_packet,
+				);
+
+				let mut used_tool: Slot = Slot::default();
+				let mut cloned_player: Option<Entity> = None;
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
+					used_tool = player.get_held_item(true).cloned().unwrap_or_default();
+					cloned_player = Some(Entity::Player(player.clone()));
+				};
+
+				let items_to_drop = loot_table::get_entity_drops(
+					&game.loot_tables,
+					&data::entities::get_name_from_id(entity_clone.get_type()),
+					&used_tool,
+					&game.block_state_data,
+					cloned_player.as_ref(),
+				);
+
+				for item_to_drop in items_to_drop {
+					dimension.summon_item(
+						entity_clone.get_common_entity_data().position,
+						item_to_drop,
+						None,
+						players_clone,
+						&game.packet_sender,
+						&game.entity_id_manager,
+					);
+				}
 			}
 			EntityTickOutcome::RemoveSelf => {
 				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
