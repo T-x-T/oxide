@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -20,21 +18,21 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	let Some(stream) = stream else {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	let Some(socket_addr) = socket_addr else {
 		println!("This command currently only works in game");
 		return Ok(());
 	};
 
 	let mut world = game.world.lock().unwrap();
 	let players = game.players.lock().unwrap();
-	let player = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let player = players.iter().find(|x| x.peer_socket_address == socket_addr).unwrap();
 
 	let command_parts: Vec<&str> = command.split(" ").collect();
 
 	if command_parts.len() < 5 {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -50,7 +48,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let block_name = command_parts[1];
 	let (Ok(x), Ok(y), Ok(z)) = (command_parts[2].parse::<i32>(), command_parts[3].parse::<i16>(), command_parts[4].parse::<i32>()) else {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -65,7 +63,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	if x > 30_000_000 || z > 30_000_000 || x < -30_000_000 || z < -30_000_000 {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -102,7 +100,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	for (block_state_id, position) in blocks_to_update {
 		if dimension.overwrite_block(position, block_state_id).is_err() {
 			game.packet_sender.send_packet_to_player(
-				&stream.peer_addr()?,
+				&socket_addr,
 				lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 				lib::packets::clientbound::play::SystemChatMessage {
 					content: NbtTag::Root(vec![

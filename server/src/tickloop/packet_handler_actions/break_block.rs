@@ -45,6 +45,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			old_block_id,
 			player_clone.get_held_item(true).unwrap_or(&Slot::default()),
 			&game.block_state_data,
+			Some(&Entity::Player(player.clone())),
 		);
 
 		for item_to_drop in items_to_drop {

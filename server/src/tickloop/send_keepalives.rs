@@ -9,7 +9,7 @@ pub fn process(game: Arc<Game>, players_clone: Vec<Player>) {
 		std::thread::spawn(move || {
 			for player in &players {
 				let useless_buf_no_one_crates_about = &mut [0; 1];
-				if player.connection_stream.peek(useless_buf_no_one_crates_about).is_err() {
+				if (*player.connection_stream).peek(useless_buf_no_one_crates_about).is_err() {
 					crate::disconnect_player(&player.peer_socket_address, game.clone());
 				}
 				game.packet_sender.send_packet_to_player(

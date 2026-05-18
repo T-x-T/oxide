@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -15,8 +13,8 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	let Some(stream) = stream else {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	let Some(stream) = socket_addr else {
 		println!("this command can only be used in game");
 		return Ok(());
 	};
@@ -24,7 +22,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let mut players = game.players.lock().unwrap();
 	let players_clone = players.clone();
 	let mut world = game.world.lock().unwrap();
-	let player = players.iter_mut().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == stream).unwrap();
 
 	let default_spawn_location = world.default_spawn_location;
 	let dimension = world.dimensions.get_mut(command.replace("dimension ", "").as_str()).unwrap();

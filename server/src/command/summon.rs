@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use lib::entity::CommonEntity;
 
 use super::*;
@@ -17,15 +15,15 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	let Some(stream) = stream else {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	let Some(socket_addr) = socket_addr else {
 		println!("This command currently only works in game");
 		return Ok(());
 	};
 
 	let players = game.players.lock().unwrap();
 
-	let position = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap().get_position();
+	let position = players.iter().find(|x| x.peer_socket_address == socket_addr).unwrap().get_position();
 
 	let new_entity = entity::new(
 		command.replace("summon ", "").as_str(),
@@ -41,7 +39,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let Some(new_entity) = new_entity else {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -57,7 +55,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	let packet = new_entity.to_spawn_entity_packet();
 
-	let player = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let player = players.iter().find(|x| x.peer_socket_address == socket_addr).unwrap();
 	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().add_entity(new_entity);
 
 	game.packet_sender.send_packet_to_everyone_in_dimension(

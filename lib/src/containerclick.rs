@@ -1,4 +1,4 @@
-use std::net::TcpStream;
+use std::net::SocketAddr;
 
 use crate::packets::Packet;
 use crate::types::*;
@@ -7,7 +7,7 @@ pub fn handle(
 	parsed_packet: crate::packets::serverbound::play::ClickContainer,
 	chest_items: &mut [Slot],
 	player_uuid: u128,
-	streams_with_container_opened: Vec<TcpStream>,
+	peers_with_container_opened: Vec<SocketAddr>,
 	players: &mut [Player],
 	players_clone: &[Player],
 	packet_sender: &PacketSender,
@@ -40,9 +40,9 @@ pub fn handle(
 			} else if chest_inventory_clicked {
 				//Chest inventory got changed
 				chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().unwrap_or_default();
-				for stream in streams_with_container_opened {
+				for peer in peers_with_container_opened {
 					packet_sender.send_packet_to_player(
-						&stream.peer_addr().unwrap(),
+						&peer,
 						crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerSlot {
 							window_id: 1,
@@ -92,9 +92,9 @@ pub fn handle(
 				assert_eq!(chest_items.len(), new_chest_items.len());
 				chest_items.clone_from_slice(&new_chest_items);
 
-				for stream in streams_with_container_opened {
+				for peer in peers_with_container_opened {
 					packet_sender.send_packet_to_player(
-						&stream.peer_addr().unwrap(),
+						&peer,
 						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 						crate::packets::clientbound::play::SetContainerContent {
 							window_id: 1,

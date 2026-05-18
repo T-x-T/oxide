@@ -22,7 +22,6 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 		return;
 	};
 
-	let mut stream = player.connection_stream.try_clone().unwrap();
 	drop(players);
-	(command.execute)(command_string, Some(&mut stream), game.clone()).unwrap();
+	(command.execute)(command_string, Some(peer_addr), game.clone()).unwrap();
 }

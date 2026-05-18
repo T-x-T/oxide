@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -15,22 +13,22 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	let Some(stream) = stream else {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	let Some(socket_addr) = socket_addr else {
 		println!("This command currently only works in game");
 		return Ok(());
 	};
 
 	let players = game.players.lock().unwrap();
 
-	let player = players.iter().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let player = players.iter().find(|x| x.peer_socket_address == socket_addr).unwrap();
 
 	let position = player.get_position();
 
 	let item_name = command.replace("give ", "");
 	let Some(item_id) = data::items::get_item_id_by_name(&item_name) else {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -20,17 +18,17 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let players = game.players.lock().unwrap();
 
 	let Some(target_player) = players.iter().find(|x| x.display_name == command.split(" ").nth(1).unwrap_or_default()) else {
-		let Some(stream) = stream else {
+		let Some(socket_addr) = socket_addr else {
 			println!("Couldn't find that player :(");
 			return Ok(());
 		};
 
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -44,8 +42,8 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		return Ok(());
 	};
 
-	let sending_player_name = if stream.is_some() {
-		players.iter().find(|x| x.peer_socket_address == stream.as_ref().unwrap().peer_addr().unwrap()).unwrap().display_name.clone()
+	let sending_player_name = if socket_addr.is_some() {
+		players.iter().find(|x| x.peer_socket_address == socket_addr.unwrap()).unwrap().display_name.clone()
 	} else {
 		"console".to_string()
 	};

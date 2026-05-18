@@ -2,7 +2,7 @@ use super::*;
 
 pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, players_clone: &[Player]) {
 	let mut players = game.players.lock().unwrap();
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 
 	if player.get_gamemode() != Gamemode::Creative {
 		return;

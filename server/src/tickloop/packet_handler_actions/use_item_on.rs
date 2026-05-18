@@ -21,7 +21,7 @@ pub fn process(
 		_ => new_block_location.x += 1,
 	}
 
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
 	let gamemode = player.get_gamemode();
 

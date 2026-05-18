@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -33,16 +31,16 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
 	let reply_msg = if command.as_str() == "ping" { "pong".to_string() } else { command.replace("ping ", "") };
 
-	let Some(stream) = stream else {
+	let Some(socket_addr) = socket_addr else {
 		println!("{reply_msg}");
 		return Ok(());
 	};
 
 	game.packet_sender.send_packet_to_player(
-		&stream.peer_addr()?,
+		&socket_addr,
 		lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 		lib::packets::clientbound::play::SystemChatMessage {
 			content: NbtTag::Root(vec![NbtTag::String("type".to_string(), "text".to_string()), NbtTag::String("text".to_string(), reply_msg)]),

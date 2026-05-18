@@ -5,7 +5,7 @@ use super::*;
 pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>, players_clone: &[Player]) {
 	//println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let player_uuid = player.uuid;
 
 	let Some(position) = player.opened_inventory_at else {
@@ -24,7 +24,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				);
 			}
 
-			let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+			let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 
 			let inventory_to_set: Vec<Option<Slot>> = inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect();
 			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
@@ -133,8 +133,8 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 	let streams_with_container_opened = players_clone
 		.iter()
 		.filter(|x| x.opened_inventory_at.is_some_and(|x| x == position))
-		.map(|x| x.connection_stream.try_clone().unwrap())
-		.collect::<Vec<TcpStream>>();
+		.map(|x| x.peer_socket_address)
+		.collect::<Vec<SocketAddr>>();
 
 	let block_entity =
 		dimensions.get_mut(player.get_dimension()).unwrap().get_chunk_from_position_mut(position).unwrap().try_get_block_entity_mut(position);
@@ -333,7 +333,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 		}
 		items.remove(0); //remove empty result slot again
 
-		let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+		let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 		player.crafting_table_slots = items.as_array().unwrap().clone();
 
 		//crafting in a crafting table

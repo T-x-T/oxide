@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -23,8 +21,8 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	let Some(stream) = stream else {
+fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	let Some(socket_addr) = socket_addr else {
 		println!("this command doesnt work from the console");
 		return Ok(());
 	};
@@ -34,7 +32,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 	let arg_string = command.replace("tp ", "");
 	if arg_string.is_empty() {
 		game.packet_sender.send_packet_to_player(
-			&stream.peer_addr()?,
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -61,7 +59,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 		if x > 30_000_000.0 || y > 30_000_000.0 || z > 30_000_000.0 || x < -30_000_000.0 || y < -30_000_000.0 || z < -30_000_000.0 {
 			game.packet_sender.send_packet_to_player(
-				&stream.peer_addr()?,
+				&socket_addr,
 				lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 				lib::packets::clientbound::play::SystemChatMessage {
 					content: NbtTag::Root(vec![
@@ -84,7 +82,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		}
 	};
 
-	let sending_player = players.iter_mut().find(|x| x.peer_socket_address == stream.peer_addr().unwrap()).unwrap();
+	let sending_player = players.iter_mut().find(|x| x.peer_socket_address == socket_addr).unwrap();
 
 	let sending_player_entity_id = sending_player.entity_id;
 
@@ -95,7 +93,7 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 
 	sending_player.current_teleport_id += 1;
 	game.packet_sender.send_packet_to_player(
-		&stream.peer_addr()?,
+		&socket_addr,
 		lib::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
 		lib::packets::clientbound::play::SynchronizePlayerPosition {
 			teleport_id: sending_player.current_teleport_id,
@@ -111,10 +109,10 @@ fn execute(command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> 
 		},
 	);
 
-	for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
-		if other_stream.peer_addr().unwrap() != stream.peer_addr().unwrap() {
+	for other_addr in players.iter().map(|x| &x.peer_socket_address).collect::<Vec<&SocketAddr>>() {
+		if *other_addr != socket_addr {
 			game.packet_sender.send_packet_to_player(
-				&other_stream.peer_addr()?,
+				other_addr,
 				lib::packets::clientbound::play::TeleportEntity::PACKET_ID,
 				lib::packets::clientbound::play::TeleportEntity {
 					entity_id: sending_player_entity_id,

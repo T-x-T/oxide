@@ -13,7 +13,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		peer_addr,
 		&game.entity_id_manager,
 		&game.default_gamemode,
-		stream,
+		Box::new(stream),
 		world.default_spawn_location,
 	);
 	let mut players = game.players.lock().unwrap();

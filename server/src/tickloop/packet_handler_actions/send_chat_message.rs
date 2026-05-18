@@ -3,7 +3,7 @@ use super::*;
 pub fn process(peer_addr: SocketAddr, message: String, timestamp: i64, salt: i64, game: Arc<Game>) {
 	let mut players = game.players.lock().unwrap();
 
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 
 	println!("<{}>: {}", player.display_name, message);
 

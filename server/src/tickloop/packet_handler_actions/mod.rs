@@ -48,7 +48,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 			PacketHandlerAction::SetCreativeModeSlot(peer_addr, slot, item) => {
 				let mut players = game.players.lock().unwrap();
-				let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else {
+				let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else {
 					continue;
 				};
 
@@ -56,7 +56,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 			PacketHandlerAction::SetSelectedSlot(peer_addr, slot) => {
 				let mut players = game.players.lock().unwrap();
-				let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else {
+				let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else {
 					continue;
 				};
 
@@ -105,7 +105,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::PlayerInput(peer_addr, parsed_packet) => {
 				let players_clone = game.players.lock().unwrap().clone();
 				let mut players = game.players.lock().unwrap();
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 
 				player.set_sneaking(parsed_packet.sneak, &players_clone, &game.packet_sender);
 				player.set_sprinting(parsed_packet.sprint);
@@ -119,7 +119,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::UpdateGamemode(peer_addr, gamemode) => {
 				let players_clone = game.players.lock().unwrap().clone();
 				let mut players = game.players.lock().unwrap();
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 				player.set_gamemode(gamemode, &players_clone, &game.packet_sender).unwrap();
 			}
 			PacketHandlerAction::Respawn(peer_addr) => {

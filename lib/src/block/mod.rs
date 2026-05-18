@@ -200,7 +200,7 @@ impl BlockUpdateOutcome {
 					block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
 				}
 
-				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &Slot::default(), block_state_data);
+				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &Slot::default(), block_state_data, None);
 
 				for item_to_drop in items_to_drop {
 					if item_to_drop.id != 0 {

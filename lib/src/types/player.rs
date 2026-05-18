@@ -7,11 +7,57 @@ use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
 use std::collections::{BTreeSet, HashMap};
 use std::error::Error;
+use std::fmt::Debug;
 use std::fs;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::net::{SocketAddr, TcpStream};
 use std::path::{Path, PathBuf};
+
+pub trait ReadWrite: std::io::Read + std::io::Write + std::fmt::Debug + Send {
+	fn box_clone(&self) -> std::io::Result<Box<dyn ReadWrite>>;
+	fn peek(&self, buf: &mut [u8]) -> std::io::Result<usize>;
+}
+
+impl ReadWrite for TcpStream {
+	fn box_clone(&self) -> std::io::Result<Box<dyn ReadWrite>> {
+		Ok(Box::new(self.try_clone()?))
+	}
+
+	fn peek(&self, buf: &mut [u8]) -> std::io::Result<usize> {
+		self.peek(buf)
+	}
+}
+
+#[derive(Debug)]
+pub struct MockReadWriter();
+
+impl ReadWrite for MockReadWriter {
+	fn box_clone(&self) -> std::io::Result<Box<dyn ReadWrite>> {
+		return Ok(Box::new(MockReadWriter()));
+	}
+
+	fn peek(&self, _buf: &mut [u8]) -> std::io::Result<usize> {
+		Ok(0)
+	}
+}
+
+impl std::io::Read for MockReadWriter {
+	fn read(&mut self, _buf: &mut [u8]) -> std::io::Result<usize> {
+		Ok(0)
+	}
+}
+
+impl std::io::Write for MockReadWriter {
+	fn write(&mut self, _buf: &[u8]) -> std::io::Result<usize> {
+		Ok(0)
+	}
+
+	fn flush(&mut self) -> std::io::Result<()> {
+		Ok(())
+	}
+}
+
 
 //TODO: use new EntityPosition struct here too
 #[derive(Debug)]
@@ -22,7 +68,7 @@ pub struct Player {
 	pub display_name: String,
 	pub uuid: u128,
 	pub peer_socket_address: SocketAddr,
-	pub connection_stream: TcpStream,
+	pub connection_stream: Box<dyn ReadWrite>,
 	pub entity_id: i32,
 	pub waiting_for_confirm_teleportation: bool,
 	pub current_teleport_id: i32,
@@ -63,7 +109,7 @@ impl Clone for Player {
 			display_name: self.display_name.clone(),
 			uuid: self.uuid,
 			peer_socket_address: self.peer_socket_address,
-			connection_stream: self.connection_stream.try_clone().unwrap(),
+			connection_stream: self.connection_stream.box_clone().unwrap(),
 			entity_id: self.entity_id,
 			waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation,
 			current_teleport_id: self.current_teleport_id,
@@ -440,10 +486,10 @@ impl CommonEntityTrait for Player {
 
 		self.new_position(position.x as f64, position.y as f64, position.z as f64, dimension, packet_sender).unwrap();
 
-		for other_stream in players_clone.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
-			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
+		for other_peer_addr in players_clone.iter().map(|x| &x.peer_socket_address).collect::<Vec<&SocketAddr>>() {
+			if *other_peer_addr != self.peer_socket_address {
 				packet_sender.send_packet_to_player(
-					&other_stream.peer_addr().unwrap(),
+					other_peer_addr,
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
 						entity_id: self.entity_id,
@@ -694,7 +740,7 @@ impl Player {
 		peer_socket_address: SocketAddr,
 		entity_id_manager: &EntityIdManager,
 		default_gamemode: &Gamemode,
-		connection_stream: TcpStream,
+		connection_stream: Box<dyn ReadWrite>,
 		default_spawn_location: BlockPosition,
 	) -> Self {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
@@ -1693,10 +1739,10 @@ impl Player {
 			)
 			.unwrap();
 
-		for other_stream in players.iter().map(|x| &x.connection_stream).collect::<Vec<&TcpStream>>() {
-			if other_stream.peer_addr().unwrap() != self.peer_socket_address {
+		for other_peer_addr in players.iter().map(|x| &x.peer_socket_address).collect::<Vec<&SocketAddr>>() {
+			if *other_peer_addr != self.peer_socket_address {
 				packet_sender.send_packet_to_player(
-					&other_stream.peer_addr().unwrap(),
+					other_peer_addr,
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
 						entity_id: self.entity_id,

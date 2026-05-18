@@ -51,7 +51,7 @@ fn target_is_entity(
 	players_clone: &[Player],
 ) {
 	let mut dimensions = std::mem::take(&mut world.dimensions);
-	let player = players_clone.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players_clone.iter().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let dimension = dimensions.get_mut(player.get_dimension()).unwrap();
 
 	let mut entities = std::mem::take(&mut dimension.entities);
@@ -129,7 +129,7 @@ fn target_is_entity(
 			if success {
 				let mut held_item = held_item.clone();
 				held_item.count -= 1;
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 				if held_item.count == 0 {
 					player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 				} else {
