@@ -1,0 +1,36 @@
+name: Build, test and push
+
+on: pull_request_target
+
+jobs:
+  test:
+    runs-on: vm
+    container:
+      image: git.thetxt.io/thetxt/runner-base:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run tests
+        run: cargo test
+
+  clippy:
+    runs-on: vm
+    container:
+      image: git.thetxt.io/thetxt/runner-base:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run clippy
+        run: |
+          cargo clippy
+
+  formatting:
+    runs-on: vm
+    container:
+      image: git.thetxt.io/thetxt/runner-base:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check formatting
+        run: |
+          cargo fmt --check
