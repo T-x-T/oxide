@@ -173,6 +173,16 @@ pub mod login {
 			.try_into()?,
 		);
 
+    game.send_packet(
+			&stream.peer_addr()?,
+			lib::packets::clientbound::configuration::ClientboundPluginMessage::PACKET_ID,
+			lib::packets::clientbound::configuration::ClientboundPluginMessage {
+				channel: "minecraft:brand".to_string(),
+        data: lib::serialize::string(&"Oxide".to_string())
+			}
+			.try_into()?,
+		);
+
 		game.send_packet(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::configuration::ServerLinks::PACKET_ID,
