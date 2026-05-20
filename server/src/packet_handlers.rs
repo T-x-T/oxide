@@ -173,7 +173,7 @@ pub mod login {
 			.try_into()?,
 		);
 
-    game.send_packet(
+		game.send_packet(
 			&stream.peer_addr()?,
 			lib::packets::clientbound::configuration::ClientboundPluginMessage::PACKET_ID,
 			lib::packets::clientbound::configuration::ClientboundPluginMessage {
