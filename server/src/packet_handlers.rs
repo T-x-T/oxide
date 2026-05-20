@@ -178,7 +178,7 @@ pub mod login {
 			lib::packets::clientbound::configuration::ClientboundPluginMessage::PACKET_ID,
 			lib::packets::clientbound::configuration::ClientboundPluginMessage {
 				channel: "minecraft:brand".to_string(),
-        data: lib::serialize::string(&"Oxide".to_string())
+				data: lib::serialize::string("Oxide")
 			}
 			.try_into()?,
 		);
