@@ -1140,12 +1140,26 @@ impl Player {
 				})
 				.collect();
 
-			let chunks_missing: Vec<(i32, i32)> = new_chunk_coords.into_iter().filter(|x| !old_chunk_coords.contains(x)).collect();
+			let chunks_missing: Vec<&(i32, i32)> = new_chunk_coords.iter().filter(|x| !old_chunk_coords.contains(x)).collect();
+			let chunks_to_unload: Vec<(i32, i32)> = old_chunk_coords.into_iter().filter(|x| !new_chunk_coords.contains(x)).collect();
 
 			for chunk_coords in chunks_missing {
 				self.send_chunk(dimension, chunk_coords.0, chunk_coords.1, packet_sender)?;
 			}
+
+			for chunk_coords in &chunks_to_unload {
+				packet_sender.send_packet_to_player(
+					&self.peer_socket_address,
+					crate::packets::clientbound::play::UnloadChunk::PACKET_ID,
+					crate::packets::clientbound::play::UnloadChunk {
+						z: chunk_coords.1,
+						x: chunk_coords.0,
+					},
+				);
+			}
+			self.loaded_chunks.retain(|x| !chunks_to_unload.contains(x));
 		}
+
 
 		return Ok(self.get_position());
 	}
