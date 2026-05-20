@@ -171,6 +171,16 @@ pub mod login {
 
 		game.packet_sender.send_packet_to_player(
 			&stream.peer_addr()?,
+			lib::packets::clientbound::configuration::ClientboundPluginMessage::PACKET_ID,
+			lib::packets::clientbound::configuration::ClientboundPluginMessage {
+				channel: "minecraft:brand".to_string(),
+				data: lib::serialize::string("Oxide"),
+			}
+			.try_into()?,
+		);
+
+		game.send_packet(
+			&stream.peer_addr()?,
 			lib::packets::clientbound::configuration::ServerLinks::PACKET_ID,
 			lib::packets::clientbound::configuration::ServerLinks {
 				links: vec![
