@@ -20,30 +20,30 @@ impl Packet for ServerboundPluginMessage {
 }
 
 impl TryFrom<ServerboundPluginMessage> for Vec<u8> {
-    type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-    fn try_from(value: ServerboundPluginMessage) -> Result<Self, Box<dyn Error>> {
-        let mut result: Vec<u8> = Vec::new();
+	fn try_from(value: ServerboundPluginMessage) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
 
-        result.extend(crate::serialize::string(&value.channel));
-        result.extend_from_slice(&value.data);
+		result.extend(crate::serialize::string(&value.channel));
+		result.extend_from_slice(&value.data);
 
-        Ok(result)
-    }
+		Ok(result)
+	}
 }
 
 impl TryFrom<Vec<u8>> for ServerboundPluginMessage {
-    type Error = Box<dyn Error>;
+	type Error = Box<dyn Error>;
 
-    fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-        let channel = crate::deserialize::string(&mut value)?;
-        let data = value;
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let channel = crate::deserialize::string(&mut value)?;
+		let data = value;
 
-        Ok(ServerboundPluginMessage {
-            channel,
-            data,
-        })
-    }
+		Ok(ServerboundPluginMessage {
+			channel,
+			data,
+		})
+	}
 }
 
 //
