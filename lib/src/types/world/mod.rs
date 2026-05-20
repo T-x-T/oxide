@@ -39,6 +39,7 @@ pub struct Chunk {
 	pub is_light_on: bool,
 	pub modified: bool,
 	pub block_entities: Vec<BlockEntity>,
+	pub keep_loaded_for_ticks: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -200,6 +201,7 @@ impl Dimension {
 		{
 			loader.save_to_disk(&self.chunks, self, block_states, &self.name);
 		}
+		self.chunks.retain(|_, x| x.keep_loaded_for_ticks > 0);
 		for chunk in &mut self.chunks {
 			chunk.1.modified = false;
 		}
@@ -309,6 +311,7 @@ impl Chunk {
 			is_light_on: true,
 			modified: true,
 			block_entities: Vec::new(),
+			keep_loaded_for_ticks: 20 * 60,
 		};
 	}
 

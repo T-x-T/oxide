@@ -74,6 +74,13 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	tasks::process(game.clone(), &players_clone);
 	let duration_tasks = std::time::Instant::now() - now;
 
+	let mut world = game.world.lock().unwrap();
+	for dimension in &mut world.dimensions {
+		for chunk in &mut dimension.1.chunks {
+			chunk.1.keep_loaded_for_ticks -= 1;
+		}
+	}
+
 	return TickTimings {
 		save_all: duration_save_all,
 		clone_players: duration_clone_players,

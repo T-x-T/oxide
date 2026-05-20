@@ -276,6 +276,11 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				dimension.entities = entities;
 			}
+			EntityTickOutcome::LoadChunk(x, z) => {
+				if let Some(chunk) = dimension.chunks.get_mut(&(x, z)) {
+					chunk.keep_loaded_for_ticks = 20 * 60;
+				};
+			}
 		}
 	}
 }

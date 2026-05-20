@@ -9,6 +9,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	for dimension in world.dimensions.values_mut() {
 		let mut blocks_to_update: Vec<(BlockPosition, u16)> = Vec::new();
 		for chunk in dimension.chunks.values() {
+			if chunk.keep_loaded_for_ticks <= 0 {
+				continue;
+			}
 			for chunk_section_index in 0..chunk.sections.len() {
 				let mut rng = rand::rng();
 				for _ in 0..=lib::RANDOM_TICK_SPEED {

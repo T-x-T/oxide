@@ -223,6 +223,7 @@ impl super::WorldLoader for Loader {
 			sections,
 			modified: false,
 			block_entities,
+			keep_loaded_for_ticks: 20 * 60,
 		};
 	}
 

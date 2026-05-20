@@ -226,6 +226,14 @@ impl CommonEntityTrait for Player {
 		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
+		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
+		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
+			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
+				output.push(EntityTickOutcome::LoadChunk(x, z));
+			}
+		}
+
 		if self.health <= 0.0 {
 			for entity in self.die(packet_sender, entity_id_manager, players) {
 				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));

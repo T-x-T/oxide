@@ -40,6 +40,7 @@ pub enum EntityTickOutcome {
 	UseNetherPortal(String), //target dimension
 	UseEndPortal(String),    //target dimension
 	KilledBy(Box<Entity>),
+	LoadChunk(i32, i32),
 }
 
 #[derive(Debug)]
