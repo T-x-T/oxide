@@ -8,7 +8,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 		match task.clone() {
 			Task::PlayerUseNetherPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
-				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
+				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
 				let current_position = player.get_position();
 				let new_position = if new_dimension_name == "minecraft:overworld" {
@@ -28,6 +28,23 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				} else {
 					current_position.into()
 				};
+
+				let mut chunks_to_add: Vec<Chunk> = Vec::new();
+				let mut entities_to_add: Vec<Entity> = Vec::new();
+				for x in (new_position.x - lib::VIEW_DISTANCE as i32)..=(new_position.x + lib::VIEW_DISTANCE as i32) {
+					for z in (new_position.z - lib::VIEW_DISTANCE as i32)..=(new_position.z + lib::VIEW_DISTANCE as i32) {
+						if !dimension.chunks.contains_key(&(x, z)) {
+							chunks_to_add.push(world.loader.load_chunk(x, z, &game.block_state_data, &new_dimension_name));
+							entities_to_add.append(&mut world.loader.load_entities_in_chunk(x, z, &game.entity_id_manager, &new_dimension_name));
+						}
+					}
+				}
+
+				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
+				for chunk in chunks_to_add {
+					dimension.chunks.insert((chunk.x, chunk.z), chunk);
+				}
+				dimension.entities.append(&mut entities_to_add);
 
 				let x_range: Vec<i32> = (0..32).zip((-32..0).rev()).flat_map(|(a, b)| [a, b]).collect();
 				let z_range: Vec<i32> = (0..32).zip((-32..0).rev()).flat_map(|(a, b)| [a, b]).collect();
@@ -274,7 +291,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			Task::PlayerUseEndPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let default_spawn_location = world.default_spawn_location;
-				let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
+				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
 				if new_dimension_name == "minecraft:the_end" {
 					let new_position = BlockPosition {
@@ -282,6 +299,23 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						y: 49,
 						z: 0,
 					};
+
+					let mut chunks_to_add: Vec<Chunk> = Vec::new();
+					let mut entities_to_add: Vec<Entity> = Vec::new();
+					for x in (new_position.x - lib::VIEW_DISTANCE as i32)..=(new_position.x + lib::VIEW_DISTANCE as i32) {
+						for z in (new_position.z - lib::VIEW_DISTANCE as i32)..=(new_position.z + lib::VIEW_DISTANCE as i32) {
+							if !dimension.chunks.contains_key(&(x, z)) {
+								chunks_to_add.push(world.loader.load_chunk(x, z, &game.block_state_data, &new_dimension_name));
+								entities_to_add.append(&mut world.loader.load_entities_in_chunk(x, z, &game.entity_id_manager, &new_dimension_name));
+							}
+						}
+					}
+
+					let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
+					for chunk in chunks_to_add {
+						dimension.chunks.insert((chunk.x, chunk.z), chunk);
+					}
+					dimension.entities.append(&mut entities_to_add);
 
 					let block_underneth = dimension
 						.get_block(BlockPosition {
@@ -339,6 +373,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 				} else {
+					let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, default_spawn_location);
 				};
 			}
