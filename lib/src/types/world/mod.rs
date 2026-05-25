@@ -115,7 +115,13 @@ impl Dimension {
 
 		let (sender, receiver) = channel();
 		return Self {
-			chunks,
+			chunks: chunks
+				.into_iter()
+				.map(|(k, mut v)| {
+					v.keep_loaded_for_ticks = i32::MAX;
+					(k, v)
+				})
+				.collect(),
 			entities: Vec::new(),
 			name: dimension_name.to_string(),
 			lowest_block_y,
@@ -142,7 +148,13 @@ impl Dimension {
 
 		let (sender, receiver) = channel();
 		return Self {
-			chunks,
+			chunks: chunks
+				.into_iter()
+				.map(|(k, mut v)| {
+					v.keep_loaded_for_ticks = i32::MAX;
+					(k, v)
+				})
+				.collect(),
 			entities,
 			name: dimension_name.to_string(),
 			lowest_block_y: if dimension_name == "minecraft:overworld" { -64i16 } else { 0 },
