@@ -25,7 +25,7 @@ impl super::WorldLoader for Loader {
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
-		region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+		region_file_path.push(PathBuf::from_str("dimensions/minecraft").unwrap());
 		region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 		region_file_path.push(PathBuf::from_str("region").unwrap());
 		region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
@@ -233,7 +233,7 @@ impl super::WorldLoader for Loader {
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
-		region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+		region_file_path.push(PathBuf::from_str("dimensions/minecraft").unwrap());
 		region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 		region_file_path.push(PathBuf::from_str("entities").unwrap());
 		region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
@@ -404,7 +404,7 @@ fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: 
 	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA; 1024];
 
 	let mut region_file_path = path;
-	region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+	region_file_path.push(PathBuf::from_str("dimensions/minecraft").unwrap());
 	region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 	region_file_path.push(PathBuf::from_str("entities").unwrap());
 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
@@ -516,7 +516,7 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA; 1024];
 
 	let mut region_file_path = path;
-	region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+	region_file_path.push(PathBuf::from_str("dimensions/minecraft").unwrap());
 	region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 	region_file_path.push(PathBuf::from_str("region").unwrap());
 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
