@@ -16,25 +16,25 @@ pub struct BlastFurnace {
 }
 
 impl CommonBlockEntity for BlastFurnace {
-	fn tick(&mut self, players: &[Player], game: Arc<Game>) {
+	fn tick(&mut self, players: &[Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
 		if self.needs_ticking {
 			if self.inventory[0].count == 0 {
-				self.reset_state(players, game);
+				self.reset_state(players, dimension_name, packet_sender);
 				return;
 			}
 
 			if self.inventory[0].count > 0 && self.current_recipe.is_none() {
-				self.current_recipe = game.recipe_manager.get_blasting_recipe(&self.inventory[0]);
+				self.current_recipe = recipe_manager.get_blasting_recipe(&self.inventory[0]);
 				if self.current_recipe.is_none() {
-					self.reset_state(players, game);
+					self.reset_state(players, dimension_name, packet_sender);
 					return;
 				}
 			}
 
-			if game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) == 0
+			if recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) == 0
 				&& self.lit_time_remaining == 0
 			{
-				self.reset_state(players, game);
+				self.reset_state(players, dimension_name, packet_sender);
 				return;
 			}
 
@@ -46,7 +46,7 @@ impl CommonBlockEntity for BlastFurnace {
 						..self.inventory[1].clone()
 					};
 					self.lit_time_remaining =
-						(game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16;
+						(recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) as f64 * 0.5) as i16;
 				} else {
 					self.cooking_time_spent = 0;
 					can_cook = false;
@@ -57,7 +57,7 @@ impl CommonBlockEntity for BlastFurnace {
 				if self.cooking_time_spent == 0 {
 					self.cooking_time_spent = 1;
 				} else if self.cooking_time_spent == self.current_recipe.as_ref().unwrap().cooking_time.unwrap_or(200) as i16 {
-					if self.inventory[2].id == data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id) {
+					if self.inventory[2].id == data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id).unwrap() {
 						self.inventory[2] = Slot {
 							count: self.inventory[2].count + 1,
 							..self.inventory[2].clone()
@@ -67,7 +67,7 @@ impl CommonBlockEntity for BlastFurnace {
 					} else {
 						self.inventory[2] = Slot {
 							count: 1,
-							id: data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id),
+							id: data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id).unwrap(),
 							components_to_add: Vec::new(),
 							components_to_remove: Vec::new(),
 						};
@@ -84,68 +84,63 @@ impl CommonBlockEntity for BlastFurnace {
 				self.lit_time_remaining -= 1;
 			}
 
-			players.iter().filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position)).for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerContent {
-						window_id: 1,
-						state_id: 1,
-						slot_data: self.inventory.iter().cloned().map(Into::into).collect(),
-						carried_item: None,
-					}
-					.try_into()
-					.unwrap(),
-				);
+			players
+				.iter()
+				.filter(|x| x.get_dimension() == dimension_name)
+				.filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
+				.for_each(|x| {
+					packet_sender.send_packet_to_player(
+						&x.peer_socket_address,
+						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerContent {
+							window_id: 1,
+							state_id: 1,
+							slot_data: self.inventory.iter().cloned().map(Into::into).collect(),
+							carried_item: None,
+						},
+					);
 
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerProperty {
-						window_id: 1,
-						property: 0,                    //fuel left
-						value: self.lit_time_remaining, //ticks of fuel left
-					}
-					.try_into()
-					.unwrap(),
-				);
+					packet_sender.send_packet_to_player(
+						&x.peer_socket_address,
+						crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerProperty {
+							window_id: 1,
+							property: 0,                    //fuel left
+							value: self.lit_time_remaining, //ticks of fuel left
+						},
+					);
 
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerProperty {
-						window_id: 1,
-						property: 1, //max fuel burn time
-						value: (game.recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id)) as f64 * 0.5) as i16, //ticks fuel should burn for
-					}
-					.try_into()
-					.unwrap(),
-				);
+					packet_sender.send_packet_to_player(
+						&x.peer_socket_address,
+						crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerProperty {
+							window_id: 1,
+							property: 1, //max fuel burn time
+							value: (recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) as f64 * 0.5)
+								as i16, //ticks fuel should burn for
+						},
+					);
 
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerProperty {
-						window_id: 1,
-						property: 3,                                                                                      //max progress
-						value: self.current_recipe.as_ref().map(|x| x.cooking_time.unwrap_or(200) as i16).unwrap_or(200), //progress from 0-200
-					}
-					.try_into()
-					.unwrap(),
-				);
+					packet_sender.send_packet_to_player(
+						&x.peer_socket_address,
+						crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerProperty {
+							window_id: 1,
+							property: 3,                                                                                      //max progress
+							value: self.current_recipe.as_ref().map(|x| x.cooking_time.unwrap_or(200) as i16).unwrap_or(200), //progress from 0-200
+						},
+					);
 
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-					crate::packets::clientbound::play::SetContainerProperty {
-						window_id: 1,
-						property: 2,                    //progress
-						value: self.cooking_time_spent, //progress from 0-200
-					}
-					.try_into()
-					.unwrap(),
-				);
-			});
+					packet_sender.send_packet_to_player(
+						&x.peer_socket_address,
+						crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+						crate::packets::clientbound::play::SetContainerProperty {
+							window_id: 1,
+							property: 2,                    //progress
+							value: self.cooking_time_spent, //progress from 0-200
+						},
+					);
+				});
 		} else {
 			println!("Im a furnace that doesnt need ticking, but got ticked regardless");
 		}
@@ -175,7 +170,7 @@ impl CommonBlockEntity for BlastFurnace {
 }
 
 impl BlastFurnace {
-	fn reset_state(&mut self, players: &[Player], game: Arc<Game>) {
+	fn reset_state(&mut self, players: &[Player], dimension_name: &str, packet_sender: &PacketSender) {
 		self.needs_ticking = false;
 
 		self.cooking_time_spent = 0;
@@ -183,31 +178,31 @@ impl BlastFurnace {
 		self.lit_total_time = 0;
 		self.current_recipe = None;
 
-		players.iter().filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position)).for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-				crate::packets::clientbound::play::SetContainerProperty {
-					window_id: 1,
-					property: 0,                    //fuel left
-					value: self.lit_time_remaining, //ticks of fuel left
-				}
-				.try_into()
-				.unwrap(),
-			);
+		players
+			.iter()
+			.filter(|x| x.get_dimension() == dimension_name)
+			.filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
+			.for_each(|x| {
+				packet_sender.send_packet_to_player(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+					crate::packets::clientbound::play::SetContainerProperty {
+						window_id: 1,
+						property: 0,                    //fuel left
+						value: self.lit_time_remaining, //ticks of fuel left
+					},
+				);
 
-			game.send_packet(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
-				crate::packets::clientbound::play::SetContainerProperty {
-					window_id: 1,
-					property: 2,                    //progress
-					value: self.cooking_time_spent, //progress from 0-200
-				}
-				.try_into()
-				.unwrap(),
-			);
-		});
+				packet_sender.send_packet_to_player(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::SetContainerProperty::PACKET_ID,
+					crate::packets::clientbound::play::SetContainerProperty {
+						window_id: 1,
+						property: 2,                    //progress
+						value: self.cooking_time_spent, //progress from 0-200
+					},
+				);
+			});
 	}
 }
 
@@ -240,7 +235,7 @@ impl TryFrom<NbtListTag> for BlastFurnace {
 		if let Some(items) = value.get_child("Items") {
 			for entry in items.as_list() {
 				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
-					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()),
+					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
 					count: entry.get_child("count").unwrap().as_int(),
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),

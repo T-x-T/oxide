@@ -25,7 +25,8 @@ impl CommonEntityTrait for ItemEntity {
 						.get_child("id")
 						.unwrap_or(&NbtTag::String(String::new(), "minecraft:stone".to_string()))
 						.as_string(),
-				),
+				)
+				.unwrap(),
 				count: extra_nbt
 					.get_child("Item")
 					.unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new()))
@@ -64,7 +65,7 @@ impl CommonEntityTrait for ItemEntity {
 			NbtTag::TagCompound(
 				"Item".to_string(),
 				vec![
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.item.id).to_string()),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.item.id).unwrap().to_string()),
 					NbtTag::Int("count".to_string(), self.item.count),
 					NbtTag::TagCompound("components".to_string(), Vec::new()),
 				],
@@ -119,7 +120,14 @@ impl CommonEntityTrait for ItemEntity {
 		return (0.25, 0.25);
 	}
 
-	fn tick(&mut self, _dimension: &Dimension, _players: &[Player], _game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
+	fn tick(
+		&mut self,
+		_dimension: &Dimension,
+		_players: &[Player],
+		_packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
 		self.age += 1;
 
 		if self.age > 20 * 60 * 5 {

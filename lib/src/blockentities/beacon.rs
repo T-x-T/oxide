@@ -9,10 +9,6 @@ pub struct Beacon {
 }
 
 impl CommonBlockEntity for Beacon {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
-		return;
-	}
-
 	fn new(position: BlockPosition) -> Self {
 		return Self {
 			position,

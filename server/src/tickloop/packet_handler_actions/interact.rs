@@ -32,7 +32,7 @@ fn target_is_player(
 	if parsed_packet.interact_type == 1 {
 		//attack
 		let damage = if held_item.is_some() { 10.0 } else { 1.0 };
-		target_player.damage(damage, game, players_clone);
+		target_player.damage(damage, &game.packet_sender, players_clone);
 	}
 }
 
@@ -51,11 +51,11 @@ fn target_is_entity(
 	players_clone: &[Player],
 ) {
 	let mut dimensions = std::mem::take(&mut world.dimensions);
-	let dimension = dimensions.get_mut("minecraft:overworld").unwrap();
+	let player = players_clone.iter().find(|x| x.peer_socket_address == peer_addr).unwrap();
+	let dimension = dimensions.get_mut(player.get_dimension()).unwrap();
 
 	let mut entities = std::mem::take(&mut dimension.entities);
 
-	let player = players_clone.iter().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
 	let held_item = player.get_held_item(true);
 
 	let Some(entity) = entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
@@ -107,66 +107,67 @@ fn target_is_entity(
 				CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
 			};
 
-			players.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-					entity_metadata_packet.clone().try_into().unwrap(),
-				);
-				game.send_packet(
-					&x.peer_socket_address,
-					lib::packets::clientbound::play::HurtAnimation::PACKET_ID,
-					hurt_animation_packet.clone().try_into().unwrap(),
-				);
-			});
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				&players,
+				&dimension.name,
+				lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				entity_metadata_packet,
+			);
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				&players,
+				&dimension.name,
+				lib::packets::clientbound::play::HurtAnimation::PACKET_ID,
+				hurt_animation_packet,
+			);
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
 		if let Some(held_item) = player.get_held_item(true)
 			&& held_item.count > 0
 		{
-			let success = entity.feed(held_item, game.clone(), players_clone);
+			let success = entity.feed(held_item, &game.packet_sender, players_clone, &dimension.name);
 			if success {
 				let mut held_item = held_item.clone();
 				held_item.count -= 1;
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 				if held_item.count == 0 {
-					player.set_selected_inventory_slot(None, players_clone, game.clone());
+					player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 				} else {
-					player.set_selected_inventory_slot(Some(held_item), players_clone, game.clone());
+					player.set_selected_inventory_slot(Some(held_item), players_clone, &game.packet_sender);
 				}
 			}
 		}
 
-		let res = entity.interact(&held_item.cloned().unwrap_or_default(), game.clone(), dimension, players_clone, &mut players, player.uuid);
+		let res = entity.interact(
+			&held_item.cloned().unwrap_or_default(),
+			dimension,
+			players_clone,
+			&mut players,
+			player.uuid,
+			&game.packet_sender,
+			&game.entity_id_manager,
+			&game.block_state_data,
+		);
 
 		match res {
 			EntityInteractResult::DoNothing => (),
 			EntityInteractResult::AddEntity(new_entity) => {
-				let spawn_packet = new_entity.to_spawn_entity_packet();
-
-				let metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-					entity_id: new_entity.get_common_entity_data().entity_id,
-					metadata: new_entity.get_metadata(),
-				};
-
+				let dimension_name = dimension.name.clone();
 				dimension.entities = entities;
 				world.dimensions = dimensions;
 
-				world.dimensions.get_mut("minecraft:overworld").unwrap().add_entity(*new_entity);
+				let spawn_packet = new_entity.to_spawn_entity_packet();
 
-				players_clone.iter().for_each(|x| {
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-						spawn_packet.clone().try_into().unwrap(),
-					);
-					game.send_packet(
-						&x.peer_socket_address,
-						lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-						metadata_packet.clone().try_into().unwrap(),
-					);
-				});
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension_name,
+					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet,
+				);
+
+				new_entity.resend_metadata_to_players(players_clone, &game.packet_sender, &dimension_name);
+
+				world.dimensions.get_mut(player.get_dimension()).unwrap().add_entity(*new_entity);
 
 				return;
 			}

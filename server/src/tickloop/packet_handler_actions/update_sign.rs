@@ -1,9 +1,10 @@
 use super::*;
 
-pub fn process(location: BlockPosition, text: [String; 4], game: Arc<Game>) {
+pub fn process(peer_addr: SocketAddr, location: BlockPosition, text: [String; 4], game: Arc<Game>) {
 	let players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
-	let chunk = world.dimensions.get_mut("minecraft:overworld").unwrap().get_chunk_from_position_mut(location).unwrap();
+	let player = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap();
+	let chunk = world.dimensions.get_mut(player.get_dimension()).unwrap().get_chunk_from_position_mut(location).unwrap();
 
 	chunk.modified = true;
 
@@ -29,11 +30,10 @@ pub fn process(location: BlockPosition, text: [String; 4], game: Arc<Game>) {
 		nbt_data: NbtTag::Root(blockentity.clone().into()),
 	};
 
-	for player in players.iter() {
-		game.send_packet(
-			&player.peer_socket_address,
-			lib::packets::clientbound::play::BlockEntityData::PACKET_ID,
-			packet_to_send.clone().try_into().unwrap(),
-		);
-	}
+	game.packet_sender.send_packet_to_everyone_in_dimension(
+		&players,
+		player.get_dimension(),
+		lib::packets::clientbound::play::BlockEntityData::PACKET_ID,
+		packet_to_send,
+	);
 }

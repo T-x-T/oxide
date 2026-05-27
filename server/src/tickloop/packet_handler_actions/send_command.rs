@@ -8,7 +8,7 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 	let commands = game.commands.lock().unwrap().clone();
 
 	let Some(command) = commands.iter().find(|x| x.name == command_string.split(" ").next().unwrap_or_default()) else {
-		game.send_packet(
+		game.packet_sender.send_packet_to_player(
 			&peer_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
@@ -17,14 +17,11 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 					NbtTag::String("text".to_string(), "command not found".to_string()),
 				]),
 				overlay: false,
-			}
-			.try_into()
-			.unwrap(),
+			},
 		);
 		return;
 	};
 
-	let mut stream = player.connection_stream.try_clone().unwrap();
 	drop(players);
-	(command.execute)(command_string, Some(&mut stream), game.clone()).unwrap();
+	(command.execute)(command_string, Some(peer_addr), game.clone()).unwrap();
 }

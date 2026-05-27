@@ -23,21 +23,17 @@ pub fn init(game: Arc<Game>) {
 
 				let _ = (command.execute)(input, None, game.clone());
 			} else {
-				for player in game.players.lock().unwrap().iter() {
-					game.send_packet(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
-						lib::packets::clientbound::play::SystemChatMessage {
-							content: NbtTag::Root(vec![
-								NbtTag::String("type".to_string(), "text".to_string()),
-								NbtTag::String("text".to_string(), input.clone().replace("\n", "")),
-							]),
-							overlay: false,
-						}
-						.try_into()
-						.unwrap(),
-					);
-				}
+				game.packet_sender.send_packet_to_everyone(
+					&game.players.lock().unwrap(),
+					lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
+					lib::packets::clientbound::play::SystemChatMessage {
+						content: NbtTag::Root(vec![
+							NbtTag::String("type".to_string(), "text".to_string()),
+							NbtTag::String("text".to_string(), input.clone().replace("\n", "")),
+						]),
+						overlay: false,
+					},
+				);
 			}
 		}
 	});

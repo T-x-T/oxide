@@ -321,7 +321,7 @@ mod test {
 		fn on_top_of_other_block_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -365,7 +365,7 @@ mod test {
 		fn on_top_of_other_block_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -409,7 +409,7 @@ mod test {
 		fn on_bottom_of_other_block_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -453,7 +453,7 @@ mod test {
 		fn on_bottom_of_other_block_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -497,7 +497,7 @@ mod test {
 		fn on_lower_side_of_other_block_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -541,7 +541,7 @@ mod test {
 		fn curved_stair_inner_right_north_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -606,7 +606,7 @@ mod test {
 		fn curved_stair_inner_left_north_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -671,7 +671,7 @@ mod test {
 		fn curved_stair_inner_right_east_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -736,7 +736,7 @@ mod test {
 		fn curved_stair_inner_left_east_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -801,7 +801,7 @@ mod test {
 		fn curved_stair_inner_right_south_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -866,7 +866,7 @@ mod test {
 		fn curved_stair_inner_left_south_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -931,7 +931,7 @@ mod test {
 		fn curved_stair_inner_right_west_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -996,7 +996,7 @@ mod test {
 		fn curved_stair_inner_left_west_bottom() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1061,7 +1061,7 @@ mod test {
 		fn straight_stair_surrounded_on_all_sides_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1156,7 +1156,7 @@ mod test {
 		fn straight_stair_surrounded_on_all_sides_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1251,7 +1251,7 @@ mod test {
 		fn straight_stair_surrounded_on_all_sides_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1346,7 +1346,7 @@ mod test {
 		fn straight_stair_surrounded_on_all_sides_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1441,7 +1441,7 @@ mod test {
 		fn straight_stair_west_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1506,7 +1506,7 @@ mod test {
 		fn straight_stair_east_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1571,7 +1571,7 @@ mod test {
 		fn straight_stair_north_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1636,7 +1636,7 @@ mod test {
 		fn straight_stair_south_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1701,7 +1701,7 @@ mod test {
 		fn straight_stair_east_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1766,7 +1766,7 @@ mod test {
 		fn straight_stair_west_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1831,7 +1831,7 @@ mod test {
 		fn straight_stair_south_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1896,7 +1896,7 @@ mod test {
 		fn straight_stair_north_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -1961,7 +1961,7 @@ mod test {
 		fn curved_stair_outer_right_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2026,7 +2026,7 @@ mod test {
 		fn curved_stair_outer_left_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2091,7 +2091,7 @@ mod test {
 		fn curved_stair_outer_right_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2156,7 +2156,7 @@ mod test {
 		fn curved_stair_outer_left_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2221,7 +2221,7 @@ mod test {
 		fn curved_stair_outer_right_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2286,7 +2286,7 @@ mod test {
 		fn curved_stair_outer_left_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2351,7 +2351,7 @@ mod test {
 		fn curved_stair_outer_right_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2416,7 +2416,7 @@ mod test {
 		fn curved_stair_outer_left_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2481,7 +2481,7 @@ mod test {
 		fn different_stair_types_connect() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:birch_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2547,7 +2547,7 @@ mod test {
 		fn different_stair_types_connect_upside_down() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:birch_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2613,7 +2613,7 @@ mod test {
 		fn different_stair_types_dont_connect_different_halves() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:birch_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2679,7 +2679,7 @@ mod test {
 		fn curved_stair_prio_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2786,7 +2786,7 @@ mod test {
 		fn curved_stair_prio_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -2893,7 +2893,7 @@ mod test {
 		fn curved_stair_prio_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3000,7 +3000,7 @@ mod test {
 		fn curved_stair_prio_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3107,7 +3107,7 @@ mod test {
 		fn curved_stair_prio2_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3193,7 +3193,7 @@ mod test {
 		fn curved_stair_prio2_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3279,7 +3279,7 @@ mod test {
 		fn curved_stair_prio2_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3365,7 +3365,7 @@ mod test {
 		fn curved_stair_prio2_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3451,7 +3451,7 @@ mod test {
 		fn curved_stair_prio3_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3537,7 +3537,7 @@ mod test {
 		fn curved_stair_prio3_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3623,7 +3623,7 @@ mod test {
 		fn curved_stair_prio3_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3709,7 +3709,7 @@ mod test {
 		fn curved_stair_prio3_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3795,7 +3795,7 @@ mod test {
 		fn curved_stair_prio4_straight_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3881,7 +3881,7 @@ mod test {
 		fn curved_stair_prio4_straight_east() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -3967,7 +3967,7 @@ mod test {
 		fn curved_stair_prio4_straight_south() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -4053,7 +4053,7 @@ mod test {
 		fn curved_stair_prio4_straight_west() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -4139,7 +4139,7 @@ mod test {
 		fn curved_stair_prio_outer_right_north() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_stairs", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states

@@ -48,19 +48,19 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 			PacketHandlerAction::SetCreativeModeSlot(peer_addr, slot, item) => {
 				let mut players = game.players.lock().unwrap();
-				let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else {
+				let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else {
 					continue;
 				};
 
-				player.set_inventory_slot(slot, item, players_clone, game.clone());
+				player.set_inventory_slot(slot, item, players_clone, &game.packet_sender);
 			}
 			PacketHandlerAction::SetSelectedSlot(peer_addr, slot) => {
 				let mut players = game.players.lock().unwrap();
-				let Some(player) = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr) else {
+				let Some(player) = players.iter_mut().find(|x| x.peer_socket_address == peer_addr) else {
 					continue;
 				};
 
-				player.set_selected_slot(slot, players_clone, game.clone());
+				player.set_selected_slot(slot, players_clone, &game.packet_sender);
 			}
 			PacketHandlerAction::PickItemFromBlock(peer_addr, location, _include_data) => {
 				pick_item_from_block::process(peer_addr, location, game.clone(), players_clone);
@@ -70,15 +70,13 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 				for other_player in players_clone.iter() {
 					if other_player.peer_socket_address != peer_addr {
-						game.send_packet(
+						game.packet_sender.send_packet_to_player(
 							&other_player.peer_socket_address,
 							lib::packets::clientbound::play::EntityAnimation::PACKET_ID,
 							lib::packets::clientbound::play::EntityAnimation {
 								entity_id,
 								animation: if hand == 0 { 0 } else { 3 },
-							}
-							.try_into()
-							.unwrap(),
+							},
 						);
 					}
 				}
@@ -101,15 +99,15 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::CloseContainer(peer_addr, window_id) => {
 				close_container::process(peer_addr, window_id, game.clone(), players_clone);
 			}
-			PacketHandlerAction::UpdateSign(location, _is_front, text) => {
-				update_sign::process(location, text, game.clone());
+			PacketHandlerAction::UpdateSign(peer_addr, location, _is_front, text) => {
+				update_sign::process(peer_addr, location, text, game.clone());
 			}
 			PacketHandlerAction::PlayerInput(peer_addr, parsed_packet) => {
 				let players_clone = game.players.lock().unwrap().clone();
 				let mut players = game.players.lock().unwrap();
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 
-				player.set_sneaking(parsed_packet.sneak, &players_clone, game.clone());
+				player.set_sneaking(parsed_packet.sneak, &players_clone, &game.packet_sender);
 				player.set_sprinting(parsed_packet.sprint);
 			}
 			PacketHandlerAction::Interact(peer_addr, parsed_packet) => {
@@ -121,8 +119,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			PacketHandlerAction::UpdateGamemode(peer_addr, gamemode) => {
 				let players_clone = game.players.lock().unwrap().clone();
 				let mut players = game.players.lock().unwrap();
-				let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
-				player.set_gamemode(gamemode, &players_clone, game.clone()).unwrap();
+				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
+				player.set_gamemode(gamemode, &players_clone, &game.packet_sender).unwrap();
 			}
 			PacketHandlerAction::Respawn(peer_addr) => {
 				respawn::process(peer_addr, game.clone(), players_clone);

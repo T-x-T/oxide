@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -10,10 +8,10 @@ pub fn init(game: &mut Game) {
 	});
 }
 
-fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
-	if let Some(stream) = stream {
-		game.send_packet(
-			&stream.peer_addr()?,
+fn execute(_command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -> Result<(), Box<dyn Error>> {
+	if let Some(socket_addr) = socket_addr {
+		game.packet_sender.send_packet_to_player(
+			&socket_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -21,8 +19,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) ->
 					NbtTag::String("text".to_string(), "this command is only intended to be used from the console".to_string()),
 				]),
 				overlay: false,
-			}
-			.try_into()?,
+			},
 		);
 
 		return Ok(());
@@ -30,7 +27,7 @@ fn execute(_command: String, stream: Option<&mut TcpStream>, game: Arc<Game>) ->
 
 	println!("game.players:\n{:?}", game.players);
 	println!("connections:\n{:?}", game.connections);
-	println!("entities:\n{:?}", game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities);
+	println!("overworld entities:\n{:?}", game.world.lock().unwrap().dimensions.get("minecraft:overworld").unwrap().entities);
 
 	return Ok(());
 }

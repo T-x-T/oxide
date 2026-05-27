@@ -21,11 +21,11 @@ pub fn process(
 		_ => new_block_location.x += 1,
 	}
 
-	let player = players.iter_mut().find(|x| x.connection_stream.peer_addr().unwrap() == peer_addr).unwrap();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let player_get_looking_cardinal_direction = player.get_looking_cardinal_direction().clone();
 	let gamemode = player.get_gamemode();
 
-	let dimension = world.dimensions.get("minecraft:overworld").unwrap();
+	let dimension = world.dimensions.get(player.get_dimension()).unwrap();
 	let block_id_at_location = dimension.get_block(parsed_packet.location).unwrap_or_default();
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
@@ -33,7 +33,7 @@ pub fn process(
 		|| data::tags::get_item()
 			.get("hoes")
 			.unwrap()
-			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id)))
+			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id).unwrap()))
 		&& !player.is_sneaking()
 	{
 		//Don't place block, because player right clicked something that does something when right clicked
@@ -42,10 +42,13 @@ pub fn process(
 			block_id_at_location,
 			parsed_packet.face,
 			&game.block_state_data,
-			player.get_selected_inventory_slot(),
+			player,
+			players_clone,
+			&game.packet_sender,
+			dimension,
 		);
 		block_interaction_result
-			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, game.clone())
+			.handle(dimension, parsed_packet.location, player, players_clone, block_id_at_location, &game.packet_sender)
 			.inspect_err(|x| {
 				println!(
 					"lib::block::interact_with_block_at({:?}, {block_id_at_location}, {}) call resulted in error {x:?}",
@@ -53,7 +56,8 @@ pub fn process(
 				)
 			})
 			.unwrap_or_default()
-	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket")) {
+	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket").unwrap())
+	{
 		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
 		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id, &game.block_state_data);
 		if block_name == "minecraft:water" {
@@ -63,30 +67,33 @@ pub fn process(
 					count: held_item.count - 1,
 					..held_item.clone()
 				};
-				player.set_selected_inventory_slot(Some(slot), players_clone, game.clone());
+				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
 			} else {
-				player.set_selected_inventory_slot(None, players_clone, game.clone());
+				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 			}
 			let water_bucket_slot = Slot {
 				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:water_bucket"),
+				id: data::items::get_item_id_by_name("minecraft:water_bucket").unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			};
-			player.add_item_to_inventory(water_bucket_slot, players_clone, game.clone());
+			player.add_item_to_inventory(water_bucket_slot, players_clone, &game.packet_sender);
 			vec![(0, new_block_location)]
 		} else {
 			vec![]
 		}
-	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket")) {
+	} else if player
+		.get_held_item(true)
+		.is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket").unwrap())
+	{
 		let bucket_slot = Slot {
 			count: 1,
-			id: data::items::get_item_id_by_name("minecraft:bucket"),
+			id: data::items::get_item_id_by_name("minecraft:bucket").unwrap(),
 			components_to_add: Vec::new(),
 			components_to_remove: Vec::new(),
 		};
 
-		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, game.clone());
+		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, &game.packet_sender);
 
 		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
 		let full_water_block_id = water_block.states[water_block.default_state].id;
@@ -103,7 +110,7 @@ pub fn process(
 				components_to_remove: Vec::new(),
 			})
 			.id;
-		let mut used_item_name = data::items::get_item_name_by_id(used_item_id);
+		let mut used_item_name = data::items::get_item_name_by_id(used_item_id).unwrap();
 
 		if block_type_at_location == Type::Farm {
 			used_item_name = match used_item_name {
@@ -115,17 +122,21 @@ pub fn process(
 			};
 		}
 
+		if used_item_name == "minecraft:flint_and_steel" {
+			used_item_name = "minecraft:fire";
+		}
+
 		let pitch = player.get_pitch();
 
 		if used_item_name.ends_with("spawn_egg") {
-			let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
+			let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 			lib::create_and_spawn_entity_from_egg(
 				used_item_name,
 				game.entity_id_manager.get_new(),
 				new_block_location,
 				dimension,
 				players_clone,
-				game.clone(),
+				&game.packet_sender,
 			);
 		}
 
@@ -133,7 +144,7 @@ pub fn process(
 			parsed_packet.face,
 			player_get_looking_cardinal_direction,
 			pitch,
-			world.dimensions.get_mut("minecraft:overworld").unwrap(),
+			world.dimensions.get_mut(player.get_dimension()).unwrap(),
 			new_block_location,
 			used_item_name,
 			parsed_packet.cursor_position_x,
@@ -158,15 +169,15 @@ pub fn process(
 				})
 			};
 
-			player.set_selected_inventory_slot(new_hand_slot, players_clone, game.clone());
+			player.set_selected_inventory_slot(new_hand_slot, players_clone, &game.packet_sender);
 		}
 
 		block_state_ids
 	};
 
-	let mut blocks_to_update: Vec<BlockPosition> = Vec::new();
+	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 	for block_to_place in &blocks_to_place {
-		match world.dimensions.get_mut("minecraft:overworld").unwrap().overwrite_block(block_to_place.1, block_to_place.0) {
+		match dimension.overwrite_block(block_to_place.1, block_to_place.0) {
 			Ok(res) => {
 				let block = data::blocks::get_block_from_block_state_id(block_to_place.0, &game.block_state_data);
 				//Logic to open sign editor when player placed a new sign, maybe move somewhere else or something idk
@@ -175,20 +186,17 @@ pub fn process(
 					|| block.block_type == basic_types::blocks::Type::WallHangingSign
 					|| block.block_type == basic_types::blocks::Type::CeilingHangingSign
 				{
-					game.send_packet(
+					game.packet_sender.send_packet_to_player(
 						&peer_addr,
 						lib::packets::clientbound::play::OpenSignEditor::PACKET_ID,
 						lib::packets::clientbound::play::OpenSignEditor {
 							location: block_to_place.1,
 							is_front_text: true,
-						}
-						.try_into()
-						.unwrap(),
+						},
 					);
 				}
 				#[allow(clippy::collapsible_if)]
 				if res.is_some() && res.unwrap() == BlockOverwriteOutcome::DestroyBlockentity {
-					let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
 					if let Some(block_entity) = dimension
 						.get_chunk_from_position(parsed_packet.location)
 						.unwrap()
@@ -197,36 +205,9 @@ pub fn process(
 						.find(|x| x.get_position() == parsed_packet.location)
 					{
 						let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-						block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+						block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 					};
 				}
-
-				blocks_to_update.append(&mut vec![
-					BlockPosition {
-						x: block_to_place.1.x + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						x: block_to_place.1.x - 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						y: block_to_place.1.y + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						y: block_to_place.1.y - 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						z: block_to_place.1.z + 1,
-						..block_to_place.1
-					},
-					BlockPosition {
-						z: block_to_place.1.z - 1,
-						..block_to_place.1
-					},
-				]);
 			}
 			Err(err) => {
 				println!("couldn't place block because {err}");
@@ -235,37 +216,36 @@ pub fn process(
 		};
 	}
 
-	blocks_to_update.sort();
-	blocks_to_update.dedup();
-
-	let dimension = world.dimensions.get_mut("minecraft:overworld").unwrap();
-	for block_to_update in blocks_to_update {
-		let res = lib::block::update(block_to_update, dimension, &game.block_state_data).unwrap();
-		res.handle(dimension, block_to_update, &mut players, game.clone());
-	}
-
 
 	for player in players.iter() {
 		for block in &blocks_to_place {
-			game.send_packet(
+			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
 				lib::packets::clientbound::play::BlockUpdate {
 					location: block.1,
 					block_id: block.0 as i32,
-				}
-				.try_into()
-				.unwrap(),
+				},
 			);
 		}
 	}
-	game.send_packet(
+	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
 		lib::packets::clientbound::play::AcknowledgeBlockChange {
 			sequence_id: parsed_packet.sequence,
-		}
-		.try_into()
-		.unwrap(),
+		},
 	);
+
+	for block_to_place in blocks_to_place {
+		lib::block::update_all_recursively(
+			dimension,
+			block_to_place.1,
+			&mut players,
+			&game.packet_sender,
+			&game.entity_id_manager,
+			&game.block_state_data,
+			&game.loot_tables,
+		);
+	}
 }

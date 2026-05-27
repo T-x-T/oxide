@@ -4,7 +4,7 @@ use std::sync::Mutex;
 use std::sync::atomic::AtomicI32;
 use std::sync::mpsc::Sender;
 
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 
 use super::*;
 
@@ -20,10 +20,11 @@ pub struct Game {
 	pub block_state_data: HashMap<String, basic_types::blocks::Block>,
 	pub connections: DashMap<SocketAddr, Connection>,
 	pub packet_handler_actions: Mutex<Vec<PacketHandlerAction>>,
-	pub packet_send_queues: DashMap<SocketAddr, Sender<RawPacket>>,
 	pub default_gamemode: Gamemode,
 	pub loot_tables: HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	pub recipe_manager: RecipeManager,
+	pub packet_sender: PacketSender,
+	pub task_queue: DashSet<Task>,
 }
 
 impl Game {
@@ -33,11 +34,6 @@ impl Game {
 			player.save_to_disk();
 		}
 		*self.last_save_all_timestamp.lock().unwrap() = std::time::Instant::now();
-	}
-
-	//TODO: maybe move this into something similar to EntityIdManager, so we dont have to pass a reference to entire Game struct _everywhere_
-	pub fn send_packet(&self, peer_addr: &SocketAddr, packet_id: u8, packet_data: Vec<u8>) {
-		self.packet_send_queues.get(peer_addr).unwrap().send((packet_id, packet_data)).unwrap();
 	}
 }
 
@@ -57,7 +53,7 @@ pub enum PacketHandlerAction {
 	SendCommand(SocketAddr, String),
 	ClickContainer(SocketAddr, crate::packets::serverbound::play::ClickContainer),
 	CloseContainer(SocketAddr, i32),
-	UpdateSign(BlockPosition, bool, [String; 4]),
+	UpdateSign(SocketAddr, BlockPosition, bool, [String; 4]),
 	PlayerInput(SocketAddr, crate::packets::serverbound::play::PlayerInput),
 	Interact(SocketAddr, crate::packets::serverbound::play::Interact),
 	NewPlayer(SocketAddr, TcpStream),
@@ -73,4 +69,45 @@ impl EntityIdManager {
 	pub fn get_new(&self) -> i32 {
 		return self.0.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
 	}
+}
+
+#[derive(Debug, Default)]
+pub struct PacketSender {
+	pub packet_send_queues: DashMap<SocketAddr, Sender<RawPacket>>,
+}
+
+impl PacketSender {
+	pub fn send_packet_to_player<T>(&self, peer_addr: &SocketAddr, packet_id: u8, packet_data: T)
+	where
+		T: TryInto<Vec<u8>> + Clone,
+		T::Error: std::fmt::Debug,
+	{
+		self.packet_send_queues.get(peer_addr).unwrap().send((packet_id, packet_data.try_into().unwrap())).unwrap();
+	}
+
+	pub fn send_packet_to_everyone<T>(&self, players: &[Player], packet_id: u8, packet_data: T)
+	where
+		T: TryInto<Vec<u8>> + Clone,
+		T::Error: std::fmt::Debug,
+	{
+		for player in players {
+			self.packet_send_queues.get(&player.peer_socket_address).unwrap().send((packet_id, packet_data.clone().try_into().unwrap())).unwrap();
+		}
+	}
+
+	pub fn send_packet_to_everyone_in_dimension<T>(&self, players: &[Player], dimension_name: &str, packet_id: u8, packet_data: T)
+	where
+		T: TryInto<Vec<u8>> + Clone,
+		T::Error: std::fmt::Debug,
+	{
+		players.iter().filter(|x| x.get_dimension() == dimension_name).for_each(|x| {
+			self.packet_send_queues.get(&x.peer_socket_address).unwrap().send((packet_id, packet_data.clone().try_into().unwrap())).unwrap()
+		});
+	}
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Task {
+	PlayerUseNetherPortal(u128, String),
+	PlayerUseEndPortal(u128, String),
 }

@@ -303,6 +303,79 @@ impl TryFrom<Vec<u8>> for BlockUpdate {
 }
 
 //
+// MARK: 0x0c Chunk Batch Finished
+//
+
+#[derive(Debug, Clone)]
+pub struct ChunkBatchFinished {
+	pub number_of_chunks: i32,
+}
+
+impl Packet for ChunkBatchFinished {
+	const PACKET_ID: u8 = 0x0c;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ChunkBatchFinished> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: ChunkBatchFinished) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.number_of_chunks));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChunkBatchFinished {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			number_of_chunks: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+//
+// MARK: 0x0d Chunk Batch Start
+//
+
+#[derive(Debug, Clone)]
+pub struct ChunkBatchStart {}
+
+impl Packet for ChunkBatchStart {
+	const PACKET_ID: u8 = 0x0d;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<ChunkBatchStart> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(_value: ChunkBatchStart) -> Result<Self, Box<dyn Error>> {
+		return Ok(Vec::new());
+	}
+}
+
+impl TryFrom<Vec<u8>> for ChunkBatchStart {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut _value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {});
+	}
+}
+
+//
 // MARK: 0x10 commands
 //
 
@@ -741,6 +814,50 @@ impl TryFrom<Vec<u8>> for Explosion {
 			particle_id,
 			particle_data: (),
 			sound,
+		});
+	}
+}
+
+//
+// MARK: 0x25 Unload Chunk
+//
+
+#[derive(Debug, Clone)]
+pub struct UnloadChunk {
+	pub z: i32,
+	pub x: i32,
+}
+
+impl Packet for UnloadChunk {
+	const PACKET_ID: u8 = 0x25;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<UnloadChunk> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UnloadChunk) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::int(value.z));
+		output.append(&mut crate::serialize::int(value.x));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UnloadChunk {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			z: crate::deserialize::int(&mut value)?,
+			x: crate::deserialize::int(&mut value)?,
 		});
 	}
 }

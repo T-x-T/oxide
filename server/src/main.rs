@@ -1,11 +1,11 @@
 #![allow(clippy::needless_return)]
 #![allow(clippy::needless_range_loop)]
 
-use dashmap::DashMap;
+use dashmap::{DashMap, DashSet};
 use lib::packets::Packet;
 use lib::types::*;
 use std::error::Error;
-use std::io::Write;
+use std::io::{BufReader, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
 use std::path::Path;
 use std::sync::mpsc::channel;
@@ -53,10 +53,13 @@ fn initialize_server() {
 		block_state_data: block_states,
 		connections: DashMap::new(),
 		packet_handler_actions: Mutex::new(Vec::new()),
-		packet_send_queues: DashMap::new(),
+		packet_sender: PacketSender {
+			packet_send_queues: DashMap::new(),
+		},
 		default_gamemode,
 		loot_tables,
 		recipe_manager: RecipeManager::new(recipes),
+		task_queue: DashSet::new(),
 	};
 
 	command::init(&mut game);
@@ -64,6 +67,27 @@ fn initialize_server() {
 	let game: Arc<Game> = Arc::new(game);
 
 	terminal_input::init(game.clone());
+
+	let mut world = game.world.lock().unwrap();
+	let mut dimensions = std::mem::take(&mut world.dimensions);
+	for (dimension_name, dimension) in &mut dimensions {
+		let receiver = dimension.get_chunk_loading_receiver();
+		let game_clone = game.clone();
+		let dimension_name_clone = dimension_name.clone();
+		std::thread::spawn(move || {
+			let game = game_clone.clone();
+			for (chunk_x, chunk_z) in receiver.iter() {
+				let mut world = game.world.lock().unwrap();
+				let chunk = world.loader.load_chunk(chunk_x, chunk_z, &game.block_state_data, &dimension_name_clone);
+				let mut entities = world.loader.load_entities_in_chunk(chunk_x, chunk_z, &game.entity_id_manager, &dimension_name_clone);
+				let dimension = world.dimensions.get_mut(&dimension_name_clone).unwrap();
+				dimension.chunks.insert((chunk_x, chunk_z), chunk);
+				dimension.entities.append(&mut entities);
+			}
+		});
+	}
+	world.dimensions = dimensions;
+	drop(world);
 
 	let game_clone = game.clone();
 	std::thread::spawn(move || main_loop(game_clone));
@@ -83,31 +107,15 @@ fn initialize_server() {
 		let stream_clone = stream.try_clone().unwrap();
 		std::thread::spawn(move || {
 			let mut stream = stream_clone;
-			let game = game_clone.clone();
 			let peer_addr = stream.peer_addr().unwrap();
+			let mut buf_reader = BufReader::new(stream.try_clone().unwrap());
+			let game = game_clone.clone();
 			loop {
-				let mut peek_buf = [0; 1];
-
-				match stream.peek(&mut peek_buf) {
-					Ok(0) => {
-						println!("client disconnected.");
-						disconnect_player(&peer_addr, game.clone());
-						break;
-					}
-					Err(e) => {
-						eprintln!("error reading from client: {e}");
-						disconnect_player(&peer_addr, game.clone());
-						break;
-					}
-					_ => {}
-				}
-
-				let packet = lib::utils::read_packet(&stream);
-
-				// if stream.peer_addr().is_err() {
-				//   disconnect_player(&peer_addr, game.clone());
-				//   break;
-				// }
+				let Ok(packet) = lib::utils::read_packet(&mut buf_reader) else {
+					println!("client disconnected");
+					disconnect_player(&peer_addr, game.clone());
+					break;
+				};
 
 				let packet_handler_result = packet_handlers::handle_packet(packet, &mut stream, game.clone());
 				if packet_handler_result.is_err() {
@@ -136,7 +144,7 @@ fn initialize_server() {
 			};
 
 			let (tx, rx) = channel();
-			game.packet_send_queues.insert(peer_addr, tx);
+			game.packet_sender.packet_send_queues.insert(peer_addr, tx);
 
 			for (packet_id, packet_data) in rx.iter() {
 				if send_packet(&stream, packet_id, packet_data).is_err() {
@@ -165,32 +173,26 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
 	let player_to_remove = players.iter().find(|x| x.peer_socket_address == *peer_addr);
 	if let Some(player_to_remove) = player_to_remove {
 		player_to_remove.save_to_disk();
-		players.iter().for_each(|x| {
-			game.send_packet(
-				&x.peer_socket_address,
-				lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-				lib::packets::clientbound::play::PlayerInfoRemove {
-					uuids: vec![player_to_remove.uuid],
-				}
-				.try_into()
-				.unwrap(),
-			);
 
-			game.send_packet(
-				&x.peer_socket_address,
-				lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-				lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: vec![player_to_remove.entity_id],
-				}
-				.try_into()
-				.unwrap(),
-			);
-		});
+		game.packet_sender.send_packet_to_everyone(
+			&players,
+			lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
+			lib::packets::clientbound::play::PlayerInfoRemove {
+				uuids: vec![player_to_remove.uuid],
+			},
+		);
+		game.packet_sender.send_packet_to_everyone(
+			&players,
+			lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+			lib::packets::clientbound::play::RemoveEntities {
+				entity_ids: vec![player_to_remove.entity_id],
+			},
+		);
 	}
 
 	game.connections.remove(peer_addr);
 
-	game.packet_send_queues.remove(peer_addr);
+	game.packet_sender.packet_send_queues.remove(peer_addr);
 	players.retain(|x| x.peer_socket_address != *peer_addr);
 }
 

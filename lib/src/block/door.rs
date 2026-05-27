@@ -406,7 +406,7 @@ mod test {
 		#[test]
 		fn hinge_left_north() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
 			let block_state_id_lower = block
@@ -476,7 +476,7 @@ mod test {
 		#[test]
 		fn hinge_left_west() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
 			let block_state_id_lower = block
@@ -546,7 +546,7 @@ mod test {
 		#[test]
 		fn hinge_right_north() {
 			let block_states = data::blocks::get_blocks();
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
 			let block_state_id_lower = block
@@ -616,7 +616,7 @@ mod test {
 		#[test]
 		fn double_door() {
 			let block_states = data::blocks::get_blocks();
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
 			let block_state_id_lower = block
@@ -730,7 +730,7 @@ mod test {
 		#[test]
 		fn double_door_z_offset_one() {
 			let block_states = data::blocks::get_blocks();
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 			let block = data::blocks::get_block_from_name("minecraft:oak_door", &block_states);
 
 			let block_state_id_lower = block

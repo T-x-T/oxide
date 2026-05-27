@@ -1,10 +1,10 @@
 use super::*;
 
 use std::error::Error;
-use std::net::TcpStream;
+use std::net::SocketAddr;
 use std::sync::Arc;
 
-type CommandExecFn = fn(String, Option<&mut TcpStream>, Arc<Game>) -> Result<(), Box<dyn Error>>;
+type CommandExecFn = fn(String, Option<SocketAddr>, Arc<Game>) -> Result<(), Box<dyn Error>>;
 
 #[derive(Debug, Clone)]
 pub struct Command {

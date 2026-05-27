@@ -9,6 +9,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	for dimension in world.dimensions.values_mut() {
 		let mut blocks_to_update: Vec<(BlockPosition, u16)> = Vec::new();
 		for chunk in dimension.chunks.values() {
+			if chunk.keep_loaded_for_ticks <= 0 {
+				continue;
+			}
 			for chunk_section_index in 0..chunk.sections.len() {
 				let mut rng = rand::rng();
 				for _ in 0..=lib::RANDOM_TICK_SPEED {
@@ -46,22 +49,19 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					let block_entity =
 						dimension.get_chunk_from_position(position).unwrap().block_entities.iter().find(|x| x.get_position() == position).unwrap();
 					let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-					block_entity.remove_self(&game.entity_id_manager, &mut players, dimension, game.clone());
+					block_entity.remove_self(&mut players, dimension, &game.packet_sender, &game.entity_id_manager);
 				}
 			};
 
-			for player in players_clone {
-				game.send_packet(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-					lib::packets::clientbound::play::BlockUpdate {
-						location: position,
-						block_id: new_block_id as i32,
-					}
-					.try_into()
-					.unwrap(),
-				);
-			}
+			game.packet_sender.send_packet_to_everyone_in_dimension(
+				players_clone,
+				&dimension.name,
+				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
+				lib::packets::clientbound::play::BlockUpdate {
+					location: position,
+					block_id: new_block_id as i32,
+				},
+			);
 		}
 	}
 }

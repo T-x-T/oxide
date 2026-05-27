@@ -24,28 +24,38 @@ impl CommonEntityTrait for Cow {
 	fn interact(
 		&mut self,
 		held_item: &Slot,
-		game: Arc<Game>,
 		_dimension: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
 		player_uuid: u128,
+		packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> EntityInteractResult {
-		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket") {
+		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket").unwrap() {
 			return EntityInteractResult::DoNothing;
 		}
 
 		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
 
-		player.set_selected_inventory_slot(
-			Some(Slot {
-				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:milk_bucket"),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			}),
-			players_clone,
-			game,
-		);
+		let held_item = player.get_held_item(true).unwrap();
+		if held_item.count > 1 {
+			let slot = Slot {
+				count: held_item.count - 1,
+				..held_item.clone()
+			};
+			player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
+		} else {
+			player.set_selected_inventory_slot(None, players_clone, packet_sender);
+		}
+
+		let milk_bucket_slot = Slot {
+			count: 1,
+			id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+		player.add_item_to_inventory(milk_bucket_slot, players_clone, packet_sender);
 
 		return EntityInteractResult::DoNothing;
 	}
@@ -54,12 +64,19 @@ impl CommonEntityTrait for Cow {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, game: Arc<Game>, players_clone: &[Player]) -> bool {
-		return self.feed_breedable_mob(held_item, game, players_clone);
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 
-	fn extra_tick(&mut self, dimension: &Dimension, players: &[Player], game: std::sync::Arc<Game>) -> Vec<EntityTickOutcome> {
-		return self.tick_breedable_mob(dimension, players, game);
+	fn extra_tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
+		return self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager);
 	}
 
 	fn get_type(&self) -> i32 {

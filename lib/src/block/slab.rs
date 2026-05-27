@@ -120,7 +120,7 @@ mod test {
 		fn on_top_of_other_block() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -161,7 +161,7 @@ mod test {
 		fn on_bottom_of_other_block() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -202,7 +202,7 @@ mod test {
 		fn on_upper_side_of_side_of_other_block() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -243,7 +243,7 @@ mod test {
 		fn on_bottom_side_of_side_of_other_block() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let dimension = Dimension::new();
+			let dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id = block
 				.states
@@ -284,7 +284,7 @@ mod test {
 		fn on_top_of_bottom_slab() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -345,7 +345,7 @@ mod test {
 		fn on_bottom_of_bottom_slab() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -406,7 +406,7 @@ mod test {
 		fn on_top_side_of_side_of_other_block_doubling_up() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -467,7 +467,7 @@ mod test {
 		fn on_bottom_side_of_side_of_other_block_doubling_up() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -528,7 +528,7 @@ mod test {
 		fn on_bottom_of_double_slab() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states
@@ -589,7 +589,7 @@ mod test {
 		fn on_top_of_double_slab() {
 			let block_states = data::blocks::get_blocks();
 			let block = data::blocks::get_block_from_name("minecraft:oak_slab", &block_states);
-			let mut dimension = Dimension::new();
+			let mut dimension = Dimension::new("minecraft:overworld");
 
 			let block_state_id_to_place = block
 				.states

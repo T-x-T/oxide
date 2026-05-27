@@ -1,11 +1,11 @@
+use std::error::Error;
 use std::io::Read;
-use std::net::TcpStream;
 
-pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
+pub fn read_packet(mut stream: impl Read) -> Result<crate::Packet, Box<dyn Error>> {
 	let mut packet_length_bits: Vec<u8> = Vec::new();
 	loop {
 		let buf: &mut [u8] = &mut [0];
-		stream.read_exact(buf).unwrap();
+		stream.read_exact(buf)?;
 		packet_length_bits.push(buf[0]);
 
 		if buf[0] & 0x80 == 0 {
@@ -14,19 +14,19 @@ pub fn read_packet(mut stream: &TcpStream) -> crate::Packet {
 	}
 	let mut raw_packet = packet_length_bits.clone();
 
-	let packet_length = crate::deserialize::varint(&mut packet_length_bits).unwrap();
+	let packet_length = crate::deserialize::varint(&mut packet_length_bits)?;
 	let mut packet: Vec<u8> = vec![0; packet_length as usize];
-	stream.read_exact(&mut packet).unwrap();
+	stream.read_exact(&mut packet)?;
 	raw_packet.append(&mut packet.clone());
 
-	let packet_id = crate::deserialize::varint(&mut packet).unwrap();
+	let packet_id = crate::deserialize::varint(&mut packet)?;
 
-	return crate::Packet {
+	return Ok(crate::Packet {
 		id: packet_id as u8,
 		length: packet_length as u32,
 		data: packet,
 		raw_data: raw_packet,
-	};
+	});
 }
 
 pub fn u128_to_uuid_without_dashes(input: u128) -> String {

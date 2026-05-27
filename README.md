@@ -28,13 +28,13 @@ This list is non-exhaustive, but covers the most important parts.
 - Block entities (chests, furnaces (only smelting raw iron with coal) and signs for now)
 - Entities with basic AI
 - Crafting & Smelting
+- Nether and End dimensions
 
 ## Missing
 
 These will be implemented in the nearish future
 
 - More commands
-- Nether and End dimensions
 - Protocol encryption / online mode
 - Packet compression
 - More block state rules

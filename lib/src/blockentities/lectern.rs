@@ -9,10 +9,6 @@ pub struct Lectern {
 }
 
 impl CommonBlockEntity for Lectern {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
-		return;
-	}
-
 	fn new(position: BlockPosition) -> Self {
 		return Self {
 			position,
@@ -39,7 +35,7 @@ impl From<Lectern> for Vec<NbtTag> {
 			output.push(NbtTag::TagCompound(
 				"Book".to_string(),
 				vec![
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(book.id).to_string()),
+					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(book.id).unwrap().to_string()),
 					NbtTag::Int("count".to_string(), book.count),
 					NbtTag::TagCompound("components".to_string(), Vec::new()),
 				],
@@ -65,7 +61,7 @@ impl TryFrom<NbtListTag> for Lectern {
 		};
 
 		let book = value.get_child("Book").map(|x| Slot {
-			id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()),
+			id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
 			count: x.get_child("count").unwrap().as_int(),
 			components_to_add: Vec::new(),
 			components_to_remove: Vec::new(),

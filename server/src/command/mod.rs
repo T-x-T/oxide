@@ -1,3 +1,4 @@
+mod dimension;
 mod gamemode;
 mod give;
 mod hi;
@@ -5,6 +6,7 @@ mod panic;
 mod ping;
 mod print_players;
 mod saveall;
+mod setblock;
 mod summon;
 mod tell;
 mod tp;
@@ -12,7 +14,7 @@ mod tp;
 use lib::packets::Packet;
 use lib::types::*;
 use std::error::Error;
-use std::net::TcpStream;
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 pub fn init(game: &mut Game) {
@@ -26,6 +28,8 @@ pub fn init(game: &mut Game) {
 	summon::init(game);
 	give::init(game);
 	gamemode::init(game);
+	dimension::init(game);
+	setblock::init(game);
 }
 
 

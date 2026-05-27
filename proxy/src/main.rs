@@ -13,11 +13,11 @@ fn main() {
 	let listener = TcpListener::bind("127.0.0.1:35565").unwrap();
 
 	for stream in listener.incoming() {
-		let server_read_stream = stream.unwrap();
+		let mut server_read_stream = stream.unwrap();
 		println!("New Connection from {}", server_read_stream.peer_addr().unwrap());
 
 		let client_send_stream = TcpStream::connect("127.0.0.1:25565").unwrap();
-		let client_read_stream = client_send_stream.try_clone().unwrap();
+		let mut client_read_stream = client_send_stream.try_clone().unwrap();
 		let server_send_stream = server_read_stream.try_clone().unwrap();
 
 		let connection = Arc::new(Mutex::new(Connection {
@@ -44,7 +44,7 @@ fn main() {
 					_ => {}
 				}
 
-				let server_packet = lib::utils::read_packet(&server_read_stream);
+				let server_packet = lib::utils::read_packet(&mut server_read_stream).unwrap();
 				let mut parsed_server_packet: Option<Vec<u8>> = None;
 
 				let packet_id = server_packet.id;
@@ -193,7 +193,7 @@ fn main() {
 					_ => {}
 				}
 
-				let client_packet = lib::utils::read_packet(&client_read_stream);
+				let client_packet = lib::utils::read_packet(&mut client_read_stream).unwrap();
 				let mut parsed_client_packet: Option<Vec<u8>> = None;
 
 				let packet_id = client_packet.id;

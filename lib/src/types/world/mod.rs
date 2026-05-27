@@ -6,9 +6,12 @@ use super::*;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::Debug;
+use std::sync::mpsc::{Receiver, Sender, channel};
 
 use crate::SPAWN_CHUNK_RADIUS;
+use crate::entity::{CommonEntity, ItemEntity};
 use crate::loader::WorldLoader;
+use crate::packets::Packet;
 use crate::types::position::BlockPosition;
 
 pub struct World {
@@ -20,6 +23,10 @@ pub struct World {
 pub struct Dimension {
 	pub chunks: HashMap<(i32, i32), Chunk>,
 	pub entities: Vec<Entity>,
+	pub name: String,
+	pub lowest_block_y: i16,
+	pub chunks_loading_sender: Sender<(i32, i32)>,
+	pub chunks_loading_receiver: Option<Receiver<(i32, i32)>>,
 }
 
 #[derive(Debug, Clone)]
@@ -32,6 +39,7 @@ pub struct Chunk {
 	pub is_light_on: bool,
 	pub modified: bool,
 	pub block_entities: Vec<BlockEntity>,
+	pub keep_loaded_for_ticks: i32,
 }
 
 #[derive(Debug, Clone)]
@@ -56,11 +64,22 @@ impl World {
 			let now = std::time::Instant::now();
 			println!("loading existing world");
 			default_spawn_location = loader.get_default_spawn_location();
-			dimensions.insert("minecraft:overworld".to_string(), Dimension::new_from_loader(&loader, entity_id_manager, block_states));
+			dimensions.insert(
+				"minecraft:overworld".to_string(),
+				Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:overworld"),
+			);
+			dimensions.insert(
+				"minecraft:the_nether".to_string(),
+				Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:the_nether"),
+			);
+			dimensions
+				.insert("minecraft:the_end".to_string(), Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:the_end"));
 			println!("finished loading existing world in {:.2?}", now.elapsed());
 		} else {
 			println!("create new world");
-			dimensions.insert("minecraft:overworld".to_string(), Dimension::new());
+			dimensions.insert("minecraft:overworld".to_string(), Dimension::new("minecraft:overworld"));
+			dimensions.insert("minecraft:the_nether".to_string(), Dimension::new("minecraft:the_nether"));
+			dimensions.insert("minecraft:the_end".to_string(), Dimension::new("minecraft:the_end"));
 			default_spawn_location = BlockPosition {
 				x: 0,
 				y: -48,
@@ -76,24 +95,38 @@ impl World {
 	}
 
 	pub fn save_to_disk(&mut self, block_states: &HashMap<String, Block>) {
-		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, self.default_spawn_location, block_states));
+		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, block_states));
+		self.loader.write_level_dat(self.default_spawn_location);
 	}
 }
 
 impl Dimension {
 	#[allow(clippy::new_without_default)]
-	pub fn new() -> Self {
+	pub fn new(dimension_name: &str) -> Self {
+		let lowest_block_y = if dimension_name == "minecraft:overworld" { -64i16 } else { 0 };
+		let chunk_sections = if dimension_name == "minecraft:overworld" { 24 } else { 16 };
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.insert((x as i32, z as i32), Chunk::new(x as i32, z as i32));
+				chunks.insert((x as i32, z as i32), Chunk::new(x as i32, z as i32, chunk_sections));
 			}
 		}
 
+		let (sender, receiver) = channel();
 		return Self {
-			chunks,
+			chunks: chunks
+				.into_iter()
+				.map(|(k, mut v)| {
+					v.keep_loaded_for_ticks = i32::MAX;
+					(k, v)
+				})
+				.collect(),
 			entities: Vec::new(),
+			name: dimension_name.to_string(),
+			lowest_block_y,
+			chunks_loading_sender: sender,
+			chunks_loading_receiver: Some(receiver),
 		};
 	}
 
@@ -101,20 +134,32 @@ impl Dimension {
 		loader: &impl loader::WorldLoader,
 		entity_id_manager: &EntityIdManager,
 		block_states: &HashMap<String, Block>,
+		dimension_name: &str,
 	) -> Self {
 		let mut chunks: HashMap<(i32, i32), Chunk> = HashMap::new();
 		let mut entities: Vec<Entity> = Vec::new();
 
 		for x in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
 			for z in -SPAWN_CHUNK_RADIUS..=SPAWN_CHUNK_RADIUS {
-				chunks.insert((x as i32, z as i32), loader.load_chunk(x as i32, z as i32, block_states));
-				entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager));
+				chunks.insert((x as i32, z as i32), loader.load_chunk(x as i32, z as i32, block_states, dimension_name));
+				entities.append(&mut loader.load_entities_in_chunk(x as i32, z as i32, entity_id_manager, dimension_name));
 			}
 		}
 
+		let (sender, receiver) = channel();
 		return Self {
-			chunks,
+			chunks: chunks
+				.into_iter()
+				.map(|(k, mut v)| {
+					v.keep_loaded_for_ticks = i32::MAX;
+					(k, v)
+				})
+				.collect(),
 			entities,
+			name: dimension_name.to_string(),
+			lowest_block_y: if dimension_name == "minecraft:overworld" { -64i16 } else { 0 },
+			chunks_loading_sender: sender,
+			chunks_loading_receiver: Some(receiver),
 		};
 	}
 
@@ -139,6 +184,7 @@ impl Dimension {
 	}
 
 	pub fn overwrite_block(&mut self, position: BlockPosition, block_state_id: u16) -> Result<Option<BlockOverwriteOutcome>, Box<dyn Error>> {
+		let lowest_block_y = self.lowest_block_y;
 		let chunk = self.get_chunk_from_position_mut(position);
 		if chunk.is_none() {
 			return Err(Box::new(crate::CustomError::ChunkNotFound(position)));
@@ -147,7 +193,7 @@ impl Dimension {
 			return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
 		}
 
-		return Ok(chunk.unwrap().set_block(position, block_state_id));
+		return Ok(chunk.unwrap().set_block(position, block_state_id, lowest_block_y));
 	}
 
 	pub fn get_block(&self, position: BlockPosition) -> Result<u16, Box<dyn Error>> {
@@ -159,19 +205,15 @@ impl Dimension {
 			return Err(Box::new(crate::CustomError::PositionOutOfBounds(position)));
 		}
 
-		let block_state_id = chunk.unwrap().get_block(position.convert_to_position_in_chunk());
+		let block_state_id = chunk.unwrap().get_block(position.convert_to_position_in_chunk(), self.lowest_block_y);
 		return Ok(block_state_id);
 	}
 
-	pub fn save_to_disk(
-		&mut self,
-		loader: &(impl WorldLoader + ?Sized),
-		default_spawn_location: BlockPosition,
-		block_states: &HashMap<String, Block>,
-	) {
+	pub fn save_to_disk(&mut self, loader: &(impl WorldLoader + ?Sized), block_states: &HashMap<String, Block>) {
 		{
-			loader.save_to_disk(&self.chunks, default_spawn_location, self, block_states);
+			loader.save_to_disk(&self.chunks, self, block_states, &self.name);
 		}
+		self.chunks.retain(|_, x| x.keep_loaded_for_ticks > 0);
 		for chunk in &mut self.chunks {
 			chunk.1.modified = false;
 		}
@@ -200,10 +242,57 @@ impl Dimension {
 		}
 		self.entities.append(&mut entities);
 	}
+
+	pub fn summon_item(
+		&mut self,
+		position: EntityPosition,
+		slot: Slot,
+		player_uuid: Option<u128>,
+		players_clone: &[Player],
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+	) {
+		let new_entity = ItemEntity {
+			common: CommonEntity {
+				position: EntityPosition {
+					x: position.x + 0.5,
+					z: position.z + 0.5,
+					..position
+				},
+				velocity: EntityPosition::default(),
+				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
+				entity_id: entity_id_manager.get_new(),
+				..Default::default()
+			},
+			age: 0,
+			health: 5,
+			item: slot,
+			owner: player_uuid.unwrap_or_default(),
+			pickup_delay: 0,
+			thrower: player_uuid.unwrap_or_default(),
+		};
+
+		let spawn_packet = new_entity.to_spawn_entity_packet();
+
+		packet_sender.send_packet_to_everyone_in_dimension(
+			players_clone,
+			&self.name,
+			crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
+			spawn_packet,
+		);
+
+		new_entity.resend_metadata_to_players(players_clone, packet_sender, &self.name);
+
+		self.add_entity(Entity::Item(new_entity));
+	}
+
+	pub fn get_chunk_loading_receiver(&mut self) -> Receiver<(i32, i32)> {
+		return self.chunks_loading_receiver.take().unwrap();
+	}
 }
 
 impl Chunk {
-	pub fn new(chunk_x: i32, chunk_z: i32) -> Self {
+	pub fn new(chunk_x: i32, chunk_z: i32, chunk_sections: u8) -> Self {
 		let filled_chunk_sections = vec![
 			ChunkSection {
 				blocks: vec![1; 4096],
@@ -220,7 +309,7 @@ impl Chunk {
 				sky_lights: vec![0xFF; 2048],
 				block_lights: vec![]
 			};
-			23
+			chunk_sections as usize - 1
 		];
 		let mut all_chunk_sections = filled_chunk_sections.clone();
 		all_chunk_sections.append(&mut empty_chunk_sections.clone());
@@ -234,17 +323,22 @@ impl Chunk {
 			is_light_on: true,
 			modified: true,
 			block_entities: Vec::new(),
+			keep_loaded_for_ticks: 20 * 60,
 		};
 	}
 
-	fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16) -> Option<BlockOverwriteOutcome> {
+	fn set_block(&mut self, position_global: BlockPosition, block_state_id: u16, lowest_block_y: i16) -> Option<BlockOverwriteOutcome> {
 		self.modified = true;
 		let position_in_chunk = position_global.convert_to_position_in_chunk();
-		let section_id = (position_in_chunk.y + 64) / 16;
-		let block_id =
-			position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
 		if self.sections[section_id as usize].blocks.is_empty() {
 			self.sections[section_id as usize].blocks = [0; 4096].to_vec();
+		}
+		if block_id < 0 {
+			return None;
 		}
 		self.sections[section_id as usize].blocks[block_id as usize] = block_state_id;
 
@@ -260,12 +354,12 @@ impl Chunk {
 		return destroy_blockentity;
 	}
 
-	pub fn get_block(&self, position_in_chunk: BlockPosition) -> u16 {
-		if position_in_chunk.y < -64 {
+	pub fn get_block(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> u16 {
+		if position_in_chunk.y < lowest_block_y {
 			return 0;
 		}
 
-		let section_id = (position_in_chunk.y + 64) / 16;
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
 
 		if section_id as usize >= self.sections.len() {
 			return 0;
@@ -275,8 +369,9 @@ impl Chunk {
 			return 0;
 		}
 
-		let block_id =
-			position_in_chunk.x + (position_in_chunk.z * 16) + (((position_in_chunk.y as i32 + 64) - (section_id as i32 * 16)) * 256);
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
 		return self.sections[section_id as usize].blocks[block_id as usize];
 	}
 

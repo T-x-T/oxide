@@ -62,7 +62,7 @@ impl RecipeManager {
 						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
 					}
 
-					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id).unwrap()) {
 						return Some(*recipe.clone());
 					}
 				}
@@ -87,7 +87,7 @@ impl RecipeManager {
 						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
 					}
 
-					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id).unwrap()) {
 						return Some(*recipe.clone());
 					}
 				}
@@ -112,7 +112,7 @@ impl RecipeManager {
 						tag_resolved_ingredient_options.append(&mut tag_resolved_ingredient_option);
 					}
 
-					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id)) {
+					if tag_resolved_ingredient_options.contains(&data::items::get_item_name_by_id(slot.id).unwrap()) {
 						return Some(*recipe.clone());
 					}
 				}
@@ -405,7 +405,7 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 				for (i, slot) in possible_shape.iter().enumerate() {
 					if let Some(recipe_slot) = slot {
 						if let Some(input_slot) = &slots[i] {
-							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id)) {
+							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id).unwrap()) {
 								continue 'outer;
 							}
 						} else {
@@ -436,7 +436,7 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 					};
 					for actual_ingredient_option in tag_resolved_ingredient_options {
 						for slot in &mut slots_vec {
-							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id) == actual_ingredient_option) {
+							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id).unwrap() == actual_ingredient_option) {
 								*slot = None;
 								found_match = true;
 								break 'ingredient_loop;
@@ -675,7 +675,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 				for (i, slot) in possible_shape.iter().enumerate() {
 					if let Some(recipe_slot) = slot {
 						if let Some(input_slot) = &slots[i] {
-							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id)) {
+							if !recipe_slot.contains(&data::items::get_item_name_by_id(input_slot.id).unwrap()) {
 								continue 'outer;
 							}
 						} else {
@@ -706,7 +706,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 					};
 					for actual_ingredient_option in tag_resolved_ingredient_options {
 						for slot in &mut slots_vec {
-							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id) == actual_ingredient_option) {
+							if slot.as_ref().is_some_and(|x| data::items::get_item_name_by_id(x.id).unwrap() == actual_ingredient_option) {
 								*slot = None;
 								found_match = true;
 								break 'ingredient_loop;

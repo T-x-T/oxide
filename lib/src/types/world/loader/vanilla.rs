@@ -20,15 +20,18 @@ pub struct Loader {
 impl super::InnerWorldLoader for Loader {}
 
 impl super::WorldLoader for Loader {
-	fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>) -> Chunk {
+	fn load_chunk(&self, x: i32, z: i32, block_states: &HashMap<String, Block>, dimension_name: &str) -> Chunk {
+		let chunk_sections = if dimension_name == "minecraft:overworld" { 24 } else { 16 };
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
+		region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+		region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 		region_file_path.push(PathBuf::from_str("region").unwrap());
 		region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
 		if !fs::exists(&region_file_path).unwrap() {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		let mut region_file = File::open(region_file_path).unwrap();
@@ -45,7 +48,7 @@ impl super::WorldLoader for Loader {
 		let chunk_length_padded = chunk_location_bytes[0] as i32 * 4096;
 
 		if chunk_offset == 0 && chunk_length_padded == 0 {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		region_file.seek(SeekFrom::Start(chunk_offset as u64)).unwrap();
@@ -77,7 +80,7 @@ impl super::WorldLoader for Loader {
 		let chunk_nbt = crate::deserialize::nbt_disk(&mut uncompressed_data).unwrap();
 
 		if chunk_nbt.get_child("Status").unwrap().as_string() != "minecraft:full" {
-			return Chunk::new(x, z);
+			return Chunk::new(x, z, chunk_sections);
 		}
 
 		let biome_ids = data::biomes::get_biome_ids();
@@ -100,7 +103,12 @@ impl super::WorldLoader for Loader {
 				sky_lights = sky_light_nbt.as_byte_array();
 			}
 
-			let biome_palette = x.get_child("biomes").unwrap().get_child("palette").unwrap().as_list();
+
+			let Some(biome_palette) = x.get_child("biomes") else {
+				continue;
+			};
+
+			let biome_palette = biome_palette.get_child("palette").unwrap().as_list();
 
 			let mut biomes: Vec<u8> = Vec::new();
 			if biome_palette.len() == 1 {
@@ -215,15 +223,18 @@ impl super::WorldLoader for Loader {
 			sections,
 			modified: false,
 			block_entities,
+			keep_loaded_for_ticks: 20 * 60,
 		};
 	}
 
-	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager) -> Vec<Entity> {
+	fn load_entities_in_chunk(&self, x: i32, z: i32, entity_id_manager: &EntityIdManager, dimension_name: &str) -> Vec<Entity> {
 		let mut output: Vec<Entity> = Vec::new();
 
 		let region = chunk_to_region(x, z);
 
 		let mut region_file_path = self.path.clone();
+		region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+		region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 		region_file_path.push(PathBuf::from_str("entities").unwrap());
 		region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
@@ -300,6 +311,8 @@ impl super::WorldLoader for Loader {
 				"minecraft:pig" => output.push(Entity::Pig(crate::entity::Pig::from_nbt(entity, entity_id_manager))),
 				"minecraft:rabbit" => output.push(Entity::Rabbit(crate::entity::Rabbit::from_nbt(entity, entity_id_manager))),
 				"minecraft:sheep" => output.push(Entity::Sheep(crate::entity::Sheep::from_nbt(entity, entity_id_manager))),
+				"minecraft:ender_dragon" => output.push(Entity::EnderDragon(crate::entity::EnderDragon::from_nbt(entity, entity_id_manager))),
+				"minecraft:end_crystal" => output.push(Entity::EndCrystal(crate::entity::EndCrystal::from_nbt(entity, entity_id_manager))),
 				_ => println!("tried loading unknown entity {entity_type} from disk"),
 			};
 		}
@@ -316,11 +329,11 @@ impl super::WorldLoader for Loader {
 	fn save_to_disk(
 		&self,
 		chunks: &HashMap<(i32, i32), Chunk>,
-		default_spawn_location: BlockPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, Block>,
+		dimension_name: &str,
 	) {
-		println!("start saving world with {} chunks to disk", chunks.len());
+		println!("start saving dimension {dimension_name} with {} chunks to disk", chunks.len());
 		let mut regions: HashMap<(i32, i32), Vec<&Chunk>> = HashMap::new();
 		for chunk in chunks.values() {
 			let region = chunk_to_region(chunk.x, chunk.z);
@@ -331,11 +344,10 @@ impl super::WorldLoader for Loader {
 		println!("there are {} regions to save", regions.len());
 		for region in regions {
 			let now = std::time::Instant::now();
-			save_region_to_disk(region.0, region.1.as_slice(), self.path.clone(), block_states);
-			save_entity_region_to_disk(region.0, region.1.as_slice(), dimension, self.path.clone());
+			save_region_to_disk(region.0, region.1.as_slice(), self.path.clone(), block_states, dimension_name);
+			save_entity_region_to_disk(region.0, region.1.as_slice(), dimension, self.path.clone(), dimension_name);
 			println!("saved region {:?} in {:.2?}", region.0, now.elapsed());
 		}
-		write_level_dat(self.path.clone(), default_spawn_location);
 	}
 
 	fn get_default_spawn_location(&self) -> BlockPosition {
@@ -359,38 +371,41 @@ impl super::WorldLoader for Loader {
 			z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
 		};
 	}
+
+	fn write_level_dat(&self, default_spawn_location: BlockPosition) {
+		let mut level_dat_path = self.path.clone();
+		level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
+
+		let mut file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(level_dat_path).unwrap();
+
+		let level_data = NbtTag::Root(vec![NbtTag::TagCompound(
+			"Data".to_string(),
+			vec![
+				NbtTag::Int("SpawnX".to_string(), default_spawn_location.x),
+				NbtTag::Int("SpawnY".to_string(), default_spawn_location.y as i32),
+				NbtTag::Int("SpawnZ".to_string(), default_spawn_location.z),
+			],
+		)]);
+
+		let mut uncompressed_data = crate::serialize::nbt_disk(level_data);
+		let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+		encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
+		let compressed_data = encoder.finish().unwrap();
+		file.write_all(&compressed_data).unwrap();
+		file.flush().unwrap();
+	}
 }
 
-fn write_level_dat(path: PathBuf, default_spawn_location: BlockPosition) {
-	let mut level_dat_path = path;
-	level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
 
-	let mut file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(level_dat_path).unwrap();
-
-	let level_data = NbtTag::Root(vec![NbtTag::TagCompound(
-		"Data".to_string(),
-		vec![
-			NbtTag::Int("SpawnX".to_string(), default_spawn_location.x),
-			NbtTag::Int("SpawnY".to_string(), default_spawn_location.y as i32),
-			NbtTag::Int("SpawnZ".to_string(), default_spawn_location.z),
-		],
-	)]);
-
-	let mut uncompressed_data = crate::serialize::nbt_disk(level_data);
-	let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-	encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
-	let compressed_data = encoder.finish().unwrap();
-	file.write_all(&compressed_data).unwrap();
-	file.flush().unwrap();
-}
-
-fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: &Dimension, path: PathBuf) {
+fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: &Dimension, path: PathBuf, dimension_name: &str) {
 	let mut locations_table = [(0u32, 0u8); 1024];
 	let mut timestamps_table = [0u32; 1024];
 	const EMPTY_CHUNK_DATA: Option<Vec<u8>> = None;
 	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA; 1024];
 
 	let mut region_file_path = path;
+	region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+	region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 	region_file_path.push(PathBuf::from_str("entities").unwrap());
 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
@@ -494,13 +509,15 @@ fn save_entity_region_to_disk(region: (i32, i32), chunks: &[&Chunk], dimension: 
 	file.flush().unwrap();
 }
 
-fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, block_states: &HashMap<String, Block>) {
+fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, block_states: &HashMap<String, Block>, dimension_name: &str) {
 	let mut locations_table = [(0u32, 0u8); 1024];
 	let mut timestamps_table = [0u32; 1024];
 	const EMPTY_CHUNK_DATA: Option<Vec<u8>> = None;
 	let mut chunk_data: [Option<Vec<u8>>; 1024] = [EMPTY_CHUNK_DATA; 1024];
 
 	let mut region_file_path = path;
+	region_file_path.push(PathBuf::from_str("dimensions").unwrap());
+	region_file_path.push(PathBuf::from_str(dimension_name.replace("minecraft:", "").as_str()).unwrap());
 	region_file_path.push(PathBuf::from_str("region").unwrap());
 	region_file_path.push(PathBuf::from_str(format!("r.{}.{}.mca", region.0, region.1).as_str()).unwrap());
 
@@ -735,7 +752,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 	if !fs::exists(region_file_path.parent().unwrap()).unwrap() {
 		fs::create_dir_all(region_file_path.parent().unwrap()).unwrap();
-		fs::write(region_file_path.parent().unwrap().with_file_name("level.dat"), String::new()).unwrap();
 	}
 	let mut file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(region_file_path).unwrap();
 

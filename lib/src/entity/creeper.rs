@@ -42,13 +42,15 @@ impl CommonEntityTrait for Creeper {
 	fn interact(
 		&mut self,
 		held_item: &Slot,
-		game: Arc<Game>,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
 		_player_uuid: u128,
+		packet_sender: &PacketSender,
+		entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> EntityInteractResult {
-		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel") {
+		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel").unwrap() {
 			//right clicked a creeper with flint and steel -> explode!
 			self.get_mob_data_mut().health = 0.0;
 
@@ -98,36 +100,32 @@ impl CommonEntityTrait for Creeper {
 								})
 								.unwrap();
 							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-							block_entity.remove_self(&game.entity_id_manager, players, dimension, game.clone());
+							block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
 						}
 
-						for player in players_clone {
-							game.send_packet(
-								&player.peer_socket_address,
-								crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-								crate::packets::clientbound::play::BlockUpdate {
-									location: BlockPosition {
-										x,
-										y,
-										z,
-									},
-									block_id: 0,
-								}
-								.try_into()
-								.unwrap(),
-							);
-						}
+						packet_sender.send_packet_to_everyone_in_dimension(
+							players_clone,
+							&dimension.name,
+							crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
+							crate::packets::clientbound::play::BlockUpdate {
+								location: BlockPosition {
+									x,
+									y,
+									z,
+								},
+								block_id: 0,
+							},
+						);
 					}
 				}
 			}
 
-			players_clone.iter().for_each(|x| {
-				game.send_packet(
-					&x.peer_socket_address,
-					crate::packets::clientbound::play::Explosion::PACKET_ID,
-					explosion_packet.clone().try_into().unwrap(),
-				);
-			});
+			packet_sender.send_packet_to_everyone_in_dimension(
+				players_clone,
+				&dimension.name,
+				crate::packets::clientbound::play::Explosion::PACKET_ID,
+				explosion_packet,
+			);
 		}
 
 		return EntityInteractResult::DoNothing;

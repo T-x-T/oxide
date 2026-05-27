@@ -8,10 +8,6 @@ pub struct Banner {
 }
 
 impl CommonBlockEntity for Banner {
-	fn tick(&mut self, _players: &[Player], _game: Arc<Game>) {
-		return;
-	}
-
 	fn new(position: BlockPosition) -> Self {
 		return Self {
 			position,
