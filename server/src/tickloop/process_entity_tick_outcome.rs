@@ -281,6 +281,22 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					chunk.keep_loaded_for_ticks = 20 * 60;
 				};
 			}
+			EntityTickOutcome::AddEntity(new_entity) => {
+				let dimension_name = dimension.name.clone();
+
+				let spawn_packet = new_entity.to_spawn_entity_packet();
+
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension_name,
+					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet,
+				);
+
+				new_entity.resend_metadata_to_players(players_clone, &game.packet_sender, &dimension_name);
+
+				dimension.add_entity(*new_entity);
+			}
 		}
 	}
 }

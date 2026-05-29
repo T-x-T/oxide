@@ -2,6 +2,8 @@ use crate::packets::Packet;
 
 use super::*;
 
+static EXPLOSION_TRIGGER_RADIUS: f64 = 4.0;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Creeper {
 	pub common: CommonEntity,
@@ -39,96 +41,43 @@ impl CommonEntityTrait for Creeper {
 		return output;
 	}
 
+	fn extra_tick(
+		&mut self,
+		dimension: &Dimension,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		_entity_id_manager: &EntityIdManager,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<EntityTickOutcome> {
+		let are_players_nearby = players
+			.iter()
+			.filter(|x| x.get_gamemode() == Gamemode::Survival)
+			.any(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= EXPLOSION_TRIGGER_RADIUS);
+
+		if are_players_nearby {
+			return self.explode(dimension, packet_sender, players);
+		}
+
+		return Vec::new();
+	}
+
 	fn interact(
 		&mut self,
 		held_item: &Slot,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
-		players: &mut [Player],
+		_players: &mut [Player],
 		_player_uuid: u128,
 		packet_sender: &PacketSender,
-		entity_id_manager: &EntityIdManager,
+		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
-	) -> EntityInteractResult {
+	) -> Vec<EntityTickOutcome> {
 		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel").unwrap() {
 			//right clicked a creeper with flint and steel -> explode!
-			self.get_mob_data_mut().health = 0.0;
-
-			let explosion_packet = crate::packets::clientbound::play::Explosion {
-				x: self.get_common_entity_data().position.x,
-				y: self.get_common_entity_data().position.y,
-				z: self.get_common_entity_data().position.z,
-				radius: 2.0,
-				block_count: 64,
-				player_delta_velocity: None,
-				particle_id: 23,
-				particle_data: (),
-				sound: 616,
-			};
-
-			let creeper_position = BlockPosition::from(self.get_common_entity_data().position);
-			for x in (creeper_position.x - 2)..creeper_position.x + 2 {
-				for y in (creeper_position.y - 2)..creeper_position.y + 2 {
-					for z in (creeper_position.z - 2)..creeper_position.z + 2 {
-						let res = dimension
-							.overwrite_block(
-								BlockPosition {
-									x,
-									y,
-									z,
-								},
-								0,
-							)
-							.unwrap();
-						if let Some(BlockOverwriteOutcome::DestroyBlockentity) = res {
-							let block_entity = dimension
-								.get_chunk_from_position(BlockPosition {
-									x,
-									y,
-									z,
-								})
-								.unwrap()
-								.block_entities
-								.iter()
-								.find(|a| {
-									a.get_position()
-										== BlockPosition {
-											x,
-											y,
-											z,
-										}
-								})
-								.unwrap();
-							let block_entity = block_entity.clone(); //So we get rid of the immutable borrow, so we can borrow world mutably again
-							block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
-						}
-
-						packet_sender.send_packet_to_everyone_in_dimension(
-							players_clone,
-							&dimension.name,
-							crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							crate::packets::clientbound::play::BlockUpdate {
-								location: BlockPosition {
-									x,
-									y,
-									z,
-								},
-								block_id: 0,
-							},
-						);
-					}
-				}
-			}
-
-			packet_sender.send_packet_to_everyone_in_dimension(
-				players_clone,
-				&dimension.name,
-				crate::packets::clientbound::play::Explosion::PACKET_ID,
-				explosion_packet,
-			);
+			return self.explode(dimension, packet_sender, players_clone);
 		}
 
-		return EntityInteractResult::DoNothing;
+		return Vec::new();
 	}
 
 	fn get_type(&self) -> i32 {
@@ -170,5 +119,50 @@ impl CommonEntityTrait for Creeper {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.7, 0.6);
+	}
+}
+
+impl Creeper {
+	fn explode(&mut self, dimension: &Dimension, packet_sender: &PacketSender, players_clone: &[Player]) -> Vec<EntityTickOutcome> {
+		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
+		self.get_mob_data_mut().health = 0.0;
+
+		let explosion_packet = crate::packets::clientbound::play::Explosion {
+			x: self.get_common_entity_data().position.x,
+			y: self.get_common_entity_data().position.y,
+			z: self.get_common_entity_data().position.z,
+			radius: 2.0,
+			block_count: 64,
+			player_delta_velocity: None,
+			particle_id: 23,
+			particle_data: (),
+			sound: 616,
+		};
+
+		let creeper_position = BlockPosition::from(self.get_common_entity_data().position);
+		for x in (creeper_position.x - 2)..creeper_position.x + 2 {
+			for y in (creeper_position.y - 2)..creeper_position.y + 2 {
+				for z in (creeper_position.z - 2)..creeper_position.z + 2 {
+					output.push(EntityTickOutcome::ReplaceBlock(
+						BlockPosition {
+							x,
+							y,
+							z,
+						},
+						0,
+					));
+				}
+			}
+		}
+
+		packet_sender.send_packet_to_everyone_in_dimension(
+			players_clone,
+			&dimension.name,
+			crate::packets::clientbound::play::Explosion::PACKET_ID,
+			explosion_packet,
+		);
+
+		return output;
 	}
 }

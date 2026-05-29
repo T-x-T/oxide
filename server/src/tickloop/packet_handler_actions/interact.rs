@@ -149,29 +149,26 @@ fn target_is_entity(
 			&game.block_state_data,
 		);
 
-		match res {
-			EntityInteractResult::DoNothing => (),
-			EntityInteractResult::AddEntity(new_entity) => {
-				let dimension_name = dimension.name.clone();
-				dimension.entities = entities;
-				world.dimensions = dimensions;
+		let entity_id = entity.get_common_entity_data().entity_id;
+		let dimension_name = dimension.name.clone();
 
-				let spawn_packet = new_entity.to_spawn_entity_packet();
+		dimension.entities = entities;
+		world.dimensions = dimensions;
 
-				game.packet_sender.send_packet_to_everyone_in_dimension(
-					players_clone,
-					&dimension_name,
-					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
-					spawn_packet,
-				);
+		drop(world);
+		drop(players);
 
-				new_entity.resend_metadata_to_players(players_clone, &game.packet_sender, &dimension_name);
+		let mut world = game.world.lock().unwrap();
+		let dimension = world.dimensions.get_mut(&dimension_name).unwrap();
 
-				world.dimensions.get_mut(player.get_dimension()).unwrap().add_entity(*new_entity);
+		packet_handler_actions::process_entity_tick_outcome::process(
+			res.into_iter().map(|x| (entity_id, x)).collect(),
+			game.clone(),
+			players_clone,
+			dimension,
+		);
 
-				return;
-			}
-		};
+		return;
 	} else {
 		//interact at
 	}
