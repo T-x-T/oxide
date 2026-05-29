@@ -93,11 +93,7 @@ Another library that contains data on biomes, blocks, items, block entities, inv
 
 # Contributing
 
-At the moment I'm not looking for major source code contributions. If you encounter a minor bug and decide to fix yourself, then feel free to open a PR and I will take a look.
-
-Instead, the best way for you to help is to spread the word about this project and to test it yourself. If you encounter any bugs or have ideas for things that could be improved, then please open an issue or get in touch otherwise.
-
-The last option is to [support me financially](https://buymeacoffee.com/thetxt), which would make it possible for me to invest more time into Oxide. Please only do this if you can afford it.
+See [CONTRIBUTING.md](./CONTRIBUTING.md)
 
 # Dependencies
 
