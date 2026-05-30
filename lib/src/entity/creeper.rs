@@ -3,6 +3,7 @@ use crate::packets::Packet;
 use super::*;
 
 static EXPLOSION_TRIGGER_RADIUS: f64 = 4.0;
+static STARTING_FUSE: i16 = 30;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Creeper {
@@ -12,6 +13,7 @@ pub struct Creeper {
 	pub fuse: i16,
 	pub is_ignited: bool,
 	pub is_powered: bool,
+	pub is_manually_lit: bool,
 }
 
 impl CommonEntityTrait for Creeper {
@@ -22,9 +24,10 @@ impl CommonEntityTrait for Creeper {
 			common: data,
 			mob,
 			explosion_radius: extra_nbt.get_child("ExplosionRadius").unwrap_or(&NbtTag::Byte(String::new(), 3)).as_byte(),
-			fuse: extra_nbt.get_child("Fuse").unwrap_or(&NbtTag::Short(String::new(), 30)).as_short(),
+			fuse: extra_nbt.get_child("Fuse").unwrap_or(&NbtTag::Short(String::new(), STARTING_FUSE)).as_short(),
 			is_ignited: extra_nbt.get_child("Ignited").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1,
 			is_powered: extra_nbt.get_child("powered").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1,
+			is_manually_lit: false,
 		};
 	}
 
@@ -54,8 +57,23 @@ impl CommonEntityTrait for Creeper {
 			.filter(|x| x.get_gamemode() == Gamemode::Survival)
 			.any(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= EXPLOSION_TRIGGER_RADIUS);
 
-		if are_players_nearby {
+		if self.fuse == 0 {
 			return self.explode(dimension, packet_sender, players);
+		} else if self.is_ignited {
+			self.fuse -= 1;
+		}
+
+
+		if !self.is_manually_lit {
+			if are_players_nearby {
+				if !self.is_ignited {
+					self.fuse = STARTING_FUSE;
+					self.is_ignited = true;
+				}
+			} else {
+				self.fuse = STARTING_FUSE;
+				self.is_ignited = false;
+			}
 		}
 
 		return Vec::new();
@@ -64,17 +82,21 @@ impl CommonEntityTrait for Creeper {
 	fn interact(
 		&mut self,
 		held_item: &Slot,
-		dimension: &mut Dimension,
-		players_clone: &[Player],
+		_dimension: &mut Dimension,
+		_players_clone: &[Player],
 		_players: &mut [Player],
 		_player_uuid: u128,
-		packet_sender: &PacketSender,
+		_packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
+		if self.is_ignited {
+			return Vec::new();
+		}
 		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel").unwrap() {
-			//right clicked a creeper with flint and steel -> explode!
-			return self.explode(dimension, packet_sender, players_clone);
+			self.fuse = STARTING_FUSE;
+			self.is_ignited = true;
+			self.is_manually_lit = true;
 		}
 
 		return Vec::new();
