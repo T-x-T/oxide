@@ -57,6 +57,8 @@ impl CommonEntityTrait for Creeper {
 			.filter(|x| x.get_gamemode() == Gamemode::Survival)
 			.any(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= EXPLOSION_TRIGGER_RADIUS);
 
+		self.mob.has_no_ai = self.is_ignited;
+
 		if self.fuse == 0 {
 			return self.explode(dimension, packet_sender, players);
 		} else if self.is_ignited {
@@ -69,10 +71,12 @@ impl CommonEntityTrait for Creeper {
 				if !self.is_ignited {
 					self.fuse = STARTING_FUSE;
 					self.is_ignited = true;
+					self.resend_metadata_to_players(players, packet_sender, &dimension.name);
 				}
 			} else {
 				self.fuse = STARTING_FUSE;
 				self.is_ignited = false;
+				self.resend_metadata_to_players(players, packet_sender, &dimension.name);
 			}
 		}
 
@@ -82,11 +86,11 @@ impl CommonEntityTrait for Creeper {
 	fn interact(
 		&mut self,
 		held_item: &Slot,
-		_dimension: &mut Dimension,
-		_players_clone: &[Player],
+		dimension: &mut Dimension,
+		players_clone: &[Player],
 		_players: &mut [Player],
 		_player_uuid: u128,
-		_packet_sender: &PacketSender,
+		packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
@@ -97,6 +101,7 @@ impl CommonEntityTrait for Creeper {
 			self.fuse = STARTING_FUSE;
 			self.is_ignited = true;
 			self.is_manually_lit = true;
+			self.resend_metadata_to_players(players_clone, packet_sender, &dimension.name);
 		}
 
 		return Vec::new();
@@ -107,7 +112,34 @@ impl CommonEntityTrait for Creeper {
 	}
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
-		return Vec::new();
+		let mut output: Vec<EntityMetadata> = Vec::new();
+
+		if self.is_ignited {
+			output.push(EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Varint(1),
+			});
+			output.push(EntityMetadata {
+				index: 18,
+				value: EntityMetadataValue::Boolean(true),
+			});
+		} else {
+			output.push(EntityMetadata {
+				index: 16,
+				value: EntityMetadataValue::Varint(-1),
+			});
+			output.push(EntityMetadata {
+				index: 18,
+				value: EntityMetadataValue::Boolean(false),
+			});
+		}
+
+		output.push(EntityMetadata {
+			index: 17,
+			value: EntityMetadataValue::Boolean(self.is_powered),
+		});
+
+		return output;
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
@@ -149,6 +181,7 @@ impl Creeper {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
 		self.get_mob_data_mut().health = 0.0;
+		self.get_mob_data_mut().drop_items_upon_death = false;
 
 		let explosion_packet = crate::packets::clientbound::play::Explosion {
 			x: self.get_common_entity_data().position.x,

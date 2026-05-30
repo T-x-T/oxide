@@ -59,7 +59,7 @@ pub struct CommonEntity {
 	pub ticks_frozen: i32,
 }
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct CommonMob {
 	pub absorption_amount: f32,
 	pub active_effects: Vec<NbtListTag>,
@@ -89,6 +89,43 @@ pub struct CommonMob {
 	pub alive_for_ticks: i32,
 	pub wander_to: Option<BlockPosition>,
 	pub wandered_for: u16,
+	pub drop_items_upon_death: bool,
+}
+
+impl Default for CommonMob {
+	fn default() -> Self {
+		Self {
+			absorption_amount: Default::default(),
+			active_effects: Default::default(),
+			attributes: Default::default(),
+			brain: Default::default(),
+			can_pick_up_loot: Default::default(),
+			death_loot_table: Default::default(),
+			death_loot_table_seed: Default::default(),
+			death_time: Default::default(),
+			drop_chances: Default::default(),
+			equipment: Default::default(),
+			fall_flying: Default::default(),
+			health: Default::default(),
+			home_location: Default::default(),
+			home_radius: Default::default(),
+			hurt_by_timestamp: Default::default(),
+			hurt_time: Default::default(),
+			leashed_block: Default::default(),
+			leashed_entity: Default::default(),
+			is_left_handed: Default::default(),
+			locator_bar_icon_color: Default::default(),
+			locator_bar_icon_style: Default::default(),
+			has_no_ai: Default::default(),
+			is_persistance_required: Default::default(),
+			sleeping_location: Default::default(),
+			team: Default::default(),
+			alive_for_ticks: Default::default(),
+			wander_to: Default::default(),
+			wandered_for: Default::default(),
+			drop_items_upon_death: true,
+		}
+	}
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]

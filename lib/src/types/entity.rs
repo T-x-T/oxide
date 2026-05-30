@@ -863,6 +863,9 @@ pub trait CommonEntityTrait {
 	}
 
 	fn execute_ai(&mut self, players: &[Player]) -> AiExecutionResult {
+		if self.is_mob() && self.get_mob_data().has_no_ai {
+			return AiExecutionResult::DoNothing;
+		}
 		let entity_type = data::entities::get_name_from_id(self.get_type());
 		let behavior = if entity_type.as_str() == "minecraft:creeper" {
 			AiBehavior::MoveTowardsPlayer

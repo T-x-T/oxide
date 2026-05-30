@@ -24,23 +24,25 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				let entity_clone: Entity = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == entity_id).unwrap().clone();
 
-				let items_to_drop = loot_table::get_entity_drops(
-					&game.loot_tables,
-					&data::entities::get_name_from_id(entity_clone.get_type()),
-					&Slot::default(),
-					&game.block_state_data,
-					None,
-				);
-
-				for item_to_drop in items_to_drop {
-					dimension.summon_item(
-						entity_clone.get_common_entity_data().position,
-						item_to_drop,
+				if entity_clone.is_mob() && entity_clone.get_mob_data().drop_items_upon_death {
+					let items_to_drop = loot_table::get_entity_drops(
+						&game.loot_tables,
+						&data::entities::get_name_from_id(entity_clone.get_type()),
+						&Slot::default(),
+						&game.block_state_data,
 						None,
-						players_clone,
-						&game.packet_sender,
-						&game.entity_id_manager,
 					);
+
+					for item_to_drop in items_to_drop {
+						dimension.summon_item(
+							entity_clone.get_common_entity_data().position,
+							item_to_drop,
+							None,
+							players_clone,
+							&game.packet_sender,
+							&game.entity_id_manager,
+						);
+					}
 				}
 			}
 			//Currently unused, might not be needed after all?
