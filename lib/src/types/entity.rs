@@ -41,6 +41,8 @@ pub enum EntityTickOutcome {
 	UseEndPortal(String),    //target dimension
 	KilledBy(Box<Entity>),
 	LoadChunk(i32, i32),
+	AddEntity(Box<Entity>),
+	DealDamage(i32, f32), //target entity id, damage to deal
 }
 
 #[derive(Debug)]
@@ -54,12 +56,6 @@ pub enum AiBehavior {
 pub enum AiExecutionResult {
 	DoNothing,
 	ApplyVelocity(EntityPosition),
-}
-
-#[derive(Debug)]
-pub enum EntityInteractResult {
-	DoNothing,
-	AddEntity(Box<Entity>),
 }
 
 impl Entity {
@@ -270,7 +266,7 @@ impl Entity {
 		packet_sndr: &PacketSender,
 		entity_id_mgr: &EntityIdManager,
 		block_states: &HashMap<String, basic_types::blocks::Block>,
-	) -> EntityInteractResult {
+	) -> Vec<EntityTickOutcome> {
 		return match self {
 			Entity::Armadillo(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::Cat(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
@@ -868,6 +864,9 @@ pub trait CommonEntityTrait {
 	}
 
 	fn execute_ai(&mut self, players: &[Player]) -> AiExecutionResult {
+		if self.is_mob() && self.get_mob_data().has_no_ai {
+			return AiExecutionResult::DoNothing;
+		}
 		let entity_type = data::entities::get_name_from_id(self.get_type());
 		let behavior = if entity_type.as_str() == "minecraft:creeper" {
 			AiBehavior::MoveTowardsPlayer
@@ -1006,8 +1005,8 @@ pub trait CommonEntityTrait {
 		_packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
-	) -> EntityInteractResult {
-		return EntityInteractResult::DoNothing;
+	) -> Vec<EntityTickOutcome> {
+		return Vec::new();
 	}
 
 	fn resend_metadata_to_players(&self, players_clone: &[Player], packet_sender: &PacketSender, dimension_name: &str) {
