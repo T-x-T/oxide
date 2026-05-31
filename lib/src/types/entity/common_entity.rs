@@ -24,6 +24,18 @@ pub struct CommonEntity {
 	pub ticks_frozen: i32,
 }
 
+#[derive(Debug)]
+pub enum AiBehavior {
+	Idle,
+	MoveTowardsPlayer,
+	Wander,
+}
+
+#[derive(Debug)]
+pub enum AiExecutionResult {
+	DoNothing,
+	ApplyVelocity(EntityPosition),
+}
 
 pub trait CommonEntityTrait {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self
@@ -218,7 +230,7 @@ pub trait CommonEntityTrait {
 
 
 		let mut velocity_from_ai = EntityPosition::default();
-		match self.execute_ai(players) {
+		match self.execute_ai(players, dimension) {
 			AiExecutionResult::DoNothing => (),
 			AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
 		};
@@ -410,7 +422,7 @@ pub trait CommonEntityTrait {
 		return output;
 	}
 
-	fn execute_ai(&mut self, players: &[Player]) -> AiExecutionResult {
+	fn execute_ai(&mut self, players: &[Player], dimension: &Dimension) -> AiExecutionResult {
 		if self.is_mob() && self.get_mob_data().has_no_ai {
 			return AiExecutionResult::DoNothing;
 		}
@@ -425,7 +437,7 @@ pub trait CommonEntityTrait {
 
 		return match behavior {
 			AiBehavior::Idle => AiExecutionResult::DoNothing,
-			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players),
+			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players, dimension),
 			AiBehavior::Wander => self.execute_ai_wander(),
 		};
 	}
@@ -463,7 +475,7 @@ pub trait CommonEntityTrait {
 		}
 	}
 
-	fn execute_ai_move_towards_player(&self, players: &[Player]) -> AiExecutionResult {
+	fn execute_ai_move_towards_player(&self, players: &[Player], dimension: &Dimension) -> AiExecutionResult {
 		let mut player_distances = players
 			.iter()
 			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
@@ -474,19 +486,129 @@ pub trait CommonEntityTrait {
 		let closest_player = player_distances.first();
 
 		if let Some(closest_player) = closest_player {
-			let velocity_towards_player = closest_player.0.get_position() - self.get_common_entity_data().position;
-			let distance_towards_player = self.get_common_entity_data().position.distance_to(closest_player.0.get_position());
-			let speed = 0.1;
-			return AiExecutionResult::ApplyVelocity(EntityPosition {
-				x: (velocity_towards_player.x / (distance_towards_player + 1.0)) * speed,
-				y: 0.0,
-				z: (velocity_towards_player.z / (distance_towards_player + 1.0)) * speed,
-				yaw: 0.0,
-				pitch: 0.0,
-			});
+			let velocity_towards_player = self.ai_move_towards_goal(closest_player.0.get_position(), dimension);
+			return AiExecutionResult::ApplyVelocity(velocity_towards_player);
 		} else {
 			return AiExecutionResult::DoNothing;
 		}
+	}
+
+	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> EntityPosition {
+		let distance_from_start_to_goal = self.get_common_entity_data().position.distance_to(goal);
+		let goal_block = BlockPosition {
+			x: (goal.x - self.get_hitbox().0) as i32,
+			y: goal.y as i16,
+			z: (goal.z - self.get_hitbox().1) as i32,
+		};
+		let starting_point = BlockPosition {
+			x: (self.get_common_entity_data().position.x - self.get_hitbox().0) as i32,
+			y: self.get_common_entity_data().position.y as i16,
+			z: (self.get_common_entity_data().position.z - self.get_hitbox().1) as i32,
+		};
+		let mut open: Vec<(BlockPosition, f64, BlockPosition)> = vec![(starting_point, 0.0, starting_point)]; //own pos, cost, parent pos
+		let mut closed: Vec<(BlockPosition, BlockPosition)> = Vec::new(); //own pos, parent pos
+
+		for _ in 0..1000 {
+			let mut lowest_cost_index = 0;
+			let mut lowest_cost = f64::INFINITY;
+			for (i, (_, cost, _)) in open.iter().enumerate() {
+				if *cost < lowest_cost {
+					lowest_cost = *cost;
+					lowest_cost_index = i;
+				}
+			}
+			let (node, _cost, parent) = open.remove(lowest_cost_index);
+			println!("node: {node:?}, goal: {goal_block:?}");
+			if node == goal_block {
+				println!("reached goal, tracing backwards...");
+				let mut current_node = node;
+				let mut current_parent = parent;
+				loop {
+					println!("current_node: {current_node:?} current_parent: {current_parent:?}");
+					if current_parent == starting_point {
+						let speed = 0.8;
+						return EntityPosition {
+							x: (current_node.x as f64 / (distance_from_start_to_goal + 1.0)) * speed,
+							y: 0.0,
+							z: (current_node.z as f64 / (distance_from_start_to_goal + 1.0)) * speed,
+							yaw: 0.0,
+							pitch: 0.0,
+						};
+					}
+
+					let (next_node, next_parent) = closed.iter().find(|(node, _)| *node == current_parent).unwrap();
+					current_node = *next_node;
+					current_parent = *next_parent;
+				}
+			}
+
+			closed.push((node, parent));
+
+			let neighbours = [
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y,
+					z: node.z + 1,
+				},
+			];
+
+			for neighbour in neighbours {
+				if closed.iter().any(|x| x.0 == neighbour) {
+					continue;
+				}
+				//TODO: more sophisticated check if block is valid to step on
+				let neighbour_block = dimension.get_block(neighbour);
+				if neighbour_block.is_err() || neighbour_block.unwrap() != 0 {
+					continue;
+				}
+
+				let distance_to_goal = EntityPosition::from(neighbour).distance_to(goal);
+				let cost = distance_to_goal - distance_from_start_to_goal;
+				if let Some(node) = open.iter_mut().find(|x| x.0 == neighbour && x.1 > cost) {
+					//We found a lower cost way to get here
+					node.1 = cost;
+				} else {
+					open.push((neighbour, cost, node));
+				}
+			}
+		}
+
+		return EntityPosition::default();
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag>;
@@ -579,5 +701,200 @@ pub trait CommonEntityTrait {
 		_position: BlockPosition,
 	) {
 		return;
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	mod ai_move_towards_goal {
+		use super::*;
+
+		#[test]
+		fn default_chunk_towards_pos_x() {
+			let creeper = Creeper::new(
+				CommonEntity {
+					position: EntityPosition {
+						x: 0.0,
+						y: 16.0,
+						z: 0.0,
+						yaw: 0.0,
+						pitch: 0.0,
+					},
+					..Default::default()
+				},
+				NbtListTag::default(),
+			);
+			let dimension = Dimension::new("oxide:test");
+			let goal = EntityPosition {
+				x: 10.0,
+				y: 16.0,
+				z: 0.0,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
+
+			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			println!("{res:?}");
+			assert!(res.x > 0.07 && res.x < 0.075);
+		}
+
+		#[test]
+		fn default_chunk_towards_neg_x() {
+			let creeper = Creeper::new(
+				CommonEntity {
+					position: EntityPosition {
+						x: 0.0,
+						y: 16.0,
+						z: 0.0,
+						yaw: 0.0,
+						pitch: 0.0,
+					},
+					..Default::default()
+				},
+				NbtListTag::default(),
+			);
+			let dimension = Dimension::new("oxide:test");
+			let goal = EntityPosition {
+				x: -10.0,
+				y: 16.0,
+				z: 0.0,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
+
+			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			println!("{res:?}");
+			assert!(res.x < -0.075 && res.x > -0.15);
+		}
+
+		#[test]
+		fn default_chunk_towards_pos_z() {
+			let creeper = Creeper::new(
+				CommonEntity {
+					position: EntityPosition {
+						x: 0.0,
+						y: 16.0,
+						z: 0.0,
+						yaw: 0.0,
+						pitch: 0.0,
+					},
+					..Default::default()
+				},
+				NbtListTag::default(),
+			);
+			let dimension = Dimension::new("oxide:test");
+			let goal = EntityPosition {
+				x: 0.0,
+				y: 16.0,
+				z: 10.0,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
+
+			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			println!("{res:?}");
+			assert!(res.z > 0.07 && res.z < 0.1);
+		}
+
+		#[test]
+		fn default_chunk_towards_neg_z() {
+			let creeper = Creeper::new(
+				CommonEntity {
+					position: EntityPosition {
+						x: 0.0,
+						y: 16.0,
+						z: 0.0,
+						yaw: 0.0,
+						pitch: 0.0,
+					},
+					..Default::default()
+				},
+				NbtListTag::default(),
+			);
+			let dimension = Dimension::new("oxide:test");
+			let goal = EntityPosition {
+				x: 0.0,
+				y: 16.0,
+				z: -10.0,
+				yaw: 0.0,
+				pitch: 0.0,
+			};
+
+			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			println!("{res:?}");
+			assert!(res.z < -0.075 && res.z > -0.15);
+		}
+	}
+
+	#[test]
+	fn default_chunk_towards_pos_x_and_z() {
+		let creeper = Creeper::new(
+			CommonEntity {
+				position: EntityPosition {
+					x: 0.0,
+					y: 16.0,
+					z: 0.0,
+					yaw: 0.0,
+					pitch: 0.0,
+				},
+				..Default::default()
+			},
+			NbtListTag::default(),
+		);
+		let dimension = Dimension::new("oxide:test");
+		let goal = EntityPosition {
+			x: 10.0,
+			y: 16.0,
+			z: 10.0,
+			yaw: 0.0,
+			pitch: 0.0,
+		};
+
+		let res = creeper.ai_move_towards_goal(goal, &dimension);
+		println!("{res:?}");
+		assert!(res.x > 0.05 && res.x < 0.075);
+		assert!(res.z > 0.05 && res.z < 0.075);
+	}
+
+	#[test]
+	fn obstacle_towards_pos_x() {
+		let creeper = Creeper::new(
+			CommonEntity {
+				position: EntityPosition {
+					x: 0.0,
+					y: 16.0,
+					z: 0.0,
+					yaw: 0.0,
+					pitch: 0.0,
+				},
+				..Default::default()
+			},
+			NbtListTag::default(),
+		);
+		let mut dimension = Dimension::new("oxide:test");
+		dimension
+			.overwrite_block(
+				BlockPosition {
+					x: 1,
+					y: 16,
+					z: 0,
+				},
+				1,
+			)
+			.unwrap();
+
+		let goal = EntityPosition {
+			x: 10.0,
+			y: 16.0,
+			z: 0.0,
+			yaw: 0.0,
+			pitch: 0.0,
+		};
+
+		let res = creeper.ai_move_towards_goal(goal, &dimension);
+		println!("{res:?}");
+		assert!(res.x < 0.1);
+		assert!((res.z > 0.07 && res.z < 0.075) || (res.z < -0.07 && res.z > -0.075));
 	}
 }

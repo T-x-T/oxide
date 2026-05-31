@@ -55,19 +55,6 @@ pub enum EntityTickOutcome {
 	DealDamage(i32, f32), //target entity id, damage to deal
 }
 
-#[derive(Debug)]
-pub enum AiBehavior {
-	Idle,
-	MoveTowardsPlayer,
-	Wander,
-}
-
-#[derive(Debug)]
-pub enum AiExecutionResult {
-	DoNothing,
-	ApplyVelocity(EntityPosition),
-}
-
 impl Entity {
 	pub fn to_nbt(&self) -> NbtListTag {
 		let common_data = self.get_common_entity_data();
