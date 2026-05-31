@@ -9,7 +9,7 @@ use std::fmt::Debug;
 use std::sync::mpsc::{Receiver, Sender, channel};
 
 use crate::SPAWN_CHUNK_RADIUS;
-use crate::entity::{CommonEntity, ItemEntity};
+use crate::entity::ItemEntity;
 use crate::loader::WorldLoader;
 use crate::packets::Packet;
 use crate::types::position::BlockPosition;

@@ -1,5 +1,4 @@
 use super::*;
-use lib::entity::CommonEntity;
 use lib::loot_table;
 use lib::packets::Packet;
 

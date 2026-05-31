@@ -1,5 +1,3 @@
-use lib::entity::CommonEntity;
-
 use super::*;
 
 pub fn init(game: &mut Game) {
