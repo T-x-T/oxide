@@ -1,6 +1,9 @@
 name: Build, test and push
 
-on: push
+on:
+  push:
+    branches-ignore:
+      - "!#*"
 
 jobs:
   build_server_docker_image:
