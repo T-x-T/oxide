@@ -299,6 +299,14 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				dimension.add_entity(*new_entity);
 			}
+			EntityTickOutcome::DealDamage(target_entity_id, damage) => {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == target_entity_id) {
+					entity.damage(damage, &game.packet_sender, players_clone);
+				};
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == target_entity_id) {
+					player.damage(damage, &game.packet_sender, players_clone);
+				};
+			}
 		}
 	}
 }

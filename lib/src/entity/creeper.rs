@@ -211,6 +211,18 @@ impl Creeper {
 			}
 		}
 
+		dimension
+			.entities
+			.iter()
+			.filter(|x| x.get_common_entity_data().position.distance_to(self.get_common_entity_data().position) < 2.5)
+			.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.get_common_entity_data().entity_id, 20.0)));
+
+		players_clone
+			.iter()
+			.filter(|x| x.get_gamemode() == Gamemode::Survival || x.get_gamemode() == Gamemode::Adventure)
+			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) < 2.5)
+			.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.entity_id, 20.0)));
+
 		packet_sender.send_packet_to_everyone_in_dimension(
 			players_clone,
 			&dimension.name,

@@ -42,6 +42,7 @@ pub enum EntityTickOutcome {
 	KilledBy(Box<Entity>),
 	LoadChunk(i32, i32),
 	AddEntity(Box<Entity>),
+	DealDamage(i32, f32), //target entity id, damage to deal
 }
 
 #[derive(Debug)]
