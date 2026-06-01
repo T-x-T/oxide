@@ -139,7 +139,7 @@ impl Clone for Player {
 			dimension: self.dimension.clone(),
 			loaded_chunks: self.loaded_chunks.clone(),
 			portal_cooldown: self.portal_cooldown,
-			permission: Permission::Everyone,
+			permission: self.permission,
 		}
 	}
 }
