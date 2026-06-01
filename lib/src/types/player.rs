@@ -97,6 +97,7 @@ pub struct Player {
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
+	pub permission: Permission
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -138,6 +139,7 @@ impl Clone for Player {
 			dimension: self.dimension.clone(),
 			loaded_chunks: self.loaded_chunks.clone(),
 			portal_cooldown: self.portal_cooldown,
+			permission: Permission::Everyone,
 		}
 	}
 }
@@ -800,6 +802,7 @@ impl Player {
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
+				permission: Permission::Everyone
 			};
 
 			return player;
@@ -950,6 +953,7 @@ impl Player {
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
+			permission: Permission::Everyone,
 		};
 
 		return player;

@@ -5,6 +5,7 @@ use super::*;
 pub fn init(game: &mut Game) {
 	game.commands.lock().unwrap().push(Command {
 		name: "summon".to_string(),
+		permission: Permission::Gamemaster,
 		execute,
 		arguments: vec![CommandArgument {
 			name: "entity type".to_string(),

@@ -22,6 +22,21 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 		return;
 	};
 
+	if command.permission > player.permission {
+		game.packet_sender.send_packet_to_player(
+			&peer_addr, 
+			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
+			lib::packets::clientbound::play::SystemChatMessage {
+				content: NbtTag::Root(vec![
+					NbtTag::String("type".to_string(), "text".to_string()),
+					NbtTag::String("text".to_string(), "cannot execute command: no permission".to_string()),
+				]),
+				overlay: false,
+			}
+		);
+		return;
+	}
+
 	drop(players);
 	(command.execute)(command_string, Some(peer_addr), game.clone()).unwrap();
 }

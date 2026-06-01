@@ -6,11 +6,22 @@ use std::sync::Arc;
 
 type CommandExecFn = fn(String, Option<SocketAddr>, Arc<Game>) -> Result<(), Box<dyn Error>>;
 
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
+pub enum Permission {
+	Everyone,
+	Operator,
+	Moderator,
+	Gamemaster,
+	Admin,
+	Owner,
+}
+
 #[derive(Debug, Clone)]
 pub struct Command {
 	pub name: String,
 	pub execute: CommandExecFn,
 	pub arguments: Vec<CommandArgument>,
+	pub permission: Permission,
 }
 
 #[derive(Debug, Clone)]
