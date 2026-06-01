@@ -495,20 +495,16 @@ pub trait CommonEntityTrait {
 
 	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> EntityPosition {
 		let distance_from_start_to_goal = self.get_common_entity_data().position.distance_to(goal);
-		let goal_block = BlockPosition {
-			x: (goal.x - self.get_hitbox().0) as i32,
-			y: goal.y as i16,
-			z: (goal.z - self.get_hitbox().1) as i32,
-		};
-		let starting_point = BlockPosition {
-			x: (self.get_common_entity_data().position.x - self.get_hitbox().0) as i32,
-			y: self.get_common_entity_data().position.y as i16,
-			z: (self.get_common_entity_data().position.z - self.get_hitbox().1) as i32,
-		};
+		let goal_block = BlockPosition::from(goal);
+		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
 		let mut open: Vec<(BlockPosition, f64, BlockPosition)> = vec![(starting_point, 0.0, starting_point)]; //own pos, cost, parent pos
 		let mut closed: Vec<(BlockPosition, BlockPosition)> = Vec::new(); //own pos, parent pos
 
 		for _ in 0..1000 {
+			if open.is_empty() {
+				println!("open was empty, aborting");
+				break;
+			}
 			let mut lowest_cost_index = 0;
 			let mut lowest_cost = f64::INFINITY;
 			for (i, (_, cost, _)) in open.iter().enumerate() {
@@ -523,20 +519,22 @@ pub trait CommonEntityTrait {
 				println!("reached goal, tracing backwards...");
 				let mut current_node = node;
 				let mut current_parent = parent;
+				let mut last_node = node;
 				loop {
-					println!("current_node: {current_node:?} current_parent: {current_parent:?}");
-					if current_parent == starting_point {
-						let speed = 0.8;
+					println!("current_node: {current_node:?} current_parent: {current_parent:?} last_node: {last_node:?}");
+					if current_node == starting_point {
+						let speed = 0.075;
 						return EntityPosition {
-							x: (current_node.x as f64 / (distance_from_start_to_goal + 1.0)) * speed,
+							x: (last_node.x - starting_point.x) as f64 * speed,
 							y: 0.0,
-							z: (current_node.z as f64 / (distance_from_start_to_goal + 1.0)) * speed,
+							z: (last_node.z - starting_point.z) as f64 * speed,
 							yaw: 0.0,
 							pitch: 0.0,
 						};
 					}
 
 					let (next_node, next_parent) = closed.iter().find(|(node, _)| *node == current_parent).unwrap();
+					last_node = current_node;
 					current_node = *next_node;
 					current_parent = *next_parent;
 				}
@@ -736,7 +734,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.x > 0.07 && res.x < 0.075);
+			assert!(res.x > 0.07 && res.x < 0.08);
 		}
 
 		#[test]
@@ -765,7 +763,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.x < -0.075 && res.x > -0.15);
+			assert!(res.x < -0.07 && res.x > -0.08);
 		}
 
 		#[test]
@@ -794,7 +792,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.z > 0.07 && res.z < 0.1);
+			assert!(res.z > 0.07 && res.z < 0.08);
 		}
 
 		#[test]
@@ -823,7 +821,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.z < -0.075 && res.z > -0.15);
+			assert!(res.z < -0.07 && res.z > -0.08);
 		}
 	}
 
@@ -853,8 +851,8 @@ mod tests {
 
 		let res = creeper.ai_move_towards_goal(goal, &dimension);
 		println!("{res:?}");
-		assert!(res.x > 0.05 && res.x < 0.075);
-		assert!(res.z > 0.05 && res.z < 0.075);
+		assert!(res.x > 0.07 && res.x < 0.08);
+		assert!(res.z > 0.07 && res.z < 0.08);
 	}
 
 	#[test]
@@ -895,6 +893,6 @@ mod tests {
 		let res = creeper.ai_move_towards_goal(goal, &dimension);
 		println!("{res:?}");
 		assert!(res.x < 0.1);
-		assert!((res.z > 0.07 && res.z < 0.075) || (res.z < -0.07 && res.z > -0.075));
+		assert!((res.z > 0.07 && res.z < 0.08) || (res.z < -0.07 && res.z > -0.08));
 	}
 }
