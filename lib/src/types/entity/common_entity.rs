@@ -497,10 +497,11 @@ pub trait CommonEntityTrait {
 		let distance_from_start_to_goal = self.get_common_entity_data().position.distance_to(goal);
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
+		//println!("starting on block: {starting_point:?}");
 		let mut open: Vec<(BlockPosition, f64, BlockPosition)> = vec![(starting_point, 0.0, starting_point)]; //own pos, cost, parent pos
 		let mut closed: Vec<(BlockPosition, BlockPosition)> = Vec::new(); //own pos, parent pos
 
-		for _ in 0..1000 {
+		for _ in 0..100 {
 			if open.is_empty() {
 				println!("open was empty, aborting");
 				break;
@@ -514,15 +515,16 @@ pub trait CommonEntityTrait {
 				}
 			}
 			let (node, _cost, parent) = open.remove(lowest_cost_index);
-			println!("node: {node:?}, goal: {goal_block:?}");
+			//println!("node: {node:?}, cost: {cost}, goal: {goal_block:?}");
 			if node == goal_block {
-				println!("reached goal, tracing backwards...");
+				//println!("reached goal, tracing backwards...");
 				let mut current_node = node;
 				let mut current_parent = parent;
 				let mut last_node = node;
 				loop {
-					println!("current_node: {current_node:?} current_parent: {current_parent:?} last_node: {last_node:?}");
+					//println!("current_node: {current_node:?} current_parent: {current_parent:?} last_node: {last_node:?}");
 					if current_node == starting_point {
+						//println!("next block towards goal: {last_node:?}");
 						let speed = 0.075;
 						return EntityPosition {
 							x: (last_node.x - starting_point.x) as f64 * speed,
@@ -600,11 +602,13 @@ pub trait CommonEntityTrait {
 				if let Some(node) = open.iter_mut().find(|x| x.0 == neighbour && x.1 > cost) {
 					//We found a lower cost way to get here
 					node.1 = cost;
-				} else {
+				} else if !open.iter().any(|x| x.0 == neighbour && x.1 >= cost) {
 					open.push((neighbour, cost, node));
 				}
 			}
 		}
+
+		println!("didnt find way to goal, aborting");
 
 		return EntityPosition::default();
 	}
@@ -895,4 +899,277 @@ mod tests {
 		assert!(res.x < 0.1);
 		assert!((res.z > 0.07 && res.z < 0.08) || (res.z < -0.07 && res.z > -0.08));
 	}
+
+	#[test]
+	fn labyrinth() {
+		let mut creeper = Creeper::new(
+			CommonEntity {
+				position: EntityPosition {
+					x: OBSTACLE_COURSE_START.x as f64 + 0.5,
+					y: OBSTACLE_COURSE_START.y as f64,
+					z: OBSTACLE_COURSE_START.z as f64 + 0.5,
+					yaw: 0.0,
+					pitch: 0.0,
+				},
+				..Default::default()
+			},
+			NbtListTag::default(),
+		);
+		let mut dimension = Dimension::new("oxide:test");
+		for block in OBSTACLE_COURSE_BLOCKS {
+			dimension.overwrite_block(block, 1).unwrap();
+		}
+
+		let goal = EntityPosition {
+			x: OBSTACLE_COURSE_GOAL.x as f64,
+			y: OBSTACLE_COURSE_GOAL.y as f64,
+			z: OBSTACLE_COURSE_GOAL.z as f64,
+			yaw: 0.0,
+			pitch: 0.0,
+		};
+
+		let mut reached_goal = false;
+		for i in 0..1000 {
+			let now = std::time::Instant::now();
+			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			creeper.get_common_entity_data_mut().position += res;
+
+			if BlockPosition::from(creeper.get_common_entity_data().position) == BlockPosition::from(goal) {
+				reached_goal = true;
+				break;
+			}
+		}
+
+		assert!(reached_goal);
+	}
+
+	const OBSTACLE_COURSE_START: BlockPosition = BlockPosition {
+		x: 0,
+		y: 16,
+		z: 0,
+	};
+	const OBSTACLE_COURSE_GOAL: BlockPosition = BlockPosition {
+		x: -9,
+		y: 16,
+		z: -11,
+	};
+	#[rustfmt::skip]
+	const OBSTACLE_COURSE_BLOCKS: [BlockPosition; 216] = [
+    BlockPosition {x: -6, y: 16, z: -17},
+    BlockPosition {x: -5, y: 16, z: -17},
+    BlockPosition {x: -4, y: 16, z: -17},
+    BlockPosition {x: -14, y: 16, z: -16},
+    BlockPosition {x: -13, y: 16, z: -16},
+    BlockPosition {x: -12, y: 16, z: -16},
+    BlockPosition {x: -11, y: 16, z: -16},
+    BlockPosition {x: -10, y: 16, z: -16},
+    BlockPosition {x: -9, y: 16, z: -16},
+    BlockPosition {x: -8, y: 16, z: -16},
+    BlockPosition {x: -7, y: 16, z: -16},
+    BlockPosition {x: -6, y: 16, z: -16},
+    BlockPosition {x: -4, y: 16, z: -16},
+    BlockPosition {x: -15, y: 16, z: -15},
+    BlockPosition {x: -14, y: 16, z: -15},
+    BlockPosition {x: -4, y: 16, z: -15},
+    BlockPosition {x: -3, y: 16, z: -15},
+    BlockPosition {x: -15, y: 16, z: -14},
+    BlockPosition {x: -12, y: 16, z: -14},
+    BlockPosition {x: -11, y: 16, z: -14},
+    BlockPosition {x: -10, y: 16, z: -14},
+    BlockPosition {x: -9, y: 16, z: -14},
+    BlockPosition {x: -8, y: 16, z: -14},
+    BlockPosition {x: -7, y: 16, z: -14},
+    BlockPosition {x: -6, y: 16, z: -14},
+    BlockPosition {x: -3, y: 16, z: -14},
+    BlockPosition {x: -3, y: 16, z: -14},
+    BlockPosition {x: -17, y: 16, z: -13},
+    BlockPosition {x: -16, y: 16, z: -13},
+    BlockPosition {x: -15, y: 16, z: -13},
+    BlockPosition {x: -13, y: 16, z: -13},
+    BlockPosition {x: -12, y: 16, z: -13},
+    BlockPosition {x: -6, y: 16, z: -13},
+    BlockPosition {x: -5, y: 16, z: -13},
+    BlockPosition {x: -3, y: 16, z: -13},
+    BlockPosition {x: -2, y: 16, z: -13},
+    BlockPosition {x: -1, y: 16, z: -13},
+    BlockPosition {x: 0, y: 16, z: -13},
+    BlockPosition {x: 1, y: 16, z: -13},
+    BlockPosition {x: 2, y: 16, z: -13},
+    BlockPosition {x: 3, y: 16, z: -13},
+    BlockPosition {x: 4, y: 16, z: -13},
+    BlockPosition {x: 5, y: 16, z: -13},
+    BlockPosition {x: 6, y: 16, z: -13},
+    BlockPosition {x: 7, y: 16, z: -13},
+    BlockPosition {x: 8, y: 16, z: -13},
+    BlockPosition {x: 9, y: 16, z: -13},
+    BlockPosition {x: -17, y: 16, z: -12},
+    BlockPosition {x: -15, y: 16, z: -12},
+    BlockPosition {x: -13, y: 16, z: -12},
+    BlockPosition {x: -12, y: 16, z: -12},
+    BlockPosition {x: -10, y: 16, z: -12},
+    BlockPosition {x: -8, y: 16, z: -12},
+    BlockPosition {x: -5, y: 16, z: -12},
+    BlockPosition {x: 6, y: 16, z: -12},
+    BlockPosition {x: 9, y: 16, z: -12},
+    BlockPosition {x: -17, y: 16, z: -11},
+    BlockPosition {x: -10, y: 16, z: -11},
+    BlockPosition {x: -8, y: 16, z: -11},
+    BlockPosition {x: -5, y: 16, z: -11},
+    BlockPosition {x: -4, y: 16, z: -11},
+    BlockPosition {x: -2, y: 16, z: -11},
+    BlockPosition {x: -1, y: 16, z: -11},
+    BlockPosition {x: 0, y: 16, z: -11},
+    BlockPosition {x: 1, y: 16, z: -11},
+    BlockPosition {x: 2, y: 16, z: -11},
+    BlockPosition {x: 3, y: 16, z: -11},
+    BlockPosition {x: 4, y: 16, z: -11},
+    BlockPosition {x: 6, y: 16, z: -11},
+    BlockPosition {x: 7, y: 16, z: -11},
+    BlockPosition {x: 9, y: 16, z: -11},
+    BlockPosition {x: -17, y: 16, z: -10},
+    BlockPosition {x: -15, y: 16, z: -10},
+    BlockPosition {x: -14, y: 16, z: -10},
+    BlockPosition {x: -13, y: 16, z: -10},
+    BlockPosition {x: -12, y: 16, z: -10},
+    BlockPosition {x: -10, y: 16, z: -10},
+    BlockPosition {x: -9, y: 16, z: -10},
+    BlockPosition {x: -8, y: 16, z: -10},
+    BlockPosition {x: -5, y: 16, z: -10},
+    BlockPosition {x: -2, y: 16, z: -10},
+    BlockPosition {x: 9, y: 16, z: -10},
+    BlockPosition {x: -17, y: 16, z: -9},
+    BlockPosition {x: -5, y: 16, z: -9},
+    BlockPosition {x: -4, y: 16, z: -9},
+    BlockPosition {x: -3, y: 16, z: -9},
+    BlockPosition {x: -2, y: 16, z: -9},
+    BlockPosition {x: 6, y: 16, z: -9},
+    BlockPosition {x: 9, y: 16, z: -9},
+    BlockPosition {x: -17, y: 16, z: -8},
+    BlockPosition {x: -16, y: 16, z: -8},
+    BlockPosition {x: -15, y: 16, z: -8},
+    BlockPosition {x: -14, y: 16, z: -8},
+    BlockPosition {x: -13, y: 16, z: -8},
+    BlockPosition {x: -12, y: 16, z: -8},
+    BlockPosition {x: -11, y: 16, z: -8},
+    BlockPosition {x: -10, y: 16, z: -8},
+    BlockPosition {x: -9, y: 16, z: -8},
+    BlockPosition {x: -8, y: 16, z: -8},
+    BlockPosition {x: -7, y: 16, z: -8},
+    BlockPosition {x: -6, y: 16, z: -8},
+    BlockPosition {x: -5, y: 16, z: -8},
+    BlockPosition {x: -2, y: 16, z: -8},
+    BlockPosition {x: 0, y: 16, z: -8},
+    BlockPosition {x: 1, y: 16, z: -8},
+    BlockPosition {x: 2, y: 16, z: -8},
+    BlockPosition {x: 3, y: 16, z: -8},
+    BlockPosition {x: 4, y: 16, z: -8},
+    BlockPosition {x: 6, y: 16, z: -8},
+    BlockPosition {x: 7, y: 16, z: -8},
+    BlockPosition {x: 9, y: 16, z: -8},
+    BlockPosition {x: -5, y: 16, z: -7},
+    BlockPosition {x: -4, y: 16, z: -7},
+    BlockPosition {x: -2, y: 16, z: -7},
+    BlockPosition {x: 0, y: 16, z: -7},
+    BlockPosition {x: 4, y: 16, z: -7},
+    BlockPosition {x: 6, y: 16, z: -7},
+    BlockPosition {x: 9, y: 16, z: -7},
+    BlockPosition {x: -5, y: 16, z: -6},
+    BlockPosition {x: -4, y: 16, z: -6},
+    BlockPosition {x: -2, y: 16, z: -6},
+    BlockPosition {x: -1, y: 16, z: -6},
+    BlockPosition {x: 0, y: 16, z: -6},
+    BlockPosition {x: 1, y: 16, z: -6},
+    BlockPosition {x: 2, y: 16, z: -6},
+    BlockPosition {x: 4, y: 16, z: -6},
+    BlockPosition {x: 6, y: 16, z: -6},
+    BlockPosition {x: 8, y: 16, z: -6},
+    BlockPosition {x: 9, y: 16, z: -6},
+    BlockPosition {x: -5, y: 16, z: -5},
+    BlockPosition {x: -4, y: 16, z: -5},
+    BlockPosition {x: -2, y: 16, z: -5},
+    BlockPosition {x: -1, y: 16, z: -5},
+    BlockPosition {x: 6, y: 16, z: -5},
+    BlockPosition {x: 9, y: 16, z: -5},
+    BlockPosition {x: -5, y: 16, z: -4},
+    BlockPosition {x: -2, y: 16, z: -4},
+    BlockPosition {x: -1, y: 16, z: -4},
+    BlockPosition {x: 1, y: 16, z: -4},
+    BlockPosition {x: 3, y: 16, z: -4},
+    BlockPosition {x: 4, y: 16, z: -4},
+    BlockPosition {x: 5, y: 16, z: -4},
+    BlockPosition {x: 6, y: 16, z: -4},
+    BlockPosition {x: 7, y: 16, z: -4},
+    BlockPosition {x: 10, y: 16, z: -4},
+    BlockPosition {x: 11, y: 16, z: -4},
+    BlockPosition {x: -5, y: 16, z: -3},
+    BlockPosition {x: -5, y: 16, z: -3},
+    BlockPosition {x: -3, y: 16, z: -3},
+    BlockPosition {x: -2, y: 16, z: -3},
+    BlockPosition {x: -1, y: 16, z: -3},
+    BlockPosition {x: 1, y: 16, z: -3},
+    BlockPosition {x: 2, y: 16, z: -3},
+    BlockPosition {x: 3, y: 16, z: -3},
+    BlockPosition {x: 7, y: 16, z: -3},
+    BlockPosition {x: 8, y: 16, z: -3},
+    BlockPosition {x: 11, y: 16, z: -3},
+    BlockPosition {x: -5, y: 16, z: -2},
+    BlockPosition {x: -2, y: 16, z: -2},
+    BlockPosition {x: 8, y: 16, z: -2},
+    BlockPosition {x: 9, y: 16, z: -2},
+    BlockPosition {x: 11, y: 16, z: -2},
+    BlockPosition {x: -5, y: 16, z: -1},
+    BlockPosition {x: -1, y: 16, z: -1},
+    BlockPosition {x: 0, y: 16, z: -1},
+    BlockPosition {x: 1, y: 16, z: -1},
+    BlockPosition {x: 3, y: 16, z: -1},
+    BlockPosition {x: 4, y: 16, z: -1},
+    BlockPosition {x: 6, y: 16, z: -1},
+    BlockPosition {x: 9, y: 16, z: -1},
+    BlockPosition {x: 11, y: 16, z: -1},
+    BlockPosition {x: -5, y: 16, z: 0},
+    BlockPosition {x: -4, y: 16, z: 0},
+    BlockPosition {x: -3, y: 16, z: 0},
+    BlockPosition {x: -1, y: 16, z: 0},
+    BlockPosition {x: 1, y: 16, z: 0},
+    BlockPosition {x: 6, y: 16, z: 0},
+    BlockPosition {x: 7, y: 16, z: 0},
+    BlockPosition {x: 11, y: 16, z: 0},
+    BlockPosition {x: -3, y: 16, z: 1},
+    BlockPosition {x: -1, y: 16, z: 1},
+    BlockPosition {x: 1, y: 16, z: 1},
+    BlockPosition {x: 3, y: 16, z: 1},
+    BlockPosition {x: 4, y: 16, z: 1},
+    BlockPosition {x: 5, y: 16, z: 1},
+    BlockPosition {x: 6, y: 16, z: 1},
+    BlockPosition {x: 7, y: 16, z: 1},
+    BlockPosition {x: 8, y: 16, z: 1},
+    BlockPosition {x: 9, y: 16, z: 1},
+    BlockPosition {x: 10, y: 16, z: 1},
+    BlockPosition {x: 11, y: 16, z: 1},
+    BlockPosition {x: -3, y: 16, z: 2},
+    BlockPosition {x: 3, y: 16, z: 2},
+    BlockPosition {x: -3, y: 16, z: 3},
+    BlockPosition {x: -1, y: 16, z: 3},
+    BlockPosition {x: 0, y: 16, z: 3},
+    BlockPosition {x: 1, y: 16, z: 3},
+    BlockPosition {x: 2, y: 16, z: 3},
+    BlockPosition {x: 3, y: 16, z: 3},
+    BlockPosition {x: -3, y: 16, z: 4},
+    BlockPosition {x: 3, y: 16, z: 4},
+    BlockPosition {x: -3, y: 16, z: 5},
+    BlockPosition {x: -2, y: 16, z: 5},
+    BlockPosition {x: -1, y: 16, z: 5},
+    BlockPosition {x: 0, y: 16, z: 5},
+    BlockPosition {x: 1, y: 16, z: 5},
+    BlockPosition {x: 3, y: 16, z: 5},
+    BlockPosition {x: -3, y: 16, z: 6},
+    BlockPosition {x: 3, y: 16, z: 6},
+    BlockPosition {x: -3, y: 16, z: 7},
+    BlockPosition {x: -2, y: 16, z: 7},
+    BlockPosition {x: -1, y: 16, z: 7},
+    BlockPosition {x: 0, y: 16, z: 7},
+    BlockPosition {x: 1, y: 16, z: 7},
+    BlockPosition {x: 2, y: 16, z: 7},
+    BlockPosition {x: 3, y: 16, z: 7},
+	];
 }

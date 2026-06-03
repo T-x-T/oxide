@@ -103,6 +103,16 @@ impl std::ops::Add for EntityPosition {
 	}
 }
 
+impl std::ops::AddAssign for EntityPosition {
+	fn add_assign(&mut self, rhs: Self) {
+		self.x += rhs.x;
+		self.y += rhs.y;
+		self.z += rhs.z;
+		self.yaw += rhs.yaw;
+		self.pitch += rhs.pitch;
+	}
+}
+
 impl std::ops::Mul for EntityPosition {
 	type Output = EntityPosition;
 
