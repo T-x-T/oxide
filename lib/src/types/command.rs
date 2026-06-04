@@ -16,6 +16,19 @@ pub enum Permission {
 	Owner,
 }
 
+impl From<i16> for Permission {
+	fn from(value: i16) -> Self {
+		match value {
+			0 => Permission::Operator,
+        	1 => Permission::Moderator,
+        	2 => Permission::Gamemaster,
+        	3 => Permission::Admin,
+        	4 => Permission::Owner,
+        	_ => Permission::Owner,
+		}
+	}
+}
+
 #[derive(Debug, Clone)]
 pub struct Command {
 	pub name: String,
