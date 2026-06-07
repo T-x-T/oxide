@@ -130,7 +130,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	let new_player_gamemode = new_player.get_gamemode();
 	let new_player_dimension = new_player.get_dimension().to_string();
 
-	let player_permission = lib::types::config::ops::get_permission_from_file(new_player_uuid);
+	let player_permission = lib::config::ops::get_permission_from_file(new_player_uuid);
 	new_player.permission = player_permission;
 
 	//send player list to newly connected player

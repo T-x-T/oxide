@@ -10,7 +10,6 @@ pub mod recipe_manager;
 pub mod serverlinks;
 pub mod slot;
 pub mod world;
-pub mod config;
 
 pub use blockentity::*;
 pub use command::*;
