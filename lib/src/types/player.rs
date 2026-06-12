@@ -1,4 +1,5 @@
 use super::*;
+use crate::permissions::{OpsItem, Permission};
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
@@ -802,7 +803,7 @@ impl Player {
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
-				permission: Permission::Everyone
+				permission: Permission::Everyone,
 			};
 
 			return player;
@@ -1533,6 +1534,20 @@ impl Player {
 					}],
 				},
 			);
+		}
+	}
+
+	pub fn set_permission(&mut self ,permission: Permission) {
+		if permission == Permission::Everyone {
+			permissions::remove_permission_from_file(self.uuid);
+		}
+		else {
+			permissions::add_permission_in_file(OpsItem {
+				uuid: self.uuid,
+				name: self.display_name.clone(),
+				level: permission.into(),
+				bypasses_player_limit: false,
+			});
 		}
 	}
 

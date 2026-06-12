@@ -15,7 +15,6 @@ pub mod packets;
 pub mod serialize;
 pub mod types;
 pub mod utils;
-pub mod config;
 
 pub const SPAWN_CHUNK_RADIUS: i8 = 10;
 pub const VIEW_DISTANCE: i8 = 10;

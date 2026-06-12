@@ -37,7 +37,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		return Ok(());
 	};
     target_player.permission = Permission::Everyone;
-    lib::config::ops::remove_permission_from_file(target_player.uuid);
+    lib::permissions::remove_permission_from_file(target_player.uuid);
     game.packet_sender.send_packet_to_player(
         &target_player.peer_socket_address, 
         lib::packets::clientbound::play::Commands::PACKET_ID, 

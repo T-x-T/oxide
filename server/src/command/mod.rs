@@ -18,6 +18,7 @@ use lib::types::*;
 use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use lib::permissions::Permission;
 
 pub fn init(game: &mut Game) {
 	ping::init(game);

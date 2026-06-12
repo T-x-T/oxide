@@ -1,5 +1,3 @@
-use lib::config::ops::{self, OpsItem};
-
 use super::*;
 
 pub fn init(game: &mut Game) {
@@ -45,13 +43,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 	};
     let level: i16 = command.split(" ").nth(2).unwrap_or("nil").parse().unwrap_or(4);
     let new_permission: Permission = level.into();
-    target_player.permission = new_permission;
-    ops::add_permission_in_file(OpsItem {
-        uuid: target_player.uuid,
-        name: target_player.display_name.clone(),
-        level,
-        bypasses_player_limit: false,
-    });
+    target_player.set_permission(new_permission);
     game.packet_sender.send_packet_to_player(
         &target_player.peer_socket_address,
         lib::packets::clientbound::play::Commands::PACKET_ID,

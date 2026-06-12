@@ -1,3 +1,5 @@
+use crate::permissions::Permission;
+
 use super::*;
 
 use std::error::Error;
@@ -5,29 +7,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 type CommandExecFn = fn(String, Option<SocketAddr>, Arc<Game>) -> Result<(), Box<dyn Error>>;
-
-#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
-pub enum Permission {
-	Everyone,
-	Operator,
-	Moderator,
-	Gamemaster,
-	Admin,
-	Owner,
-}
-
-impl From<i16> for Permission {
-	fn from(value: i16) -> Self {
-		match value {
-			0 => Permission::Operator,
-        	1 => Permission::Moderator,
-        	2 => Permission::Gamemaster,
-        	3 => Permission::Admin,
-        	4 => Permission::Owner,
-        	_ => Permission::Owner,
-		}
-	}
-}
 
 #[derive(Debug, Clone)]
 pub struct Command {
