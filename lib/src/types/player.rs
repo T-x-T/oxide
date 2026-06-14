@@ -526,7 +526,7 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
 
@@ -1809,7 +1809,7 @@ impl Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission), 
 			},
 		);
 

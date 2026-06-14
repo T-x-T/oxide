@@ -56,6 +56,11 @@ impl PartialEq for OpsItem {
 	}
 }
 
+pub fn calculate_level_for_protocol(permission: Permission) -> u8 {
+	let permission_level = i16::from(permission) as u8;
+	permission_level + 24 
+}
+
 pub fn add_permission_in_file(permission: OpsItem) {
 	let mut permission = permission;
 	let mut deserialized = get_data(); 
