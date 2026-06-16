@@ -107,7 +107,13 @@ impl PacketSender {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Task {
+pub struct Task {
+	pub task: TaskItem,
+	pub run_in_ticks: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum TaskItem {
 	PlayerUseNetherPortal(u128, String),
 	PlayerUseEndPortal(u128, String),
 }

@@ -4,9 +4,20 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	let mut world = game.world.lock().unwrap();
 	let mut players = game.players.lock().unwrap();
 
-	for task in game.task_queue.iter() {
-		match task.clone() {
-			Task::PlayerUseNetherPortal(uuid, new_dimension_name) => {
+	let input_tasks: Vec<Task> = game.task_queue.iter().map(|x| x.clone()).collect();
+	game.task_queue.clear();
+	let mut output_tasks: Vec<Task> = Vec::new();
+
+	for task_item in input_tasks {
+		if task_item.run_in_ticks > 0 {
+			output_tasks.push(Task {
+				task: task_item.task,
+				run_in_ticks: task_item.run_in_ticks - 1,
+			});
+			continue;
+		}
+		match task_item.task {
+			TaskItem::PlayerUseNetherPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
@@ -288,7 +299,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 				}
 			}
-			Task::PlayerUseEndPortal(uuid, new_dimension_name) => {
+			TaskItem::PlayerUseEndPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let default_spawn_location = world.default_spawn_location;
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
@@ -379,6 +390,4 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 		}
 	}
-
-	game.task_queue.clear();
 }

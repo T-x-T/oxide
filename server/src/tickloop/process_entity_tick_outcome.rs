@@ -259,7 +259,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseNetherPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseNetherPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
@@ -272,7 +275,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseEndPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseEndPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
