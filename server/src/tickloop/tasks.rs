@@ -390,4 +390,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 			}
 		}
 	}
+
+	for task in output_tasks {
+		game.task_queue.insert(task.clone());
+	}
 }
