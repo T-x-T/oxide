@@ -895,6 +895,7 @@ impl Player {
 		};
 
 		let entity_id = entity_id_manager.get_new();
+		let permission = permissions::get_permission_from_file(uuid);
 		let player = Self {
 			position: EntityPosition {
 				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -954,7 +955,7 @@ impl Player {
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
-			permission: Permission::Everyone,
+			permission
 		};
 
 		return player;
@@ -1549,6 +1550,7 @@ impl Player {
 				bypasses_player_limit: false,
 			});
 		}
+		self.permission = permission;
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
