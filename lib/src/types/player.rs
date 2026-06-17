@@ -1538,6 +1538,9 @@ impl Player {
 		}
 	}
 
+
+	/// updates the permission of the player
+	/// It doesn't update the autocompletion of the client, so please send the `lib::packets::clientbound::play::Commands` after it
 	pub fn set_permission(&mut self ,permission: Permission) {
 		if permission == Permission::Everyone {
 			permissions::remove_permission_from_file(self.uuid);
