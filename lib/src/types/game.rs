@@ -116,4 +116,5 @@ pub struct Task {
 pub enum TaskItem {
 	PlayerUseNetherPortal(u128, String),
 	PlayerUseEndPortal(u128, String),
+	SendMessageToPlayer(u128, String),
 }

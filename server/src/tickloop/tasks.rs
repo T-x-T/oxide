@@ -388,6 +388,20 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, default_spawn_location);
 				};
 			}
+			TaskItem::SendMessageToPlayer(uuid, message) => {
+				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				game.packet_sender.send_packet_to_player(
+					&player.peer_socket_address,
+					lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
+					lib::packets::clientbound::play::SystemChatMessage {
+						content: NbtTag::Root(vec![
+							NbtTag::String("type".to_string(), "text".to_string()),
+							NbtTag::String("text".to_string(), message),
+						]),
+						overlay: true,
+					},
+				);
+			}
 		}
 	}
 
