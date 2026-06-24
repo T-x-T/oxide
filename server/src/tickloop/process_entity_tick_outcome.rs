@@ -312,6 +312,13 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					player.damage(damage, &game.packet_sender, players_clone);
 				};
 			}
+			EntityTickOutcome::UpdateDebugDataPathfinding(debug_data_pathfinding) => {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
+					entity.get_common_entity_data_mut().debug_data_pathfinding = debug_data_pathfinding;
+				} else {
+					println!("EntityTickOutcome::UpdateDebugDataPathfinding handler couldnt find entity with id {entity_id}");
+				};
+			}
 		}
 	}
 }

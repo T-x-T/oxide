@@ -22,6 +22,7 @@ pub struct CommonEntity {
 	pub is_silent: bool,
 	pub scoreboard_tags: Vec<NbtListTag>,
 	pub ticks_frozen: i32,
+	pub debug_data_pathfinding: Option<DebugEntityPath>,
 }
 
 #[derive(Debug)]
@@ -230,13 +231,15 @@ pub trait CommonEntityTrait {
 
 
 		let mut velocity_from_ai = EntityPosition::default();
-		match self.execute_ai(players, dimension) {
+		let (ai_result, mut ai_tick_outcome) = self.execute_ai(players, dimension);
+		match ai_result {
 			AiExecutionResult::DoNothing => (),
 			AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
 		};
+		output.append(&mut ai_tick_outcome);
 
 		let mut velocity = self.get_common_entity_data().velocity;
-		velocity = velocity + velocity_from_ai;
+		velocity += velocity_from_ai;
 
 		let number_of_positions_to_check = velocity.x.abs().max(velocity.y.abs().max(velocity.z).abs()).ceil() as u16 * 16;
 		let mut last_velocity = EntityPosition::default();
@@ -422,9 +425,9 @@ pub trait CommonEntityTrait {
 		return output;
 	}
 
-	fn execute_ai(&mut self, players: &[Player], dimension: &Dimension) -> AiExecutionResult {
+	fn execute_ai(&mut self, players: &[Player], dimension: &Dimension) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
 		if self.is_mob() && self.get_mob_data().has_no_ai {
-			return AiExecutionResult::DoNothing;
+			return (AiExecutionResult::DoNothing, Vec::new());
 		}
 		let entity_type = data::entities::get_name_from_id(self.get_type());
 		let behavior = if entity_type.as_str() == "minecraft:creeper" {
@@ -436,9 +439,9 @@ pub trait CommonEntityTrait {
 		};
 
 		return match behavior {
-			AiBehavior::Idle => AiExecutionResult::DoNothing,
+			AiBehavior::Idle => (AiExecutionResult::DoNothing, Vec::new()),
 			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players, dimension),
-			AiBehavior::Wander => self.execute_ai_wander(),
+			AiBehavior::Wander => (self.execute_ai_wander(), Vec::new()),
 		};
 	}
 
@@ -475,7 +478,7 @@ pub trait CommonEntityTrait {
 		}
 	}
 
-	fn execute_ai_move_towards_player(&self, players: &[Player], dimension: &Dimension) -> AiExecutionResult {
+	fn execute_ai_move_towards_player(&self, players: &[Player], dimension: &Dimension) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
 		let mut player_distances = players
 			.iter()
 			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
@@ -486,20 +489,20 @@ pub trait CommonEntityTrait {
 		let closest_player = player_distances.first();
 
 		if let Some(closest_player) = closest_player {
-			let velocity_towards_player = self.ai_move_towards_goal(closest_player.0.get_position(), dimension);
-			return AiExecutionResult::ApplyVelocity(velocity_towards_player);
+			let ai_move_result = self.ai_move_towards_goal(closest_player.0.get_position(), dimension);
+			return (AiExecutionResult::ApplyVelocity(ai_move_result.0), ai_move_result.1);
 		} else {
-			return AiExecutionResult::DoNothing;
+			return (AiExecutionResult::DoNothing, Vec::new());
 		}
 	}
 
-	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> EntityPosition {
+	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> (EntityPosition, Vec<EntityTickOutcome>) {
 		let distance_from_start_to_goal = self.get_common_entity_data().position.distance_to(goal);
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
 		//println!("starting on block: {starting_point:?}");
 		let mut open: Vec<(BlockPosition, f64, BlockPosition)> = vec![(starting_point, 0.0, starting_point)]; //own pos, cost, parent pos
-		let mut closed: Vec<(BlockPosition, BlockPosition)> = Vec::new(); //own pos, parent pos
+		let mut closed: Vec<(BlockPosition, f64, BlockPosition)> = Vec::new(); //own pos, parent pos
 
 		for _ in 0..100 {
 			if open.is_empty() {
@@ -514,35 +517,112 @@ pub trait CommonEntityTrait {
 					lowest_cost_index = i;
 				}
 			}
-			let (node, _cost, parent) = open.remove(lowest_cost_index);
+			let (node, cost, parent) = open.remove(lowest_cost_index);
 			//println!("node: {node:?}, cost: {cost}, goal: {goal_block:?}");
 			if node == goal_block {
 				//println!("reached goal, tracing backwards...");
 				let mut current_node = node;
+				let mut current_cost = cost;
 				let mut current_parent = parent;
 				let mut last_node = node;
+				let mut nodes: Vec<(BlockPosition, f64)> = Vec::new();
 				loop {
+					nodes.push((current_node, current_cost));
 					//println!("current_node: {current_node:?} current_parent: {current_parent:?} last_node: {last_node:?}");
 					if current_node == starting_point {
 						//println!("next block towards goal: {last_node:?}");
-						let speed = 0.075;
-						return EntityPosition {
-							x: (last_node.x - starting_point.x) as f64 * speed,
-							y: 0.0,
-							z: (last_node.z - starting_point.z) as f64 * speed,
-							yaw: 0.0,
-							pitch: 0.0,
+
+						//Update debug data
+						let debug_pathfinding_data = {
+							let mut lowest_cost_index = 0;
+							let mut lowest_cost = f64::INFINITY;
+							for (i, (_, cost, _)) in open.iter().enumerate() {
+								if *cost < lowest_cost {
+									lowest_cost = *cost;
+									lowest_cost_index = i;
+								}
+							}
+
+							DebugEntityPath {
+								reached: true,
+								next_block_index: lowest_cost_index as i32,
+								block_position: self.get_common_entity_data().position.into(),
+								nodes: nodes
+									.iter()
+									.map(|(node, cost)| DebugPathNode {
+										x: node.x,
+										y: node.y as i32,
+										z: node.z,
+										walked_distance: *cost as f32,
+										cost_malus: 0.0,
+										closed: true,
+										node_type: 0,
+										f: 0.0,
+									})
+									.collect(),
+								target_nodes: vec![DebugPathNode {
+									x: goal_block.x,
+									y: goal_block.y as i32,
+									z: goal_block.z,
+									walked_distance: 0.0,
+									cost_malus: 0.0,
+									closed: false,
+									node_type: 0,
+									f: 0.0,
+								}],
+								open_set: open
+									.iter()
+									.map(|x| DebugPathNode {
+										x: x.0.x,
+										y: x.0.y as i32,
+										z: x.0.z,
+										walked_distance: x.1 as f32,
+										cost_malus: 0.0,
+										closed: false,
+										node_type: 0,
+										f: 0.0,
+									})
+									.collect(),
+								closed_set: closed
+									.iter()
+									.map(|x| DebugPathNode {
+										x: x.0.x,
+										y: x.0.y as i32,
+										z: x.0.z,
+										walked_distance: x.1 as f32,
+										cost_malus: 0.0,
+										closed: true,
+										node_type: 0,
+										f: 0.0,
+									})
+									.collect(),
+								max_node_distance: 0.0,
+							}
 						};
+						// END Update debug data
+
+						let speed = 0.075;
+						return (
+							EntityPosition {
+								x: (last_node.x - starting_point.x) as f64 * speed,
+								y: 0.0,
+								z: (last_node.z - starting_point.z) as f64 * speed,
+								yaw: 0.0,
+								pitch: 0.0,
+							},
+							vec![EntityTickOutcome::UpdateDebugDataPathfinding(Some(debug_pathfinding_data))],
+						);
 					}
 
-					let (next_node, next_parent) = closed.iter().find(|(node, _)| *node == current_parent).unwrap();
+					let (next_node, next_cost, next_parent) = closed.iter().find(|(node, _, _)| *node == current_parent).unwrap();
 					last_node = current_node;
 					current_node = *next_node;
+					current_cost = *next_cost;
 					current_parent = *next_parent;
 				}
 			}
 
-			closed.push((node, parent));
+			closed.push((node, cost, parent));
 
 			let neighbours = [
 				BlockPosition {
@@ -610,7 +690,7 @@ pub trait CommonEntityTrait {
 
 		println!("didnt find way to goal, aborting");
 
-		return EntityPosition::default();
+		return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag>;
@@ -738,7 +818,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.x > 0.07 && res.x < 0.08);
+			assert!(res.0.x > 0.07 && res.0.x < 0.08);
 		}
 
 		#[test]
@@ -767,7 +847,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.x < -0.07 && res.x > -0.08);
+			assert!(res.0.x < -0.07 && res.0.x > -0.08);
 		}
 
 		#[test]
@@ -796,7 +876,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.z > 0.07 && res.z < 0.08);
+			assert!(res.0.z > 0.07 && res.0.z < 0.08);
 		}
 
 		#[test]
@@ -825,7 +905,7 @@ mod tests {
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
 			println!("{res:?}");
-			assert!(res.z < -0.07 && res.z > -0.08);
+			assert!(res.0.z < -0.07 && res.0.z > -0.08);
 		}
 	}
 
@@ -855,8 +935,8 @@ mod tests {
 
 		let res = creeper.ai_move_towards_goal(goal, &dimension);
 		println!("{res:?}");
-		assert!(res.x > 0.07 && res.x < 0.08);
-		assert!(res.z > 0.07 && res.z < 0.08);
+		assert!(res.0.x > 0.07 && res.0.x < 0.08);
+		assert!(res.0.z > 0.07 && res.0.z < 0.08);
 	}
 
 	#[test]
@@ -896,8 +976,8 @@ mod tests {
 
 		let res = creeper.ai_move_towards_goal(goal, &dimension);
 		println!("{res:?}");
-		assert!(res.x < 0.1);
-		assert!((res.z > 0.07 && res.z < 0.08) || (res.z < -0.07 && res.z > -0.08));
+		assert!(res.0.x < 0.1);
+		assert!((res.0.z > 0.07 && res.0.z < 0.08) || (res.0.z < -0.07 && res.0.z > -0.08));
 	}
 
 	#[test]
@@ -929,10 +1009,9 @@ mod tests {
 		};
 
 		let mut reached_goal = false;
-		for i in 0..1000 {
-			let now = std::time::Instant::now();
+		for _ in 0..1000 {
 			let res = creeper.ai_move_towards_goal(goal, &dimension);
-			creeper.get_common_entity_data_mut().position += res;
+			creeper.get_common_entity_data_mut().position += res.0;
 
 			if BlockPosition::from(creeper.get_common_entity_data().position) == BlockPosition::from(goal) {
 				reached_goal = true;

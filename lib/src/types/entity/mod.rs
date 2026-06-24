@@ -53,6 +53,7 @@ pub enum EntityTickOutcome {
 	LoadChunk(i32, i32),
 	AddEntity(Box<Entity>),
 	DealDamage(i32, f32), //target entity id, damage to deal
+	UpdateDebugDataPathfinding(Option<DebugEntityPath>),
 }
 
 impl Entity {

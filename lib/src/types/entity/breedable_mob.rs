@@ -186,8 +186,9 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 				(in_range_peers_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);
 		} else if !in_range_players_with_food.is_empty() {
-			self.get_common_entity_data_mut().velocity =
-				self.ai_move_towards_goal(in_range_players_with_food.first().unwrap().get_position(), dimension);
+			let (velocity, mut tick_outcomes) = self.ai_move_towards_goal(in_range_players_with_food.first().unwrap().get_position(), dimension);
+			self.get_common_entity_data_mut().velocity = velocity;
+			output.append(&mut tick_outcomes);
 			output.push(EntityTickOutcome::Updated);
 		}
 

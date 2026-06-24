@@ -1,6 +1,9 @@
+use std::error::Error;
+
 pub mod blockentity;
 pub mod command;
 pub mod connection;
+pub mod debug_subscription;
 pub mod entity;
 pub mod game;
 pub mod nbt;
@@ -14,6 +17,7 @@ pub mod world;
 pub use blockentity::*;
 pub use command::*;
 pub use connection::*;
+pub use debug_subscription::*;
 pub use entity::*;
 pub use game::*;
 pub use nbt::*;

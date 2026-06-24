@@ -402,6 +402,16 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					},
 				);
 			}
+			TaskItem::SendDebugSubscriptionData(uuid) => {
+				let player = players.iter().find(|x| x.uuid == uuid).unwrap();
+				for packet in lib::debug_subscription::get_packets_for_player(world.dimensions.get(player.get_dimension()).unwrap()) {
+					game.packet_sender.send_packet_to_player(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::DebugEntityValue::PACKET_ID,
+						packet,
+					);
+				}
+			}
 		}
 	}
 
