@@ -82,7 +82,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		lib::packets::clientbound::play::EntityEvent::PACKET_ID,
 		lib::packets::clientbound::play::EntityEvent {
 			entity_id: new_player.entity_id,
-			entity_status: 28, //set op permission level 4
+			entity_status: permissions::calculate_level_for_protocol(new_player.permission),
 		},
 	);
 
@@ -157,7 +157,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		},
 	);
 
-	players.push(new_player);
+	players.push(new_player.clone());
 
 	//update player list for already connected players
 	game.packet_sender.send_packet_to_everyone(
@@ -353,7 +353,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		&peer_addr,
 		lib::packets::clientbound::play::Commands::PACKET_ID,
 		lib::packets::clientbound::play::Commands {
-			nodes: crate::command::get_command_packet_data(game.clone()),
+			nodes: crate::command::get_command_packet_data(game.clone(), new_player.permission),
 			root_index: 0,
 		},
 	);

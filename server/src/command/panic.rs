@@ -4,6 +4,7 @@ use std::process;
 pub fn init(game: &mut Game) {
 	game.commands.lock().unwrap().push(Command {
 		name: "panic".to_string(),
+		permission: Permission::Gamemaster,
 		execute,
 		arguments: Vec::new(),
 	});

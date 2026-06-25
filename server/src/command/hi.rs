@@ -6,6 +6,7 @@ use super::*;
 pub fn init(game: &mut Game) {
 	game.commands.lock().unwrap().push(Command {
 		name: "hi".to_string(),
+		permission: Permission::Everyone,
 		execute,
 		arguments: Vec::new(),
 	});

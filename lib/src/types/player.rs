@@ -1,4 +1,5 @@
 use super::*;
+use crate::permissions::{OpsItem, Permission};
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
@@ -97,6 +98,7 @@ pub struct Player {
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
+	pub permission: Permission
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -138,6 +140,7 @@ impl Clone for Player {
 			dimension: self.dimension.clone(),
 			loaded_chunks: self.loaded_chunks.clone(),
 			portal_cooldown: self.portal_cooldown,
+			permission: self.permission,
 		}
 	}
 }
@@ -523,7 +526,7 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
 
@@ -800,6 +803,7 @@ impl Player {
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
+				permission: Permission::Everyone,
 			};
 
 			return player;
@@ -891,6 +895,7 @@ impl Player {
 		};
 
 		let entity_id = entity_id_manager.get_new();
+		let permission = permissions::get_permission_from_file(uuid);
 		let player = Self {
 			position: EntityPosition {
 				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -950,6 +955,7 @@ impl Player {
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
+			permission
 		};
 
 		return player;
@@ -1532,6 +1538,24 @@ impl Player {
 		}
 	}
 
+
+	/// updates the permission of the player
+	/// It doesn't update the autocompletion of the client, so please send the `lib::packets::clientbound::play::Commands` after it
+	pub fn set_permission(&mut self ,permission: Permission) {
+		if permission == Permission::Everyone {
+			permissions::remove_permission_from_file(self.uuid);
+		}
+		else {
+			permissions::add_permission_in_file(OpsItem {
+				uuid: self.uuid,
+				name: self.display_name.clone(),
+				level: permission.into(),
+				bypasses_player_limit: false,
+			});
+		}
+		self.permission = permission;
+	}
+
 	pub fn get_position(&self) -> EntityPosition {
 		return self.position;
 	}
@@ -1790,7 +1814,7 @@ impl Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission), 
 			},
 		);
 
