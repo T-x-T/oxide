@@ -1,7 +1,5 @@
-use std::{
-	fs::{self, File},
-	path::{Path, PathBuf},
-};
+use std::fs::{self, File};
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -29,16 +27,16 @@ impl From<i16> for Permission {
 }
 
 impl From<Permission> for i16 {
-    fn from(value: Permission) -> Self {
-        match value {
-            Permission::Operator => 0,
-            Permission::Moderator => 1,
-            Permission::Gamemaster=> 2,
-            Permission::Admin => 3,
-            Permission::Owner => 4,
-            _ => 0,
-        }
-    }
+	fn from(value: Permission) -> Self {
+		match value {
+			Permission::Operator => 0,
+			Permission::Moderator => 1,
+			Permission::Gamemaster => 2,
+			Permission::Admin => 3,
+			Permission::Owner => 4,
+			_ => 0,
+		}
+	}
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,21 +56,20 @@ impl PartialEq for OpsItem {
 
 pub fn calculate_level_for_protocol(permission: Permission) -> u8 {
 	let permission_level = i16::from(permission) as u8;
-	permission_level + 24 
+	permission_level + 24
 }
 
 pub fn add_permission_in_file(permission: OpsItem) {
 	let mut permission = permission;
-	let mut deserialized = get_data(); 
+	let mut deserialized = get_data();
 	if deserialized.contains(&permission) {
-		let mut index = deserialized.iter().position(|p| *p == permission).unwrap();
-		std::mem::swap(&mut deserialized[*&mut index], &mut permission);
+		let index = deserialized.iter().position(|p| *p == permission).unwrap();
+		std::mem::swap(&mut deserialized[index], &mut permission);
 	} else {
-    	deserialized.push(permission);
+		deserialized.push(permission);
 	}
 	let serialized = serde_json::to_string(&deserialized).unwrap();
 	fs::write(get_ops_file_path(), serialized).unwrap();
-	
 }
 
 pub fn get_permission_from_file(uuid: u128) -> Permission {
@@ -88,13 +85,12 @@ pub fn get_permission_from_file(uuid: u128) -> Permission {
 }
 
 pub fn remove_permission_from_file(uuid: u128) {
-	let mut deserialized = get_data(); 
+	let mut deserialized = get_data();
 	if let Some(index) = deserialized.iter().position(|p| p.uuid == uuid) {
 		deserialized.remove(index);
 		let serialized = serde_json::to_string(&deserialized).unwrap();
 		fs::write(get_ops_file_path(), serialized).unwrap();
 	}
-	
 }
 
 fn get_ops_file_path() -> PathBuf {
@@ -103,7 +99,7 @@ fn get_ops_file_path() -> PathBuf {
 }
 
 fn get_data() -> Vec<OpsItem> {
-	let data = fs::read_to_string(get_ops_file_path()).unwrap_or(String::new());
+	let data = fs::read_to_string(get_ops_file_path()).unwrap_or_default();
 	if data.is_empty() {
 		File::create(get_ops_file_path()).unwrap();
 		return vec![];
