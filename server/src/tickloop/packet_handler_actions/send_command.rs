@@ -24,7 +24,7 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 
 	if command.permission > player.permission {
 		game.packet_sender.send_packet_to_player(
-			&peer_addr, 
+			&peer_addr,
 			lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
 			lib::packets::clientbound::play::SystemChatMessage {
 				content: NbtTag::Root(vec![
@@ -32,7 +32,7 @@ pub fn process(peer_addr: SocketAddr, command_string: String, game: Arc<Game>) {
 					NbtTag::String("text".to_string(), "cannot execute command: no permission".to_string()),
 				]),
 				overlay: false,
-			}
+			},
 		);
 		return;
 	}

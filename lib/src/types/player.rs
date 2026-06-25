@@ -1,8 +1,8 @@
 use super::*;
-use crate::permissions::{OpsItem, Permission};
 use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
+use crate::permissions::{OpsItem, Permission};
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -98,7 +98,7 @@ pub struct Player {
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
-	pub permission: Permission
+	pub permission: Permission,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -955,7 +955,7 @@ impl Player {
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
-			permission
+			permission,
 		};
 
 		return player;
@@ -1541,11 +1541,10 @@ impl Player {
 
 	/// updates the permission of the player
 	/// It doesn't update the autocompletion of the client, so please send the `lib::packets::clientbound::play::Commands` after it
-	pub fn set_permission(&mut self ,permission: Permission) {
+	pub fn set_permission(&mut self, permission: Permission) {
 		if permission == Permission::Everyone {
 			permissions::remove_permission_from_file(self.uuid);
-		}
-		else {
+		} else {
 			permissions::add_permission_in_file(OpsItem {
 				uuid: self.uuid,
 				name: self.display_name.clone(),
@@ -1814,7 +1813,7 @@ impl Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: permissions::calculate_level_for_protocol(self.permission), 
+				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
 

@@ -4,13 +4,13 @@ pub mod connection;
 pub mod entity;
 pub mod game;
 pub mod nbt;
+pub mod permissions;
 pub mod player;
 pub mod position;
 pub mod recipe_manager;
 pub mod serverlinks;
 pub mod slot;
 pub mod world;
-pub mod permissions;
 
 pub use blockentity::*;
 pub use command::*;

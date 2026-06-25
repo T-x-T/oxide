@@ -1,7 +1,9 @@
+mod deop;
 mod dimension;
 mod gamemode;
 mod give;
 mod hi;
+mod op;
 mod panic;
 mod ping;
 mod print_players;
@@ -10,15 +12,13 @@ mod setblock;
 mod summon;
 mod tell;
 mod tp;
-mod op;
-mod deop;
 
 use lib::packets::Packet;
+use lib::permissions::Permission;
 use lib::types::*;
 use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
-use lib::permissions::Permission;
 
 pub fn init(game: &mut Game) {
 	ping::init(game);
