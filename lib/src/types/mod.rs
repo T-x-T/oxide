@@ -7,6 +7,7 @@ pub mod debug_subscription;
 pub mod entity;
 pub mod game;
 pub mod nbt;
+pub mod permissions;
 pub mod player;
 pub mod position;
 pub mod recipe_manager;

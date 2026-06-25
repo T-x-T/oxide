@@ -1,7 +1,9 @@
+mod deop;
 mod dimension;
 mod gamemode;
 mod give;
 mod hi;
+mod op;
 mod panic;
 mod ping;
 mod print_players;
@@ -12,6 +14,7 @@ mod tell;
 mod tp;
 
 use lib::packets::Packet;
+use lib::permissions::Permission;
 use lib::types::*;
 use std::error::Error;
 use std::net::SocketAddr;
@@ -30,10 +33,12 @@ pub fn init(game: &mut Game) {
 	gamemode::init(game);
 	dimension::init(game);
 	setblock::init(game);
+	op::init(game);
+	deop::init(game);
 }
 
 
-pub fn get_command_packet_data(game: Arc<Game>) -> Vec<CommandNode> {
+pub fn get_command_packet_data(game: Arc<Game>, player_permission: Permission) -> Vec<CommandNode> {
 	let root_node = CommandNode {
 		flags: 0,
 		children: Vec::new(),
@@ -46,6 +51,9 @@ pub fn get_command_packet_data(game: Arc<Game>) -> Vec<CommandNode> {
 	let mut nodes = vec![root_node];
 
 	for command in game.commands.lock().unwrap().iter() {
+		if command.permission > player_permission {
+			continue;
+		}
 		nodes.push(CommandNode {
 			flags: if command.arguments.is_empty() { 1 } else { 5 },
 			children: Vec::new(),
