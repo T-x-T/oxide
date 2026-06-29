@@ -673,7 +673,7 @@ pub trait CommonEntityTrait {
 				}
 				//TODO: more sophisticated check if block is valid to step on
 				let neighbour_block = dimension.get_block(neighbour);
-				if neighbour_block.is_err() || neighbour_block.unwrap() != 0 {
+				if neighbour_block.is_err() || !data::blocks::get_type_from_block_state_id(neighbour_block.unwrap()).has_no_collision_box() {
 					continue;
 				}
 
