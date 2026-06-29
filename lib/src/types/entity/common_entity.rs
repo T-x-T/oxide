@@ -332,7 +332,7 @@ pub trait CommonEntityTrait {
 		for position_to_check in positions_to_check {
 			let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
 			let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location);
-			if block_type_at_location.is_solid() {
+			if !block_type_at_location.has_no_collision_box() {
 				return true;
 			}
 		}
@@ -352,7 +352,7 @@ pub trait CommonEntityTrait {
 		for position_to_check in positions_to_check {
 			let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
 			let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location);
-			if block_type_at_location.is_solid() {
+			if !block_type_at_location.has_no_collision_box() {
 				return true;
 			}
 		}
