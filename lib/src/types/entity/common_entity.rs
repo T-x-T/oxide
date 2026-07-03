@@ -270,7 +270,14 @@ pub trait CommonEntityTrait {
 							..entity_position_to_check
 						},
 					) {
-					self.get_common_entity_data_mut().velocity.y += 0.025;
+					self.get_common_entity_data_mut().velocity.y += 0.05;
+
+					if self.get_common_entity_data().velocity.x > 0.0 && self.get_common_entity_data().velocity.x < 2.0 {
+						self.get_common_entity_data_mut().velocity.x += 0.5;
+					}
+					if self.get_common_entity_data().velocity.z > 0.0 && self.get_common_entity_data().velocity.z < 2.0 {
+						self.get_common_entity_data_mut().velocity.z += 0.5;
+					}
 				};
 				break;
 			}
@@ -665,15 +672,109 @@ pub trait CommonEntityTrait {
 					y: node.y,
 					z: node.z + 1,
 				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y + 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y + 1,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y + 1,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y + 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y + 1,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y + 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y + 1,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y + 1,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y - 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y - 1,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x - 1,
+					y: node.y - 1,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y - 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x,
+					y: node.y - 1,
+					z: node.z + 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y - 1,
+					z: node.z - 1,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y - 1,
+					z: node.z,
+				},
+				BlockPosition {
+					x: node.x + 1,
+					y: node.y - 1,
+					z: node.z + 1,
+				},
 			];
 
 			for neighbour in neighbours {
 				if closed.iter().any(|x| x.0 == neighbour) {
 					continue;
 				}
-				//TODO: more sophisticated check if block is valid to step on
-				let neighbour_block = dimension.get_block(neighbour);
-				if neighbour_block.is_err() || !data::blocks::get_type_from_block_state_id(neighbour_block.unwrap()).has_no_collision_box() {
+
+				let neighbour_entity_pos = EntityPosition {
+					x: neighbour.x as f64 + 0.5,
+					y: neighbour.y as f64,
+					z: neighbour.z as f64 + 0.5,
+					..Default::default()
+				};
+
+				if self.collides_with_blocks_at(dimension, neighbour_entity_pos)
+				// || self.collides_with_blocks_at(
+				// 	dimension,
+				// 	EntityPosition {
+				// 		y: neighbour_entity_pos.y + 1.0,
+				// 		..neighbour_entity_pos
+				// 	},
+				// )
+				{
 					continue;
 				}
 
@@ -1001,9 +1102,9 @@ mod tests {
 		}
 
 		let goal = EntityPosition {
-			x: OBSTACLE_COURSE_GOAL.x as f64,
+			x: OBSTACLE_COURSE_GOAL.x as f64 + 0.5,
 			y: OBSTACLE_COURSE_GOAL.y as f64,
-			z: OBSTACLE_COURSE_GOAL.z as f64,
+			z: OBSTACLE_COURSE_GOAL.z as f64 + 0.5,
 			yaw: 0.0,
 			pitch: 0.0,
 		};
