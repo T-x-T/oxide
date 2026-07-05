@@ -504,7 +504,6 @@ pub trait CommonEntityTrait {
 	}
 
 	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> (EntityPosition, Vec<EntityTickOutcome>) {
-		let distance_from_start_to_goal = self.get_common_entity_data().position.distance_to(goal);
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
 		//println!("starting on block: {starting_point:?}");
@@ -759,27 +758,28 @@ pub trait CommonEntityTrait {
 					continue;
 				}
 
-				let neighbour_entity_pos = EntityPosition {
-					x: neighbour.x as f64 + 0.5,
-					y: neighbour.y as f64,
-					z: neighbour.z as f64 + 0.5,
-					..Default::default()
+				let neighbour_entity_pos = EntityPosition::from(neighbour);
+
+				if self.collides_with_blocks_at(dimension, neighbour_entity_pos) {
+					continue;
+				}
+
+				let neighbour_block_floor = dimension.get_block(BlockPosition {
+					y: neighbour.y - 1,
+					..neighbour
+				});
+
+				let Ok(neighbour_block_floor) = neighbour_block_floor else {
+					continue;
 				};
 
-				if self.collides_with_blocks_at(dimension, neighbour_entity_pos)
-				// || self.collides_with_blocks_at(
-				// 	dimension,
-				// 	EntityPosition {
-				// 		y: neighbour_entity_pos.y + 1.0,
-				// 		..neighbour_entity_pos
-				// 	},
-				// )
-				{
+				if data::blocks::get_type_from_block_state_id(neighbour_block_floor).has_no_collision_box() {
 					continue;
 				}
 
 				let distance_to_goal = EntityPosition::from(neighbour).distance_to(goal);
-				let cost = distance_to_goal - distance_from_start_to_goal;
+				//println!("distance_from_start_to_goal: {distance_from_start_to_goal}; distance_to_goal: {distance_to_goal}");
+				let cost = distance_to_goal;
 				if let Some(node) = open.iter_mut().find(|x| x.0 == neighbour && x.1 > cost) {
 					//We found a lower cost way to get here
 					node.1 = cost;
@@ -1099,12 +1099,21 @@ mod tests {
 		let mut dimension = Dimension::new("oxide:test");
 		for block in OBSTACLE_COURSE_BLOCKS {
 			dimension.overwrite_block(block, 1).unwrap();
+			dimension
+				.overwrite_block(
+					BlockPosition {
+						y: block.y + 1,
+						..block
+					},
+					1,
+				)
+				.unwrap();
 		}
 
 		let goal = EntityPosition {
-			x: OBSTACLE_COURSE_GOAL.x as f64 + 0.5,
+			x: OBSTACLE_COURSE_GOAL.x as f64,
 			y: OBSTACLE_COURSE_GOAL.y as f64,
-			z: OBSTACLE_COURSE_GOAL.z as f64 + 0.5,
+			z: OBSTACLE_COURSE_GOAL.z as f64,
 			yaw: 0.0,
 			pitch: 0.0,
 		};
