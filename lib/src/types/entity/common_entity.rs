@@ -512,7 +512,7 @@ pub trait CommonEntityTrait {
 
 		for _ in 0..100 {
 			if open.is_empty() {
-				println!("open was empty, aborting");
+				//println!("open was empty, aborting");
 				break;
 			}
 			let mut lowest_cost_index = 0;
@@ -789,7 +789,7 @@ pub trait CommonEntityTrait {
 			}
 		}
 
-		println!("didnt find way to goal, aborting");
+		//println!("didnt find way to goal, aborting");
 
 		return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
 	}
