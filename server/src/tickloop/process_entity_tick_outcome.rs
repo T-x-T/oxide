@@ -1,5 +1,4 @@
 use super::*;
-use lib::entity::CommonEntity;
 use lib::loot_table;
 use lib::packets::Packet;
 
@@ -260,7 +259,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseNetherPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseNetherPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
@@ -273,7 +275,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseEndPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseEndPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
@@ -305,6 +310,13 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				};
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == target_entity_id) {
 					player.damage(damage, &game.packet_sender, players_clone);
+				};
+			}
+			EntityTickOutcome::UpdateDebugDataPathfinding(debug_data_pathfinding) => {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
+					entity.get_common_entity_data_mut().debug_data_pathfinding = debug_data_pathfinding;
+				} else {
+					println!("EntityTickOutcome::UpdateDebugDataPathfinding handler couldnt find entity with id {entity_id}");
 				};
 			}
 		}

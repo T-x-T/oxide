@@ -4,9 +4,20 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 	let mut world = game.world.lock().unwrap();
 	let mut players = game.players.lock().unwrap();
 
-	for task in game.task_queue.iter() {
-		match task.clone() {
-			Task::PlayerUseNetherPortal(uuid, new_dimension_name) => {
+	let input_tasks: Vec<Task> = game.task_queue.iter().map(|x| x.clone()).collect();
+	game.task_queue.clear();
+	let mut output_tasks: Vec<Task> = Vec::new();
+
+	for task_item in input_tasks {
+		if task_item.run_in_ticks > 0 {
+			output_tasks.push(Task {
+				task: task_item.task,
+				run_in_ticks: task_item.run_in_ticks - 1,
+			});
+			continue;
+		}
+		match task_item.task {
+			TaskItem::PlayerUseNetherPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
@@ -288,7 +299,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
 				}
 			}
-			Task::PlayerUseEndPortal(uuid, new_dimension_name) => {
+			TaskItem::PlayerUseEndPortal(uuid, new_dimension_name) => {
 				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
 				let default_spawn_location = world.default_spawn_location;
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
@@ -367,8 +378,34 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, default_spawn_location);
 				};
 			}
+			TaskItem::SendMessageToPlayer(uuid, message) => {
+				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				game.packet_sender.send_packet_to_player(
+					&player.peer_socket_address,
+					lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
+					lib::packets::clientbound::play::SystemChatMessage {
+						content: NbtTag::Root(vec![
+							NbtTag::String("type".to_string(), "text".to_string()),
+							NbtTag::String("text".to_string(), message),
+						]),
+						overlay: true,
+					},
+				);
+			}
+			TaskItem::SendDebugSubscriptionData(uuid) => {
+				let player = players.iter().find(|x| x.uuid == uuid).unwrap();
+				for packet in lib::debug_subscription::get_packets_for_player(world.dimensions.get(player.get_dimension()).unwrap()) {
+					game.packet_sender.send_packet_to_player(
+						&player.peer_socket_address,
+						lib::packets::clientbound::play::DebugEntityValue::PACKET_ID,
+						packet,
+					);
+				}
+			}
 		}
 	}
 
-	game.task_queue.clear();
+	for task in output_tasks {
+		game.task_queue.insert(task.clone());
+	}
 }

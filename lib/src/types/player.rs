@@ -1,5 +1,4 @@
 use super::*;
-use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
 use crate::permissions::{OpsItem, Permission};
