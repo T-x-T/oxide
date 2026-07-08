@@ -1,13 +1,15 @@
 #![allow(clippy::needless_return)]
 #![allow(clippy::needless_range_loop)]
 
+use base64::Engine;
 use dashmap::{DashMap, DashSet};
 use lib::packets::Packet;
 use lib::types::*;
 use std::error::Error;
+use std::fs;
 use std::io::{BufReader, Write};
 use std::net::{SocketAddr, TcpListener, TcpStream};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 
@@ -25,6 +27,13 @@ fn main() {
 fn initialize_server() {
 	let listener = TcpListener::bind(std::env::var("OXIDE_LISTEN_ON").unwrap_or("0.0.0.0:25565".to_string())).unwrap();
 	println!("oxide listening on {}", listener.local_addr().unwrap());
+
+	let mut icon_path = PathBuf::new();
+	icon_path.push(Path::new("./world/icon.png"));
+
+	let icon_base64 = fs::read(icon_path)
+		.map(|bytes| base64::engine::general_purpose::STANDARD.encode(bytes))
+		.unwrap_or_default();
 
 	let block_states = data::blocks::get_blocks();
 	let loot_tables = data::loot_tables::get_loot_tables();
@@ -47,6 +56,7 @@ fn initialize_server() {
 		players: Mutex::new(Vec::new()),
 		world: Mutex::new(World::new(world_loader, &entity_id_manager, &block_states)),
 		entity_id_manager,
+		icon_base64,
 		commands: Mutex::new(Vec::new()),
 		last_save_all_timestamp: Mutex::new(std::time::Instant::now()),
 		last_player_keepalive_timestamp: Mutex::new(std::time::Instant::now()),

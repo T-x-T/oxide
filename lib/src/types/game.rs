@@ -14,6 +14,7 @@ pub struct Game {
 	pub players: Mutex<Vec<Player>>,
 	pub world: Mutex<World>,
 	pub entity_id_manager: EntityIdManager,
+	pub icon_base64: String,
 	pub commands: Mutex<Vec<Command>>,
 	pub last_save_all_timestamp: Mutex<std::time::Instant>,
 	pub last_player_keepalive_timestamp: Mutex<std::time::Instant>,
