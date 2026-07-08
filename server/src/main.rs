@@ -28,8 +28,7 @@ fn initialize_server() {
 	let listener = TcpListener::bind(std::env::var("OXIDE_LISTEN_ON").unwrap_or("0.0.0.0:25565".to_string())).unwrap();
 	println!("oxide listening on {}", listener.local_addr().unwrap());
 
-	let mut icon_path = PathBuf::new();
-	icon_path.push(Path::new("./world/icon.png"));
+	let icon_path = PathBuf::from(std::env::var("OXIDE_WORLD_PATH").unwrap_or_else(|_| "./world".to_string())).join("icon.png");
 
 	let icon_base64 = fs::read(icon_path).map(|bytes| base64::engine::general_purpose::STANDARD.encode(bytes)).unwrap_or_default();
 
