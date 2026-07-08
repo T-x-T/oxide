@@ -31,9 +31,7 @@ fn initialize_server() {
 	let mut icon_path = PathBuf::new();
 	icon_path.push(Path::new("./world/icon.png"));
 
-	let icon_base64 = fs::read(icon_path)
-		.map(|bytes| base64::engine::general_purpose::STANDARD.encode(bytes))
-		.unwrap_or_default();
+	let icon_base64 = fs::read(icon_path).map(|bytes| base64::engine::general_purpose::STANDARD.encode(bytes)).unwrap_or_default();
 
 	let block_states = data::blocks::get_blocks();
 	let loot_tables = data::loot_tables::get_loot_tables();
