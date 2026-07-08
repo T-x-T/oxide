@@ -780,9 +780,9 @@ pub trait CommonEntityTrait {
 				let distance_to_goal = EntityPosition::from(neighbour).distance_to(goal);
 				//println!("distance_from_start_to_goal: {distance_from_start_to_goal}; distance_to_goal: {distance_to_goal}");
 				let cost = distance_to_goal;
-				if let Some(node) = open.iter_mut().find(|x| x.0 == neighbour && x.1 > cost) {
+				if let Some(node) = closed.iter().find(|x| x.0 == neighbour && x.1 > cost) {
 					//We found a lower cost way to get here
-					node.1 = cost;
+					open.push((neighbour, cost, node.0));
 				} else if !open.iter().any(|x| x.0 == neighbour && x.1 >= cost) {
 					open.push((neighbour, cost, node));
 				}
