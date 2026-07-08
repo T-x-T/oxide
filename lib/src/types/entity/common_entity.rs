@@ -754,10 +754,6 @@ pub trait CommonEntityTrait {
 			];
 
 			for neighbour in neighbours {
-				if closed.iter().any(|x| x.0 == neighbour) {
-					continue;
-				}
-
 				let neighbour_entity_pos = EntityPosition::from(neighbour);
 
 				if self.collides_with_blocks_at(dimension, neighbour_entity_pos) {
@@ -784,6 +780,10 @@ pub trait CommonEntityTrait {
 					//We found a lower cost way to get here
 					open.push((neighbour, cost, node.0));
 				} else if !open.iter().any(|x| x.0 == neighbour && x.1 >= cost) {
+					if closed.iter().any(|x| x.0 == neighbour) {
+						continue;
+					}
+
 					open.push((neighbour, cost, node));
 				}
 			}
