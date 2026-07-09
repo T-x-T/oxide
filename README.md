@@ -104,7 +104,7 @@ There are still some third party dependencies:
 - `dashmap` for parallel hashmaps
 - `rand` for random number generation
 
-The jzon crate is also used in the `data_gnerator_tools` utility for working with the generated json files from the official Minecraft server.
+The jzon crate is also used in the `data_generator_tools` utility for working with the generated json files from the official Minecraft server.
 
 # Credit
 
