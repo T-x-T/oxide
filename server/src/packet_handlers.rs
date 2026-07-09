@@ -105,8 +105,10 @@ pub mod status {
         \"description\": {{
           \"text\": \"{motd}\"
         }},
+        \"favicon\": \"data:image/png;base64,{0}\",
         \"enforcesSecureChat\": false
-      }}"
+      }}",
+					game.icon_base64
 				)
 				.to_string(),
 			},
