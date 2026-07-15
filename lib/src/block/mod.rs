@@ -45,6 +45,14 @@ pub fn get_block_state_id(
 	let block = data::blocks::get_block_from_name(used_item_name, block_states);
 	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
+	let block_id_at_position = dimension.get_block(position).unwrap_or_default();
+	let block_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_position, block_states);
+	let block_tags = data::tags::get_block();
+	let replaceable_blocks = block_tags.get("replaceable").unwrap();
+	if !replaceable_blocks.contains(&block_at_location.as_str()) {
+		return Vec::new();
+	}
+
 	match block.block_type {
 		Type::RotatedPillar => output.append(&mut rotated_pillar::get_block_state_id(
 			face,
