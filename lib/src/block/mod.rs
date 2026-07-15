@@ -43,7 +43,9 @@ pub fn get_block_state_id(
 	block_states: &HashMap<String, Block>,
 ) -> Vec<(u16, BlockPosition)> {
 	let block = data::blocks::get_block_from_name(used_item_name, block_states);
-	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
+	if block.block_name == "minecraft:air" {
+		return Vec::new();
+	}
 
 	let block_id_at_position = dimension.get_block(position).unwrap_or_default();
 	let block_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_position, block_states);
@@ -52,6 +54,8 @@ pub fn get_block_state_id(
 	if !replaceable_blocks.contains(&block_at_location.as_str()) {
 		return Vec::new();
 	}
+
+	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
 	match block.block_type {
 		Type::RotatedPillar => output.append(&mut rotated_pillar::get_block_state_id(
