@@ -48,10 +48,10 @@ pub fn get_block_state_id(
 	}
 
 	let block_id_at_position = dimension.get_block(position).unwrap_or_default();
-	let block_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_position, block_states);
+	let block_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_position);
 	let block_tags = data::tags::get_block();
 	let replaceable_blocks = block_tags.get("replaceable").unwrap();
-	if !replaceable_blocks.contains(&block_at_location.as_str()) {
+	if !replaceable_blocks.contains(&block_at_location) {
 		return Vec::new();
 	}
 
@@ -357,7 +357,7 @@ pub fn interact_with_block_at(
 	packet_sender: &PacketSender,
 	dimension: &Dimension,
 ) -> BlockInteractionResult {
-	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
+	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
 		&& data::tags::get_item()
 			.get("hoes")

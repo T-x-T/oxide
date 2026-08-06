@@ -35,9 +35,9 @@ impl CommonEntityTrait for Donkey {
 		players: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
-		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
-		return self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager);
+		return self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager, block_state_data);
 	}
 
 	fn get_type(&self) -> i32 {

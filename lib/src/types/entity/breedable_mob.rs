@@ -99,6 +99,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		players: &[Player],
 		packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
@@ -186,7 +187,8 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 				(in_range_peers_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
 			output.push(EntityTickOutcome::Updated);
 		} else if !in_range_players_with_food.is_empty() {
-			let (velocity, mut tick_outcomes) = self.ai_move_towards_goal(in_range_players_with_food.first().unwrap().get_position(), dimension);
+			let (velocity, mut tick_outcomes) =
+				self.ai_move_towards_goal(in_range_players_with_food.first().unwrap().get_position(), dimension, block_state_data);
 			self.get_common_entity_data_mut().velocity = velocity;
 			output.append(&mut tick_outcomes);
 			output.push(EntityTickOutcome::Updated);

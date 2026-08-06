@@ -535,10 +535,25 @@ fn get_block_state_from_block_state_id() -> String {
 }
 
 fn get_block_name_from_block_state_id() -> String {
-	return "pub fn get_block_name_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> String {
-\treturn block_states.iter().find(|x| x.1.states.iter().any(|y| y.id == block_state_id)).unwrap().0.clone();
-}\n "
-		.to_string();
+	let mut output = String::new();
+
+	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+	output += "pub fn get_block_name_from_block_state_id(block_state_id: u16) -> &'static str {\n";
+	output += "\treturn match block_state_id {\n";
+
+	for x in blocks_json.as_object().unwrap().iter() {
+		let block = x.1.as_object().unwrap();
+		for state in block["states"].as_array().unwrap() {
+			output += format!("\t\t{} => \"{}\",\n", state["id"].as_i32().unwrap(), x.0).as_str();
+		}
+	}
+	output += "\t\t_ => panic!(\"block_state_id {} doesnt exist\", block_state_id)\n";
+	output += "\t}\n";
+
+	output += "}\n";
+	return output;
 }
 
 fn get_block_from_name() -> String {
@@ -614,43 +629,63 @@ fn impl_type() -> String {
 	}
 
 	#[allow(clippy::match_like_matches_macro)]
-	pub fn is_solid(&self) -> bool {
+	pub fn has_no_collision_box(&self) -> bool {
 		return match self {
-			Type::Air => false,
-			Type::SugarCane => false,
-			Type::Liquid => false,
-			Type::BubbleColumn => false,
-			Type::KelpPlant => false,
-			Type::CoralPlant => false,
-			Type::DoublePlant => false,
-			Type::BaseCoralPlant => false,
-			Type::CaveVinesPlant => false,
-			Type::WeepingVines => false,
-			Type::WeepingVinesPlant => false,
-			Type::TwistingVinesPlant => false,
-			Type::Sapling => false,
-			Type::BambooSapling => false,
-			Type::Mushroom => false,
-			Type::TallGrass => false,
-			Type::TallDryGrass => false,
-			Type::ShortDryGrass => false,
-			Type::DryVegetation => false,
-			Type::Fire => false,
-			Type::SoulFire => false,
-			Type::WallBanner => false,
-			Type::WallSign => false,
-			Type::StandingSign => false,
-			Type::Torch => false,
-			Type::TorchflowerCrop => false,
-			Type::WallTorch => false,
-			Type::RedstoneTorch => false,
-			Type::RedstoneWallTorch => false,
-			Type::PressurePlate => false,
-			Type::WeightedPressurePlate => false,
-			Type::Light => false,
-			Type::Lever => false,
-			_ => true,
-		}
+			Type::Rail => true,
+			Type::PoweredRail => true,
+			Type::Air => true,
+			Type::Flower => true,
+			Type::TallFlower => true,
+			Type::Banner => true,
+			Type::Bush => true,
+			Type::Button => true,
+			Type::CactusFlower => true,
+			Type::Carrot => true,
+			Type::Vine => true,
+			Type::CaveVines => true,
+			Type::SugarCane => true,
+			Type::Web => true,
+			Type::CoralFan => true,
+			Type::CoralWallFan => true,
+			Type::CoralPlant => true,
+			Type::Liquid => true,
+			Type::FireflyBush => true,
+			Type::SweetBerryBush => true,
+			Type::Kelp => true,
+			Type::KelpPlant => true,
+			Type::LeafLitter => true,
+			Type::Crop => true,
+			Type::Potato => true,
+			Type::BubbleColumn => true,
+			Type::DoublePlant => true,
+			Type::BaseCoralPlant => true,
+			Type::CaveVinesPlant => true,
+			Type::WeepingVines => true,
+			Type::WeepingVinesPlant => true,
+			Type::TwistingVinesPlant => true,
+			Type::Sapling => true,
+			Type::BambooSapling => true,
+			Type::Mushroom => true,
+			Type::TallGrass => true,
+			Type::TallDryGrass => true,
+			Type::ShortDryGrass => true,
+			Type::DryVegetation => true,
+			Type::Fire => true,
+			Type::SoulFire => true,
+			Type::WallBanner => true,
+			Type::WallSign => true,
+			Type::StandingSign => true,
+			Type::Torch => true,
+			Type::TorchflowerCrop => true,
+			Type::WallTorch => true,
+			Type::RedstoneTorch => true,
+			Type::RedstoneWallTorch => true,
+			Type::PressurePlate => true,
+			Type::WeightedPressurePlate => true,
+			Type::Light => true,
+			Type::Lever => true,
+			_ => false,
+		};
 	}
 }
 "#

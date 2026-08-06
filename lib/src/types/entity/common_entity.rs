@@ -231,7 +231,7 @@ pub trait CommonEntityTrait {
 
 
 		let mut velocity_from_ai = EntityPosition::default();
-		let (ai_result, mut ai_tick_outcome) = self.execute_ai(players, dimension);
+		let (ai_result, mut ai_tick_outcome) = self.execute_ai(players, dimension, block_state_data);
 		match ai_result {
 			AiExecutionResult::DoNothing => (),
 			AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
@@ -432,7 +432,12 @@ pub trait CommonEntityTrait {
 		return output;
 	}
 
-	fn execute_ai(&mut self, players: &[Player], dimension: &Dimension) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
+	fn execute_ai(
+		&mut self,
+		players: &[Player],
+		dimension: &Dimension,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
 		if self.is_mob() && self.get_mob_data().has_no_ai {
 			return (AiExecutionResult::DoNothing, Vec::new());
 		}
@@ -447,7 +452,7 @@ pub trait CommonEntityTrait {
 
 		return match behavior {
 			AiBehavior::Idle => (AiExecutionResult::DoNothing, Vec::new()),
-			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players, dimension),
+			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players, dimension, block_state_data),
 			AiBehavior::Wander => (self.execute_ai_wander(), Vec::new()),
 		};
 	}
@@ -485,7 +490,12 @@ pub trait CommonEntityTrait {
 		}
 	}
 
-	fn execute_ai_move_towards_player(&self, players: &[Player], dimension: &Dimension) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
+	fn execute_ai_move_towards_player(
+		&self,
+		players: &[Player],
+		dimension: &Dimension,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
 		let mut player_distances = players
 			.iter()
 			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
@@ -496,30 +506,37 @@ pub trait CommonEntityTrait {
 		let closest_player = player_distances.first();
 
 		if let Some(closest_player) = closest_player {
-			let ai_move_result = self.ai_move_towards_goal(closest_player.0.get_position(), dimension);
+			let ai_move_result = self.ai_move_towards_goal(closest_player.0.get_position(), dimension, block_state_data);
 			return (AiExecutionResult::ApplyVelocity(ai_move_result.0), ai_move_result.1);
 		} else {
 			return (AiExecutionResult::DoNothing, Vec::new());
 		}
 	}
 
-	fn ai_move_towards_goal(&self, goal: EntityPosition, dimension: &Dimension) -> (EntityPosition, Vec<EntityTickOutcome>) {
+	fn ai_move_towards_goal(
+		&self,
+		goal: EntityPosition,
+		dimension: &Dimension,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+	) -> (EntityPosition, Vec<EntityTickOutcome>) {
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
 		//println!("starting on block: {starting_point:?}");
 		let mut open: Vec<(BlockPosition, f64, BlockPosition)> = vec![(starting_point, 0.0, starting_point)]; //own pos, cost, parent pos
 		let mut closed: Vec<(BlockPosition, f64, BlockPosition)> = Vec::new(); //own pos, parent pos
 
-		for _ in 0..100 {
+		for _ in 0..500 {
 			if open.is_empty() {
 				//println!("open was empty, aborting");
 				break;
 			}
 			let mut lowest_cost_index = 0;
 			let mut lowest_cost = f64::INFINITY;
-			for (i, (_, cost, _)) in open.iter().enumerate() {
-				if *cost < lowest_cost {
-					lowest_cost = *cost;
+			for (i, (node, cost, _)) in open.iter().enumerate() {
+				let distance_to_goal = EntityPosition::from(*node).distance_to(goal);
+				let total_cost = *cost + distance_to_goal;
+				if total_cost < lowest_cost {
+					lowest_cost = total_cost;
 					lowest_cost_index = i;
 				}
 			}
@@ -773,9 +790,17 @@ pub trait CommonEntityTrait {
 					continue;
 				}
 
-				let distance_to_goal = EntityPosition::from(neighbour).distance_to(goal);
-				//println!("distance_from_start_to_goal: {distance_from_start_to_goal}; distance_to_goal: {distance_to_goal}");
-				let cost = distance_to_goal;
+				let Ok(neighbour_block) = dimension.get_block(neighbour) else {
+					continue;
+				};
+
+				let block_name = data::blocks::get_block_name_from_block_state_id(neighbour_block);
+				let penalty = self.get_pathfinding_penalties().into_iter().find(|(name, _)| block_name == *name);
+				if penalty.is_some_and(|x| x.1 == -1) {
+					continue;
+				}
+
+				let cost = cost + 1.0 + f64::from(penalty.unwrap_or_default().1);
 				if let Some(node) = closed.iter().find(|x| x.0 == neighbour && x.1 > cost) {
 					//We found a lower cost way to get here
 					open.push((neighbour, cost, node.0));
@@ -792,6 +817,19 @@ pub trait CommonEntityTrait {
 		//println!("didnt find way to goal, aborting");
 
 		return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
+	}
+
+
+	fn get_pathfinding_penalties(&self) -> Vec<(&'static str, i8)> {
+		return vec![
+			("minecraft:powdered_snow", -1),
+			("minecraft:lava", -1),
+			("minecraft:rail", -1),
+			("minecraft:cactus", -1),
+			("minecraft:sweet_berry_bush", -1),
+			("minecraft:water", 8),
+			("minecraft:fire", 16),
+		];
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag>;
@@ -917,7 +955,7 @@ mod tests {
 				pitch: 0.0,
 			};
 
-			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
 			assert!(res.0.x > 0.07 && res.0.x < 0.08);
 		}
@@ -946,7 +984,7 @@ mod tests {
 				pitch: 0.0,
 			};
 
-			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
 			assert!(res.0.x < -0.07 && res.0.x > -0.08);
 		}
@@ -975,7 +1013,7 @@ mod tests {
 				pitch: 0.0,
 			};
 
-			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
 			assert!(res.0.z > 0.07 && res.0.z < 0.08);
 		}
@@ -1004,7 +1042,7 @@ mod tests {
 				pitch: 0.0,
 			};
 
-			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
 			assert!(res.0.z < -0.07 && res.0.z > -0.08);
 		}
@@ -1034,7 +1072,7 @@ mod tests {
 			pitch: 0.0,
 		};
 
-		let res = creeper.ai_move_towards_goal(goal, &dimension);
+		let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 		println!("{res:?}");
 		assert!(res.0.x > 0.07 && res.0.x < 0.08);
 		assert!(res.0.z > 0.07 && res.0.z < 0.08);
@@ -1075,7 +1113,7 @@ mod tests {
 			pitch: 0.0,
 		};
 
-		let res = creeper.ai_move_towards_goal(goal, &dimension);
+		let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 		println!("{res:?}");
 		assert!(res.0.x < 0.1);
 		assert!((res.0.z > 0.07 && res.0.z < 0.08) || (res.0.z < -0.07 && res.0.z > -0.08));
@@ -1120,7 +1158,7 @@ mod tests {
 
 		let mut reached_goal = false;
 		for _ in 0..1000 {
-			let res = creeper.ai_move_towards_goal(goal, &dimension);
+			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			creeper.get_common_entity_data_mut().position += res.0;
 
 			if BlockPosition::from(creeper.get_common_entity_data().position) == BlockPosition::from(goal) {

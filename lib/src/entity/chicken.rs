@@ -44,7 +44,7 @@ impl CommonEntityTrait for Chicken {
 		players: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
-		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 		let mut rng = rng();
@@ -83,7 +83,7 @@ impl CommonEntityTrait for Chicken {
 		}
 
 
-		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager));
+		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager, block_state_data));
 		return output;
 	}
 

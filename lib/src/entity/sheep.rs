@@ -125,7 +125,7 @@ impl CommonEntityTrait for Sheep {
 			}
 		}
 
-		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager));
+		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager, block_state_data));
 		return output;
 	}
 

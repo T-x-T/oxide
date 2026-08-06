@@ -59,7 +59,7 @@ pub fn process(
 	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket").unwrap())
 	{
 		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
-		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id, &game.block_state_data);
+		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id);
 		if block_name == "minecraft:water" {
 			let held_item = player.get_held_item(true).unwrap();
 			if held_item.count > 1 {

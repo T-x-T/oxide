@@ -259,9 +259,9 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 		CardinalDirection::West
 	};
 
-	let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id, block_states);
+	let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id);
 
-	let res = get_block_state_id(face, cardinal_direction, 0.0, dimension, position, &block_name, block_states);
+	let res = get_block_state_id(face, cardinal_direction, 0.0, dimension, position, block_name, block_states);
 
 	let new_block_state_id = res.first().unwrap().0;
 

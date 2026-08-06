@@ -11,8 +11,8 @@ pub fn interact(
 	block_properties.retain(|x| x.0 != "open");
 	block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
 
-	let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
-	let new_block_id = data::blocks::get_block_state_id_from_raw(block_states, &block_name, &block_properties);
+	let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location);
+	let new_block_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
 
 	return BlockInteractionResult::OverwriteBlocks(vec![(new_block_id, location)]);
 }
