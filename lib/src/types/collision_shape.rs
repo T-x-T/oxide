@@ -1,9 +1,9 @@
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct CollisionShape {
-	pub cuboids: Vec<Cuboid>,
-	pub base_coordinates: EntityPosition,
+	cuboids: Vec<Cuboid>,
+	base_coordinates: EntityPosition,
 }
 
 impl CollisionShape {
@@ -16,6 +16,11 @@ impl CollisionShape {
 
 	pub fn add_cuboid(&mut self, cuboid: Cuboid) -> &mut CollisionShape {
 		self.cuboids.push(cuboid);
+		return self;
+	}
+
+	pub fn set_base_coordinates(&mut self, new_base_coordinates: EntityPosition) -> &mut CollisionShape {
+		self.base_coordinates = new_base_coordinates;
 		return self;
 	}
 
@@ -62,7 +67,7 @@ impl CollisionShape {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Cuboid {
 	pub x1: f64,
 	pub y1: f64,

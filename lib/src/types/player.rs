@@ -166,6 +166,17 @@ impl CommonEntityTrait for Player {
 			velocity: self.velocity,
 			uuid: self.uuid,
 			entity_id: self.entity_id,
+			collision_shape: CollisionShape::new_from_cuboid(
+				Cuboid {
+					x1: -0.3,
+					y1: 0.0,
+					z1: -0.3,
+					x2: 0.3,
+					y2: if self.is_sneaking { 1.5 } else { 1.8 },
+					z2: 0.3,
+				},
+				self.position,
+			),
 			..Default::default()
 		};
 	}

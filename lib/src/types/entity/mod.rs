@@ -342,6 +342,28 @@ impl Entity {
 			Entity::EndCrystal(x) => x.get_metadata(),
 		};
 	}
+
+	pub fn get_hitbox(&self) -> (f64, f64) {
+		return match self {
+			Entity::Armadillo(x) => x.get_hitbox(),
+			Entity::Cat(x) => x.get_hitbox(),
+			Entity::ChestMinecart(x) => x.get_hitbox(),
+			Entity::Chicken(x) => x.get_hitbox(),
+			Entity::Cow(x) => x.get_hitbox(),
+			Entity::Creeper(x) => x.get_hitbox(),
+			Entity::Donkey(x) => x.get_hitbox(),
+			Entity::Horse(x) => x.get_hitbox(),
+			Entity::Item(x) => x.get_hitbox(),
+			Entity::Parrot(x) => x.get_hitbox(),
+			Entity::Pig(x) => x.get_hitbox(),
+			Entity::Rabbit(x) => x.get_hitbox(),
+			Entity::Sheep(x) => x.get_hitbox(),
+			Entity::Player(x) => x.get_hitbox(),
+			Entity::EnderDragon(x) => x.get_hitbox(),
+			Entity::EndCrystal(x) => x.get_hitbox(),
+		};
+	}
+
 	pub fn tick(
 		&mut self,
 		dimension: &Dimension,
@@ -478,7 +500,7 @@ impl Entity {
 
 
 pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) -> Option<Entity> {
-	return match entity_type {
+	let new_entity = match entity_type {
 		"minecraft:armadillo" => Some(Entity::Armadillo(Armadillo::new(common_data, extra_nbt))),
 		"minecraft:cat" => Some(Entity::Cat(Cat::new(common_data, extra_nbt))),
 		"minecraft:chest_minecart" => Some(Entity::ChestMinecart(ChestMinecart::new(common_data, extra_nbt))),
@@ -496,6 +518,24 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 		"minecraft:end_crystal" => Some(Entity::EndCrystal(EndCrystal::new(common_data, extra_nbt))),
 		_ => None,
 	};
+
+	if let Some(mut new_entity) = new_entity {
+		use crate::types::entity::*;
+		let (height, width) = new_entity.get_hitbox();
+		let cuboid = Cuboid {
+			x1: -(width / 2.0),
+			y1: 0.0,
+			z1: -(width / 2.0),
+			x2: width / 2.0,
+			y2: height,
+			z2: width / 2.0,
+		};
+		new_entity.get_common_entity_data_mut().collision_shape =
+			CollisionShape::new_from_cuboid(cuboid, new_entity.get_common_entity_data().position);
+		return Some(new_entity);
+	}
+
+	return new_entity;
 }
 
 pub fn create_and_spawn_entity_from_egg(

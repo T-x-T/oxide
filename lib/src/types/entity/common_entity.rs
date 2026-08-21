@@ -23,6 +23,7 @@ pub struct CommonEntity {
 	pub scoreboard_tags: Vec<NbtListTag>,
 	pub ticks_frozen: i32,
 	pub debug_data_pathfinding: Option<DebugEntityPath>,
+	pub collision_shape: CollisionShape,
 }
 
 #[derive(Debug)]
@@ -333,13 +334,17 @@ pub trait CommonEntityTrait {
 		return Vec::new();
 	}
 
-	fn collides_with_blocks_at(&self, dimension: &Dimension, position_to_check: EntityPosition) -> bool {
-		let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
+	fn collides_with_blocks_at(&self, dimension: &Dimension, entity_position_to_check: EntityPosition) -> bool {
+		let block_positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
 
-		for position_to_check in positions_to_check {
-			let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
-			let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location);
-			if !block_type_at_location.has_no_collision_box() {
+		for block_position_to_check in block_positions_to_check {
+			let block_at_location = dimension.get_block(block_position_to_check).unwrap_or(0);
+			let block_collision_shape = crate::block::get_collision_shape(block_at_location, block_position_to_check);
+
+			let mut entity_collision_shape = self.get_common_entity_data_cloned().collision_shape; //must call _cloned variant, because Player only implements this
+			entity_collision_shape.set_base_coordinates(entity_position_to_check);
+
+			if entity_collision_shape.collides_with(&block_collision_shape) {
 				return true;
 			}
 		}
@@ -353,18 +358,7 @@ pub trait CommonEntityTrait {
 
 	fn is_on_ground_at(&self, dimension: &Dimension, mut position_to_check: EntityPosition) -> bool {
 		position_to_check.y -= 0.1;
-
-		let positions_to_check = self.get_occupied_block_positions_at_entity_position(position_to_check);
-
-		for position_to_check in positions_to_check {
-			let block_at_location = dimension.get_block(position_to_check).unwrap_or(0);
-			let block_type_at_location = data::blocks::get_type_from_block_state_id(block_at_location);
-			if !block_type_at_location.has_no_collision_box() {
-				return true;
-			}
-		}
-
-		return false;
+		return self.collides_with_blocks_at(dimension, position_to_check);
 	}
 
 	//(height, width) https://minecraft.wiki/w/Hitbox
@@ -933,7 +927,8 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_pos_x() {
-			let creeper = Creeper::new(
+			let crate::Entity::Creeper(creeper) = entity::new(
+				"minecraft:creeper",
 				CommonEntity {
 					position: EntityPosition {
 						x: 0.0,
@@ -945,7 +940,10 @@ mod tests {
 					..Default::default()
 				},
 				NbtListTag::default(),
-			);
+			)
+			.unwrap() else {
+				panic!("");
+			};
 			let dimension = Dimension::new("oxide:test");
 			let goal = EntityPosition {
 				x: 10.0,
@@ -962,7 +960,8 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_neg_x() {
-			let creeper = Creeper::new(
+			let crate::Entity::Creeper(creeper) = entity::new(
+				"minecraft:creeper",
 				CommonEntity {
 					position: EntityPosition {
 						x: 0.0,
@@ -974,7 +973,10 @@ mod tests {
 					..Default::default()
 				},
 				NbtListTag::default(),
-			);
+			)
+			.unwrap() else {
+				panic!("");
+			};
 			let dimension = Dimension::new("oxide:test");
 			let goal = EntityPosition {
 				x: -10.0,
@@ -991,7 +993,8 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_pos_z() {
-			let creeper = Creeper::new(
+			let crate::Entity::Creeper(creeper) = entity::new(
+				"minecraft:creeper",
 				CommonEntity {
 					position: EntityPosition {
 						x: 0.0,
@@ -1003,7 +1006,10 @@ mod tests {
 					..Default::default()
 				},
 				NbtListTag::default(),
-			);
+			)
+			.unwrap() else {
+				panic!("");
+			};
 			let dimension = Dimension::new("oxide:test");
 			let goal = EntityPosition {
 				x: 0.0,
@@ -1020,7 +1026,8 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_neg_z() {
-			let creeper = Creeper::new(
+			let crate::Entity::Creeper(creeper) = entity::new(
+				"minecraft:creeper",
 				CommonEntity {
 					position: EntityPosition {
 						x: 0.0,
@@ -1032,7 +1039,10 @@ mod tests {
 					..Default::default()
 				},
 				NbtListTag::default(),
-			);
+			)
+			.unwrap() else {
+				panic!("");
+			};
 			let dimension = Dimension::new("oxide:test");
 			let goal = EntityPosition {
 				x: 0.0,
@@ -1050,7 +1060,8 @@ mod tests {
 
 	#[test]
 	fn default_chunk_towards_pos_x_and_z() {
-		let creeper = Creeper::new(
+		let crate::Entity::Creeper(creeper) = entity::new(
+			"minecraft:creeper",
 			CommonEntity {
 				position: EntityPosition {
 					x: 0.0,
@@ -1062,7 +1073,10 @@ mod tests {
 				..Default::default()
 			},
 			NbtListTag::default(),
-		);
+		)
+		.unwrap() else {
+			panic!("");
+		};
 		let dimension = Dimension::new("oxide:test");
 		let goal = EntityPosition {
 			x: 10.0,
@@ -1080,7 +1094,8 @@ mod tests {
 
 	#[test]
 	fn obstacle_towards_pos_x() {
-		let creeper = Creeper::new(
+		let crate::Entity::Creeper(creeper) = entity::new(
+			"minecraft:creeper",
 			CommonEntity {
 				position: EntityPosition {
 					x: 0.0,
@@ -1092,7 +1107,11 @@ mod tests {
 				..Default::default()
 			},
 			NbtListTag::default(),
-		);
+		)
+		.unwrap() else {
+			panic!("");
+		};
+
 		let mut dimension = Dimension::new("oxide:test");
 		dimension
 			.overwrite_block(
@@ -1121,7 +1140,8 @@ mod tests {
 
 	#[test]
 	fn labyrinth() {
-		let mut creeper = Creeper::new(
+		let crate::Entity::Creeper(mut creeper) = entity::new(
+			"minecraft:creeper",
 			CommonEntity {
 				position: EntityPosition {
 					x: OBSTACLE_COURSE_START.x as f64 + 0.5,
@@ -1133,7 +1153,10 @@ mod tests {
 				..Default::default()
 			},
 			NbtListTag::default(),
-		);
+		)
+		.unwrap() else {
+			panic!("");
+		};
 		let mut dimension = Dimension::new("oxide:test");
 		for block in OBSTACLE_COURSE_BLOCKS {
 			dimension.overwrite_block(block, 1).unwrap();

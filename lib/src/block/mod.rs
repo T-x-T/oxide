@@ -465,3 +465,22 @@ pub fn tick(
 		_ => current_block_state_id,
 	};
 }
+
+pub fn get_collision_shape(block_state_id: u16, position: BlockPosition) -> CollisionShape {
+	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_state_id);
+	if block_type_at_location.has_no_collision_box() {
+		return CollisionShape::default();
+	}
+
+	return CollisionShape::new_from_cuboid(
+		Cuboid {
+			x1: 0.0,
+			y1: 0.0,
+			z1: 0.0,
+			x2: 1.0,
+			y2: 1.0,
+			z2: 1.0,
+		},
+		position.into(),
+	);
+}

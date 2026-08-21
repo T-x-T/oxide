@@ -1,5 +1,4 @@
 #![allow(clippy::needless_return)]
-#![feature(fn_traits)]
 
 mod tests;
 
