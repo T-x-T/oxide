@@ -214,7 +214,7 @@ pub trait CommonEntityTrait {
 		let old_position = self.get_common_entity_data().position;
 
 		if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
-			if self.is_on_ground(dimension) {
+			if self.is_on_ground(dimension, block_state_data) {
 				self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
 			} else {
 				self.get_common_entity_data_mut().velocity.y -= 0.08;
@@ -259,17 +259,18 @@ pub trait CommonEntityTrait {
 				..old_position
 			};
 
-			if self.collides_with_blocks_at(dimension, entity_position_to_check) {
+			if self.collides_with_blocks_at(dimension, entity_position_to_check, block_state_data) {
 				velocity = last_velocity;
 
 				//Check if jumping would help
-				if self.is_on_ground(dimension)
+				if self.is_on_ground(dimension, block_state_data)
 					&& !self.collides_with_blocks_at(
 						dimension,
 						EntityPosition {
 							y: entity_position_to_check.y + 1.0,
 							..entity_position_to_check
 						},
+						block_state_data,
 					) {
 					self.get_common_entity_data_mut().velocity.y += 0.05;
 
@@ -287,15 +288,12 @@ pub trait CommonEntityTrait {
 		}
 
 
-		let mut next_position = EntityPosition {
+		let next_position = EntityPosition {
 			x: old_position.x + velocity.x,
 			y: old_position.y + velocity.y,
 			z: old_position.z + velocity.z,
 			..old_position
 		};
-		if self.is_on_ground_at(dimension, next_position) {
-			next_position.y = next_position.y.round();
-		}
 
 		self.get_common_entity_data_mut().position = next_position;
 
@@ -305,7 +303,7 @@ pub trait CommonEntityTrait {
 				delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
 				delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
 				delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-				on_ground: self.is_on_ground(dimension),
+				on_ground: self.is_on_ground(dimension, block_state_data),
 			};
 
 			packet_sender.send_packet_to_everyone_in_dimension(
@@ -334,12 +332,17 @@ pub trait CommonEntityTrait {
 		return Vec::new();
 	}
 
-	fn collides_with_blocks_at(&self, dimension: &Dimension, entity_position_to_check: EntityPosition) -> bool {
+	fn collides_with_blocks_at(
+		&self,
+		dimension: &Dimension,
+		entity_position_to_check: EntityPosition,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
+	) -> bool {
 		let block_positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
 
 		for block_position_to_check in block_positions_to_check {
 			let block_at_location = dimension.get_block(block_position_to_check).unwrap_or(0);
-			let block_collision_shape = crate::block::get_collision_shape(block_at_location, block_position_to_check);
+			let block_collision_shape = crate::block::get_collision_shape(block_at_location, block_position_to_check, block_states);
 
 			let mut entity_collision_shape = self.get_common_entity_data_cloned().collision_shape; //must call _cloned variant, because Player only implements this
 			entity_collision_shape.set_base_coordinates(entity_position_to_check);
@@ -352,13 +355,18 @@ pub trait CommonEntityTrait {
 		return false;
 	}
 
-	fn is_on_ground(&self, dimension: &Dimension) -> bool {
-		return self.is_on_ground_at(dimension, self.get_common_entity_data().position);
+	fn is_on_ground(&self, dimension: &Dimension, block_states: &HashMap<String, basic_types::blocks::Block>) -> bool {
+		return self.is_on_ground_at(dimension, self.get_common_entity_data().position, block_states);
 	}
 
-	fn is_on_ground_at(&self, dimension: &Dimension, mut position_to_check: EntityPosition) -> bool {
+	fn is_on_ground_at(
+		&self,
+		dimension: &Dimension,
+		mut position_to_check: EntityPosition,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
+	) -> bool {
 		position_to_check.y -= 0.1;
-		return self.collides_with_blocks_at(dimension, position_to_check);
+		return self.collides_with_blocks_at(dimension, position_to_check, block_states);
 	}
 
 	//(height, width) https://minecraft.wiki/w/Hitbox
@@ -511,7 +519,7 @@ pub trait CommonEntityTrait {
 		&self,
 		goal: EntityPosition,
 		dimension: &Dimension,
-		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
 	) -> (EntityPosition, Vec<EntityTickOutcome>) {
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
@@ -767,7 +775,7 @@ pub trait CommonEntityTrait {
 			for neighbour in neighbours {
 				let neighbour_entity_pos = EntityPosition::from(neighbour);
 
-				if self.collides_with_blocks_at(dimension, neighbour_entity_pos) {
+				if self.collides_with_blocks_at(dimension, neighbour_entity_pos, block_states) {
 					continue;
 				}
 
@@ -914,6 +922,7 @@ pub trait CommonEntityTrait {
 		_dimension: &mut Dimension,
 		_packet_sender: &PacketSender,
 		_position: BlockPosition,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) {
 		return;
 	}

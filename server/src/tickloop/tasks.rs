@@ -83,7 +83,14 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 
 				if let Some(portal_location) = portal_location {
-					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, portal_location);
+					player.change_dimension(
+						&new_dimension_name,
+						players_clone,
+						dimension,
+						&game.packet_sender,
+						portal_location,
+						&game.block_state_data,
+					);
 				} else {
 					let obsidian_block_id =
 						data::blocks::get_block_from_name("minecraft:obsidian", &game.block_state_data).states.first().unwrap().id;
@@ -296,7 +303,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						);
 					}
 
-					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
+					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position, &game.block_state_data);
 				}
 			}
 			TaskItem::PlayerUseEndPortal(uuid, new_dimension_name) => {
@@ -372,10 +379,17 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						}
 					}
 
-					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position);
+					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, new_position, &game.block_state_data);
 				} else {
 					let dimension = world.dimensions.get_mut(&new_dimension_name).unwrap();
-					player.change_dimension(&new_dimension_name, players_clone, dimension, &game.packet_sender, default_spawn_location);
+					player.change_dimension(
+						&new_dimension_name,
+						players_clone,
+						dimension,
+						&game.packet_sender,
+						default_spawn_location,
+						&game.block_state_data,
+					);
 				};
 			}
 			TaskItem::SendMessageToPlayer(uuid, message) => {

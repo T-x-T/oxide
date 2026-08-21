@@ -226,8 +226,8 @@ impl CommonEntityTrait for Player {
 		todo!()
 	}
 
-	fn is_on_ground(&self, dimension: &Dimension) -> bool {
-		return self.is_on_ground_at(dimension, self.position);
+	fn is_on_ground(&self, dimension: &Dimension, block_state_data: &HashMap<String, basic_types::blocks::Block>) -> bool {
+		return self.is_on_ground_at(dimension, self.position, block_state_data);
 	}
 
 	fn tick(
@@ -476,6 +476,7 @@ impl CommonEntityTrait for Player {
 		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 		position: BlockPosition,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) {
 		self.dimension = new_dimension_name.to_string();
 		self.position = position.into();
@@ -644,7 +645,7 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
 					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(dimension),
+					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
 				},
@@ -719,7 +720,7 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
 					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(dimension),
+					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
 				},

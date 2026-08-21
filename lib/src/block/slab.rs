@@ -109,6 +109,47 @@ pub fn get_hardness(_block_id: u16, block: Block, _block_states: &HashMap<String
 	}
 }
 
+pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_states: &HashMap<String, Block>) -> CollisionShape {
+	let state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+	return if state.properties.contains(&Property::SlabType(SlabType::Bottom)) {
+		CollisionShape::new_from_cuboid(
+			Cuboid {
+				x1: 0.0,
+				y1: 0.0,
+				z1: 0.0,
+				x2: 1.0,
+				y2: 0.5,
+				z2: 1.0,
+			},
+			position.into(),
+		)
+	} else if state.properties.contains(&Property::SlabType(SlabType::Top)) {
+		CollisionShape::new_from_cuboid(
+			Cuboid {
+				x1: 0.0,
+				y1: 0.5,
+				z1: 0.0,
+				x2: 1.0,
+				y2: 1.0,
+				z2: 1.0,
+			},
+			position.into(),
+		)
+	} else {
+		CollisionShape::new_from_cuboid(
+			Cuboid {
+				x1: 0.0,
+				y1: 0.0,
+				z1: 0.0,
+				x2: 1.0,
+				y2: 1.0,
+				z2: 1.0,
+			},
+			position.into(),
+		)
+	};
+}
+
 #[cfg(test)]
 mod test {
 	use super::*;

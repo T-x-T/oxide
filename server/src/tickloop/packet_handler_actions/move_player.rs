@@ -47,7 +47,7 @@ pub fn process(
 					delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
-					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
+					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				}
 				.try_into()
 				.unwrap(),
@@ -72,7 +72,7 @@ pub fn process(
 				delta_x: ((new_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
 				delta_y: ((new_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
 				delta_z: ((new_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
+				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 			}
 			.try_into()
 			.unwrap(),
@@ -86,7 +86,7 @@ pub fn process(
 					entity_id: player_entity_id,
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
-					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
+					on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				}
 				.try_into()
 				.unwrap(),

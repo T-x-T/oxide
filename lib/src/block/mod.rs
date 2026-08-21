@@ -466,21 +466,24 @@ pub fn tick(
 	};
 }
 
-pub fn get_collision_shape(block_state_id: u16, position: BlockPosition) -> CollisionShape {
+pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_states: &HashMap<String, Block>) -> CollisionShape {
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_state_id);
 	if block_type_at_location.has_no_collision_box() {
 		return CollisionShape::default();
 	}
 
-	return CollisionShape::new_from_cuboid(
-		Cuboid {
-			x1: 0.0,
-			y1: 0.0,
-			z1: 0.0,
-			x2: 1.0,
-			y2: 1.0,
-			z2: 1.0,
-		},
-		position.into(),
-	);
+	return match block_type_at_location {
+		Type::Slab => slab::get_collision_shape(block_state_id, position, block_states),
+		_ => CollisionShape::new_from_cuboid(
+			Cuboid {
+				x1: 0.0,
+				y1: 0.0,
+				z1: 0.0,
+				x2: 1.0,
+				y2: 1.0,
+				z2: 1.0,
+			},
+			position.into(),
+		),
+	};
 }

@@ -34,6 +34,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		dimension,
 		&game.packet_sender,
 		default_spawn_location,
+		&game.block_state_data,
 	);
 
 	return Ok(());

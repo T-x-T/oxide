@@ -82,37 +82,40 @@ impl Cuboid {
 		assert!(self.x1 < self.x2 && self.y1 < self.y2 && self.z1 < self.z2);
 		assert!(other.x1 < other.x2 && other.y1 < other.y2 && other.z1 < other.z2);
 
+		let mut x_intersects = false;
 		if (self.x2 - self.x1) > (other.x2 - other.x1) {
-			if (self.x1 < other.x1 && self.x2 > other.x1) || (self.x1 < other.x2 && self.x2 > other.x2) {
-				return true;
+			if (self.x1 <= other.x1 && self.x2 >= other.x1) || (self.x1 <= other.x2 && self.x2 >= other.x2) {
+				x_intersects = true;
 			}
 		} else {
-			if (other.x1 < self.x1 && other.x2 > self.x1) || (other.x1 < self.x2 && other.x2 > self.x2) {
-				return true;
+			if (other.x1 <= self.x1 && other.x2 >= self.x1) || (other.x1 <= self.x2 && other.x2 >= self.x2) {
+				x_intersects = true;
 			}
 		}
 
+		let mut y_intersects = false;
 		if (self.y2 - self.y1) > (other.y2 - other.y1) {
-			if (self.y1 < other.y1 && self.y2 > other.y1) || (self.y1 < other.y2 && self.y2 > other.y2) {
-				return true;
+			if (self.y1 <= other.y1 && self.y2 >= other.y1) || (self.y1 <= other.y2 && self.y2 >= other.y2) {
+				y_intersects = true;
 			}
 		} else {
-			if (other.y1 < self.y1 && other.y2 > self.y1) || (other.y1 < self.y2 && other.y2 > self.y2) {
-				return true;
+			if (other.y1 <= self.y1 && other.y2 >= self.y1) || (other.y1 <= self.y2 && other.y2 >= self.y2) {
+				y_intersects = true;
 			}
 		}
 
+		let mut z_intersects = false;
 		if (self.z2 - self.z1) > (other.z2 - other.z1) {
-			if (self.z1 < other.z1 && self.z2 > other.z1) || (self.z1 < other.z2 && self.z2 > other.z2) {
-				return true;
+			if (self.z1 <= other.z1 && self.z2 >= other.z1) || (self.z1 <= other.z2 && self.z2 >= other.z2) {
+				z_intersects = true;
 			}
 		} else {
-			if (other.z1 < self.z1 && other.z2 > self.z1) || (other.z1 < self.z2 && other.z2 > self.z2) {
-				return true;
+			if (other.z1 <= self.z1 && other.z2 >= self.z1) || (other.z1 <= self.z2 && other.z2 >= self.z2) {
+				z_intersects = true;
 			}
 		}
 
-		return false;
+		return x_intersects && y_intersects && z_intersects;
 	}
 }
 
@@ -206,6 +209,21 @@ mod tests {
 			other.add_cuboid(Cuboid {	x1: 1.0, y1: 1.0,	z1: 1.5, x2: 2.5,	y2: 2.0, z2: 2.0	});
 
 			assert!(!one.collides_with(&other));
+		}
+
+		#[test]
+		fn pig_doesnt_collide_with_slab() {
+			let pig = CollisionShape::new_from_cuboid(
+			  Cuboid { x1: -0.45, y1: 0.0, z1: -0.45, x2: 0.45, y2: 0.9, z2: 0.45 },
+				EntityPosition { x: -25.65522739210799, y: 69.9, z: 42.476654394084896, yaw: -143.42871, pitch: 90.0 },
+			);
+
+			let slab = CollisionShape::new_from_cuboid(
+			  Cuboid { x1: 0.0, y1: 0.0, z1: 0.0, x2: 1.0, y2: 0.5, z2: 1.0 },
+				EntityPosition { x: -26.0, y: 69.0, z: 42.0, yaw: 0.0, pitch: 0.0 },
+			);
+
+			assert!(!pig.collides_with(&slab));
 		}
 	}
 

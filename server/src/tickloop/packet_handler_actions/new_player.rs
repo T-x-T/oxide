@@ -241,7 +241,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
 				entity_id: player.entity_id,
-				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
+				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
 			},
@@ -316,7 +316,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
 				entity_id: player.entity_id,
-				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap()),
+				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
 			},
