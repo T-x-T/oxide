@@ -73,6 +73,19 @@ impl EntityPosition {
 	pub fn distance_to(&self, other: EntityPosition) -> f64 {
 		return ((other.x - self.x).abs().powi(2) + (other.y - self.y).abs().powi(2) + (other.z - self.z).abs().powi(2)).powf(0.5);
 	}
+
+	pub fn calculate_line_positions_to(&self, other: EntityPosition) -> Vec<EntityPosition> {
+		let direction_vector = other - *self;
+		let distance = self.distance_to(other).ceil() as i32;
+
+		let mut output: Vec<EntityPosition> = Vec::with_capacity(distance as usize);
+		for x in 0..distance {
+			let vector = direction_vector / distance as f64 * x as f64;
+			output.push(*self + vector);
+		}
+
+		return output;
+	}
 }
 
 impl std::ops::Sub for EntityPosition {
@@ -141,6 +154,33 @@ impl std::ops::Div for EntityPosition {
 	}
 }
 
+impl std::ops::Mul<f64> for EntityPosition {
+	type Output = EntityPosition;
+
+	fn mul(self, rhs: f64) -> Self::Output {
+		return Self {
+			x: self.x * rhs,
+			y: self.y * rhs,
+			z: self.z * rhs,
+			yaw: self.yaw,
+			pitch: self.pitch,
+		};
+	}
+}
+
+impl std::ops::Div<f64> for EntityPosition {
+	type Output = EntityPosition;
+
+	fn div(self, rhs: f64) -> Self::Output {
+		return Self {
+			x: self.x / rhs,
+			y: self.y / rhs,
+			z: self.z / rhs,
+			yaw: self.yaw,
+			pitch: self.pitch,
+		};
+	}
+}
 
 #[cfg(test)]
 mod test {
