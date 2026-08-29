@@ -242,49 +242,44 @@ pub trait CommonEntityTrait {
 		let mut velocity = self.get_common_entity_data().velocity;
 		velocity += velocity_from_ai;
 
-		let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, old_position + velocity);
+		let next_position = old_position + velocity;
+
+		let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, next_position);
+		let mut collided = false;
+		let mut collision_shape = self.get_common_entity_data().collision_shape.clone();
+		collision_shape.set_base_coordinates(next_position);
 		for occupied_block in occupied_blocks {
 			let block_state_id = dimension.get_block(occupied_block).unwrap_or(0);
-			let collided = self.get_common_entity_data().collision_shape.collides_with(&crate::block::get_collision_shape(
-				block_state_id,
-				occupied_block,
-				block_state_data,
-			));
-
-			if collided {
-				velocity = EntityPosition::default();
+			if collision_shape.collides_with(&crate::block::get_collision_shape(block_state_id, occupied_block, block_state_data)) {
+				collided = true;
+				break;
 			}
 		}
 
-		let next_position = EntityPosition {
-			x: old_position.x + velocity.x,
-			y: old_position.y + velocity.y,
-			z: old_position.z + velocity.z,
-			..old_position
-		};
+		if !collided {
+			//TODO: check if we are clipping a block and adjust accordingly or something?
 
-		//TODO: check if we are clipping a block and adjust accordingly or something?
+			self.get_common_entity_data_mut().position = next_position;
+			self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
 
-		self.get_common_entity_data_mut().position = next_position;
-		self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
+			if old_position != self.get_common_entity_data().position {
+				let packet = crate::packets::clientbound::play::UpdateEntityPosition {
+					entity_id: self.get_common_entity_data().entity_id,
+					delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+					delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+					delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+					on_ground: self.is_on_ground(dimension, block_state_data),
+				};
 
-		if old_position != self.get_common_entity_data().position {
-			let packet = crate::packets::clientbound::play::UpdateEntityPosition {
-				entity_id: self.get_common_entity_data().entity_id,
-				delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
-				delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-				delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-				on_ground: self.is_on_ground(dimension, block_state_data),
-			};
+				packet_sender.send_packet_to_everyone_in_dimension(
+					players,
+					&dimension.name,
+					crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
+					packet,
+				);
 
-			packet_sender.send_packet_to_everyone_in_dimension(
-				players,
-				&dimension.name,
-				crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
-				packet,
-			);
-
-			output.push(EntityTickOutcome::Updated);
+				output.push(EntityTickOutcome::Updated);
+			}
 		}
 
 		output.append(&mut self.extra_tick(dimension, players, packet_sender, entity_id_manager, block_state_data));
