@@ -158,13 +158,6 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 			.filter(|x| x.get_held_item(true).is_some_and(|item| self.get_food().contains(&data::items::get_item_name_by_id(item.id).unwrap())))
 			.collect();
 
-		let speed = EntityPosition {
-			x: 0.025,
-			y: 0.001,
-			z: 0.025,
-			yaw: 1.0,
-			pitch: 1.0,
-		};
 
 		if !in_range_peers_in_love.is_empty() {
 			if self.get_breedable_data().breeding_time_left == 0 && self.get_breedable_data().breeding_with.is_some() {
@@ -183,13 +176,15 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 					self.get_breedable_data_mut().breeding_time_left -= 1;
 				}
 			}
-			self.get_common_entity_data_mut().velocity =
-				(in_range_peers_in_love.first().unwrap().get_common_entity_data().position - self.get_common_entity_data().position) * speed;
+			let velocity_from_ai =
+				self.ai_move_towards_goal(in_range_peers_in_love.first().unwrap().get_common_entity_data().position, dimension, block_state_data).0;
+			self.get_common_entity_data_mut().velocity += velocity_from_ai * 0.1;
+
 			output.push(EntityTickOutcome::Updated);
 		} else if !in_range_players_with_food.is_empty() {
 			let (velocity, mut tick_outcomes) =
 				self.ai_move_towards_goal(in_range_players_with_food.first().unwrap().get_position(), dimension, block_state_data);
-			self.get_common_entity_data_mut().velocity = velocity;
+			self.get_common_entity_data_mut().velocity += velocity * 0.1;
 			output.append(&mut tick_outcomes);
 			output.push(EntityTickOutcome::Updated);
 		}
