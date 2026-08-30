@@ -531,6 +531,7 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 			y2: height,
 			z2: width / 2.0,
 		};
+
 		new_entity.get_common_entity_data_mut().collision_shape =
 			CollisionShape::new_from_cuboid(cuboid, new_entity.get_common_entity_data().position);
 		return Some(new_entity);

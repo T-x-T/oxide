@@ -84,6 +84,8 @@ impl EntityPosition {
 			output.push(*self + vector);
 		}
 
+		output.push(other); //make sure *other* is also incldued
+
 		return output;
 	}
 }

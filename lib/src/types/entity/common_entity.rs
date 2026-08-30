@@ -210,9 +210,6 @@ pub trait CommonEntityTrait {
 			}
 		}
 
-
-		let old_position = self.get_common_entity_data().position;
-
 		if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
 			if self.is_on_ground(dimension, block_state_data) {
 				self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
@@ -242,45 +239,66 @@ pub trait CommonEntityTrait {
 		let mut velocity = self.get_common_entity_data().velocity;
 		velocity += velocity_from_ai;
 
-		let next_position = old_position + velocity;
+		let old_position = self.get_common_entity_data().position;
+		let mut next_position = old_position + velocity;
 
-		let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, next_position);
-		let mut collided = false;
+		let (mut x_collision_amount, mut y_collision_amount, mut z_collision_amount) = (0.0, 0.0, 0.0);
 		let mut collision_shape = self.get_common_entity_data().collision_shape.clone();
 		collision_shape.set_base_coordinates(next_position);
+
+		let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, next_position);
 		for occupied_block in occupied_blocks {
 			let block_state_id = dimension.get_block(occupied_block).unwrap_or(0);
 			if collision_shape.collides_with(&crate::block::get_collision_shape(block_state_id, occupied_block, block_state_data)) {
-				collided = true;
+				let collision_vector = (EntityPosition::from(occupied_block) - old_position) * velocity;
+
+				x_collision_amount = collision_vector.x.abs();
+				y_collision_amount = collision_vector.y.abs();
+				z_collision_amount = collision_vector.z.abs();
+
 				break;
 			}
 		}
 
-		if !collided {
-			//TODO: check if we are clipping a block and adjust accordingly or something?
-
-			self.get_common_entity_data_mut().position = next_position;
-			self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
-
-			if old_position != self.get_common_entity_data().position {
-				let packet = crate::packets::clientbound::play::UpdateEntityPosition {
-					entity_id: self.get_common_entity_data().entity_id,
-					delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
-					delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-					delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-					on_ground: self.is_on_ground(dimension, block_state_data),
-				};
-
-				packet_sender.send_packet_to_everyone_in_dimension(
-					players,
-					&dimension.name,
-					crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
-					packet,
-				);
-
-				output.push(EntityTickOutcome::Updated);
-			}
+		//this probably falls apart when colliding with two blocks at once
+		if x_collision_amount > y_collision_amount && x_collision_amount > z_collision_amount {
+			next_position.x = old_position.x;
+			self.get_common_entity_data_mut().velocity.x = 0.0;
 		}
+
+		if y_collision_amount > x_collision_amount && y_collision_amount > z_collision_amount {
+			next_position.y = old_position.y;
+			self.get_common_entity_data_mut().velocity.y = 0.0;
+		}
+
+		if z_collision_amount > x_collision_amount && z_collision_amount > y_collision_amount {
+			next_position.z = old_position.z;
+			self.get_common_entity_data_mut().velocity.z = 0.0;
+		}
+
+
+		self.get_common_entity_data_mut().position = next_position;
+		self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
+
+		if old_position != self.get_common_entity_data().position {
+			let packet = crate::packets::clientbound::play::UpdateEntityPosition {
+				entity_id: self.get_common_entity_data().entity_id,
+				delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+				delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+				delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+				on_ground: self.is_on_ground(dimension, block_state_data),
+			};
+
+			packet_sender.send_packet_to_everyone_in_dimension(
+				players,
+				&dimension.name,
+				crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
+				packet,
+			);
+
+			output.push(EntityTickOutcome::Updated);
+		}
+
 
 		output.append(&mut self.extra_tick(dimension, players, packet_sender, entity_id_manager, block_state_data));
 
@@ -437,7 +455,8 @@ pub trait CommonEntityTrait {
 		let behavior = if entity_type.as_str() == "minecraft:creeper" {
 			AiBehavior::MoveTowardsPlayer
 		} else if self.is_mob() {
-			AiBehavior::Wander
+			//AiBehavior::Wander
+			AiBehavior::Idle
 		} else {
 			AiBehavior::Idle
 		};

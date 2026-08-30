@@ -82,40 +82,12 @@ impl Cuboid {
 		assert!(self.x1 < self.x2 && self.y1 < self.y2 && self.z1 < self.z2);
 		assert!(other.x1 < other.x2 && other.y1 < other.y2 && other.z1 < other.z2);
 
-		let mut x_intersects = false;
-		if (self.x2 - self.x1) > (other.x2 - other.x1) {
-			if (self.x1 <= other.x1 && self.x2 >= other.x1) || (self.x1 <= other.x2 && self.x2 >= other.x2) {
-				x_intersects = true;
-			}
-		} else {
-			if (other.x1 <= self.x1 && other.x2 >= self.x1) || (other.x1 <= self.x2 && other.x2 >= self.x2) {
-				x_intersects = true;
-			}
-		}
-
-		let mut y_intersects = false;
-		if (self.y2 - self.y1) > (other.y2 - other.y1) {
-			if (self.y1 <= other.y1 && self.y2 >= other.y1) || (self.y1 <= other.y2 && self.y2 >= other.y2) {
-				y_intersects = true;
-			}
-		} else {
-			if (other.y1 <= self.y1 && other.y2 >= self.y1) || (other.y1 <= self.y2 && other.y2 >= self.y2) {
-				y_intersects = true;
-			}
-		}
-
-		let mut z_intersects = false;
-		if (self.z2 - self.z1) > (other.z2 - other.z1) {
-			if (self.z1 <= other.z1 && self.z2 >= other.z1) || (self.z1 <= other.z2 && self.z2 >= other.z2) {
-				z_intersects = true;
-			}
-		} else {
-			if (other.z1 <= self.z1 && other.z2 >= self.z1) || (other.z1 <= self.z2 && other.z2 >= self.z2) {
-				z_intersects = true;
-			}
-		}
-
-		return x_intersects && y_intersects && z_intersects;
+		return self.x1 <= other.x2
+			&& self.x2 >= other.x1
+			&& self.y1 <= other.y2
+			&& self.y2 >= other.y1
+			&& self.z1 <= other.z2
+			&& self.z2 >= other.z1;
 	}
 }
 
@@ -227,7 +199,7 @@ mod tests {
 		}
 	}
 
-	mod cuboid_intersects_with_other_x {
+	mod cuboid_intersects_with_other {
 		use super::*;
 
 		#[test]
