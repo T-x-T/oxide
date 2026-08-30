@@ -35,6 +35,7 @@ pub enum Entity {
 	Player(Player),
 	EnderDragon(EnderDragon),
 	EndCrystal(EndCrystal),
+	Zombie(Zombie),
 }
 
 #[derive(Debug, PartialEq)]
@@ -128,6 +129,7 @@ impl Entity {
 			Entity::Player(x) => x.get_common_entity_data(),
 			Entity::EnderDragon(x) => x.get_common_entity_data(),
 			Entity::EndCrystal(x) => x.get_common_entity_data(),
+			Entity::Zombie(x) => x.get_common_entity_data(),
 		};
 	}
 
@@ -149,6 +151,7 @@ impl Entity {
 			Entity::Player(x) => x.get_common_entity_data_mut(),
 			Entity::EnderDragon(x) => x.get_common_entity_data_mut(),
 			Entity::EndCrystal(x) => x.get_common_entity_data_mut(),
+			Entity::Zombie(x) => x.get_common_entity_data_mut(),
 		};
 	}
 
@@ -170,6 +173,7 @@ impl Entity {
 			Entity::Player(x) => x.get_mob_data(),
 			Entity::EnderDragon(x) => x.get_mob_data(),
 			Entity::EndCrystal(x) => x.get_mob_data(),
+			Entity::Zombie(x) => x.get_mob_data(),
 		};
 	}
 
@@ -191,6 +195,7 @@ impl Entity {
 			Entity::Player(x) => x.get_mob_data_mut(),
 			Entity::EnderDragon(x) => x.get_mob_data_mut(),
 			Entity::EndCrystal(x) => x.get_mob_data_mut(),
+			Entity::Zombie(x) => x.get_mob_data_mut(),
 		};
 	}
 
@@ -212,6 +217,7 @@ impl Entity {
 			Entity::Player(x) => x.get_type(),
 			Entity::EnderDragon(x) => x.get_type(),
 			Entity::EndCrystal(x) => x.get_type(),
+			Entity::Zombie(x) => x.get_type(),
 		};
 	}
 
@@ -233,6 +239,7 @@ impl Entity {
 			Entity::Player(x) => x.to_nbt_extras(),
 			Entity::EnderDragon(x) => x.to_nbt_extras(),
 			Entity::EndCrystal(x) => x.to_nbt_extras(),
+			Entity::Zombie(x) => x.to_nbt_extras(),
 		};
 	}
 
@@ -282,6 +289,7 @@ impl Entity {
 			Entity::Player(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::EnderDragon(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::EndCrystal(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Zombie(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 		};
 	}
 
@@ -319,6 +327,7 @@ impl Entity {
 			Entity::Player(x) => x.is_mob(),
 			Entity::EnderDragon(x) => x.is_mob(),
 			Entity::EndCrystal(x) => x.is_mob(),
+			Entity::Zombie(x) => x.is_mob(),
 		};
 	}
 
@@ -340,6 +349,7 @@ impl Entity {
 			Entity::Player(x) => x.get_metadata(),
 			Entity::EnderDragon(x) => x.get_metadata(),
 			Entity::EndCrystal(x) => x.get_metadata(),
+			Entity::Zombie(x) => x.get_metadata(),
 		};
 	}
 
@@ -361,6 +371,7 @@ impl Entity {
 			Entity::Player(x) => x.get_hitbox(),
 			Entity::EnderDragon(x) => x.get_hitbox(),
 			Entity::EndCrystal(x) => x.get_hitbox(),
+			Entity::Zombie(x) => x.get_hitbox(),
 		};
 	}
 
@@ -389,6 +400,7 @@ impl Entity {
 			Entity::Player(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::EnderDragon(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::EndCrystal(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Zombie(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 		};
 	}
 	pub fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
@@ -409,6 +421,7 @@ impl Entity {
 			Entity::Player(x) => x.damage(damage, packet_sender, players),
 			Entity::EnderDragon(x) => x.damage(damage, packet_sender, players),
 			Entity::EndCrystal(x) => x.damage(damage, packet_sender, players),
+			Entity::Zombie(x) => x.damage(damage, packet_sender, players),
 		};
 	}
 
@@ -430,6 +443,7 @@ impl Entity {
 			Entity::Player(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::EnderDragon(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::EndCrystal(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Zombie(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 		};
 	}
 
@@ -466,6 +480,7 @@ impl Entity {
 			Entity::Player(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::EnderDragon(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::EndCrystal(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Zombie(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 		};
 	}
 
@@ -495,6 +510,7 @@ impl Entity {
 			Entity::Player(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 			Entity::EnderDragon(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 			Entity::EndCrystal(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
+			Entity::Zombie(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 		};
 	}
 }
@@ -517,6 +533,7 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 		"minecraft:sheep" => Some(Entity::Sheep(Sheep::new(common_data, extra_nbt))),
 		"minecraft:ender_dragon" => Some(Entity::EnderDragon(EnderDragon::new(common_data, extra_nbt))),
 		"minecraft:end_crystal" => Some(Entity::EndCrystal(EndCrystal::new(common_data, extra_nbt))),
+		"minecraft:zombie" => Some(Entity::Zombie(Zombie::new(common_data, extra_nbt))),
 		_ => None,
 	};
 

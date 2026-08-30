@@ -174,6 +174,10 @@ impl CommonEntityTrait for Creeper {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.7, 0.6);
 	}
+
+	fn get_default_ai_behavior(&self) -> AiBehavior {
+		return AiBehavior::MoveTowardsPlayer;
+	}
 }
 
 impl Creeper {

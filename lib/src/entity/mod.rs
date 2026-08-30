@@ -18,6 +18,7 @@ pub mod parrot;
 pub mod pig;
 pub mod rabbit;
 pub mod sheep;
+pub mod zombie;
 
 pub use armadillo::*;
 pub use cat::*;
@@ -34,3 +35,4 @@ pub use parrot::*;
 pub use pig::*;
 pub use rabbit::*;
 pub use sheep::*;
+pub use zombie::*;

@@ -457,6 +457,10 @@ pub trait CommonEntityTrait {
 		return all_block_positions;
 	}
 
+	fn get_default_ai_behavior(&self) -> AiBehavior {
+		return AiBehavior::Idle;
+	}
+
 	fn execute_ai(
 		&mut self,
 		players: &[Player],
@@ -466,15 +470,7 @@ pub trait CommonEntityTrait {
 		if self.is_mob() && self.get_mob_data().has_no_ai {
 			return (AiExecutionResult::DoNothing, Vec::new());
 		}
-		let entity_type = data::entities::get_name_from_id(self.get_type());
-		let behavior = if entity_type.as_str() == "minecraft:creeper" {
-			AiBehavior::MoveTowardsPlayer
-		} else if self.is_mob() {
-			//AiBehavior::Wander
-			AiBehavior::Idle
-		} else {
-			AiBehavior::Idle
-		};
+		let behavior = self.get_default_ai_behavior();
 
 		return match behavior {
 			AiBehavior::Idle => (AiExecutionResult::DoNothing, Vec::new()),
