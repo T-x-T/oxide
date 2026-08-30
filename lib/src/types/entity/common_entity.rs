@@ -151,7 +151,22 @@ pub trait CommonEntityTrait {
 			common_data.ticks_frozen = value.as_int();
 		}
 
-		return Self::new(common_data, value.clone());
+		let mut new_entity = Self::new(common_data, value.clone());
+
+		let (height, width) = new_entity.get_hitbox();
+		let cuboid = Cuboid {
+			x1: -(width / 2.0),
+			y1: 0.0,
+			z1: -(width / 2.0),
+			x2: width / 2.0,
+			y2: height,
+			z2: width / 2.0,
+		};
+
+		new_entity.get_common_entity_data_mut().collision_shape =
+			CollisionShape::new_from_cuboid(cuboid, new_entity.get_common_entity_data().position);
+
+		return new_entity;
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity;

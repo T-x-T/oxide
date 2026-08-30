@@ -521,7 +521,6 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 	};
 
 	if let Some(mut new_entity) = new_entity {
-		use crate::types::entity::*;
 		let (height, width) = new_entity.get_hitbox();
 		let cuboid = Cuboid {
 			x1: -(width / 2.0),
