@@ -651,10 +651,11 @@ pub trait CommonEntityTrait {
 						// END Update debug data
 
 						let speed = 0.075;
+
 						return (
 							EntityPosition {
 								x: (last_node.x - starting_point.x) as f64 * speed,
-								y: 0.0,
+								y: if last_node.y > starting_point.y { 1.0 } else { 0.0 },
 								z: (last_node.z - starting_point.z) as f64 * speed,
 								yaw: 0.0,
 								pitch: 0.0,
