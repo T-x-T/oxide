@@ -4,6 +4,7 @@ use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue};
 use crate::types::*;
 
 pub mod armadillo;
+pub mod arrow;
 pub mod cat;
 pub mod chest_minecart;
 pub mod chicken;
@@ -18,9 +19,11 @@ pub mod parrot;
 pub mod pig;
 pub mod rabbit;
 pub mod sheep;
+pub mod skeleton;
 pub mod zombie;
 
 pub use armadillo::*;
+pub use arrow::*;
 pub use cat::*;
 pub use chest_minecart::*;
 pub use chicken::*;
@@ -35,4 +38,5 @@ pub use parrot::*;
 pub use pig::*;
 pub use rabbit::*;
 pub use sheep::*;
+pub use skeleton::*;
 pub use zombie::*;

@@ -314,6 +314,8 @@ impl super::WorldLoader for Loader {
 				"minecraft:ender_dragon" => output.push(Entity::EnderDragon(crate::entity::EnderDragon::from_nbt(entity, entity_id_manager))),
 				"minecraft:end_crystal" => output.push(Entity::EndCrystal(crate::entity::EndCrystal::from_nbt(entity, entity_id_manager))),
 				"minecraft:zombie" => output.push(Entity::Zombie(crate::entity::Zombie::from_nbt(entity, entity_id_manager))),
+				"minecraft:skeleton" => output.push(Entity::Skeleton(crate::entity::Skeleton::from_nbt(entity, entity_id_manager))),
+				"minecraft:arrow" => output.push(Entity::Arrow(crate::entity::Arrow::from_nbt(entity, entity_id_manager))),
 				_ => println!("tried loading unknown entity {entity_type} from disk"),
 			};
 		}
