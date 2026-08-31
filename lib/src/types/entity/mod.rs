@@ -57,6 +57,7 @@ pub enum EntityTickOutcome {
 	AddEntity(Box<Entity>),
 	DealDamage(i32, f32), //target entity id, damage to deal
 	UpdateDebugDataPathfinding(Option<DebugEntityPath>),
+	GetPickedUpByPlayer(Slot, i32, u128), //slot, entity_id of picked up entity, player uuid
 }
 
 impl Entity {

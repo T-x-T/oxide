@@ -30,6 +30,7 @@ pub struct CommonEntity {
 pub enum AiBehavior {
 	Idle,
 	MoveTowardsPlayer,
+	MoveTowardsPlayerWithMinDistance(f64),
 	Wander,
 }
 
@@ -476,6 +477,21 @@ pub trait CommonEntityTrait {
 			AiBehavior::Idle => (AiExecutionResult::DoNothing, Vec::new()),
 			AiBehavior::MoveTowardsPlayer => self.execute_ai_move_towards_player(players, dimension, block_state_data),
 			AiBehavior::Wander => (self.execute_ai_wander(), Vec::new()),
+			AiBehavior::MoveTowardsPlayerWithMinDistance(min_distance) => {
+				let mut player_distances = players
+					.iter()
+					.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
+					.filter(|x| x.1 < 25.0)
+					.collect::<Vec<(&Player, f64)>>();
+				player_distances.sort_by(|a, b| a.1.total_cmp(&b.1));
+				let closest_player = player_distances.first();
+
+				if closest_player.is_some_and(|x| x.1 > min_distance) {
+					self.execute_ai_move_towards_player(players, dimension, block_state_data)
+				} else {
+					(AiExecutionResult::DoNothing, Vec::new())
+				}
+			}
 		};
 	}
 

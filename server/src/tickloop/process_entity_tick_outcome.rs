@@ -319,6 +319,39 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					println!("EntityTickOutcome::UpdateDebugDataPathfinding handler couldnt find entity with id {entity_id}");
 				};
 			}
+			EntityTickOutcome::GetPickedUpByPlayer(item, item_entity_id, player_uuid) => {
+				let Some(player) = players.iter_mut().find(|x| x.uuid == player_uuid) else {
+					continue;
+				};
+
+				player.pickup_item(item, item_entity_id, players_clone, &game.packet_sender);
+
+				//same as RemoveSelf
+				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
+					entity_ids: vec![entity_id],
+				};
+
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					remove_entities_packet,
+				);
+
+				if let Some(chunk) = dimension.get_chunk_from_position_mut(
+					dimension
+						.entities
+						.iter()
+						.find(|x| x.get_common_entity_data().entity_id == entity_id)
+						.unwrap()
+						.get_common_entity_data()
+						.position
+						.into(),
+				) {
+					chunk.modified = true;
+				};
+				dimension.entities.retain(|x| x.get_common_entity_data().entity_id != entity_id);
+			}
 		}
 	}
 }

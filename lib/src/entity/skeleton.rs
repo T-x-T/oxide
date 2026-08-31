@@ -14,7 +14,7 @@ impl CommonEntityTrait for Skeleton {
 		return Self {
 			common: data,
 			mob,
-			damage_cooldown: 0,
+			damage_cooldown: 80,
 		};
 	}
 
@@ -49,11 +49,21 @@ impl CommonEntityTrait for Skeleton {
 			player_distances.sort_by(|a, b| a.1.total_cmp(&b.1));
 			let closest_player = player_distances.first();
 			if let Some(closest_player) = closest_player {
+				let direction = closest_player.0.get_position() - self.get_common_entity_data().position;
+				let normalized_direction = direction / closest_player.0.get_position().distance_to(self.get_common_entity_data().position);
+				let direction_with_speed = normalized_direction * 1.5;
+				let direction_with_angle = EntityPosition {
+					y: direction_with_speed.y + 0.45,
+					..direction_with_speed
+				};
 				let arrow = entity::new(
 					"minecraft:arrow",
 					CommonEntity {
-						position: self.get_common_entity_data().position,
-						velocity: closest_player.0.get_position() - self.get_common_entity_data().position,
+						position: EntityPosition {
+							y: self.get_common_entity_data().position.y + 1.2,
+							..self.get_common_entity_data().position
+						},
+						velocity: direction_with_angle,
 						uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 						entity_id: entity_id_manager.get_new(),
 						..Default::default()
@@ -111,6 +121,6 @@ impl CommonEntityTrait for Skeleton {
 	}
 
 	fn get_default_ai_behavior(&self) -> AiBehavior {
-		return AiBehavior::MoveTowardsPlayer;
+		return AiBehavior::MoveTowardsPlayerWithMinDistance(8.0);
 	}
 }
