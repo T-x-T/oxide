@@ -40,6 +40,10 @@ pub struct Chunk {
 	pub modified: bool,
 	pub block_entities: Vec<BlockEntity>,
 	pub keep_loaded_for_ticks: i32,
+	pub heightmap_motion_blocking: Vec<i16>,
+	pub heightmap_motion_blocking_no_leaves: Vec<i16>,
+	pub heightmap_ocean_floor: Vec<i16>,
+	pub heightmap_world_surface: Vec<i16>,
 }
 
 #[derive(Debug, Clone)]
@@ -314,6 +318,8 @@ impl Chunk {
 		let mut all_chunk_sections = filled_chunk_sections.clone();
 		all_chunk_sections.append(&mut empty_chunk_sections.clone());
 
+		let heightmap = if chunk_sections == 24 { [-49; 256] } else { [15; 256] };
+
 		return Self {
 			x: chunk_x,
 			z: chunk_z,
@@ -324,6 +330,10 @@ impl Chunk {
 			modified: true,
 			block_entities: Vec::new(),
 			keep_loaded_for_ticks: 20 * 60,
+			heightmap_motion_blocking: heightmap.to_vec(),
+			heightmap_motion_blocking_no_leaves: heightmap.to_vec(),
+			heightmap_ocean_floor: heightmap.to_vec(),
+			heightmap_world_surface: heightmap.to_vec(),
 		};
 	}
 

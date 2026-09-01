@@ -83,6 +83,44 @@ impl super::WorldLoader for Loader {
 			return Chunk::new(x, z, chunk_sections);
 		}
 
+		let mut heightmap_motion_blocking: Vec<i16> = Vec::new();
+		let mut heightmap_motion_blocking_no_leaves: Vec<i16> = Vec::new();
+		let mut heightmap_ocean_floor: Vec<i16> = Vec::new();
+		let mut heightmap_world_surface: Vec<i16> = Vec::new();
+
+		let default = NbtTag::TagCompound(String::new(), Vec::new());
+		let offset = if chunk_sections == 24 { -64 } else { 0 };
+		for heightmap in chunk_nbt.get_child("Heightmaps").unwrap_or(&default).as_tag_compound() {
+			let tag_name = heightmap.get_description();
+			let mut heightmap_data_parsed: Vec<i16> = Vec::new();
+			for val in heightmap.as_long_array() {
+				heightmap_data_parsed.push((val & 0b00000000_00000000_00000000_00000000_00000000_00000000_00000001_11111111) as i16 + offset);
+				heightmap_data_parsed
+					.push(((val & 0b00000000_00000000_00000000_00000000_00000000_00000011_11111110_00000000) >> 9) as i16 + offset);
+				heightmap_data_parsed
+					.push(((val & 0b00000000_00000000_00000000_00000000_00000111_11111100_00000000_00000000) >> 18) as i16 + offset);
+				heightmap_data_parsed
+					.push(((val & 0b00000000_00000000_00000000_00001111_11111000_00000000_00000000_00000000) >> 27) as i16 + offset);
+				if heightmap_data_parsed.len() == 256 {
+					break;
+				}
+				heightmap_data_parsed
+					.push(((val & 0b00000000_00000000_00011111_11110000_00000000_00000000_00000000_00000000) >> 36) as i16 + offset);
+				heightmap_data_parsed
+					.push(((val & 0b00000000_00111111_11100000_00000000_00000000_00000000_00000000_00000000) >> 45) as i16 + offset);
+				heightmap_data_parsed
+					.push(((val as u64 & 0b01111111_11000000_00000000_00000000_00000000_00000000_00000000_00000000) >> 54) as i16 + offset);
+			}
+
+			match tag_name {
+				"MOTION_BLOCKING" => heightmap_motion_blocking = heightmap_data_parsed,
+				"MOTION_BLOCKING_NO_LEAVES" => heightmap_motion_blocking_no_leaves = heightmap_data_parsed,
+				"OCEAN_FLOOR" => heightmap_ocean_floor = heightmap_data_parsed,
+				"WORLD_SURFACE" => heightmap_world_surface = heightmap_data_parsed,
+				_ => println!("encountered unknown heightmap type {tag_name}"),
+			};
+		}
+
 		let biome_ids = data::biomes::get_biome_ids();
 
 		let mut sections: Vec<super::ChunkSection> = Vec::new();
@@ -224,6 +262,10 @@ impl super::WorldLoader for Loader {
 			modified: false,
 			block_entities,
 			keep_loaded_for_ticks: 20 * 60,
+			heightmap_motion_blocking,
+			heightmap_motion_blocking_no_leaves,
+			heightmap_ocean_floor,
+			heightmap_world_surface,
 		};
 	}
 
@@ -706,6 +748,120 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 			chunk_nbt_tags.push(block_entities_nbt);
 		}
+
+		let mut heightmap_tags: Vec<NbtTag> = Vec::new();
+
+		if !chunk.heightmap_motion_blocking.is_empty() {
+			assert!(chunk.heightmap_motion_blocking.len() == 256);
+
+			let mut output: Vec<i64> = Vec::new();
+
+			let mut iteration = 0;
+			for _ in 0..37 {
+				let mut long = 0u64;
+				for i in 0..7 {
+					if iteration >= 256 {
+						break;
+					}
+
+					let mut val = chunk.heightmap_motion_blocking[iteration];
+					if chunk.sections.len() == 24 {
+						val += 64;
+					}
+					let val = val as u16;
+					long |= ((val & 0b00000001_11111111) as u64) << (9 * i);
+
+					iteration += 1;
+				}
+				assert!(long != 0);
+				output.push(long as i64);
+			}
+			heightmap_tags.push(NbtTag::LongArray("MOTION_BLOCKING".to_string(), output));
+		}
+		if !chunk.heightmap_motion_blocking_no_leaves.is_empty() {
+			assert!(chunk.heightmap_motion_blocking_no_leaves.len() == 256);
+
+			let mut output: Vec<i64> = Vec::new();
+
+			let mut iteration = 0;
+			for _ in 0..37 {
+				let mut long = 0u64;
+				for i in 0..7 {
+					if iteration >= 256 {
+						break;
+					}
+
+					let mut val = chunk.heightmap_motion_blocking_no_leaves[iteration];
+					if chunk.sections.len() == 24 {
+						val += 64;
+					}
+					let val = val as u16;
+					long |= ((val & 0b00000001_11111111) as u64) << (9 * i);
+
+					iteration += 1;
+				}
+				assert!(long != 0);
+				output.push(long as i64);
+			}
+			heightmap_tags.push(NbtTag::LongArray("MOTION_BLOCKING_NO_LEAVES".to_string(), output));
+		}
+		if !chunk.heightmap_ocean_floor.is_empty() {
+			assert!(chunk.heightmap_ocean_floor.len() == 256);
+
+			let mut output: Vec<i64> = Vec::new();
+
+			let mut iteration = 0;
+			for _ in 0..37 {
+				let mut long = 0u64;
+				for i in 0..7 {
+					if iteration >= 256 {
+						break;
+					}
+
+					let mut val = chunk.heightmap_ocean_floor[iteration];
+					if chunk.sections.len() == 24 {
+						val += 64;
+					}
+					let val = val as u16;
+					long |= ((val & 0b00000001_11111111) as u64) << (9 * i);
+
+					iteration += 1;
+				}
+				assert!(long != 0);
+				output.push(long as i64);
+			}
+			heightmap_tags.push(NbtTag::LongArray("OCEAN_FLOOR".to_string(), output));
+		}
+		if !chunk.heightmap_world_surface.is_empty() {
+			assert!(chunk.heightmap_world_surface.len() == 256);
+
+			let mut output: Vec<i64> = Vec::new();
+
+			let mut iteration = 0;
+			for _ in 0..37 {
+				let mut long = 0u64;
+				for i in 0..7 {
+					if iteration >= 256 {
+						break;
+					}
+
+					let mut val = chunk.heightmap_world_surface[iteration];
+					if chunk.sections.len() == 24 {
+						val += 64;
+					}
+					let val = val as u16;
+					long |= ((val & 0b00000001_11111111) as u64) << (9 * i);
+
+					iteration += 1;
+				}
+				assert!(long != 0);
+				output.push(long as i64);
+			}
+			heightmap_tags.push(NbtTag::LongArray("WORLD_SURFACE".to_string(), output));
+		}
+
+
+		chunk_nbt_tags.push(NbtTag::TagCompound("Heightmaps".to_string(), heightmap_tags));
 
 		let chunk_nbt = NbtTag::Root(chunk_nbt_tags);
 
