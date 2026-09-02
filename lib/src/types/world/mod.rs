@@ -1,6 +1,6 @@
 pub mod loader;
 
-use basic_types::blocks::Block;
+use basic_types::blocks::{Block, Type};
 
 use super::*;
 use std::collections::HashMap;
@@ -361,21 +361,43 @@ impl Chunk {
 			self.block_entities.push(blockentity);
 		}
 
+		if !self.heightmap_motion_blocking.is_empty() {
+			assert!(self.heightmap_motion_blocking.len() == 256);
+			self.heightmap_motion_blocking[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
+				self.get_highest_motion_blocking_block_y(position_global.x, position_global.z, lowest_block_y);
+		}
+		if !self.heightmap_motion_blocking_no_leaves.is_empty() {
+			assert!(self.heightmap_motion_blocking_no_leaves.len() == 256);
+			self.heightmap_motion_blocking_no_leaves[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
+				self.get_highest_motion_blocking_block_y_no_leaves(position_global.x, position_global.z, lowest_block_y);
+		}
+		if !self.heightmap_world_surface.is_empty() {
+			assert!(self.heightmap_world_surface.len() == 256);
+			self.heightmap_world_surface[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
+				self.get_highest_world_surface(position_global.x, position_global.z, lowest_block_y);
+		}
+		if !self.heightmap_ocean_floor.is_empty() {
+			assert!(self.heightmap_ocean_floor.len() == 256);
+			self.heightmap_ocean_floor[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
+				self.get_highest_ocean_floor(position_global.x, position_global.z, lowest_block_y);
+		}
+
 		return destroy_blockentity;
 	}
 
 	pub fn get_block(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> u16 {
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+
+		if self.sections[section_id as usize].blocks.is_empty() {
+			return 0;
+		}
+
 		if position_in_chunk.y < lowest_block_y {
 			return 0;
 		}
 
-		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
 
 		if section_id as usize >= self.sections.len() {
-			return 0;
-		}
-
-		if self.sections[section_id as usize].blocks.is_empty() {
 			return 0;
 		}
 
@@ -392,6 +414,107 @@ impl Chunk {
 	pub fn try_get_block_entity_mut(&mut self, position: BlockPosition) -> Option<&mut BlockEntity> {
 		self.modified = true; //cant know what caller will do with the &mut so better be safe
 		return self.block_entities.iter_mut().find(|x| x.get_position() == position);
+	}
+
+	fn get_highest_motion_blocking_block_y(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
+		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+
+		for y in (lowest_block_y..=highest_block_y).rev() {
+			let block = self.get_block(
+				BlockPosition {
+					x,
+					y,
+					z,
+				}
+				.convert_to_position_in_chunk(),
+				lowest_block_y,
+			);
+
+			let block_type = data::blocks::get_type_from_block_state_id(block);
+
+			if !block_type.has_no_collision_box() || block_type == Type::Liquid {
+				return y;
+			}
+		}
+
+		return highest_block_y;
+	}
+
+	fn get_highest_motion_blocking_block_y_no_leaves(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
+		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+
+		for y in (lowest_block_y..=highest_block_y).rev() {
+			let block = self.get_block(
+				BlockPosition {
+					x,
+					y,
+					z,
+				}
+				.convert_to_position_in_chunk(),
+				lowest_block_y,
+			);
+
+			let block_type = data::blocks::get_type_from_block_state_id(block);
+
+			if (!block_type.has_no_collision_box() || block_type == Type::Liquid)
+				&& !(block_type == Type::CherryLeaves
+					|| block_type == Type::TintedLeaves
+					|| block_type == Type::PaleOakLeaves
+					|| block_type == Type::MangroveLeaves
+					|| block_type == Type::TintedParticleLeaves
+					|| block_type == Type::UntintedParticleLeaves)
+			{
+				return y;
+			}
+		}
+
+		return highest_block_y;
+	}
+
+	fn get_highest_world_surface(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
+		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+
+		for y in (lowest_block_y..=highest_block_y).rev() {
+			let block = self.get_block(
+				BlockPosition {
+					x,
+					y,
+					z,
+				}
+				.convert_to_position_in_chunk(),
+				lowest_block_y,
+			);
+
+			if block != 0 {
+				return y;
+			}
+		}
+
+		return highest_block_y;
+	}
+
+	fn get_highest_ocean_floor(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
+		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+
+		for y in (lowest_block_y..=highest_block_y).rev() {
+			let block = self.get_block(
+				BlockPosition {
+					x,
+					y,
+					z,
+				}
+				.convert_to_position_in_chunk(),
+				lowest_block_y,
+			);
+
+			let block_type = data::blocks::get_type_from_block_state_id(block);
+
+			if !(block == 0 || block_type == Type::Liquid) {
+				return y;
+			}
+		}
+
+		return highest_block_y;
 	}
 }
 
