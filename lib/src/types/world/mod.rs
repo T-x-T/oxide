@@ -365,6 +365,7 @@ impl Chunk {
 			assert!(self.heightmap_motion_blocking.len() == 256);
 			self.heightmap_motion_blocking[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
 				self.get_highest_motion_blocking_block_y(position_global.x, position_global.z, lowest_block_y);
+			println!("{}", self.get_highest_motion_blocking_block_y(position_global.x, position_global.z, lowest_block_y));
 		}
 		if !self.heightmap_motion_blocking_no_leaves.is_empty() {
 			assert!(self.heightmap_motion_blocking_no_leaves.len() == 256);
@@ -417,7 +418,7 @@ impl Chunk {
 	}
 
 	fn get_highest_motion_blocking_block_y(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
-		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
 			let block = self.get_block(
@@ -437,11 +438,11 @@ impl Chunk {
 			}
 		}
 
-		return highest_block_y;
+		return lowest_block_y - 1;
 	}
 
 	fn get_highest_motion_blocking_block_y_no_leaves(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
-		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
 			let block = self.get_block(
@@ -468,11 +469,11 @@ impl Chunk {
 			}
 		}
 
-		return highest_block_y;
+		return lowest_block_y - 1;
 	}
 
 	fn get_highest_world_surface(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
-		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
 			let block = self.get_block(
@@ -490,11 +491,11 @@ impl Chunk {
 			}
 		}
 
-		return highest_block_y;
+		return lowest_block_y - 1;
 	}
 
 	fn get_highest_ocean_floor(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {
-		let highest_block_y = if lowest_block_y == -48 { 384 } else { 256 };
+		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
 			let block = self.get_block(
@@ -514,7 +515,7 @@ impl Chunk {
 			}
 		}
 
-		return highest_block_y;
+		return lowest_block_y - 1;
 	}
 }
 

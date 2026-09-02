@@ -261,7 +261,9 @@ pub fn update_all_recursively(
 	];
 
 	for block_to_update in blocks_to_update {
-		let res = crate::block::update(block_to_update, dimension, block_state_data).unwrap();
+		let Ok(res) = crate::block::update(block_to_update, dimension, block_state_data) else {
+			continue;
+		};
 		res.handle(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);
 		if !matches!(res, BlockUpdateOutcome::DoNothing) {
 			update_all_recursively(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);

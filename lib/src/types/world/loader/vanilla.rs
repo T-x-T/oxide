@@ -89,7 +89,7 @@ impl super::WorldLoader for Loader {
 		let mut heightmap_world_surface: Vec<i16> = Vec::new();
 
 		let default = NbtTag::TagCompound(String::new(), Vec::new());
-		let offset = if chunk_sections == 24 { -64 } else { 0 };
+		let offset = if chunk_sections == 24 { -65 } else { -1 };
 		for heightmap in chunk_nbt.get_child("Heightmaps").unwrap_or(&default).as_tag_compound() {
 			let tag_name = heightmap.get_description();
 			let mut heightmap_data_parsed: Vec<i16> = Vec::new();
@@ -847,7 +847,9 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 					let mut val = chunk.heightmap_world_surface[iteration];
 					if chunk.sections.len() == 24 {
-						val += 64;
+						val += 65;
+					} else {
+						val += 1;
 					}
 					let val = val as u16;
 					long |= ((val & 0b00000001_11111111) as u64) << (9 * i);
