@@ -699,6 +699,7 @@ fn impl_type() -> String {
 			Type::MangroveLeaves => true,
 			Type::TintedParticleLeaves => true,
 			Type::UntintedParticleLeaves => true,
+			Type::Air => true,
 			_ => false,
 		};
 	}

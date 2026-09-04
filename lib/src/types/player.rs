@@ -1260,23 +1260,25 @@ impl Player {
 
 		let mut sky_light_mask = 0u64;
 		let mut block_light_mask = 0u64;
+		let mut empty_sky_light_mask = 0u64;
+		let mut empty_block_light_mask = 0u64;
 		let mut sky_light_arrays: Vec<Vec<u8>> = Vec::new();
 		let mut block_light_arrays: Vec<Vec<u8>> = Vec::new();
-		for section in all_chunk_sections.iter().rev() {
-			if section.sky_lights.is_empty() {
-				sky_light_mask += 0;
-			} else {
-				sky_light_mask += 1;
+		for (index, section) in all_chunk_sections.iter().enumerate() {
+			if !section.sky_lights.is_empty() {
+				sky_light_mask |= 1 << (index + 1);
 				sky_light_arrays.push(section.sky_lights.clone());
+				if section.sky_lights.iter().find(|x| **x == 1).is_none() {
+					empty_sky_light_mask |= 1 << (index + 1);
+				}
 			}
-			sky_light_mask <<= 1;
-			if section.block_lights.is_empty() {
-				block_light_mask += 0;
-			} else {
-				block_light_mask += 1;
+			if !section.block_lights.is_empty() {
+				block_light_mask |= 1 << (index + 1);
 				block_light_arrays.push(section.block_lights.clone());
+				if section.block_lights.iter().find(|x| **x == 1).is_none() {
+					empty_block_light_mask |= 1 << (index + 1);
+				}
 			}
-			block_light_mask <<= 1;
 		}
 
 		let block_entity_types = data::blockentity::get_block_entity_types();
@@ -1291,20 +1293,23 @@ impl Player {
 				data: Some(NbtTag::Root(x.clone().into())),
 			})
 			.collect();
-
+		println!("{sky_light_mask:b}");
+		println!("{block_light_mask:b}");
+		println!("{empty_sky_light_mask:b}");
+		println!("{empty_block_light_mask:b}");
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight {
 				chunk_x,
 				chunk_z,
-				heightmaps: vec![],
+				heightmaps: vec![], //TODO: send this
 				data: all_processed_chunk_sections,
 				block_entities,
 				sky_light_mask: vec![sky_light_mask],
 				block_light_mask: vec![block_light_mask],
-				empty_sky_light_mask: vec![!sky_light_mask],
-				empty_block_light_mask: vec![!block_light_mask],
+				empty_sky_light_mask: vec![empty_sky_light_mask],
+				empty_block_light_mask: vec![empty_block_light_mask],
 				sky_light_arrays,
 				block_light_arrays,
 			},

@@ -301,8 +301,8 @@ impl Chunk {
 			ChunkSection {
 				blocks: vec![1; 4096],
 				biomes: vec![40; 64],
-				sky_lights: vec![0xFF; 2048],
-				block_lights: vec![]
+				sky_lights: vec![0x00; 2048],
+				block_lights: vec![0x00; 2048]
 			};
 			1
 		];
@@ -311,7 +311,7 @@ impl Chunk {
 				blocks: vec![0; 4096],
 				biomes: vec![40; 64],
 				sky_lights: vec![0xFF; 2048],
-				block_lights: vec![]
+				block_lights: vec![0x00; 2048]
 			};
 			chunk_sections as usize - 1
 		];
@@ -365,7 +365,6 @@ impl Chunk {
 			assert!(self.heightmap_motion_blocking.len() == 256);
 			self.heightmap_motion_blocking[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
 				self.get_highest_motion_blocking_block_y(position_global.x, position_global.z, lowest_block_y);
-			println!("{}", self.get_highest_motion_blocking_block_y(position_global.x, position_global.z, lowest_block_y));
 		}
 		if !self.heightmap_motion_blocking_no_leaves.is_empty() {
 			assert!(self.heightmap_motion_blocking_no_leaves.len() == 256);
@@ -382,6 +381,8 @@ impl Chunk {
 			self.heightmap_ocean_floor[(position_in_chunk.x + position_in_chunk.z * 16) as usize] =
 				self.get_highest_ocean_floor(position_global.x, position_global.z, lowest_block_y);
 		}
+
+		self.update_skylight(position_in_chunk, lowest_block_y);
 
 		return destroy_blockentity;
 	}
@@ -415,6 +416,87 @@ impl Chunk {
 	pub fn try_get_block_entity_mut(&mut self, position: BlockPosition) -> Option<&mut BlockEntity> {
 		self.modified = true; //cant know what caller will do with the &mut so better be safe
 		return self.block_entities.iter_mut().find(|x| x.get_position() == position);
+	}
+
+	fn update_skylight(&mut self, position_in_chunk: BlockPosition, lowest_block_y: i16) {
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
+		let packed_block_id = block_id / 2;
+		let is_high_portion = block_id % 2 == 0;
+		let block_state_id = self.get_block(position_in_chunk, lowest_block_y);
+		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
+		let new_light;
+		if !block_type.is_transparent() {
+			new_light = 0;
+		} else {
+			if self.has_block_sky_access(position_in_chunk, lowest_block_y) {
+				new_light = 15;
+			} else {
+				new_light = 0;
+			}
+		}
+
+		//println!("new skylight level at updated block: {new_light}");
+
+		if is_high_portion {
+			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0x0F;
+			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light << 4;
+		} else {
+			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0xF0;
+			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light;
+		}
+	}
+
+	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
+		let skylight = self.get_skylight(position_global, lowest_block_y);
+		let blocklight = self.get_blocklight(position_global, lowest_block_y);
+		if skylight > blocklight {
+			return skylight;
+		} else {
+			return blocklight;
+		}
+	}
+
+	pub fn get_skylight(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
+		let position_in_chunk = position_global.convert_to_position_in_chunk();
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
+		return *self.sections[section_id as usize].sky_lights.get(block_id as usize).unwrap_or(&0);
+	}
+
+	pub fn get_blocklight(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
+		let position_in_chunk = position_global.convert_to_position_in_chunk();
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
+		return *self.sections[section_id as usize].block_lights.get(block_id as usize).unwrap_or(&0);
+	}
+
+	fn has_block_sky_access(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> bool {
+		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
+
+		for y in position_in_chunk.y..=highest_block_y {
+			let block = self.get_block(
+				BlockPosition {
+					y,
+					..position_in_chunk
+				},
+				lowest_block_y,
+			);
+
+			let block_type = data::blocks::get_type_from_block_state_id(block);
+
+			if !block_type.is_transparent() {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	fn get_highest_motion_blocking_block_y(&self, x: i32, z: i32, lowest_block_y: i16) -> i16 {

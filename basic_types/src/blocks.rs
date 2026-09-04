@@ -147,6 +147,7 @@ impl Type {
 			Type::MangroveLeaves => true,
 			Type::TintedParticleLeaves => true,
 			Type::UntintedParticleLeaves => true,
+			Type::Air => true,
 			_ => false,
 		};
 	}
