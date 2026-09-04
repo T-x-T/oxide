@@ -135,6 +135,21 @@ impl Type {
 			_ => false,
 		};
 	}
+
+	#[allow(clippy::match_like_matches_macro)]
+	pub fn is_transparent(&self) -> bool {
+		return match self {
+			Type::StainedGlass => true,
+			Type::Transparent => true,
+			Type::Trapdoor => true,
+			Type::WoolCarpet => true,
+			Type::Ice => true,
+			Type::MangroveLeaves => true,
+			Type::TintedParticleLeaves => true,
+			Type::UntintedParticleLeaves => true,
+			_ => false,
+		};
+	}
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AmethystClusterFacing { 	North, 	East, 	South, 	West, 	Up, 	Down, }
