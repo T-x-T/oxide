@@ -424,7 +424,7 @@ impl Chunk {
 			+ (position_in_chunk.z * 16)
 			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
 		let packed_block_id = block_id / 2;
-		let is_high_portion = block_id % 2 == 0;
+		let is_high_portion = block_id % 2 == 1;
 		let block_state_id = self.get_block(position_in_chunk, lowest_block_y);
 		let block_type = data::blocks::get_type_from_block_state_id(block_state_id);
 		let new_light;
@@ -439,6 +439,7 @@ impl Chunk {
 		}
 
 		//println!("new skylight level at updated block: {new_light}");
+		println!("before: {}", self.sections[section_id as usize].sky_lights[packed_block_id as usize]);
 
 		if is_high_portion {
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0x0F;
@@ -447,6 +448,8 @@ impl Chunk {
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0xF0;
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light;
 		}
+
+		println!("after: {}", self.sections[section_id as usize].sky_lights[packed_block_id as usize]);
 	}
 
 	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {

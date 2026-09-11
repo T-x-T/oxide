@@ -1293,10 +1293,7 @@ impl Player {
 				data: Some(NbtTag::Root(x.clone().into())),
 			})
 			.collect();
-		println!("{sky_light_mask:b}");
-		println!("{block_light_mask:b}");
-		println!("{empty_sky_light_mask:b}");
-		println!("{empty_block_light_mask:b}");
+
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight::PACKET_ID,
