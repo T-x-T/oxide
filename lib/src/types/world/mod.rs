@@ -439,6 +439,10 @@ impl Chunk {
 			}
 		}
 
+		if self.sections[section_id as usize].sky_lights.is_empty() {
+			self.sections[section_id as usize].sky_lights = [0; 2048].to_vec();
+		}
+
 		if is_high_portion {
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0x0F;
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light << 4;
@@ -458,6 +462,10 @@ impl Chunk {
 		let block_state_id = self.get_block(position_in_chunk, lowest_block_y);
 
 		let new_light = crate::block::get_light_level(block_state_id);
+
+		if self.sections[section_id as usize].block_lights.is_empty() {
+			self.sections[section_id as usize].block_lights = [0; 2048].to_vec();
+		}
 
 		if is_high_portion {
 			self.sections[section_id as usize].block_lights[packed_block_id as usize] &= 0x0F;
