@@ -36,6 +36,35 @@ impl BlockPosition {
 			z: chunk_z,
 		};
 	}
+
+	pub fn get_direct_neighbours(&self) -> [BlockPosition; 6] {
+		return [
+			BlockPosition {
+				x: self.x + 1,
+				..*self
+			},
+			BlockPosition {
+				x: self.x - 1,
+				..*self
+			},
+			BlockPosition {
+				y: self.y + 1,
+				..*self
+			},
+			BlockPosition {
+				y: self.y - 1,
+				..*self
+			},
+			BlockPosition {
+				z: self.z + 1,
+				..*self
+			},
+			BlockPosition {
+				z: self.z - 1,
+				..*self
+			},
+		];
+	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
