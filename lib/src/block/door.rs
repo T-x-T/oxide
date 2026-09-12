@@ -201,12 +201,17 @@ pub fn get_block_state_id(
 	return output;
 }
 
-pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, _block_id: u16) -> BlockUpdateOutcome {
+pub fn update(
+	position: BlockPosition,
+	dimension: &Dimension,
+	_block_states: &HashMap<String, Block>,
+	_block_id: u16,
+) -> BlockUpdateOutcome {
 	let Ok(block_state_id) = dimension.get_block(position) else {
 		return BlockUpdateOutcome::DoNothing;
 	};
 
-	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id);
 
 	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) {
 		let position_to_check = BlockPosition {

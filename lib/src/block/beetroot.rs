@@ -6,7 +6,7 @@ pub fn tick(
 	_block_position: BlockPosition,
 	block_states: &HashMap<String, Block>,
 ) -> u16 {
-	let properties = data::blocks::get_block_state_from_block_state_id(current_block_state_id, block_states);
+	let properties = data::blocks::get_block_state_from_block_state_id(current_block_state_id);
 	let block = data::blocks::get_block_from_block_state_id(current_block_state_id, block_states);
 	if properties.properties.contains(&Property::BeetrootAge(BeetrootAge::Num0)) {
 		return block.states.iter().find(|x| x.properties.contains(&Property::BeetrootAge(BeetrootAge::Num1))).unwrap().id;

@@ -383,6 +383,7 @@ impl Chunk {
 		}
 
 		self.update_skylight(position_in_chunk, lowest_block_y);
+		self.update_blocklight(position_in_chunk, lowest_block_y);
 
 		return destroy_blockentity;
 	}
@@ -438,9 +439,6 @@ impl Chunk {
 			}
 		}
 
-		//println!("new skylight level at updated block: {new_light}");
-		println!("before: {}", self.sections[section_id as usize].sky_lights[packed_block_id as usize]);
-
 		if is_high_portion {
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0x0F;
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light << 4;
@@ -448,8 +446,26 @@ impl Chunk {
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] &= 0xF0;
 			self.sections[section_id as usize].sky_lights[packed_block_id as usize] |= new_light;
 		}
+	}
 
-		println!("after: {}", self.sections[section_id as usize].sky_lights[packed_block_id as usize]);
+	pub fn update_blocklight(&mut self, position_in_chunk: BlockPosition, lowest_block_y: i16) {
+		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
+		let block_id = position_in_chunk.x
+			+ (position_in_chunk.z * 16)
+			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
+		let packed_block_id = block_id / 2;
+		let is_high_portion = block_id % 2 == 1;
+		let block_state_id = self.get_block(position_in_chunk, lowest_block_y);
+
+		let new_light = crate::block::get_light_level(block_state_id);
+
+		if is_high_portion {
+			self.sections[section_id as usize].block_lights[packed_block_id as usize] &= 0x0F;
+			self.sections[section_id as usize].block_lights[packed_block_id as usize] |= new_light << 4;
+		} else {
+			self.sections[section_id as usize].block_lights[packed_block_id as usize] &= 0xF0;
+			self.sections[section_id as usize].block_lights[packed_block_id as usize] |= new_light;
+		}
 	}
 
 	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {

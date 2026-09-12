@@ -109,8 +109,8 @@ pub fn get_hardness(_block_id: u16, block: Block, _block_states: &HashMap<String
 	}
 }
 
-pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_states: &HashMap<String, Block>) -> CollisionShape {
-	let state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, _block_states: &HashMap<String, Block>) -> CollisionShape {
+	let state = data::blocks::get_block_state_from_block_state_id(block_state_id);
 	return if state.properties.contains(&Property::SlabType(SlabType::Bottom)) {
 		CollisionShape::new_from_cuboid(
 			Cuboid {

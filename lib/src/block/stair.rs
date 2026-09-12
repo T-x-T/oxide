@@ -58,12 +58,12 @@ pub fn get_block_state_id(
 	let mut shape = StairShape::Straight;
 
 	if stair_block_ids.contains(&north_block) {
-		let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
+		let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block);
 
 		if north_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
 			if cardinal_direction == CardinalDirection::South {
 				if stair_block_ids.contains(&west_block) {
-					let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+					let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block);
 					if west_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
 						shape = StairShape::Straight;
 					} else {
@@ -81,7 +81,7 @@ pub fn get_block_state_id(
 		} else if north_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
 			if cardinal_direction == CardinalDirection::North {
 				if stair_block_ids.contains(&west_block) {
-					let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+					let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block);
 					if west_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
 						shape = StairShape::Straight;
 					} else {
@@ -100,11 +100,11 @@ pub fn get_block_state_id(
 	}
 
 	if stair_block_ids.contains(&east_block) {
-		let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
+		let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block);
 		if east_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
 			if cardinal_direction == CardinalDirection::West {
 				if stair_block_ids.contains(&north_block) {
-					let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
+					let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block);
 					if north_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
 						shape = StairShape::Straight;
 					} else {
@@ -122,7 +122,7 @@ pub fn get_block_state_id(
 		} else if east_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
 			if cardinal_direction == CardinalDirection::East {
 				if stair_block_ids.contains(&north_block) {
-					let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
+					let north_block_state = data::blocks::get_block_state_from_block_state_id(north_block);
 					if north_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
 						shape = StairShape::Straight;
 					} else {
@@ -141,11 +141,11 @@ pub fn get_block_state_id(
 	}
 
 	if stair_block_ids.contains(&south_block) {
-		let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
+		let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block);
 		if south_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
 			if cardinal_direction == CardinalDirection::North {
 				if stair_block_ids.contains(&east_block) {
-					let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
+					let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block);
 					if east_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
 						shape = StairShape::Straight;
 					} else {
@@ -163,7 +163,7 @@ pub fn get_block_state_id(
 		} else if south_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
 			if cardinal_direction == CardinalDirection::South {
 				if stair_block_ids.contains(&east_block) {
-					let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
+					let east_block_state = data::blocks::get_block_state_from_block_state_id(east_block);
 					if east_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
 						shape = StairShape::Straight;
 					} else {
@@ -182,11 +182,11 @@ pub fn get_block_state_id(
 	}
 
 	if stair_block_ids.contains(&west_block) {
-		let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+		let west_block_state = data::blocks::get_block_state_from_block_state_id(west_block);
 		if west_block_state.properties.contains(&Property::StairFacing(StairFacing::South)) {
 			if cardinal_direction == CardinalDirection::East {
 				if stair_block_ids.contains(&south_block) {
-					let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
+					let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block);
 					if south_block_state.properties.contains(&Property::StairFacing(StairFacing::East)) {
 						shape = StairShape::Straight;
 					} else {
@@ -204,7 +204,7 @@ pub fn get_block_state_id(
 		} else if west_block_state.properties.contains(&Property::StairFacing(StairFacing::North)) {
 			if cardinal_direction == CardinalDirection::West {
 				if stair_block_ids.contains(&south_block) {
-					let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
+					let south_block_state = data::blocks::get_block_state_from_block_state_id(south_block);
 					if south_block_state.properties.contains(&Property::StairFacing(StairFacing::West)) {
 						shape = StairShape::Straight;
 					} else {
@@ -245,7 +245,7 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 		return BlockUpdateOutcome::DoNothing;
 	};
 
-	let block = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+	let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
 
 	let face = if block.properties.contains(&Property::StairHalf(StairHalf::Top)) { 0 } else { 1 };
 

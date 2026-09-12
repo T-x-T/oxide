@@ -1,7 +1,7 @@
 use super::*;
 
 pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, block_id: u16) -> BlockUpdateOutcome {
-	let state = data::blocks::get_block_state_from_block_state_id(block_id, block_states);
+	let state = data::blocks::get_block_state_from_block_state_id(block_id);
 	let positions_to_check = if state.properties.contains(&Property::NetherPortalAxis(NetherPortalAxis::X)) {
 		vec![
 			BlockPosition {

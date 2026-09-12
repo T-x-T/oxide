@@ -40,10 +40,10 @@ pub fn get_block_state_id(
 		})
 		.unwrap_or(0);
 
-	let north_block_states = data::blocks::get_block_state_from_block_state_id(north_block, block_states);
-	let east_block_states = data::blocks::get_block_state_from_block_state_id(east_block, block_states);
-	let south_block_states = data::blocks::get_block_state_from_block_state_id(south_block, block_states);
-	let west_block_states = data::blocks::get_block_state_from_block_state_id(west_block, block_states);
+	let north_block_states = data::blocks::get_block_state_from_block_state_id(north_block);
+	let east_block_states = data::blocks::get_block_state_from_block_state_id(east_block);
+	let south_block_states = data::blocks::get_block_state_from_block_state_id(south_block);
+	let west_block_states = data::blocks::get_block_state_from_block_state_id(west_block);
 
 	let north = if block_ids_to_check.contains(&north_block)
 		&& !north_block_states.properties.contains(&Property::FenceGateFacing(FenceGateFacing::North))

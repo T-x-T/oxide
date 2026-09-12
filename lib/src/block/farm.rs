@@ -6,7 +6,7 @@ pub fn tick(
 	block_position: BlockPosition,
 	block_states: &HashMap<String, Block>,
 ) -> u16 {
-	let state = data::blocks::get_block_state_from_block_state_id(current_block_state_id, block_states);
+	let state = data::blocks::get_block_state_from_block_state_id(current_block_state_id);
 
 	let mut found_water = false;
 	'outer: for x in (block_position.x - 4)..=(block_position.x + 4) {

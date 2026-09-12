@@ -550,11 +550,13 @@ fn get_block_state_from_block_state_id() -> String {
 					properties_string += convert_to_upper_camel_case(&block_type).as_str();
 					properties_string += convert_to_upper_camel_case(property_name).as_str();
 					properties_string += "::";
-					properties_string += if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&property_value.as_str().unwrap().to_string()) {
-						format!("Num{}", convert_to_upper_camel_case(&property_value.as_str().unwrap()))
-					} else {
-						convert_to_upper_camel_case(&property_value.as_str().unwrap())
-					}.as_str();
+					properties_string +=
+						if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&property_value.as_str().unwrap().to_string()) {
+							format!("Num{}", convert_to_upper_camel_case(property_value.as_str().unwrap()))
+						} else {
+							convert_to_upper_camel_case(property_value.as_str().unwrap())
+						}
+						.as_str();
 					properties_string += "),";
 				}
 			}
