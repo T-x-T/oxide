@@ -525,13 +525,51 @@ fn get_block_from_block_state_id() -> String {
 
 
 fn get_block_state_from_block_state_id() -> String {
-	return "pub fn get_block_state_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> State {
-\treturn block_states.iter()
-\t\t.filter(|x| x.1.states.iter().any(|y| y.id == block_state_id))
-\t\t.map(|x| x.1.states.iter().find(|y| y.id == block_state_id).unwrap())
-\t\t.collect::<Vec<&State>>().first_mut().unwrap().clone();
-}\n"
-		.to_string();
+	let mut output = String::new();
+
+	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+	output += "pub fn get_block_state_from_block_state_id(block_state_id: u16) -> State {\n";
+	output += "\treturn match block_state_id {\n";
+
+	for x in blocks_json.as_object().unwrap().iter() {
+		let block = x.1.as_object().unwrap();
+		let block_type =
+			convert_to_upper_camel_case(&block["definition"]["type"].as_str().unwrap().trim().replace("\"type\": \"", "").replace("\",", ""));
+		for state in block["states"].as_array().unwrap() {
+			let block_state_id = state["id"].as_i32().unwrap();
+
+			let mut properties_string = String::new();
+			if state.has_key("properties") {
+				for (property_name, property_value) in state["properties"].as_object().unwrap().iter() {
+					properties_string += convert_to_upper_camel_case(&block_type).as_str();
+					properties_string += convert_to_upper_camel_case(property_name).as_str();
+					properties_string += "(";
+					properties_string += convert_to_upper_camel_case(&block_type).as_str();
+					properties_string += convert_to_upper_camel_case(property_value.as_str().unwrap()).as_str();
+					properties_string += "),";
+				}
+			}
+
+			let state_string = format!("State {{id: {block_state_id}, properties: vec![{properties_string}]}}");
+			output += format!("\t\t{block_state_id} => {},\n", state_string).as_str();
+		}
+	}
+
+	output += "\t\t_ => panic!(\"block_state_id {} doesnt exist\", block_state_id)\n";
+	output += "\t}\n";
+
+	output += "}\n";
+	return output;
+
+	// 	return "pub fn get_block_state_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> State {
+	// \treturn block_states.iter()
+	// \t\t.filter(|x| x.1.states.iter().any(|y| y.id == block_state_id))
+	// \t\t.map(|x| x.1.states.iter().find(|y| y.id == block_state_id).unwrap())
+	// \t\t.collect::<Vec<&State>>().first_mut().unwrap().clone();
+	// }\n"
+	// 		.to_string();
 }
 
 fn get_block_name_from_block_state_id() -> String {
