@@ -60,4 +60,8 @@ impl CommonEntityTrait for EnderDragon {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (8.0, 16.0);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Monster;
+	}
 }

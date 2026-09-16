@@ -102,4 +102,8 @@ impl CommonEntityTrait for Zombie {
 	fn get_default_ai_behavior(&self) -> AiBehavior {
 		return AiBehavior::MoveTowardsPlayer;
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Monster;
+	}
 }

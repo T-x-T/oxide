@@ -129,6 +129,10 @@ impl CommonEntityTrait for Cow {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.4, 0.9);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Cow {

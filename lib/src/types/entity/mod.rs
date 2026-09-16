@@ -234,6 +234,54 @@ impl Entity {
 		};
 	}
 
+	pub fn get_type_string(&self) -> String {
+		return match self {
+			Entity::Armadillo(x) => x.get_type_string(),
+			Entity::Cat(x) => x.get_type_string(),
+			Entity::ChestMinecart(x) => x.get_type_string(),
+			Entity::Chicken(x) => x.get_type_string(),
+			Entity::Cow(x) => x.get_type_string(),
+			Entity::Creeper(x) => x.get_type_string(),
+			Entity::Donkey(x) => x.get_type_string(),
+			Entity::Horse(x) => x.get_type_string(),
+			Entity::Item(x) => x.get_type_string(),
+			Entity::Parrot(x) => x.get_type_string(),
+			Entity::Pig(x) => x.get_type_string(),
+			Entity::Rabbit(x) => x.get_type_string(),
+			Entity::Sheep(x) => x.get_type_string(),
+			Entity::Player(x) => x.get_type_string(),
+			Entity::EnderDragon(x) => x.get_type_string(),
+			Entity::EndCrystal(x) => x.get_type_string(),
+			Entity::Zombie(x) => x.get_type_string(),
+			Entity::Skeleton(x) => x.get_type_string(),
+			Entity::Arrow(x) => x.get_type_string(),
+		};
+	}
+
+	pub fn get_mob_type(&self) -> MobType {
+		return match self {
+			Entity::Armadillo(x) => x.get_mob_type(),
+			Entity::Cat(x) => x.get_mob_type(),
+			Entity::ChestMinecart(x) => x.get_mob_type(),
+			Entity::Chicken(x) => x.get_mob_type(),
+			Entity::Cow(x) => x.get_mob_type(),
+			Entity::Creeper(x) => x.get_mob_type(),
+			Entity::Donkey(x) => x.get_mob_type(),
+			Entity::Horse(x) => x.get_mob_type(),
+			Entity::Item(x) => x.get_mob_type(),
+			Entity::Parrot(x) => x.get_mob_type(),
+			Entity::Pig(x) => x.get_mob_type(),
+			Entity::Rabbit(x) => x.get_mob_type(),
+			Entity::Sheep(x) => x.get_mob_type(),
+			Entity::Player(x) => x.get_mob_type(),
+			Entity::EnderDragon(x) => x.get_mob_type(),
+			Entity::EndCrystal(x) => x.get_mob_type(),
+			Entity::Zombie(x) => x.get_mob_type(),
+			Entity::Skeleton(x) => x.get_mob_type(),
+			Entity::Arrow(x) => x.get_mob_type(),
+		};
+	}
+
 	pub fn to_nbt_extras(&self) -> Vec<NbtTag> {
 		return match self {
 			Entity::Armadillo(x) => x.to_nbt_extras(),

@@ -137,6 +137,10 @@ impl CommonEntityTrait for Chicken {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.7, 0.4);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Chicken {

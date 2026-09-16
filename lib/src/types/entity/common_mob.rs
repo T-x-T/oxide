@@ -1,6 +1,18 @@
 use super::*;
 
 #[derive(Clone, Debug, PartialEq)]
+pub enum MobType {
+	Monster,
+	Creature,
+	Ambient,
+	Axolotl,
+	UntergroundWaterCreature,
+	WaterCreature,
+	WaterAmbient,
+	Misc,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub struct CommonMob {
 	pub absorption_amount: f32,
 	pub active_effects: Vec<NbtListTag>,

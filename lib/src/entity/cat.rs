@@ -90,6 +90,10 @@ impl CommonEntityTrait for Cat {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.7, 0.6);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Cat {

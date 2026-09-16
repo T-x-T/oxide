@@ -123,4 +123,8 @@ impl CommonEntityTrait for Skeleton {
 	fn get_default_ai_behavior(&self) -> AiBehavior {
 		return AiBehavior::MoveTowardsPlayerWithMinDistance(8.0);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Monster;
+	}
 }

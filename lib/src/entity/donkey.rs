@@ -90,6 +90,10 @@ impl CommonEntityTrait for Donkey {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.5, 0.3965);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Donkey {

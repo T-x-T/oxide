@@ -177,6 +177,12 @@ pub trait CommonEntityTrait {
 	}
 	fn set_common_entity_data(&mut self, common_entity_data: CommonEntity);
 	fn get_type(&self) -> i32;
+	fn get_type_string(&self) -> String {
+		return data::entities::get_name_from_id(self.get_type());
+	}
+	fn get_mob_type(&self) -> MobType {
+		panic!("{} is not a mob", data::entities::get_name_from_id(self.get_type()));
+	}
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata>;
 
 	fn is_mob(&self) -> bool {

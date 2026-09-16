@@ -90,6 +90,10 @@ impl CommonEntityTrait for Armadillo {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.65, 0.7);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Armadillo {

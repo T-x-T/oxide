@@ -90,6 +90,10 @@ impl CommonEntityTrait for Rabbit {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.5, 0.4);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }
 
 impl BreedableMobTrait for Rabbit {
