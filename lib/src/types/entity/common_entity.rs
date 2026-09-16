@@ -542,6 +542,7 @@ pub trait CommonEntityTrait {
 	) -> (AiExecutionResult, Vec<EntityTickOutcome>) {
 		let mut player_distances = players
 			.iter()
+			.filter(|x| x.get_gamemode() == Gamemode::Survival || x.get_gamemode() == Gamemode::Adventure)
 			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
 			.filter(|x| x.1 < 25.0)
 			.collect::<Vec<(&Player, f64)>>();

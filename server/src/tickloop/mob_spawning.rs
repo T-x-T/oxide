@@ -10,7 +10,6 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 	for dimension in world.dimensions.values_mut() {
 		let dimension_hostile_mob_count = dimension.entities.iter().filter(|x| x.is_mob() && x.get_mob_type() == MobType::Monster).count();
-		println!("{dimension_hostile_mob_count}");
 		if dimension_hostile_mob_count >= lib::MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE as usize {
 			continue;
 		}
