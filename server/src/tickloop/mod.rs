@@ -5,6 +5,7 @@ use lib::game::PacketHandlerAction;
 use lib::packets::Packet;
 use lib::types::*;
 
+mod mob_spawning;
 mod packet_handler_actions;
 mod process_entity_tick_outcome;
 mod random_tick;
@@ -26,6 +27,7 @@ pub struct TickTimings {
 	pub packet_handler_actions: std::time::Duration,
 	pub random_tick: std::time::Duration,
 	pub tasks: std::time::Duration,
+	pub mob_spawning: std::time::Duration,
 }
 
 pub fn tick(game: Arc<Game>) -> TickTimings {
@@ -74,6 +76,10 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	tasks::process(game.clone(), &players_clone);
 	let duration_tasks = std::time::Instant::now() - now;
 
+	let now = std::time::Instant::now();
+	mob_spawning::process(game.clone(), &players_clone);
+	let duration_mob_spawning = std::time::Instant::now() - now;
+
 	let mut world = game.world.lock().unwrap();
 	for dimension in &mut world.dimensions {
 		for chunk in &mut dimension.1.chunks {
@@ -91,5 +97,6 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 		packet_handler_actions: duration_packet_handler_actions,
 		random_tick: duration_random_tick,
 		tasks: duration_tasks,
+		mob_spawning: duration_mob_spawning,
 	};
 }

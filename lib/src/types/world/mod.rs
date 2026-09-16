@@ -515,6 +515,10 @@ impl Chunk {
 	pub fn get_block(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> u16 {
 		let section_id = (position_in_chunk.y + -lowest_block_y) / 16;
 
+		if section_id as usize >= self.sections.len() {
+			return 0;
+		}
+
 		if self.sections[section_id as usize].blocks.is_empty() {
 			return 0;
 		}
@@ -545,7 +549,9 @@ impl Chunk {
 
 	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
 		let skylight = self.get_skylight(position_global, lowest_block_y);
+		assert!(skylight < 16);
 		let blocklight = self.get_blocklight(position_global, lowest_block_y);
+		assert!(blocklight < 16);
 		if skylight > blocklight {
 			return skylight;
 		} else {
@@ -559,7 +565,19 @@ impl Chunk {
 		let block_id = position_in_chunk.x
 			+ (position_in_chunk.z * 16)
 			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
-		return *self.sections[section_id as usize].sky_lights.get(block_id as usize).unwrap_or(&0);
+
+		let packed_block_id = block_id / 2;
+		let is_high_portion = block_id % 2 == 1;
+
+		if self.sections[section_id as usize].sky_lights.is_empty() {
+			return 0;
+		}
+
+		if is_high_portion {
+			return (self.sections[section_id as usize].sky_lights[packed_block_id as usize] & 0xF0) >> 4;
+		} else {
+			return self.sections[section_id as usize].sky_lights[packed_block_id as usize] & 0x0F;
+		}
 	}
 
 	pub fn get_blocklight(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
@@ -568,7 +586,19 @@ impl Chunk {
 		let block_id = position_in_chunk.x
 			+ (position_in_chunk.z * 16)
 			+ (((position_in_chunk.y + -lowest_block_y) as i32 - (section_id as i32 * 16)) * 256);
-		return *self.sections[section_id as usize].block_lights.get(block_id as usize).unwrap_or(&0);
+
+		let packed_block_id = block_id / 2;
+		let is_high_portion = block_id % 2 == 1;
+
+		if self.sections[section_id as usize].block_lights.is_empty() {
+			return 0;
+		}
+
+		if is_high_portion {
+			return (self.sections[section_id as usize].block_lights[packed_block_id as usize] & 0xF0) >> 4;
+		} else {
+			return self.sections[section_id as usize].block_lights[packed_block_id as usize] & 0x0F;
+		}
 	}
 
 	fn has_block_sky_access(&self, position_in_chunk: BlockPosition, lowest_block_y: i16) -> bool {

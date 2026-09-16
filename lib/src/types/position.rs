@@ -26,6 +26,14 @@ impl BlockPosition {
 		};
 	}
 
+	pub fn convert_to_position_global(&self, chunk_x: i32, chunk_z: i32) -> BlockPosition {
+		return BlockPosition {
+			x: chunk_x * 16 + self.x,
+			y: self.y,
+			z: chunk_z * 16 + self.z,
+		};
+	}
+
 	pub fn convert_to_coordinates_of_chunk(&self) -> BlockPosition {
 		let chunk_x = if self.x >= 0 { self.x / 16 } else { (self.x - 15) / 16 };
 		let chunk_z = if self.z >= 0 { self.z / 16 } else { (self.z - 15) / 16 };
@@ -530,6 +538,38 @@ mod test {
 			};
 			let chunk_position = position.convert_to_position_in_chunk();
 			assert_eq!(chunk_position.z, 2);
+		}
+	}
+
+	mod convert_to_position_global {
+		use super::*;
+
+		#[test]
+		fn all_positive() {
+			let global_position = BlockPosition {
+				x: 104,
+				y: 100,
+				z: 66,
+			};
+			let chunk_position = global_position.convert_to_position_in_chunk();
+
+			let res = chunk_position.convert_to_position_global(6, 4);
+
+			assert_eq!(global_position, res);
+		}
+
+		#[test]
+		fn all_negative() {
+			let global_position = BlockPosition {
+				x: -42,
+				y: 100,
+				z: -57,
+			};
+			let chunk_position = global_position.convert_to_position_in_chunk();
+
+			let res = chunk_position.convert_to_position_global(-3, -4);
+
+			assert_eq!(global_position, res);
 		}
 	}
 

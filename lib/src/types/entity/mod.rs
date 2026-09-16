@@ -594,6 +594,64 @@ impl Entity {
 			Entity::Arrow(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 		};
 	}
+
+	pub fn collides_with_blocks_at(
+		&self,
+		dimension: &Dimension,
+		entity_position_to_check: EntityPosition,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
+	) -> bool {
+		return match self {
+			Entity::Armadillo(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Cat(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::ChestMinecart(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Chicken(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Cow(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Creeper(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Donkey(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Horse(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Item(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Parrot(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Pig(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Rabbit(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Sheep(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Player(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::EnderDragon(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::EndCrystal(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Zombie(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Skeleton(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Arrow(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+		};
+	}
+
+	pub fn is_on_ground_at(
+		&self,
+		dimension: &Dimension,
+		entity_position_to_check: EntityPosition,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
+	) -> bool {
+		return match self {
+			Entity::Armadillo(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Cat(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::ChestMinecart(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Chicken(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Cow(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Creeper(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Donkey(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Horse(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Item(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Parrot(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Pig(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Rabbit(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Sheep(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Player(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::EnderDragon(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::EndCrystal(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Zombie(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Skeleton(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Arrow(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+		};
+	}
 }
 
 
