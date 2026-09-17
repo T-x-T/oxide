@@ -232,6 +232,19 @@ pub trait CommonEntityTrait {
 			}
 		}
 
+		if crate::HOSTILE_SPAWNABLE_MOBS.contains(&self.get_type_string().as_str()) {
+			let distance_to_closest_player = players
+				.iter()
+				.filter(|x| x.get_dimension() == dimension.name)
+				.map(|x| x.get_position().distance_to(self.get_common_entity_data().position))
+				.min_by(|a, b| a.total_cmp(b))
+				.unwrap_or_default();
+
+			if distance_to_closest_player > 128.0 {
+				return vec![EntityTickOutcome::RemoveSelf];
+			}
+		}
+
 		if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
 			if self.is_on_ground(dimension, block_state_data) {
 				self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();

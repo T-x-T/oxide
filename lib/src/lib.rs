@@ -28,6 +28,7 @@ pub const MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS: i32 = 5 * 60 * 20;
 pub const MOB_SPAWN_ATTEMPTS_PER_CHUNK_PER_TICK: u16 = 100;
 pub const MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE: u16 = 400;
 pub const MOB_SPAWN_LIMIT_PER_CHUNK_HOSTILE: u16 = MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE / 10;
+pub const HOSTILE_SPAWNABLE_MOBS: [&str; 3] = ["minecraft:creeper", "minecraft:skeleton", "minecraft:zombie"];
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
