@@ -252,11 +252,11 @@ fn evaluate_condition(
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	used_tool: &Option<Slot>,
-	entity: Option<&Entity>,
+	_entity: Option<&Entity>,
 ) -> bool {
 	return match condition {
-		Predicate::AllOf(predicates) => predicates.iter().all(|x| evaluate_condition(x, block_state_id, block_states, used_tool, entity)),
-		Predicate::AnyOf(predicates) => predicates.iter().any(|x| evaluate_condition(x, block_state_id, block_states, used_tool, entity)),
+		Predicate::AllOf(predicates) => predicates.iter().all(|x| evaluate_condition(x, block_state_id, block_states, used_tool, _entity)),
+		Predicate::AnyOf(predicates) => predicates.iter().any(|x| evaluate_condition(x, block_state_id, block_states, used_tool, _entity)),
 		Predicate::BlockStateProperty(predicate_block_state_property) => {
 			let state = data::blocks::get_raw_properties_from_block_state_id(block_states, block_state_id);
 			for (property_min, property_max) in &predicate_block_state_property.properties {
@@ -300,9 +300,11 @@ fn evaluate_condition(
 			println!("dont support EntityScores predicate yet");
 			false
 		}
-		Predicate::Inverted(predicate) => !evaluate_condition(predicate, block_state_id, block_states, used_tool, entity),
+		Predicate::Inverted(predicate) => !evaluate_condition(predicate, block_state_id, block_states, used_tool, _entity),
 		Predicate::KilledByPlayer => {
-			matches!(entity, Some(Entity::Player(_)))
+			//matches!(entity, Some(Entity::Player(_)))
+			//TODO: requires entities to know who killed them which is not a thing yet
+			true
 		}
 		Predicate::LocationCheck(_predicate_location_check) => {
 			println!("dont support LocationCheck predicate yet");
