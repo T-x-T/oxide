@@ -28,7 +28,10 @@ pub const MOB_BREEDING_DELAY_AFTER_OFFSPRING_PRODUCED_TICKS: i32 = 5 * 60 * 20;
 pub const MOB_SPAWN_ATTEMPTS_PER_CHUNK_PER_TICK: u16 = 100;
 pub const MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE: u16 = 400;
 pub const MOB_SPAWN_LIMIT_PER_CHUNK_HOSTILE: u16 = MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE / 10;
-pub const HOSTILE_SPAWNABLE_MOBS: [&str; 3] = ["minecraft:creeper", "minecraft:skeleton", "minecraft:zombie"];
+pub const HOSTILE_OVERWORLD_SPAWNABLE_MOBS: [&str; 5] =
+	["minecraft:creeper", "minecraft:skeleton", "minecraft:zombie", "minecraft:spider", "minecraft:enderman"];
+pub const HOSTILE_NETHER_SPAWNABLE_MOBS: [&str; 2] = ["minecraft:zombified_piglin", "minecraft:blaze"];
+pub const HOSTILE_END_SPAWNABLE_MOBS: [&str; 1] = ["minecraft:enderman"];
 
 #[derive(Debug, Clone)]
 pub enum CustomError {

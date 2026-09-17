@@ -232,7 +232,7 @@ pub trait CommonEntityTrait {
 			}
 		}
 
-		if crate::HOSTILE_SPAWNABLE_MOBS.contains(&self.get_type_string().as_str()) {
+		if crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.contains(&self.get_type_string().as_str()) {
 			let distance_to_closest_player = players
 				.iter()
 				.filter(|x| x.get_dimension() == dimension.name)

@@ -45,7 +45,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 
 
-				let mob_type_to_spawn = lib::HOSTILE_SPAWNABLE_MOBS[rng.random_range(0..lib::HOSTILE_SPAWNABLE_MOBS.len())];
+				let mob_type_to_spawn = lib::HOSTILE_OVERWORLD_SPAWNABLE_MOBS[rng.random_range(0..lib::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.len())];
 
 				let Some(entity) = entity::new(
 					mob_type_to_spawn,

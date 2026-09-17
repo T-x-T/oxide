@@ -358,6 +358,12 @@ impl super::WorldLoader for Loader {
 				"minecraft:zombie" => output.push(Entity::Zombie(crate::entity::Zombie::from_nbt(entity, entity_id_manager))),
 				"minecraft:skeleton" => output.push(Entity::Skeleton(crate::entity::Skeleton::from_nbt(entity, entity_id_manager))),
 				"minecraft:arrow" => output.push(Entity::Arrow(crate::entity::Arrow::from_nbt(entity, entity_id_manager))),
+				"minecraft:blaze" => output.push(Entity::Blaze(crate::entity::Blaze::from_nbt(entity, entity_id_manager))),
+				"minecraft:enderman" => output.push(Entity::Enderman(crate::entity::Enderman::from_nbt(entity, entity_id_manager))),
+				"minecraft:spider" => output.push(Entity::Spider(crate::entity::Spider::from_nbt(entity, entity_id_manager))),
+				"minecraft:zombified_piglin" => {
+					output.push(Entity::ZombifiedPiglin(crate::entity::ZombifiedPiglin::from_nbt(entity, entity_id_manager)))
+				}
 				_ => println!("tried loading unknown entity {entity_type} from disk"),
 			};
 		}

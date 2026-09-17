@@ -20,24 +20,28 @@ use crate::types::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Entity {
 	Armadillo(Armadillo),
+	Arrow(Arrow),
+	Blaze(Blaze),
 	Cat(Cat),
 	ChestMinecart(ChestMinecart),
 	Chicken(Chicken),
 	Cow(Cow),
 	Creeper(Creeper),
 	Donkey(Donkey),
+	EndCrystal(EndCrystal),
+	EnderDragon(EnderDragon),
+	Enderman(Enderman),
 	Horse(Horse),
 	Item(ItemEntity),
 	Parrot(Parrot),
+	Player(Player),
 	Pig(Pig),
 	Rabbit(Rabbit),
 	Sheep(Sheep),
-	Player(Player),
-	EnderDragon(EnderDragon),
-	EndCrystal(EndCrystal),
-	Zombie(Zombie),
 	Skeleton(Skeleton),
-	Arrow(Arrow),
+	Spider(Spider),
+	Zombie(Zombie),
+	ZombifiedPiglin(ZombifiedPiglin),
 }
 
 #[derive(Debug, PartialEq)]
@@ -135,6 +139,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_common_entity_data(),
 			Entity::Skeleton(x) => x.get_common_entity_data(),
 			Entity::Arrow(x) => x.get_common_entity_data(),
+			Entity::Blaze(x) => x.get_common_entity_data(),
+			Entity::Enderman(x) => x.get_common_entity_data(),
+			Entity::Spider(x) => x.get_common_entity_data(),
+			Entity::ZombifiedPiglin(x) => x.get_common_entity_data(),
 		};
 	}
 
@@ -159,6 +167,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_common_entity_data_mut(),
 			Entity::Skeleton(x) => x.get_common_entity_data_mut(),
 			Entity::Arrow(x) => x.get_common_entity_data_mut(),
+			Entity::Blaze(x) => x.get_common_entity_data_mut(),
+			Entity::Enderman(x) => x.get_common_entity_data_mut(),
+			Entity::Spider(x) => x.get_common_entity_data_mut(),
+			Entity::ZombifiedPiglin(x) => x.get_common_entity_data_mut(),
 		};
 	}
 
@@ -183,6 +195,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_mob_data(),
 			Entity::Skeleton(x) => x.get_mob_data(),
 			Entity::Arrow(x) => x.get_mob_data(),
+			Entity::Blaze(x) => x.get_mob_data(),
+			Entity::Enderman(x) => x.get_mob_data(),
+			Entity::Spider(x) => x.get_mob_data(),
+			Entity::ZombifiedPiglin(x) => x.get_mob_data(),
 		};
 	}
 
@@ -207,6 +223,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_mob_data_mut(),
 			Entity::Skeleton(x) => x.get_mob_data_mut(),
 			Entity::Arrow(x) => x.get_mob_data_mut(),
+			Entity::Blaze(x) => x.get_mob_data_mut(),
+			Entity::Enderman(x) => x.get_mob_data_mut(),
+			Entity::Spider(x) => x.get_mob_data_mut(),
+			Entity::ZombifiedPiglin(x) => x.get_mob_data_mut(),
 		};
 	}
 
@@ -231,6 +251,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_type(),
 			Entity::Skeleton(x) => x.get_type(),
 			Entity::Arrow(x) => x.get_type(),
+			Entity::Blaze(x) => x.get_type(),
+			Entity::Enderman(x) => x.get_type(),
+			Entity::Spider(x) => x.get_type(),
+			Entity::ZombifiedPiglin(x) => x.get_type(),
 		};
 	}
 
@@ -255,6 +279,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_type_string(),
 			Entity::Skeleton(x) => x.get_type_string(),
 			Entity::Arrow(x) => x.get_type_string(),
+			Entity::Blaze(x) => x.get_type_string(),
+			Entity::Enderman(x) => x.get_type_string(),
+			Entity::Spider(x) => x.get_type_string(),
+			Entity::ZombifiedPiglin(x) => x.get_type_string(),
 		};
 	}
 
@@ -279,6 +307,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_mob_type(),
 			Entity::Skeleton(x) => x.get_mob_type(),
 			Entity::Arrow(x) => x.get_mob_type(),
+			Entity::Blaze(x) => x.get_mob_type(),
+			Entity::Enderman(x) => x.get_mob_type(),
+			Entity::Spider(x) => x.get_mob_type(),
+			Entity::ZombifiedPiglin(x) => x.get_mob_type(),
 		};
 	}
 
@@ -303,6 +335,10 @@ impl Entity {
 			Entity::Zombie(x) => x.to_nbt_extras(),
 			Entity::Skeleton(x) => x.to_nbt_extras(),
 			Entity::Arrow(x) => x.to_nbt_extras(),
+			Entity::Blaze(x) => x.to_nbt_extras(),
+			Entity::Enderman(x) => x.to_nbt_extras(),
+			Entity::Spider(x) => x.to_nbt_extras(),
+			Entity::ZombifiedPiglin(x) => x.to_nbt_extras(),
 		};
 	}
 
@@ -355,6 +391,12 @@ impl Entity {
 			Entity::Zombie(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::Skeleton(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
 			Entity::Arrow(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Blaze(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Enderman(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::Spider(x) => x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states),
+			Entity::ZombifiedPiglin(x) => {
+				x.interact(held_item, dim, players_clone, players, player_uuid, packet_sndr, entity_id_mgr, block_states)
+			}
 		};
 	}
 
@@ -395,6 +437,10 @@ impl Entity {
 			Entity::Zombie(x) => x.is_mob(),
 			Entity::Skeleton(x) => x.is_mob(),
 			Entity::Arrow(x) => x.is_mob(),
+			Entity::Blaze(x) => x.is_mob(),
+			Entity::Enderman(x) => x.is_mob(),
+			Entity::Spider(x) => x.is_mob(),
+			Entity::ZombifiedPiglin(x) => x.is_mob(),
 		};
 	}
 
@@ -419,6 +465,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_metadata(),
 			Entity::Skeleton(x) => x.get_metadata(),
 			Entity::Arrow(x) => x.get_metadata(),
+			Entity::Blaze(x) => x.get_metadata(),
+			Entity::Enderman(x) => x.get_metadata(),
+			Entity::Spider(x) => x.get_metadata(),
+			Entity::ZombifiedPiglin(x) => x.get_metadata(),
 		};
 	}
 
@@ -443,6 +493,10 @@ impl Entity {
 			Entity::Zombie(x) => x.get_hitbox(),
 			Entity::Skeleton(x) => x.get_hitbox(),
 			Entity::Arrow(x) => x.get_hitbox(),
+			Entity::Blaze(x) => x.get_hitbox(),
+			Entity::Enderman(x) => x.get_hitbox(),
+			Entity::Spider(x) => x.get_hitbox(),
+			Entity::ZombifiedPiglin(x) => x.get_hitbox(),
 		};
 	}
 
@@ -474,6 +528,10 @@ impl Entity {
 			Entity::Zombie(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::Skeleton(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 			Entity::Arrow(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Blaze(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Enderman(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::Spider(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
+			Entity::ZombifiedPiglin(x) => x.tick(dimension, players, packet_sender, entity_id_manager, block_state_data),
 		};
 	}
 	pub fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
@@ -497,6 +555,10 @@ impl Entity {
 			Entity::Zombie(x) => x.damage(damage, packet_sender, players),
 			Entity::Skeleton(x) => x.damage(damage, packet_sender, players),
 			Entity::Arrow(x) => x.damage(damage, packet_sender, players),
+			Entity::Blaze(x) => x.damage(damage, packet_sender, players),
+			Entity::Enderman(x) => x.damage(damage, packet_sender, players),
+			Entity::Spider(x) => x.damage(damage, packet_sender, players),
+			Entity::ZombifiedPiglin(x) => x.damage(damage, packet_sender, players),
 		};
 	}
 
@@ -521,6 +583,10 @@ impl Entity {
 			Entity::Zombie(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::Skeleton(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::Arrow(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Blaze(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Enderman(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::Spider(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
+			Entity::ZombifiedPiglin(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 		};
 	}
 
@@ -560,6 +626,10 @@ impl Entity {
 			Entity::Zombie(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Skeleton(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 			Entity::Arrow(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Blaze(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Enderman(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::Spider(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
+			Entity::ZombifiedPiglin(x) => x.resend_metadata_to_players(players_clone, packet_sender, dimension_name),
 		};
 	}
 
@@ -592,6 +662,10 @@ impl Entity {
 			Entity::Zombie(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 			Entity::Skeleton(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 			Entity::Arrow(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
+			Entity::Blaze(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
+			Entity::Enderman(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
+			Entity::Spider(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
+			Entity::ZombifiedPiglin(x) => x.change_dimension(new_dimension_name, players_clone, dimension, packet_sender, position, block_states),
 		};
 	}
 
@@ -621,6 +695,10 @@ impl Entity {
 			Entity::Zombie(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
 			Entity::Skeleton(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
 			Entity::Arrow(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Blaze(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Enderman(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::Spider(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
+			Entity::ZombifiedPiglin(x) => x.collides_with_blocks_at(dimension, entity_position_to_check, block_states),
 		};
 	}
 
@@ -650,6 +728,10 @@ impl Entity {
 			Entity::Zombie(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
 			Entity::Skeleton(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
 			Entity::Arrow(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Blaze(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Enderman(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::Spider(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
+			Entity::ZombifiedPiglin(x) => x.is_on_ground_at(dimension, entity_position_to_check, block_states),
 		};
 	}
 }
@@ -675,6 +757,10 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 		"minecraft:zombie" => Some(Entity::Zombie(Zombie::new(common_data, extra_nbt))),
 		"minecraft:skeleton" => Some(Entity::Skeleton(Skeleton::new(common_data, extra_nbt))),
 		"minecraft:arrow" => Some(Entity::Arrow(Arrow::new(common_data, extra_nbt))),
+		"minecraft:blaze" => Some(Entity::Blaze(Blaze::new(common_data, extra_nbt))),
+		"minecraft:enderman" => Some(Entity::Enderman(Enderman::new(common_data, extra_nbt))),
+		"minecraft:spider" => Some(Entity::Spider(Spider::new(common_data, extra_nbt))),
+		"minecraft:zombified_piglin" => Some(Entity::ZombifiedPiglin(ZombifiedPiglin::new(common_data, extra_nbt))),
 		_ => None,
 	};
 
