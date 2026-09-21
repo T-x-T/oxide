@@ -386,7 +386,7 @@ impl Dimension {
 			}
 
 			let old_light = chunk.get_blocklight(neighbour, lowest_block_y);
-			let new_light = new_light - 1;
+			let new_light = if new_light > 0 { new_light - 1 } else { 0 };
 			if old_light >= new_light {
 				continue;
 			}
