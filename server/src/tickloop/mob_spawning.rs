@@ -28,9 +28,11 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					z: rng.random_range(0..16),
 				};
 
-				let light_level = chunk.get_light(chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z), dimension.lowest_block_y);
-				if light_level > 7 {
-					continue;
+				if dimension.name.as_str() != "minecraft:the_end" {
+					let light_level = chunk.get_light(chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z), dimension.lowest_block_y);
+					if light_level > 7 {
+						continue;
+					}
 				}
 
 				let distance_to_closest_player = players_clone
