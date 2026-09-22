@@ -123,7 +123,7 @@ impl CommonEntityTrait for ItemEntity {
 	fn tick(
 		&mut self,
 		_dimension: &Dimension,
-		_players: &[Player],
+		players: &[Player],
 		_packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
@@ -132,6 +132,19 @@ impl CommonEntityTrait for ItemEntity {
 
 		if self.age > 20 * 60 * 5 {
 			return vec![EntityTickOutcome::RemoveSelf];
+		}
+
+		let picking_up_player = players
+			.iter()
+			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
+			.find(|x| x.1 < crate::ITEM_PICKUP_DISTANCE);
+
+		if let Some((picking_up_player, _)) = picking_up_player {
+			return vec![EntityTickOutcome::GetPickedUpByPlayer(
+				self.item.clone(),
+				self.get_common_entity_data().entity_id,
+				picking_up_player.uuid,
+			)];
 		}
 
 		return vec![EntityTickOutcome::Updated];

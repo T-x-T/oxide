@@ -26,6 +26,14 @@ impl BlockPosition {
 		};
 	}
 
+	pub fn convert_to_position_global(&self, chunk_x: i32, chunk_z: i32) -> BlockPosition {
+		return BlockPosition {
+			x: chunk_x * 16 + self.x,
+			y: self.y,
+			z: chunk_z * 16 + self.z,
+		};
+	}
+
 	pub fn convert_to_coordinates_of_chunk(&self) -> BlockPosition {
 		let chunk_x = if self.x >= 0 { self.x / 16 } else { (self.x - 15) / 16 };
 		let chunk_z = if self.z >= 0 { self.z / 16 } else { (self.z - 15) / 16 };
@@ -35,6 +43,35 @@ impl BlockPosition {
 			y: 0,
 			z: chunk_z,
 		};
+	}
+
+	pub fn get_direct_neighbours(&self) -> [BlockPosition; 6] {
+		return [
+			BlockPosition {
+				x: self.x + 1,
+				..*self
+			},
+			BlockPosition {
+				x: self.x - 1,
+				..*self
+			},
+			BlockPosition {
+				y: self.y + 1,
+				..*self
+			},
+			BlockPosition {
+				y: self.y - 1,
+				..*self
+			},
+			BlockPosition {
+				z: self.z + 1,
+				..*self
+			},
+			BlockPosition {
+				z: self.z - 1,
+				..*self
+			},
+		];
 	}
 }
 
@@ -73,6 +110,21 @@ impl EntityPosition {
 	pub fn distance_to(&self, other: EntityPosition) -> f64 {
 		return ((other.x - self.x).abs().powi(2) + (other.y - self.y).abs().powi(2) + (other.z - self.z).abs().powi(2)).powf(0.5);
 	}
+
+	pub fn calculate_line_positions_to(&self, other: EntityPosition) -> Vec<EntityPosition> {
+		let direction_vector = other - *self;
+		let distance = self.distance_to(other).ceil() as i32;
+
+		let mut output: Vec<EntityPosition> = Vec::with_capacity(distance as usize);
+		for x in 0..distance {
+			let vector = direction_vector / distance as f64 * x as f64;
+			output.push(*self + vector);
+		}
+
+		output.push(other); //make sure *other* is also incldued
+
+		return output;
+	}
 }
 
 impl std::ops::Sub for EntityPosition {
@@ -100,6 +152,16 @@ impl std::ops::Add for EntityPosition {
 			yaw: self.yaw + rhs.yaw,
 			pitch: self.pitch + rhs.pitch,
 		};
+	}
+}
+
+impl std::ops::AddAssign for EntityPosition {
+	fn add_assign(&mut self, rhs: Self) {
+		self.x += rhs.x;
+		self.y += rhs.y;
+		self.z += rhs.z;
+		self.yaw += rhs.yaw;
+		self.pitch += rhs.pitch;
 	}
 }
 
@@ -131,6 +193,33 @@ impl std::ops::Div for EntityPosition {
 	}
 }
 
+impl std::ops::Mul<f64> for EntityPosition {
+	type Output = EntityPosition;
+
+	fn mul(self, rhs: f64) -> Self::Output {
+		return Self {
+			x: self.x * rhs,
+			y: self.y * rhs,
+			z: self.z * rhs,
+			yaw: self.yaw,
+			pitch: self.pitch,
+		};
+	}
+}
+
+impl std::ops::Div<f64> for EntityPosition {
+	type Output = EntityPosition;
+
+	fn div(self, rhs: f64) -> Self::Output {
+		return Self {
+			x: self.x / rhs,
+			y: self.y / rhs,
+			z: self.z / rhs,
+			yaw: self.yaw,
+			pitch: self.pitch,
+		};
+	}
+}
 
 #[cfg(test)]
 mod test {
@@ -449,6 +538,38 @@ mod test {
 			};
 			let chunk_position = position.convert_to_position_in_chunk();
 			assert_eq!(chunk_position.z, 2);
+		}
+	}
+
+	mod convert_to_position_global {
+		use super::*;
+
+		#[test]
+		fn all_positive() {
+			let global_position = BlockPosition {
+				x: 104,
+				y: 100,
+				z: 66,
+			};
+			let chunk_position = global_position.convert_to_position_in_chunk();
+
+			let res = chunk_position.convert_to_position_global(6, 4);
+
+			assert_eq!(global_position, res);
+		}
+
+		#[test]
+		fn all_negative() {
+			let global_position = BlockPosition {
+				x: -42,
+				y: 100,
+				z: -57,
+			};
+			let chunk_position = global_position.convert_to_position_in_chunk();
+
+			let res = chunk_position.convert_to_position_global(-3, -4);
+
+			assert_eq!(global_position, res);
 		}
 	}
 

@@ -31,9 +31,9 @@ impl CommonEntityTrait for Cow {
 		packet_sender: &PacketSender,
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
-	) -> EntityInteractResult {
+	) -> Vec<EntityTickOutcome> {
 		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket").unwrap() {
-			return EntityInteractResult::DoNothing;
+			return Vec::new();
 		}
 
 		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
@@ -57,7 +57,7 @@ impl CommonEntityTrait for Cow {
 		};
 		player.add_item_to_inventory(milk_bucket_slot, players_clone, packet_sender);
 
-		return EntityInteractResult::DoNothing;
+		return Vec::new();
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -74,9 +74,9 @@ impl CommonEntityTrait for Cow {
 		players: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
-		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
-		return self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager);
+		return self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager, block_state_data);
 	}
 
 	fn get_type(&self) -> i32 {
@@ -128,6 +128,10 @@ impl CommonEntityTrait for Cow {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.4, 0.9);
+	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
 	}
 }
 

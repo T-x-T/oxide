@@ -37,7 +37,7 @@ impl CommonEntityTrait for Sheep {
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
-	) -> EntityInteractResult {
+	) -> Vec<EntityTickOutcome> {
 		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:shears").unwrap() && !self.sheared {
 			self.sheared = true;
 
@@ -74,9 +74,9 @@ impl CommonEntityTrait for Sheep {
 
 			self.resend_metadata_to_players(players_clone, packet_sender, &dimension.name);
 
-			return EntityInteractResult::AddEntity(Box::new(Entity::Item(item_entity)));
+			return vec![EntityTickOutcome::AddEntity(Box::new(Entity::Item(item_entity)))];
 		} else {
-			return EntityInteractResult::DoNothing;
+			return Vec::new();
 		}
 	}
 
@@ -125,7 +125,7 @@ impl CommonEntityTrait for Sheep {
 			}
 		}
 
-		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager));
+		output.append(&mut self.tick_breedable_mob(dimension, players, packet_sender, entity_id_manager, block_state_data));
 		return output;
 	}
 
@@ -192,6 +192,10 @@ impl CommonEntityTrait for Sheep {
 	//(height, width) https://minecraft.wiki/w/Hitbox
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (1.3, 0.9);
+	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
 	}
 }
 

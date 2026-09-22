@@ -1,5 +1,4 @@
 use super::*;
-use lib::entity::CommonEntity;
 use lib::loot_table;
 use lib::packets::Packet;
 
@@ -24,23 +23,25 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				let entity_clone: Entity = dimension.entities.iter().find(|x| x.get_common_entity_data().entity_id == entity_id).unwrap().clone();
 
-				let items_to_drop = loot_table::get_entity_drops(
-					&game.loot_tables,
-					&data::entities::get_name_from_id(entity_clone.get_type()),
-					&Slot::default(),
-					&game.block_state_data,
-					None,
-				);
-
-				for item_to_drop in items_to_drop {
-					dimension.summon_item(
-						entity_clone.get_common_entity_data().position,
-						item_to_drop,
+				if entity_clone.is_mob() && entity_clone.get_mob_data().drop_items_upon_death {
+					let items_to_drop = loot_table::get_entity_drops(
+						&game.loot_tables,
+						&data::entities::get_name_from_id(entity_clone.get_type()),
+						&Slot::default(),
+						&game.block_state_data,
 						None,
-						players_clone,
-						&game.packet_sender,
-						&game.entity_id_manager,
 					);
+
+					for item_to_drop in items_to_drop {
+						dimension.summon_item(
+							entity_clone.get_common_entity_data().position,
+							item_to_drop,
+							None,
+							players_clone,
+							&game.packet_sender,
+							&game.entity_id_manager,
+						);
+					}
 				}
 			}
 			//Currently unused, might not be needed after all?
@@ -258,7 +259,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseNetherPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseNetherPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
@@ -271,7 +275,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 
 				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task::PlayerUseEndPortal(player.uuid, new_dimension_name));
+					game.task_queue.insert(Task {
+						task: TaskItem::PlayerUseEndPortal(player.uuid, new_dimension_name),
+						run_in_ticks: 0,
+					});
 				}
 
 				dimension.entities = entities;
@@ -280,6 +287,70 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				if let Some(chunk) = dimension.chunks.get_mut(&(x, z)) {
 					chunk.keep_loaded_for_ticks = 20 * 60;
 				};
+			}
+			EntityTickOutcome::AddEntity(new_entity) => {
+				let dimension_name = dimension.name.clone();
+
+				let spawn_packet = new_entity.to_spawn_entity_packet();
+
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension_name,
+					lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
+					spawn_packet,
+				);
+
+				new_entity.resend_metadata_to_players(players_clone, &game.packet_sender, &dimension_name);
+
+				dimension.add_entity(*new_entity);
+			}
+			EntityTickOutcome::DealDamage(target_entity_id, damage) => {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == target_entity_id) {
+					entity.damage(damage, &game.packet_sender, players_clone);
+				};
+				if let Some(player) = players.iter_mut().find(|x| x.entity_id == target_entity_id) {
+					player.damage(damage, &game.packet_sender, players_clone);
+				};
+			}
+			EntityTickOutcome::UpdateDebugDataPathfinding(debug_data_pathfinding) => {
+				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
+					entity.get_common_entity_data_mut().debug_data_pathfinding = debug_data_pathfinding;
+				} else {
+					println!("EntityTickOutcome::UpdateDebugDataPathfinding handler couldnt find entity with id {entity_id}");
+				};
+			}
+			EntityTickOutcome::GetPickedUpByPlayer(item, item_entity_id, player_uuid) => {
+				let Some(player) = players.iter_mut().find(|x| x.uuid == player_uuid) else {
+					continue;
+				};
+
+				player.pickup_item(item, item_entity_id, players_clone, &game.packet_sender);
+
+				//same as RemoveSelf
+				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
+					entity_ids: vec![entity_id],
+				};
+
+				game.packet_sender.send_packet_to_everyone_in_dimension(
+					players_clone,
+					&dimension.name,
+					lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
+					remove_entities_packet,
+				);
+
+				if let Some(chunk) = dimension.get_chunk_from_position_mut(
+					dimension
+						.entities
+						.iter()
+						.find(|x| x.get_common_entity_data().entity_id == entity_id)
+						.unwrap()
+						.get_common_entity_data()
+						.position
+						.into(),
+				) {
+					chunk.modified = true;
+				};
+				dimension.entities.retain(|x| x.get_common_entity_data().entity_id != entity_id);
 			}
 		}
 	}

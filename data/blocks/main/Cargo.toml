@@ -1,10 +1,12 @@
 [package]
-  name = "blocks"
-  version = "0.8.0"
-  edition = "2024"
-  description = ""
+name = "blocks"
+version = "0.9.0"
+edition = "2024"
+description = ""
 
 [dependencies]
 basic_types = {path = "../../../basic_types", version = "*"}
 block_get_blocks = {path = "../get_blocks", version = "*"}
 block_get_type_from_block_state_id = {path = "../get_type_from_block_state_id", version = "*"}
+block_get_block_name_from_block_state_id = {path = "../get_block_name_from_block_state_id", version = "*"}
+block_get_block_state_from_block_state_id = {path = "../get_block_state_from_block_state_id", version = "*"}

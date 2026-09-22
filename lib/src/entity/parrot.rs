@@ -60,4 +60,8 @@ impl CommonEntityTrait for Parrot {
 	fn get_hitbox(&self) -> (f64, f64) {
 		return (0.9, 0.5);
 	}
+
+	fn get_mob_type(&self) -> MobType {
+		return MobType::Creature;
+	}
 }

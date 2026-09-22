@@ -11,14 +11,14 @@ pub fn interact(
 	block_properties.retain(|x| x.0 != "open");
 	block_properties.push(("open".to_string(), if is_open { "false".to_string() } else { "true".to_string() }));
 
-	let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
-	let new_block_id = data::blocks::get_block_state_id_from_raw(block_states, &block_name, &block_properties);
+	let block_name = data::blocks::get_block_name_from_block_state_id(block_id_at_location);
+	let new_block_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
 
 	let is_upper = block_properties.iter().find(|x| x.0 == "half").unwrap().1 == "upper";
 	block_properties.retain(|x| x.0 != "half");
 	let other_half: (u16, BlockPosition) = if is_upper {
 		block_properties.push(("half".to_string(), "lower".to_string()));
-		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, &block_name, &block_properties);
+		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
 		let other_half_location = BlockPosition {
 			y: location.y - 1,
 			..location
@@ -26,7 +26,7 @@ pub fn interact(
 		(other_half_id, other_half_location)
 	} else {
 		block_properties.push(("half".to_string(), "upper".to_string()));
-		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, &block_name, &block_properties);
+		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
 		let other_half_location = BlockPosition {
 			y: location.y + 1,
 			..location
@@ -201,12 +201,17 @@ pub fn get_block_state_id(
 	return output;
 }
 
-pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &HashMap<String, Block>, _block_id: u16) -> BlockUpdateOutcome {
+pub fn update(
+	position: BlockPosition,
+	dimension: &Dimension,
+	_block_states: &HashMap<String, Block>,
+	_block_id: u16,
+) -> BlockUpdateOutcome {
 	let Ok(block_state_id) = dimension.get_block(position) else {
 		return BlockUpdateOutcome::DoNothing;
 	};
 
-	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id, block_states);
+	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id);
 
 	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) {
 		let position_to_check = BlockPosition {

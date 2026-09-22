@@ -3,6 +3,7 @@ use super::*;
 pub fn init(game: &mut Game) {
 	game.commands.lock().unwrap().push(Command {
 		name: "give".to_string(),
+		permission: Permission::Gamemaster,
 		execute,
 		arguments: vec![CommandArgument {
 			name: "item".to_string(),

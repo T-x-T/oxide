@@ -29,7 +29,6 @@ mod stair;
 mod trapdoor;
 mod trapped_chest;
 
-
 pub fn get_block_state_id(
 	face: u8,
 	cardinal_direction: CardinalDirection,
@@ -43,6 +42,18 @@ pub fn get_block_state_id(
 	block_states: &HashMap<String, Block>,
 ) -> Vec<(u16, BlockPosition)> {
 	let block = data::blocks::get_block_from_name(used_item_name, block_states);
+	if block.block_name == "minecraft:air" {
+		return Vec::new();
+	}
+
+	let block_id_at_position = dimension.get_block(position).unwrap_or_default();
+	let block_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_position);
+	let block_tags = data::tags::get_block();
+	let replaceable_blocks = block_tags.get("replaceable").unwrap();
+	if !replaceable_blocks.contains(&block_at_location) {
+		return Vec::new();
+	}
+
 	let mut output: Vec<(u16, BlockPosition)> = Vec::new();
 
 	match block.block_type {
@@ -249,7 +260,9 @@ pub fn update_all_recursively(
 	];
 
 	for block_to_update in blocks_to_update {
-		let res = crate::block::update(block_to_update, dimension, block_state_data).unwrap();
+		let Ok(res) = crate::block::update(block_to_update, dimension, block_state_data) else {
+			continue;
+		};
 		res.handle(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);
 		if !matches!(res, BlockUpdateOutcome::DoNothing) {
 			update_all_recursively(dimension, block_to_update, players, packet_sender, entity_id_manager, block_state_data, loot_tables);
@@ -345,7 +358,7 @@ pub fn interact_with_block_at(
 	packet_sender: &PacketSender,
 	dimension: &Dimension,
 ) -> BlockInteractionResult {
-	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location, block_states);
+	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
 		&& data::tags::get_item()
 			.get("hoes")
@@ -452,4 +465,177 @@ pub fn tick(
 		Type::Farm => farm::tick(current_block_state_id, dimension, block_position, block_states),
 		_ => current_block_state_id,
 	};
+}
+
+pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_states: &HashMap<String, Block>) -> CollisionShape {
+	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_state_id);
+	if block_type_at_location.has_no_collision_box() {
+		return CollisionShape::default();
+	}
+
+	return match block_type_at_location {
+		Type::Slab => slab::get_collision_shape(block_state_id, position, block_states),
+		_ => CollisionShape::new_from_cuboid(
+			Cuboid {
+				x1: 0.0,
+				y1: 0.0,
+				z1: 0.0,
+				x2: 1.0,
+				y2: 1.0,
+				z2: 1.0,
+			},
+			position.into(),
+		),
+	};
+}
+
+pub fn get_light_level(block_state_id: u16) -> u8 {
+	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_state_id);
+	match block_type_at_location {
+		Type::Block => {
+			let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id);
+			match block_name {
+				"minecraft:glowstone" => 15,
+				"minecraft:sea_lantern" => 15,
+				"minecraft:shroomlight" => 15,
+				_ => 0,
+			}
+		}
+		Type::Liquid => {
+			let block_name = data::blocks::get_block_name_from_block_state_id(block_state_id);
+			match block_name {
+				"minecraft:lava" => 15,
+				_ => 0,
+			}
+		}
+		Type::Beacon => 15,
+		Type::Conduit => 15,
+		Type::Lantern => 15,
+		Type::EndGateway => 15,
+		Type::EndPortal => 15,
+		Type::Fire => 15,
+		Type::SeaPickle => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::SeaPicklePickles(SeaPicklePickles::Num4))
+				&& block.properties.contains(&Property::SeaPickleWaterlogged(SeaPickleWaterlogged::True))
+			{
+				return 15;
+			} else if block.properties.contains(&Property::SeaPicklePickles(SeaPicklePickles::Num3))
+				&& block.properties.contains(&Property::SeaPickleWaterlogged(SeaPickleWaterlogged::True))
+			{
+				return 12;
+			} else {
+				return 0;
+			}
+		}
+		Type::JackOLantern => 15,
+		Type::LavaCauldron => 15,
+		Type::Campfire => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::CampfireLit(CampfireLit::True)) {
+				return 15;
+			} else {
+				return 0;
+			}
+		}
+		Type::RedstoneLamp => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::RedstoneLampLit(RedstoneLampLit::True)) {
+				return 15;
+			} else {
+				return 0;
+			}
+		}
+		Type::RespawnAnchor => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::RespawnAnchorCharges(RespawnAnchorCharges::Num4)) {
+				return 15;
+			} else if block.properties.contains(&Property::RespawnAnchorCharges(RespawnAnchorCharges::Num3)) {
+				return 11;
+			} else {
+				return 0;
+			}
+		}
+		Type::CopperBulbBlock => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::CopperBulbBlockPowered(CopperBulbBlockPowered::True)) {
+				return 15;
+			} else {
+				return 0;
+			}
+		}
+		Type::CaveVines => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::CaveVinesBerries(CaveVinesBerries::True)) {
+				return 14;
+			} else {
+				return 0;
+			}
+		}
+		Type::Torch => 14,
+		Type::WallTorch => 14,
+		Type::EndRod => 14,
+		Type::Furnace => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::FurnaceLit(FurnaceLit::True)) {
+				return 13;
+			} else {
+				return 0;
+			}
+		}
+		Type::BlastFurnace => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::BlastFurnaceLit(BlastFurnaceLit::True)) {
+				return 13;
+			} else {
+				return 0;
+			}
+		}
+		Type::Smoker => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::SmokerLit(SmokerLit::True)) {
+				return 13;
+			} else {
+				return 0;
+			}
+		}
+		Type::Vault => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::VaultVaultState(VaultVaultState::Active)) {
+				return 12;
+			} else {
+				return 0;
+			}
+		}
+		Type::Candle => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::CandleCandles(CandleCandles::Num4))
+				&& block.properties.contains(&Property::CandleLit(CandleLit::True))
+			{
+				return 12;
+			} else {
+				return 0;
+			}
+		}
+		Type::NetherPortal => 11,
+		Type::CryingObsidian => 10,
+		Type::SoulFire => 10,
+		Type::RedstoneOre => {
+			let block = data::blocks::get_block_state_from_block_state_id(block_state_id);
+			if block.properties.contains(&Property::RedstoneOreLit(RedstoneOreLit::True)) {
+				return 9;
+			} else {
+				return 0;
+			}
+		}
+		Type::EnchantmentTable => 7,
+		Type::EnderChest => 7,
+		Type::RedstoneTorch => 7,
+		Type::RedstoneWallTorch => 7,
+		Type::Magma => 3,
+		Type::BrewingStand => 1,
+		Type::DragonEgg => 1,
+		Type::EndPortalFrame => 1,
+		_ => 0,
+	}
 }

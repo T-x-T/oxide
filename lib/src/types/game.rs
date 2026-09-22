@@ -14,6 +14,7 @@ pub struct Game {
 	pub players: Mutex<Vec<Player>>,
 	pub world: Mutex<World>,
 	pub entity_id_manager: EntityIdManager,
+	pub icon_base64: String,
 	pub commands: Mutex<Vec<Command>>,
 	pub last_save_all_timestamp: Mutex<std::time::Instant>,
 	pub last_player_keepalive_timestamp: Mutex<std::time::Instant>,
@@ -82,7 +83,13 @@ impl PacketSender {
 		T: TryInto<Vec<u8>> + Clone,
 		T::Error: std::fmt::Debug,
 	{
-		self.packet_send_queues.get(peer_addr).unwrap().send((packet_id, packet_data.try_into().unwrap())).unwrap();
+		if let Some(player_send_queue) = self.packet_send_queues.get(peer_addr) {
+			if player_send_queue.send((packet_id, packet_data.try_into().unwrap())).is_err() {
+				println!("failed to send packet to player {}", peer_addr);
+			};
+		} else {
+			println!("failed to get player_send_queue for {}", peer_addr);
+		}
 	}
 
 	pub fn send_packet_to_everyone<T>(&self, players: &[Player], packet_id: u8, packet_data: T)
@@ -91,7 +98,14 @@ impl PacketSender {
 		T::Error: std::fmt::Debug,
 	{
 		for player in players {
-			self.packet_send_queues.get(&player.peer_socket_address).unwrap().send((packet_id, packet_data.clone().try_into().unwrap())).unwrap();
+			if let Some(player_send_queue) = self.packet_send_queues.get(&player.peer_socket_address) {
+				if player_send_queue.send((packet_id, packet_data.clone().try_into().unwrap())).is_err() {
+					println!("failed to send packet to player {}", player.display_name);
+				}
+			} else {
+				println!("failed to get player_send_queue for {}", player.display_name);
+				continue;
+			}
 		}
 	}
 
@@ -101,13 +115,27 @@ impl PacketSender {
 		T::Error: std::fmt::Debug,
 	{
 		players.iter().filter(|x| x.get_dimension() == dimension_name).for_each(|x| {
-			self.packet_send_queues.get(&x.peer_socket_address).unwrap().send((packet_id, packet_data.clone().try_into().unwrap())).unwrap()
+			if let Some(player_send_queue) = self.packet_send_queues.get(&x.peer_socket_address) {
+				if player_send_queue.send((packet_id, packet_data.clone().try_into().unwrap())).is_err() {
+					println!("failed to send packet to player {}", x.display_name);
+				}
+			} else {
+				println!("failed to get player_send_queue for {}", x.display_name);
+			}
 		});
 	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Task {
+pub struct Task {
+	pub task: TaskItem,
+	pub run_in_ticks: u32,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum TaskItem {
 	PlayerUseNetherPortal(u128, String),
 	PlayerUseEndPortal(u128, String),
+	SendMessageToPlayer(u128, String),
+	SendDebugSubscriptionData(u128),
 }

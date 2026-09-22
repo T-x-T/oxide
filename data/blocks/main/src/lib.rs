@@ -4,19 +4,12 @@ use std::collections::HashMap;
 use basic_types::blocks::*;
 pub use block_get_blocks::*;
 pub use block_get_type_from_block_state_id::*;
+pub use block_get_block_name_from_block_state_id::*;
+pub use block_get_block_state_from_block_state_id::*;
 pub fn get_block_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> Block {
 	return block_states.iter().find(|x| x.1.states.iter().any(|y| y.id == block_state_id)).unwrap().1.clone();
 }
-pub fn get_block_state_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> State {
-	return block_states.iter()
-		.filter(|x| x.1.states.iter().any(|y| y.id == block_state_id))
-		.map(|x| x.1.states.iter().find(|y| y.id == block_state_id).unwrap())
-		.collect::<Vec<&State>>().first_mut().unwrap().clone();
-}
-pub fn get_block_name_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> String {
-	return block_states.iter().find(|x| x.1.states.iter().any(|y| y.id == block_state_id)).unwrap().0.clone();
-}
- pub fn get_block_from_name(name: &str, block_states: &HashMap<String, Block>) -> Block {
+pub fn get_block_from_name(name: &str, block_states: &HashMap<String, Block>) -> Block {
 	let air = block_states.get("minecraft:air").unwrap();
 	let block = block_states.get(name).unwrap_or(air);
 	return block.clone();

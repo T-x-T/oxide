@@ -4,3 +4,5 @@ official_server
 flamegraph.svg
 /world
 /server/world
+ops.json
+profile.json.gz

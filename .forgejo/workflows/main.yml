@@ -1,6 +1,12 @@
 name: Build, test and push
 
-on: push
+on:
+  push:
+    branches:
+      - "**"
+      - "!#*"
+    tags:
+      - "**"
 
 jobs:
   build_server_docker_image:

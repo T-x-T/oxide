@@ -9,6 +9,8 @@ pub fn generate() {
 	get_blocks();
 	get_type_from_block_state_id();
 	get_blocks_add_functions();
+	get_block_state_from_block_state_id();
+	get_block_name_from_block_state_id();
 
 	let mut output = String::new();
 
@@ -16,9 +18,9 @@ pub fn generate() {
 	output += "use basic_types::blocks::*;\n";
 	output += "pub use block_get_blocks::*;\n";
 	output += "pub use block_get_type_from_block_state_id::*;\n";
+	output += "pub use block_get_block_name_from_block_state_id::*;\n";
+	output += "pub use block_get_block_state_from_block_state_id::*;\n";
 	output += get_block_from_block_state_id().as_str();
-	output += get_block_state_from_block_state_id().as_str();
-	output += get_block_name_from_block_state_id().as_str();
 	output += get_block_from_name().as_str();
 	output += get_raw_properties_from_block_state_id().as_str();
 	output += get_raw_properties().as_str();
@@ -39,7 +41,7 @@ fn get_blocks() {
 
 	let mut cargo_toml_contents = "[package]
 name = \"block_get_blocks\"
-version = \"0.8.0\"
+version = \"0.9.0\"
 edition = \"2024\"
 description = \"\"
 
@@ -197,7 +199,7 @@ fn get_blocks_add_functions() {
 		let cargo_toml_contents = format!(
 			"[package]
 name = \"blocks_add_fn_{i}\"
-version = \"0.8.0\"
+version = \"0.9.0\"
 edition = \"2024\"
 description = \"\"
 
@@ -414,7 +416,6 @@ fn get_raw_properties_from_block_state_id() -> String {
 		}
 	}
 
-
 	output += "pub fn get_raw_properties_from_block_state_id(block_states: &HashMap<String, Block>, block_state_id: u16) -> Vec<(String, String)> {\n";
 	output += "\tlet state = block_states.iter().find(|x| x.1.states.iter().any(|x| x.id == block_state_id)).unwrap().1.states.iter().find(|x| x.id == block_state_id).unwrap().clone();\n";
 	output += "\tlet mut output: Vec<(String, String)> = Vec::new();\n\n";
@@ -460,7 +461,6 @@ fn get_raw_properties() -> String {
 				.or_insert(property.1.as_array().unwrap().iter().map(|x| x.as_str().unwrap().to_string()).collect());
 		}
 	}
-
 
 	output += "pub fn get_raw_properties(property: Property) -> (String, String) {\n";
 	output += "\treturn match property {\n";
@@ -523,22 +523,90 @@ fn get_block_from_block_state_id() -> String {
 		.to_string();
 }
 
+fn get_block_state_from_block_state_id() {
+	let mut output = String::new();
 
-fn get_block_state_from_block_state_id() -> String {
-	return "pub fn get_block_state_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> State {
-\treturn block_states.iter()
-\t\t.filter(|x| x.1.states.iter().any(|y| y.id == block_state_id))
-\t\t.map(|x| x.1.states.iter().find(|y| y.id == block_state_id).unwrap())
-\t\t.collect::<Vec<&State>>().first_mut().unwrap().clone();
-}\n"
-		.to_string();
+	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+	output += "#![allow(clippy::needless_return)]\n";
+	output += "use basic_types::blocks::*;\n";
+	output += "pub fn get_block_state_from_block_state_id(block_state_id: u16) -> State {\n";
+	output += "\treturn match block_state_id {\n";
+
+	for x in blocks_json.as_object().unwrap().iter() {
+		let block = x.1.as_object().unwrap();
+		let block_type =
+			convert_to_upper_camel_case(&block["definition"]["type"].as_str().unwrap().trim().replace("\"type\": \"", "").replace("\",", ""));
+		for state in block["states"].as_array().unwrap() {
+			let block_state_id = state["id"].as_i32().unwrap();
+
+			let mut properties_string = String::new();
+			if state.has_key("properties") {
+				for (property_name, property_value) in state["properties"].as_object().unwrap().iter() {
+					properties_string += "Property::";
+					properties_string += convert_to_upper_camel_case(&block_type).as_str();
+					properties_string += convert_to_upper_camel_case(property_name).as_str();
+					properties_string += "(";
+					properties_string += convert_to_upper_camel_case(&block_type).as_str();
+					properties_string += convert_to_upper_camel_case(property_name).as_str();
+					properties_string += "::";
+					properties_string +=
+						if (u8::MIN..u8::MAX).map(|z| z.to_string()).collect::<Vec<String>>().contains(&property_value.as_str().unwrap().to_string()) {
+							format!("Num{}", convert_to_upper_camel_case(property_value.as_str().unwrap()))
+						} else {
+							convert_to_upper_camel_case(property_value.as_str().unwrap())
+						}
+						.as_str();
+					properties_string += "),";
+				}
+			}
+
+			let state_string = format!("State {{id: {block_state_id}, properties: vec![{properties_string}]}}");
+			output += format!("\t\t{block_state_id} => {},\n", state_string).as_str();
+		}
+	}
+
+	output += "\t\t_ => panic!(\"block_state_id {} doesnt exist\", block_state_id)\n";
+	output += "\t}\n";
+
+	output += "}\n";
+
+	let path = std::path::PathBuf::from("../data/blocks/get_block_state_from_block_state_id/src/lib.rs");
+
+	let mut file = std::fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
+
+	file.write_all(output.as_bytes()).unwrap();
+	file.flush().unwrap();
 }
 
-fn get_block_name_from_block_state_id() -> String {
-	return "pub fn get_block_name_from_block_state_id(block_state_id: u16, block_states: &HashMap<String, Block>) -> String {
-\treturn block_states.iter().find(|x| x.1.states.iter().any(|y| y.id == block_state_id)).unwrap().0.clone();
-}\n "
-		.to_string();
+fn get_block_name_from_block_state_id() {
+	let mut output = String::new();
+
+	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
+	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
+
+	output += "#![allow(clippy::needless_return)]\n";
+	output += "pub fn get_block_name_from_block_state_id(block_state_id: u16) -> &'static str {\n";
+	output += "\treturn match block_state_id {\n";
+
+	for x in blocks_json.as_object().unwrap().iter() {
+		let block = x.1.as_object().unwrap();
+		for state in block["states"].as_array().unwrap() {
+			output += format!("\t\t{} => \"{}\",\n", state["id"].as_i32().unwrap(), x.0).as_str();
+		}
+	}
+	output += "\t\t_ => panic!(\"block_state_id {} doesnt exist\", block_state_id)\n";
+	output += "\t}\n";
+
+	output += "}\n";
+
+	let path = std::path::PathBuf::from("../data/blocks/get_block_name_from_block_state_id/src/lib.rs");
+
+	let mut file = std::fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
+
+	file.write_all(output.as_bytes()).unwrap();
+	file.flush().unwrap();
 }
 
 fn get_block_from_name() -> String {
@@ -614,43 +682,79 @@ fn impl_type() -> String {
 	}
 
 	#[allow(clippy::match_like_matches_macro)]
-	pub fn is_solid(&self) -> bool {
+	pub fn has_no_collision_box(&self) -> bool {
 		return match self {
-			Type::Air => false,
-			Type::SugarCane => false,
-			Type::Liquid => false,
-			Type::BubbleColumn => false,
-			Type::KelpPlant => false,
-			Type::CoralPlant => false,
-			Type::DoublePlant => false,
-			Type::BaseCoralPlant => false,
-			Type::CaveVinesPlant => false,
-			Type::WeepingVines => false,
-			Type::WeepingVinesPlant => false,
-			Type::TwistingVinesPlant => false,
-			Type::Sapling => false,
-			Type::BambooSapling => false,
-			Type::Mushroom => false,
-			Type::TallGrass => false,
-			Type::TallDryGrass => false,
-			Type::ShortDryGrass => false,
-			Type::DryVegetation => false,
-			Type::Fire => false,
-			Type::SoulFire => false,
-			Type::WallBanner => false,
-			Type::WallSign => false,
-			Type::StandingSign => false,
-			Type::Torch => false,
-			Type::TorchflowerCrop => false,
-			Type::WallTorch => false,
-			Type::RedstoneTorch => false,
-			Type::RedstoneWallTorch => false,
-			Type::PressurePlate => false,
-			Type::WeightedPressurePlate => false,
-			Type::Light => false,
-			Type::Lever => false,
-			_ => true,
-		}
+			Type::Rail => true,
+			Type::PoweredRail => true,
+			Type::Air => true,
+			Type::Flower => true,
+			Type::TallFlower => true,
+			Type::Banner => true,
+			Type::Bush => true,
+			Type::Button => true,
+			Type::CactusFlower => true,
+			Type::Carrot => true,
+			Type::Vine => true,
+			Type::CaveVines => true,
+			Type::SugarCane => true,
+			Type::Web => true,
+			Type::CoralFan => true,
+			Type::CoralWallFan => true,
+			Type::CoralPlant => true,
+			Type::Liquid => true,
+			Type::FireflyBush => true,
+			Type::SweetBerryBush => true,
+			Type::Kelp => true,
+			Type::KelpPlant => true,
+			Type::LeafLitter => true,
+			Type::Crop => true,
+			Type::Potato => true,
+			Type::BubbleColumn => true,
+			Type::DoublePlant => true,
+			Type::BaseCoralPlant => true,
+			Type::CaveVinesPlant => true,
+			Type::WeepingVines => true,
+			Type::WeepingVinesPlant => true,
+			Type::TwistingVinesPlant => true,
+			Type::Sapling => true,
+			Type::BambooSapling => true,
+			Type::Mushroom => true,
+			Type::TallGrass => true,
+			Type::TallDryGrass => true,
+			Type::ShortDryGrass => true,
+			Type::DryVegetation => true,
+			Type::Fire => true,
+			Type::SoulFire => true,
+			Type::WallBanner => true,
+			Type::WallSign => true,
+			Type::StandingSign => true,
+			Type::Torch => true,
+			Type::TorchflowerCrop => true,
+			Type::WallTorch => true,
+			Type::RedstoneTorch => true,
+			Type::RedstoneWallTorch => true,
+			Type::PressurePlate => true,
+			Type::WeightedPressurePlate => true,
+			Type::Light => true,
+			Type::Lever => true,
+			_ => false,
+		};
+	}
+
+	#[allow(clippy::match_like_matches_macro)]
+	pub fn is_transparent(&self) -> bool {
+		return match self {
+			Type::StainedGlass => true,
+			Type::Transparent => true,
+			Type::Trapdoor => true,
+			Type::WoolCarpet => true,
+			Type::Ice => true,
+			Type::MangroveLeaves => true,
+			Type::TintedParticleLeaves => true,
+			Type::UntintedParticleLeaves => true,
+			Type::Air => true,
+			_ => false,
+		};
 	}
 }
 "#

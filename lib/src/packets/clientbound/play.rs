@@ -620,6 +620,101 @@ impl TryFrom<Vec<u8>> for SetContainerSlot {
 }
 
 //
+// MARK: 0x1c Debug Entity Value
+//
+
+#[derive(Debug, Clone)]
+pub struct DebugEntityValue {
+	pub entity_id: i32,
+	pub update: Option<DebugSubscriptionData>,
+}
+
+impl Packet for DebugEntityValue {
+	const PACKET_ID: u8 = 0x1c;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<DebugEntityValue> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: DebugEntityValue) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		if let Some(update) = value.update {
+			let mut data = Vec::<u8>::from(update);
+			output.push(data.remove(0));
+			output.push(1);
+			output.append(&mut data);
+		} else {
+			output.push(0);
+			output.push(0);
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for DebugEntityValue {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let entity_id = crate::deserialize::varint(&mut value)?;
+		let enum_type = value.remove(0);
+		let update: Option<DebugSubscriptionData> = if value.remove(0) == 1 {
+			value.insert(0, enum_type);
+			Some(value.try_into()?)
+		} else {
+			None
+		};
+
+		return Ok(Self {
+			entity_id,
+			update,
+		});
+	}
+}
+//
+// MARK: 0x1d Debug Event
+//
+
+#[derive(Debug, Clone)]
+pub struct DebugEvent {
+	pub event: DebugSubscriptionData,
+}
+
+impl Packet for DebugEvent {
+	const PACKET_ID: u8 = 0x1d;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<DebugEvent> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: DebugEvent) -> Result<Self, Box<dyn Error>> {
+		return Ok(value.event.into());
+	}
+}
+
+impl TryFrom<Vec<u8>> for DebugEvent {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return value.try_into();
+	}
+}
+
+//
 // MARK: 0x22 entity event
 //
 

@@ -1,3 +1,5 @@
+use crate::permissions::Permission;
+
 use super::*;
 
 use std::error::Error;
@@ -11,6 +13,7 @@ pub struct Command {
 	pub name: String,
 	pub execute: CommandExecFn,
 	pub arguments: Vec<CommandArgument>,
+	pub permission: Permission,
 }
 
 #[derive(Debug, Clone)]

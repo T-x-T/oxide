@@ -1,6 +1,6 @@
 [package]
 name = "server"
-version = "0.8.0"
+version = "0.9.0"
 edition = "2024"
 default-run = "server"
 
@@ -11,3 +11,4 @@ basic_types = {path = "../basic_types", version = "*"}
 flate2 = "1.1.2"
 dashmap = "6"
 rand = "0.9.*"
+base64 = "0.22.1"

@@ -14,7 +14,7 @@ pub fn interact(
 		return BlockInteractionResult::Nothing;
 	}
 
-	let states = data::blocks::get_block_state_from_block_state_id(block_id_at_location, block_states);
+	let states = data::blocks::get_block_state_from_block_state_id(block_id_at_location);
 	if states.properties.contains(&blocks::Property::EndPortalFrameEye(blocks::EndPortalFrameEye::True)) {
 		return BlockInteractionResult::Nothing;
 	} else {

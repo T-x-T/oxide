@@ -1,7 +1,7 @@
 use super::*;
-use crate::entity::CommonEntity;
 use crate::packets::clientbound::play::{EntityMetadata, EntityMetadataValue, PlayerAction};
 use crate::packets::*;
+use crate::permissions::{OpsItem, Permission};
 use flate2::Compression;
 use flate2::read::GzDecoder;
 use flate2::write::GzEncoder;
@@ -97,6 +97,7 @@ pub struct Player {
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
+	pub permission: Permission,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -138,6 +139,7 @@ impl Clone for Player {
 			dimension: self.dimension.clone(),
 			loaded_chunks: self.loaded_chunks.clone(),
 			portal_cooldown: self.portal_cooldown,
+			permission: self.permission,
 		}
 	}
 }
@@ -164,6 +166,17 @@ impl CommonEntityTrait for Player {
 			velocity: self.velocity,
 			uuid: self.uuid,
 			entity_id: self.entity_id,
+			collision_shape: CollisionShape::new_from_cuboid(
+				Cuboid {
+					x1: -0.3,
+					y1: 0.0,
+					z1: -0.3,
+					x2: 0.3,
+					y2: if self.is_sneaking { 1.5 } else { 1.8 },
+					z2: 0.3,
+				},
+				self.position,
+			),
 			..Default::default()
 		};
 	}
@@ -213,8 +226,8 @@ impl CommonEntityTrait for Player {
 		todo!()
 	}
 
-	fn is_on_ground(&self, dimension: &Dimension) -> bool {
-		return self.is_on_ground_at(dimension, self.position);
+	fn is_on_ground(&self, dimension: &Dimension, block_state_data: &HashMap<String, basic_types::blocks::Block>) -> bool {
+		return self.is_on_ground_at(dimension, self.position, block_state_data);
 	}
 
 	fn tick(
@@ -409,28 +422,6 @@ impl CommonEntityTrait for Player {
 
 		self.last_position = self.position;
 
-		let own_position = self.get_position();
-		let entities_to_remove: Vec<i32> = dimension
-			.entities
-			.iter()
-			.filter(|x| x.get_common_entity_data().position.distance_to(own_position) < crate::ITEM_PICKUP_DISTANCE)
-			.filter_map(|x| {
-				if let Entity::Item(item) = x {
-					if self.pickup_item(item.item.clone(), item.get_common_entity_data().entity_id, players, packet_sender) {
-						Some(item.get_common_entity_data().entity_id)
-					} else {
-						None
-					}
-				} else {
-					None
-				}
-			})
-			.collect();
-
-		if !entities_to_remove.is_empty() {
-			output.push(EntityTickOutcome::RemoveOthers(entities_to_remove));
-		}
-
 		return output;
 	}
 
@@ -463,6 +454,7 @@ impl CommonEntityTrait for Player {
 		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 		position: BlockPosition,
+		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) {
 		self.dimension = new_dimension_name.to_string();
 		self.position = position.into();
@@ -523,7 +515,7 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
 
@@ -631,7 +623,7 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
 					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(dimension),
+					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
 				},
@@ -706,7 +698,7 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
 					entity_id: player.entity_id,
-					on_ground: player.is_on_ground(dimension),
+					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
 				},
@@ -800,6 +792,7 @@ impl Player {
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
+				permission: Permission::Everyone,
 			};
 
 			return player;
@@ -891,6 +884,7 @@ impl Player {
 		};
 
 		let entity_id = entity_id_manager.get_new();
+		let permission = permissions::get_permission_from_file(uuid);
 		let player = Self {
 			position: EntityPosition {
 				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -950,6 +944,7 @@ impl Player {
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
+			permission,
 		};
 
 		return player;
@@ -1265,23 +1260,25 @@ impl Player {
 
 		let mut sky_light_mask = 0u64;
 		let mut block_light_mask = 0u64;
+		let mut empty_sky_light_mask = 0u64;
+		let mut empty_block_light_mask = 0u64;
 		let mut sky_light_arrays: Vec<Vec<u8>> = Vec::new();
 		let mut block_light_arrays: Vec<Vec<u8>> = Vec::new();
-		for section in all_chunk_sections.iter().rev() {
-			if section.sky_lights.is_empty() {
-				sky_light_mask += 0;
-			} else {
-				sky_light_mask += 1;
+		for (index, section) in all_chunk_sections.iter().enumerate() {
+			if !section.sky_lights.is_empty() {
+				sky_light_mask |= 1 << (index + 1);
 				sky_light_arrays.push(section.sky_lights.clone());
+				if section.sky_lights.iter().find(|x| **x == 1).is_none() {
+					empty_sky_light_mask |= 1 << (index + 1);
+				}
 			}
-			sky_light_mask <<= 1;
-			if section.block_lights.is_empty() {
-				block_light_mask += 0;
-			} else {
-				block_light_mask += 1;
+			if !section.block_lights.is_empty() {
+				block_light_mask |= 1 << (index + 1);
 				block_light_arrays.push(section.block_lights.clone());
+				if section.block_lights.iter().find(|x| **x == 1).is_none() {
+					empty_block_light_mask |= 1 << (index + 1);
+				}
 			}
-			block_light_mask <<= 1;
 		}
 
 		let block_entity_types = data::blockentity::get_block_entity_types();
@@ -1303,13 +1300,13 @@ impl Player {
 			crate::packets::clientbound::play::ChunkDataAndUpdateLight {
 				chunk_x,
 				chunk_z,
-				heightmaps: vec![],
+				heightmaps: vec![], //TODO: send this
 				data: all_processed_chunk_sections,
 				block_entities,
 				sky_light_mask: vec![sky_light_mask],
 				block_light_mask: vec![block_light_mask],
-				empty_sky_light_mask: vec![!sky_light_mask],
-				empty_block_light_mask: vec![!block_light_mask],
+				empty_sky_light_mask: vec![empty_sky_light_mask],
+				empty_block_light_mask: vec![empty_block_light_mask],
 				sky_light_arrays,
 				block_light_arrays,
 			},
@@ -1530,6 +1527,23 @@ impl Player {
 				},
 			);
 		}
+	}
+
+
+	/// updates the permission of the player
+	/// It doesn't update the autocompletion of the client, so please send the `lib::packets::clientbound::play::Commands` after it
+	pub fn set_permission(&mut self, permission: Permission) {
+		if permission == Permission::Everyone {
+			permissions::remove_permission_from_file(self.uuid);
+		} else {
+			permissions::add_permission_in_file(OpsItem {
+				uuid: self.uuid,
+				name: self.display_name.clone(),
+				level: permission.into(),
+				bypasses_player_limit: false,
+			});
+		}
+		self.permission = permission;
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
@@ -1790,7 +1804,7 @@ impl Player {
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
 				entity_id: self.entity_id,
-				entity_status: 28, //set op permission level 4
+				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
 
