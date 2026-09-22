@@ -9,6 +9,8 @@ pub fn generate() {
 	get_blocks();
 	get_type_from_block_state_id();
 	get_blocks_add_functions();
+	get_block_state_from_block_state_id();
+	get_block_name_from_block_state_id();
 
 	let mut output = String::new();
 
@@ -16,9 +18,9 @@ pub fn generate() {
 	output += "use basic_types::blocks::*;\n";
 	output += "pub use block_get_blocks::*;\n";
 	output += "pub use block_get_type_from_block_state_id::*;\n";
+	output += "pub use block_get_block_name_from_block_state_id::*;\n";
+	output += "pub use block_get_block_state_from_block_state_id::*;\n";
 	output += get_block_from_block_state_id().as_str();
-	output += get_block_state_from_block_state_id().as_str();
-	output += get_block_name_from_block_state_id().as_str();
 	output += get_block_from_name().as_str();
 	output += get_raw_properties_from_block_state_id().as_str();
 	output += get_raw_properties().as_str();
@@ -524,12 +526,13 @@ fn get_block_from_block_state_id() -> String {
 }
 
 
-fn get_block_state_from_block_state_id() -> String {
+fn get_block_state_from_block_state_id() {
 	let mut output = String::new();
 
 	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
 	let blocks_json = jzon::parse(&blocks_file).expect("failed to parse blocks.json report");
 
+	output += "use basic_types::blocks::*;\n";
 	output += "pub fn get_block_state_from_block_state_id(block_state_id: u16) -> State {\n";
 	output += "\treturn match block_state_id {\n";
 
@@ -570,10 +573,16 @@ fn get_block_state_from_block_state_id() -> String {
 	output += "\t}\n";
 
 	output += "}\n";
-	return output;
+
+	let path = std::path::PathBuf::from("../data/blocks/get_block_state_from_block_state_id/src/lib.rs");
+
+	let mut file = std::fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
+
+	file.write_all(output.as_bytes()).unwrap();
+	file.flush().unwrap();
 }
 
-fn get_block_name_from_block_state_id() -> String {
+fn get_block_name_from_block_state_id() {
 	let mut output = String::new();
 
 	let blocks_file = std::fs::read_to_string("../official_server/generated/reports/blocks.json").expect("failed to read blocks.json report");
@@ -592,7 +601,13 @@ fn get_block_name_from_block_state_id() -> String {
 	output += "\t}\n";
 
 	output += "}\n";
-	return output;
+
+	let path = std::path::PathBuf::from("../data/blocks/get_block_name_from_block_state_id/src/lib.rs");
+
+	let mut file = std::fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).unwrap();
+
+	file.write_all(output.as_bytes()).unwrap();
+	file.flush().unwrap();
 }
 
 fn get_block_from_name() -> String {

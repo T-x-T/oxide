@@ -1,0 +1,8 @@
+[package]
+name = "block_get_block_state_from_block_state_id"
+version = "0.8.0"
+edition = "2024"
+description = ""
+
+[dependencies]
+basic_types = {path = "../../../basic_types", version = "*"}
