@@ -13,7 +13,6 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 
-
 mod command;
 mod packet_handlers;
 mod terminal_input;
@@ -36,9 +35,8 @@ fn initialize_server() {
 	let loot_tables = data::loot_tables::get_loot_tables();
 	let recipes = data::recipes::get_recipes();
 
-	let world_loader = lib::world::loader::vanilla::Loader {
-		path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned(),
-	};
+	let world_loader =
+		lib::world::loader::vanilla::Loader { path: Path::new(&std::env::var("OXIDE_WORLD_PATH").unwrap_or("./world".to_string())).to_owned() };
 
 	let default_gamemode = match std::env::var("OXIDE_DEFAULT_GAMEMODE").unwrap_or("survival".to_string()).as_str() {
 		"survival" => Gamemode::Survival,
@@ -60,9 +58,7 @@ fn initialize_server() {
 		block_state_data: block_states,
 		connections: DashMap::new(),
 		packet_handler_actions: Mutex::new(Vec::new()),
-		packet_sender: PacketSender {
-			packet_send_queues: DashMap::new(),
-		},
+		packet_sender: PacketSender { packet_send_queues: DashMap::new() },
 		default_gamemode,
 		loot_tables,
 		recipe_manager: RecipeManager::new(recipes),
@@ -140,7 +136,6 @@ fn initialize_server() {
 			}
 		});
 
-
 		//TX
 		let game_clone = game.clone();
 		std::thread::spawn(move || {
@@ -184,16 +179,12 @@ fn disconnect_player(peer_addr: &SocketAddr, game: Arc<Game>) {
 		game.packet_sender.send_packet_to_everyone(
 			&players,
 			lib::packets::clientbound::play::PlayerInfoRemove::PACKET_ID,
-			lib::packets::clientbound::play::PlayerInfoRemove {
-				uuids: vec![player_to_remove.uuid],
-			},
+			lib::packets::clientbound::play::PlayerInfoRemove { uuids: vec![player_to_remove.get_common_entity_data().uuid] },
 		);
 		game.packet_sender.send_packet_to_everyone(
 			&players,
 			lib::packets::clientbound::play::RemoveEntities::PACKET_ID,
-			lib::packets::clientbound::play::RemoveEntities {
-				entity_ids: vec![player_to_remove.entity_id],
-			},
+			lib::packets::clientbound::play::RemoveEntities { entity_ids: vec![player_to_remove.get_common_entity_data().entity_id] },
 		);
 	}
 

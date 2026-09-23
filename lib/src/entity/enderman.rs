@@ -11,11 +11,7 @@ impl CommonEntityTrait for Enderman {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 
-		return Self {
-			common: data,
-			mob,
-			damage_cooldown: 0,
-		};
+		return Self { common: data, mob, damage_cooldown: 0 };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -47,11 +43,10 @@ impl CommonEntityTrait for Enderman {
 			player_distances.sort_by(|a, b| a.1.total_cmp(&b.1));
 			let closest_player = player_distances.first();
 			if let Some(closest_player) = closest_player {
-				output.push(EntityTickOutcome::DealDamage(closest_player.0.entity_id, 5.0));
+				output.push(EntityTickOutcome::DealDamage(closest_player.0.get_common_entity_data().entity_id, 5.0));
 				self.damage_cooldown = 20;
 			}
 		}
-
 
 		return output;
 	}

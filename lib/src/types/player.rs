@@ -58,18 +58,11 @@ impl std::io::Write for MockReadWriter {
 	}
 }
 
-
-//TODO: use new EntityPosition struct here too
 #[derive(Debug)]
 pub struct Player {
-	position: EntityPosition,
-	last_position: EntityPosition,
-	pub velocity: EntityPosition,
 	pub display_name: String,
-	pub uuid: u128,
 	pub peer_socket_address: SocketAddr,
 	pub connection_stream: Box<dyn ReadWrite>,
-	pub entity_id: i32,
 	pub waiting_for_confirm_teleportation: bool,
 	pub current_teleport_id: i32,
 	inventory: Vec<Option<Slot>>,
@@ -83,7 +76,6 @@ pub struct Player {
 	is_mining: bool,
 	health: f32,
 	pub is_dead: bool,
-	fall_distance: f64,
 	food_level: u8,
 	food_saturation_level: f32,
 	food_tick_timer: u8,
@@ -98,20 +90,16 @@ pub struct Player {
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
 	pub permission: Permission,
+	common_entity_data: CommonEntity,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
 impl Clone for Player {
 	fn clone(&self) -> Self {
 		Self {
-			position: self.position,
-			last_position: self.last_position,
-			velocity: self.velocity,
 			display_name: self.display_name.clone(),
-			uuid: self.uuid,
 			peer_socket_address: self.peer_socket_address,
 			connection_stream: self.connection_stream.box_clone().unwrap(),
-			entity_id: self.entity_id,
 			waiting_for_confirm_teleportation: self.waiting_for_confirm_teleportation,
 			current_teleport_id: self.current_teleport_id,
 			inventory: self.inventory.clone(),
@@ -125,7 +113,6 @@ impl Clone for Player {
 			is_mining: self.is_mining,
 			health: self.health,
 			is_dead: self.is_dead,
-			fall_distance: self.fall_distance,
 			food_level: self.food_level,
 			food_saturation_level: self.food_saturation_level,
 			food_tick_timer: self.food_tick_timer,
@@ -140,6 +127,7 @@ impl Clone for Player {
 			loaded_chunks: self.loaded_chunks.clone(),
 			portal_cooldown: self.portal_cooldown,
 			permission: self.permission,
+			common_entity_data: self.common_entity_data.clone(),
 		}
 	}
 }
@@ -147,7 +135,7 @@ impl Clone for Player {
 //manual implementation because TcpStream doesnt implement PartialEq
 impl PartialEq for Player {
 	fn eq(&self, other: &Self) -> bool {
-		self.uuid == other.uuid
+		self.common_entity_data.uuid == other.common_entity_data.uuid
 	}
 }
 
@@ -157,36 +145,29 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_common_entity_data(&self) -> &CommonEntity {
-		todo!();
+		return &self.common_entity_data;
 	}
 
 	fn get_common_entity_data_cloned(&self) -> CommonEntity {
 		return CommonEntity {
-			position: self.position,
-			velocity: self.velocity,
-			uuid: self.uuid,
-			entity_id: self.entity_id,
+			position: self.common_entity_data.position,
+			velocity: self.common_entity_data.velocity,
+			uuid: self.common_entity_data.uuid,
+			entity_id: self.common_entity_data.entity_id,
 			collision_shape: CollisionShape::new_from_cuboid(
-				Cuboid {
-					x1: -0.3,
-					y1: 0.0,
-					z1: -0.3,
-					x2: 0.3,
-					y2: if self.is_sneaking { 1.5 } else { 1.8 },
-					z2: 0.3,
-				},
-				self.position,
+				Cuboid { x1: -0.3, y1: 0.0, z1: -0.3, x2: 0.3, y2: if self.is_sneaking { 1.5 } else { 1.8 }, z2: 0.3 },
+				self.common_entity_data.position,
 			),
 			..Default::default()
 		};
 	}
 
 	fn get_common_entity_data_mut(&mut self) -> &mut CommonEntity {
-		todo!();
+		return &mut self.common_entity_data;
 	}
 
-	fn set_common_entity_data(&mut self, _common_entity_data: CommonEntity) {
-		todo!();
+	fn set_common_entity_data(&mut self, common_entity_data: CommonEntity) {
+		self.common_entity_data = common_entity_data;
 	}
 
 	fn get_type(&self) -> i32 {
@@ -207,18 +188,18 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn get_yaw_u8(&self) -> u8 {
-		return if self.position.yaw < 0.0 {
-			(((self.position.yaw / 90.0) * 64.0) + 256.0) as u8
+		return if self.common_entity_data.position.yaw < 0.0 {
+			(((self.common_entity_data.position.yaw / 90.0) * 64.0) + 256.0) as u8
 		} else {
-			((self.position.yaw / 90.0) * 64.0) as u8
+			((self.common_entity_data.position.yaw / 90.0) * 64.0) as u8
 		};
 	}
 
 	fn get_pitch_u8(&self) -> u8 {
-		return if self.position.pitch < 0.0 {
-			(((self.position.pitch / 90.0) * 64.0) + 256.0) as u8
+		return if self.common_entity_data.position.pitch < 0.0 {
+			(((self.common_entity_data.position.pitch / 90.0) * 64.0) + 256.0) as u8
 		} else {
-			((self.position.pitch / 90.0) * 64.0) as u8
+			((self.common_entity_data.position.pitch / 90.0) * 64.0) as u8
 		};
 	}
 
@@ -227,19 +208,20 @@ impl CommonEntityTrait for Player {
 	}
 
 	fn is_on_ground(&self, dimension: &Dimension, block_state_data: &HashMap<String, basic_types::blocks::Block>) -> bool {
-		return self.is_on_ground_at(dimension, self.position, block_state_data);
+		return self.is_on_ground_at(dimension, self.common_entity_data.position, block_state_data);
 	}
 
-	fn tick(
+	fn extra_tick(
 		&mut self,
 		dimension: &Dimension,
 		players: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
-		block_state_data: &HashMap<String, basic_types::blocks::Block>,
+		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
+		//keep chunks around player loaded
 		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
 		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
 			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
@@ -247,6 +229,7 @@ impl CommonEntityTrait for Player {
 			}
 		}
 
+		//Handle player death
 		if self.health <= 0.0 {
 			for entity in self.die(packet_sender, entity_id_manager, players) {
 				output.push(EntityTickOutcome::SummonEntity(Box::new(entity)));
@@ -269,28 +252,10 @@ impl CommonEntityTrait for Player {
 				}
 			}
 
-			if self.position.y - self.last_position.y < 0.0 && !self.is_in_liquid(dimension) {
-				self.fall_distance += -(self.position.y - self.last_position.y);
-			} else {
-				let fall_damage_multiplier = 1.0; //will be important with enchantments and such
-				let safe_fall_height = 4.0;
-				let fall_damage = ((self.fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
-				if fall_damage > 0.0 {
-					output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
-				}
-				self.fall_distance = 0.0;
-			}
-
+			//Exhaustion during swimming
 			if self.is_in_liquid(dimension) {
-				self.fall_distance = 0.0;
-				let last_position_without_height = EntityPosition {
-					y: 0.0,
-					..self.last_position
-				};
-				let current_position_without_height = EntityPosition {
-					y: 0.0,
-					..self.position
-				};
+				let last_position_without_height = EntityPosition { y: 0.0, ..self.common_entity_data.last_position };
+				let current_position_without_height = EntityPosition { y: 0.0, ..self.common_entity_data.position };
 				self.exhaustion_swimming_for_meters += last_position_without_height.distance_to(current_position_without_height);
 				if self.exhaustion_swimming_for_meters >= 1.0 {
 					self.food_exhaustion_level += 0.01;
@@ -298,15 +263,10 @@ impl CommonEntityTrait for Player {
 				}
 			}
 
+			//Exhaustion because sprinting
 			if self.is_sprinting {
-				let last_position_without_height = EntityPosition {
-					y: 0.0,
-					..self.last_position
-				};
-				let current_position_without_height = EntityPosition {
-					y: 0.0,
-					..self.position
-				};
+				let last_position_without_height = EntityPosition { y: 0.0, ..self.common_entity_data.last_position };
+				let current_position_without_height = EntityPosition { y: 0.0, ..self.common_entity_data.position };
 				self.exhaustion_sprinting_for_meters += last_position_without_height.distance_to(current_position_without_height);
 				if self.exhaustion_sprinting_for_meters >= 1.0 {
 					self.food_exhaustion_level += 0.1;
@@ -314,6 +274,7 @@ impl CommonEntityTrait for Player {
 				}
 			}
 
+			//Decrease food level
 			if self.food_exhaustion_level >= 4.0 {
 				self.food_exhaustion_level -= 4.0;
 				if self.food_saturation_level > 0.0 {
@@ -325,6 +286,7 @@ impl CommonEntityTrait for Player {
 				}
 			}
 
+			//Eating
 			if self.started_eating_ticks_ago < 32 && self.started_eating_ticks_ago != 0 {
 				self.started_eating_ticks_ago += 1;
 			} else if self.started_eating_ticks_ago != 0 {
@@ -344,83 +306,18 @@ impl CommonEntityTrait for Player {
 					packet_sender.send_packet_to_player(
 						&self.peer_socket_address,
 						crate::packets::clientbound::play::EntityEvent::PACKET_ID,
-						crate::packets::clientbound::play::EntityEvent {
-							entity_id: self.entity_id,
-							entity_status: 9,
-						},
+						crate::packets::clientbound::play::EntityEvent { entity_id: self.common_entity_data.entity_id, entity_status: 9 },
 					);
 
 					let selected_slot = self.get_selected_inventory_slot().clone();
 					let selected_slot = selected_slot.map(|x| {
 						let new_item_count = x.count - 1;
-						if new_item_count == 0 {
-							None
-						} else {
-							Some(Slot {
-								count: new_item_count,
-								..x
-							})
-						}
+						if new_item_count == 0 { None } else { Some(Slot { count: new_item_count, ..x }) }
 					});
 					self.set_selected_inventory_slot(selected_slot.flatten(), players, packet_sender);
 				};
 			}
 		}
-
-		if self.last_position != self.position {
-			let position = EntityPosition {
-				x: self.get_position().x - 0.5,
-				z: self.get_position().z - 0.5,
-				..self.get_position()
-			};
-			let blocks_to_check = [
-				BlockPosition::from(position),
-				BlockPosition {
-					y: BlockPosition::from(position).y + 1,
-					..BlockPosition::from(position)
-				},
-			];
-
-			let mut teleported = false;
-			for block_to_check in blocks_to_check {
-				let block_state_id = dimension.get_block(block_to_check).unwrap_or_default();
-				if self.portal_cooldown == 0
-					&& data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id)
-				{
-					teleported = true;
-					if self.get_dimension() == "minecraft:overworld" {
-						output.push(EntityTickOutcome::UseNetherPortal("minecraft:the_nether".to_string()));
-					} else {
-						output.push(EntityTickOutcome::UseNetherPortal("minecraft:overworld".to_string()));
-					}
-				}
-			}
-			if teleported {
-				self.portal_cooldown = 20;
-			} else if self.portal_cooldown > 0 {
-				self.portal_cooldown -= 1;
-			}
-		}
-
-		if self.last_position != self.position {
-			let position = EntityPosition {
-				x: self.get_position().x - 0.5,
-				z: self.get_position().z - 0.5,
-				..self.get_position()
-			};
-
-			let block_at_position = dimension.get_block(position.into()).unwrap_or_default();
-			let end_portal_block_id = data::blocks::get_block_from_name("minecraft:end_portal", block_state_data).states.first().unwrap().id;
-			if block_at_position == end_portal_block_id {
-				if self.get_dimension() == "minecraft:the_end" {
-					output.push(EntityTickOutcome::UseEndPortal("minecraft:overworld".to_string()));
-				} else {
-					output.push(EntityTickOutcome::UseEndPortal("minecraft:the_end".to_string()));
-				}
-			}
-		}
-
-		self.last_position = self.position;
 
 		return output;
 	}
@@ -434,10 +331,7 @@ impl CommonEntityTrait for Player {
 
 		self.send_health_and_food_to_client(packet_sender);
 
-		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation {
-			entity_id: self.entity_id,
-			yaw: 0.0,
-		};
+		let hurt_animation_packet = crate::packets::clientbound::play::HurtAnimation { entity_id: self.common_entity_data.entity_id, yaw: 0.0 };
 
 		packet_sender.send_packet_to_everyone_in_dimension(
 			players,
@@ -457,7 +351,7 @@ impl CommonEntityTrait for Player {
 		block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) {
 		self.dimension = new_dimension_name.to_string();
-		self.position = position.into();
+		self.common_entity_data.position = position.into();
 		self.loaded_chunks = Vec::new();
 
 		packet_sender.send_packet_to_player(
@@ -492,8 +386,8 @@ impl CommonEntityTrait for Player {
 					other_peer_addr,
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
-						entity_id: self.entity_id,
-						entity_uuid: self.uuid,
+						entity_id: self.common_entity_data.entity_id,
+						entity_uuid: self.common_entity_data.uuid,
 						entity_type: data::entities::get_id_from_name("minecraft:player"),
 						x: self.get_position().x,
 						y: self.get_position().y,
@@ -514,7 +408,7 @@ impl CommonEntityTrait for Player {
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
-				entity_id: self.entity_id,
+				entity_id: self.common_entity_data.entity_id,
 				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
@@ -539,10 +433,7 @@ impl CommonEntityTrait for Player {
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
-			crate::packets::clientbound::play::GameEvent {
-				event: 13,
-				value: 0.0,
-			},
+			crate::packets::clientbound::play::GameEvent { event: 13, value: 0.0 },
 		);
 
 		packet_sender.send_packet_to_player(
@@ -565,7 +456,7 @@ impl CommonEntityTrait for Player {
 		}
 
 		for player in players_clone {
-			if player.uuid == self.uuid {
+			if player.common_entity_data.uuid == self.common_entity_data.uuid {
 				continue;
 			}
 
@@ -577,8 +468,8 @@ impl CommonEntityTrait for Player {
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
-					entity_id: player.entity_id,
-					entity_uuid: player.uuid,
+					entity_id: player.common_entity_data.entity_id,
+					entity_uuid: player.common_entity_data.uuid,
 					entity_type: data::entities::get_id_from_name("minecraft:player"),
 					x: player.get_position().x,
 					y: player.get_position().y,
@@ -597,7 +488,7 @@ impl CommonEntityTrait for Player {
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					metadata: self.get_metadata(),
 				},
 			);
@@ -606,7 +497,7 @@ impl CommonEntityTrait for Player {
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					equipment: vec![
 						(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
 						(1, player.get_inventory()[45].clone()),
@@ -622,7 +513,7 @@ impl CommonEntityTrait for Player {
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
@@ -632,7 +523,7 @@ impl CommonEntityTrait for Player {
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					head_yaw: player.get_yaw_u8(),
 				},
 			);
@@ -640,7 +531,7 @@ impl CommonEntityTrait for Player {
 
 		//Spawn player entity for other players that are already connected
 		for player in players_clone {
-			if player.uuid == self.uuid {
+			if player.common_entity_data.uuid == self.common_entity_data.uuid {
 				continue;
 			}
 
@@ -652,12 +543,12 @@ impl CommonEntityTrait for Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 				crate::packets::clientbound::play::SpawnEntity {
-					entity_id: self.entity_id,
-					entity_uuid: self.uuid,
+					entity_id: self.common_entity_data.entity_id,
+					entity_uuid: self.common_entity_data.uuid,
 					entity_type: data::entities::get_id_from_name("minecraft:player"),
-					x: self.position.x,
-					y: self.position.y,
-					z: self.position.z,
+					x: self.common_entity_data.position.x,
+					y: self.common_entity_data.position.y,
+					z: self.common_entity_data.position.z,
 					pitch: 0,
 					yaw: 0,
 					head_yaw: 0,
@@ -672,7 +563,7 @@ impl CommonEntityTrait for Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: self.entity_id,
+					entity_id: self.common_entity_data.entity_id,
 					metadata: self.get_metadata(),
 				},
 			);
@@ -681,7 +572,7 @@ impl CommonEntityTrait for Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 				crate::packets::clientbound::play::SetEquipment {
-					entity_id: self.entity_id,
+					entity_id: self.common_entity_data.entity_id,
 					equipment: vec![
 						(0, self.inventory[(self.selected_slot + 36) as usize].clone()),
 						(1, self.inventory[45].clone()),
@@ -697,7 +588,7 @@ impl CommonEntityTrait for Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 				crate::packets::clientbound::play::UpdateEntityRotation {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					on_ground: player.is_on_ground(dimension, block_state_data),
 					yaw: player.get_yaw_u8(),
 					pitch: player.get_pitch_u8(),
@@ -707,12 +598,11 @@ impl CommonEntityTrait for Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 				crate::packets::clientbound::play::SetHeadRotation {
-					entity_id: player.entity_id,
+					entity_id: player.common_entity_data.entity_id,
 					head_yaw: player.get_yaw_u8(),
 				},
 			);
 		}
-
 
 		for entity in &dimension.entities {
 			packet_sender.send_packet_to_player(
@@ -746,14 +636,9 @@ impl Player {
 		let Ok(mut file) = File::open(Player::get_playerdata_path(uuid)) else {
 			let entity_id = entity_id_manager.get_new();
 			let player = Self {
-				position: default_spawn_location.into(),
-				last_position: default_spawn_location.into(),
-				velocity: EntityPosition::default(),
 				display_name,
-				uuid,
 				peer_socket_address,
 				connection_stream,
-				entity_id,
 				waiting_for_confirm_teleportation: false,
 				current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
 					/ (entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
@@ -768,7 +653,6 @@ impl Player {
 				is_mining: false,
 				health: 20.0,
 				is_dead: false,
-				fall_distance: 0.0,
 				food_level: 20,
 				food_saturation_level: 5.0,
 				food_tick_timer: 0,
@@ -793,6 +677,19 @@ impl Player {
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
 				permission: Permission::Everyone,
+				common_entity_data: CommonEntity {
+					position: default_spawn_location.into(),
+					last_position: default_spawn_location.into(),
+					velocity: EntityPosition::default(),
+					uuid,
+					entity_id,
+					fall_distance: 0.0,
+					collision_shape: CollisionShape::new_from_cuboid(
+						Cuboid { x1: -0.3, y1: 0.0, z1: -0.3, x2: 0.3, y2: 1.8, z2: 0.3 },
+						default_spawn_location.into(),
+					),
+					..Default::default()
+				},
 			};
 
 			return player;
@@ -886,26 +783,9 @@ impl Player {
 		let entity_id = entity_id_manager.get_new();
 		let permission = permissions::get_permission_from_file(uuid);
 		let player = Self {
-			position: EntityPosition {
-				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
-				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
-				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
-				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
-				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
-			},
-			last_position: EntityPosition {
-				x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
-				y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
-				z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
-				yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
-				pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
-			},
-			velocity: EntityPosition::default(),
 			display_name,
-			uuid,
 			peer_socket_address,
 			connection_stream,
-			entity_id,
 			waiting_for_confirm_teleportation: false,
 			current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
 				/ (entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
@@ -920,7 +800,6 @@ impl Player {
 			is_mining: false,
 			health: player_data.get_child("Health").unwrap_or(&NbtTag::Float(String::new(), 20.0)).as_float(),
 			is_dead: false,
-			fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
 			food_level: player_data.get_child("foodLevel").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
 			food_saturation_level: player_data.get_child("foodSaturationLevel").unwrap_or(&NbtTag::Float(String::new(), 5.0)).as_float(),
 			food_tick_timer: player_data.get_child("foodTickTimer").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
@@ -945,31 +824,59 @@ impl Player {
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
 			permission,
+			common_entity_data: CommonEntity {
+				position: EntityPosition {
+					x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+					y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+					z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+					yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+					pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+				},
+				last_position: EntityPosition {
+					x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+					y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+					z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+					yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+					pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+				},
+				velocity: EntityPosition::default(),
+				uuid,
+				entity_id,
+				fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
+				..Default::default()
+			},
 		};
 
 		return player;
 	}
 
 	pub fn save_to_disk(&self) {
-		if !fs::exists(Player::get_playerdata_path(self.uuid).parent().unwrap()).unwrap() {
-			fs::create_dir_all(Player::get_playerdata_path(self.uuid).parent().unwrap()).unwrap();
+		if !fs::exists(Player::get_playerdata_path(self.common_entity_data.uuid).parent().unwrap()).unwrap() {
+			fs::create_dir_all(Player::get_playerdata_path(self.common_entity_data.uuid).parent().unwrap()).unwrap();
 		}
 
-		let mut file =
-			OpenOptions::new().read(true).write(true).truncate(true).create(true).open(Player::get_playerdata_path(self.uuid)).unwrap();
+		let mut file = OpenOptions::new()
+			.read(true)
+			.write(true)
+			.truncate(true)
+			.create(true)
+			.open(Player::get_playerdata_path(self.common_entity_data.uuid))
+			.unwrap();
 
-		let empty_slot = Slot {
-			count: 0,
-			id: 0,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let empty_slot = Slot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let player_data = NbtTag::Root(vec![
 			NbtTag::List(
 				"Pos".to_string(),
-				vec![NbtListTag::Double(self.position.x), NbtListTag::Double(self.position.y), NbtListTag::Double(self.position.z)],
+				vec![
+					NbtListTag::Double(self.common_entity_data.position.x),
+					NbtListTag::Double(self.common_entity_data.position.y),
+					NbtListTag::Double(self.common_entity_data.position.z),
+				],
 			),
-			NbtTag::List("Rotation".to_string(), vec![NbtListTag::Float(self.position.yaw), NbtListTag::Float(self.position.pitch)]),
+			NbtTag::List(
+				"Rotation".to_string(),
+				vec![NbtListTag::Float(self.common_entity_data.position.yaw), NbtListTag::Float(self.common_entity_data.position.pitch)],
+			),
 			NbtTag::Int("SelectedItemSlot".to_string(), self.selected_slot as i32),
 			NbtTag::Int("playerGameType".to_string(), self.gamemode as i32),
 			NbtTag::Float("Health".to_string(), self.health),
@@ -977,7 +884,7 @@ impl Player {
 			NbtTag::Int("foodLevel".to_string(), self.food_level as i32),
 			NbtTag::Float("foodSaturationLevel".to_string(), self.food_saturation_level),
 			NbtTag::Int("foodTickTimer".to_string(), self.food_tick_timer as i32),
-			NbtTag::Double("fall_distance".to_string(), self.fall_distance),
+			NbtTag::Double("fall_distance".to_string(), self.common_entity_data.fall_distance),
 			NbtTag::String("Dimension".to_string(), self.get_dimension().to_string()),
 			NbtTag::List(
 				"Inventory".to_string(),
@@ -1070,7 +977,7 @@ impl Player {
 	}
 
 	pub fn get_looking_cardinal_direction(&self) -> CardinalDirection {
-		let yaw = self.position.yaw;
+		let yaw = self.common_entity_data.position.yaw;
 		let cardinal_direction: CardinalDirection;
 		if yaw >= 0.0 {
 			if (135.0..225.0).contains(&yaw) {
@@ -1102,34 +1009,23 @@ impl Player {
 		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		let old_x = self.position.x;
-		let old_z = self.position.z;
+		let old_x = self.common_entity_data.position.x;
+		let old_z = self.common_entity_data.position.z;
 
-		self.position.x = x;
-		self.position.y = y;
-		self.position.z = z;
+		self.common_entity_data.position.x = x;
+		self.common_entity_data.position.y = y;
+		self.common_entity_data.position.z = z;
 
-		let old_chunk_position = BlockPosition {
-			x: old_x as i32,
-			y: 0,
-			z: old_z as i32,
-		}
-		.convert_to_coordinates_of_chunk();
-		let new_chunk_position = BlockPosition {
-			x: self.position.x as i32,
-			y: 0,
-			z: self.position.z as i32,
-		}
-		.convert_to_coordinates_of_chunk();
+		let old_chunk_position = BlockPosition { x: old_x as i32, y: 0, z: old_z as i32 }.convert_to_coordinates_of_chunk();
+		let new_chunk_position =
+			BlockPosition { x: self.common_entity_data.position.x as i32, y: 0, z: self.common_entity_data.position.z as i32 }
+				.convert_to_coordinates_of_chunk();
 
 		if old_chunk_position != new_chunk_position {
 			packet_sender.send_packet_to_player(
 				&self.peer_socket_address,
 				crate::packets::clientbound::play::SetCenterChunk::PACKET_ID,
-				crate::packets::clientbound::play::SetCenterChunk {
-					chunk_x: new_chunk_position.x,
-					chunk_z: new_chunk_position.z,
-				},
+				crate::packets::clientbound::play::SetCenterChunk { chunk_x: new_chunk_position.x, chunk_z: new_chunk_position.z },
 			);
 
 			let old_chunk_coords = self.loaded_chunks.clone();
@@ -1154,15 +1050,11 @@ impl Player {
 				packet_sender.send_packet_to_player(
 					&self.peer_socket_address,
 					crate::packets::clientbound::play::UnloadChunk::PACKET_ID,
-					crate::packets::clientbound::play::UnloadChunk {
-						z: chunk_coords.1,
-						x: chunk_coords.0,
-					},
+					crate::packets::clientbound::play::UnloadChunk { z: chunk_coords.1, x: chunk_coords.0 },
 				);
 			}
 			self.loaded_chunks.retain(|x| !chunks_to_unload.contains(x));
 		}
-
 
 		return Ok(self.get_position());
 	}
@@ -1173,22 +1065,22 @@ impl Player {
 		dimension: &mut Dimension,
 		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
-		self.position.yaw = new_position.yaw;
-		self.position.pitch = new_position.pitch;
+		self.common_entity_data.position.yaw = new_position.yaw;
+		self.common_entity_data.position.pitch = new_position.pitch;
 		self.new_position(new_position.x, new_position.y, new_position.z, dimension, packet_sender)?;
 
 		return Ok(self.get_position());
 	}
 
 	pub fn new_rotation(&mut self, yaw: f32, pitch: f32) -> EntityPosition {
-		self.position.yaw = yaw;
-		self.position.pitch = pitch;
+		self.common_entity_data.position.yaw = yaw;
+		self.common_entity_data.position.pitch = pitch;
 
 		return self.get_position();
 	}
 
 	pub fn get_pitch(&self) -> f32 {
-		return self.position.pitch;
+		return self.common_entity_data.position.pitch;
 	}
 
 	pub fn send_chunk(
@@ -1202,11 +1094,7 @@ impl Player {
 			return Ok(());
 		}
 
-		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition {
-			x: chunk_x,
-			y: 0,
-			z: chunk_z,
-		});
+		let chunk = dimension.get_chunk_from_chunk_position(BlockPosition { x: chunk_x, y: 0, z: chunk_z });
 		let chunk = if let Some(chunk) = chunk {
 			chunk
 		} else {
@@ -1332,16 +1220,20 @@ impl Player {
 	pub fn set_selected_slot(&mut self, slot: u8, players: &[Player], packet_sender: &PacketSender) {
 		self.selected_slot = slot;
 
-		players.iter().filter(|x| x.get_dimension() == self.get_dimension()).filter(|x| x.uuid != self.uuid).for_each(|x| {
-			packet_sender.send_packet_to_player(
-				&x.peer_socket_address,
-				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment {
-					entity_id: self.entity_id,
-					equipment: vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())],
-				},
-			);
-		});
+		players
+			.iter()
+			.filter(|x| x.get_dimension() == self.get_dimension())
+			.filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid)
+			.for_each(|x| {
+				packet_sender.send_packet_to_player(
+					&x.peer_socket_address,
+					crate::packets::clientbound::play::SetEquipment::PACKET_ID,
+					crate::packets::clientbound::play::SetEquipment {
+						entity_id: self.common_entity_data.entity_id,
+						equipment: vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())],
+					},
+				);
+			});
 	}
 
 	pub fn get_inventory(&self) -> &Vec<Option<Slot>> {
@@ -1372,7 +1264,7 @@ impl Player {
 			return;
 		}
 
-		players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
+		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 			let mut equipment: Vec<(u8, Option<Slot>)> = vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())];
 
 			if [5, 6, 7, 8, 45].contains(&slot) {
@@ -1389,10 +1281,7 @@ impl Player {
 			packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment {
-					entity_id: self.entity_id,
-					equipment,
-				},
+				crate::packets::clientbound::play::SetEquipment { entity_id: self.common_entity_data.entity_id, equipment },
 			);
 		});
 	}
@@ -1411,7 +1300,7 @@ impl Player {
 			},
 		);
 
-		players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
+		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 			let equipment: Vec<(u8, Option<Slot>)> = vec![
 				(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone()),
 				(1, self.inventory[45].clone()),
@@ -1424,10 +1313,7 @@ impl Player {
 			packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				crate::packets::clientbound::play::SetEquipment::PACKET_ID,
-				crate::packets::clientbound::play::SetEquipment {
-					entity_id: self.entity_id,
-					equipment,
-				},
+				crate::packets::clientbound::play::SetEquipment { entity_id: self.common_entity_data.entity_id, equipment },
 			);
 		});
 	}
@@ -1474,9 +1360,7 @@ impl Player {
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CloseContainer::PACKET_ID,
-			crate::packets::clientbound::play::CloseContainer {
-				window_id: 1,
-			},
+			crate::packets::clientbound::play::CloseContainer { window_id: 1 },
 		);
 
 		return Ok(());
@@ -1511,7 +1395,7 @@ impl Player {
 		self.is_sneaking = is_sneaking;
 
 		for player in players {
-			if player.uuid == self.uuid {
+			if player.common_entity_data.uuid == self.common_entity_data.uuid {
 				continue;
 			}
 
@@ -1519,25 +1403,21 @@ impl Player {
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 				crate::packets::clientbound::play::SetEntityMetadata {
-					entity_id: self.entity_id,
-					metadata: vec![EntityMetadata {
-						index: 6,
-						value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }),
-					}],
+					entity_id: self.common_entity_data.entity_id,
+					metadata: vec![EntityMetadata { index: 6, value: EntityMetadataValue::Pose(if self.is_sneaking { 5 } else { 0 }) }],
 				},
 			);
 		}
 	}
 
-
 	/// updates the permission of the player
 	/// It doesn't update the autocompletion of the client, so please send the `lib::packets::clientbound::play::Commands` after it
 	pub fn set_permission(&mut self, permission: Permission) {
 		if permission == Permission::Everyone {
-			permissions::remove_permission_from_file(self.uuid);
+			permissions::remove_permission_from_file(self.common_entity_data.uuid);
 		} else {
 			permissions::add_permission_in_file(OpsItem {
-				uuid: self.uuid,
+				uuid: self.common_entity_data.uuid,
 				name: self.display_name.clone(),
 				level: permission.into(),
 				bypasses_player_limit: false,
@@ -1547,7 +1427,7 @@ impl Player {
 	}
 
 	pub fn get_position(&self) -> EntityPosition {
-		return self.position;
+		return self.common_entity_data.position;
 	}
 
 	pub fn set_gamemode(&mut self, gamemode: Gamemode, players: &[Player], packet_sender: &PacketSender) -> Result<(), Box<dyn Error>> {
@@ -1556,10 +1436,7 @@ impl Player {
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
-			crate::packets::clientbound::play::GameEvent {
-				event: 3,
-				value: self.gamemode as u8 as f32,
-			},
+			crate::packets::clientbound::play::GameEvent { event: 3, value: self.gamemode as u8 as f32 },
 		);
 
 		packet_sender.send_packet_to_everyone_in_dimension(
@@ -1568,7 +1445,7 @@ impl Player {
 			crate::packets::clientbound::play::PlayerInfoUpdate::PACKET_ID,
 			crate::packets::clientbound::play::PlayerInfoUpdate {
 				actions: 0x04,
-				players: vec![(self.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
+				players: vec![(self.common_entity_data.uuid, vec![PlayerAction::UpdateGameMode(self.gamemode as u8 as i32)])],
 			},
 		);
 
@@ -1600,7 +1477,6 @@ impl Player {
 	pub fn get_is_mining(&self) -> bool {
 		return self.is_mining;
 	}
-
 
 	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], packet_sender: &PacketSender) -> bool {
 		let slot_indecies = [
@@ -1656,7 +1532,7 @@ impl Player {
 		if inventory_updated {
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
 				collected_entity_id: item_entity_id,
-				collector_entity_id: self.entity_id,
+				collector_entity_id: self.common_entity_data.entity_id,
 				pickup_item_count: item.count,
 			};
 
@@ -1678,7 +1554,7 @@ impl Player {
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::CombatDeath::PACKET_ID,
 			crate::packets::clientbound::play::CombatDeath {
-				player_id: self.entity_id,
+				player_id: self.common_entity_data.entity_id,
 				message: NbtTag::Root(vec![
 					NbtTag::String("type".to_string(), "text".to_string()),
 					NbtTag::String("text".to_string(), "haha you dieded".to_string()),
@@ -1702,22 +1578,20 @@ impl Player {
 						age: 0,
 						health: 5,
 						item: slot.clone().unwrap(),
-						owner: self.uuid,
+						owner: self.common_entity_data.uuid,
 						pickup_delay: 0,
-						thrower: self.uuid,
+						thrower: self.common_entity_data.uuid,
 					};
 
 					entities_to_summon.push(Entity::Item(new_entity));
 				}
 			}
 
-			players.iter().filter(|x| x.uuid != self.uuid).for_each(|x| {
+			players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 				packet_sender.send_packet_to_player(
 					&x.peer_socket_address,
 					crate::packets::clientbound::play::RemoveEntities::PACKET_ID,
-					crate::packets::clientbound::play::RemoveEntities {
-						entity_ids: vec![self.entity_id],
-					},
+					crate::packets::clientbound::play::RemoveEntities { entity_ids: vec![self.common_entity_data.entity_id] },
 				);
 			});
 
@@ -1738,8 +1612,8 @@ impl Player {
 		self.food_level = 20;
 		self.food_exhaustion_level = 0.0;
 		self.food_saturation_level = 5.0;
-		self.fall_distance = 0.0;
-		self.last_position = default_spawn_location.into();
+		self.common_entity_data.fall_distance = 0.0;
+		self.common_entity_data.last_position = default_spawn_location.into();
 
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
@@ -1781,8 +1655,8 @@ impl Player {
 					other_peer_addr,
 					crate::packets::clientbound::play::SpawnEntity::PACKET_ID,
 					crate::packets::clientbound::play::SpawnEntity {
-						entity_id: self.entity_id,
-						entity_uuid: self.uuid,
+						entity_id: self.common_entity_data.entity_id,
+						entity_uuid: self.common_entity_data.uuid,
 						entity_type: data::entities::get_id_from_name("minecraft:player"),
 						x: self.get_position().x,
 						y: self.get_position().y,
@@ -1803,7 +1677,7 @@ impl Player {
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::EntityEvent::PACKET_ID,
 			crate::packets::clientbound::play::EntityEvent {
-				entity_id: self.entity_id,
+				entity_id: self.common_entity_data.entity_id,
 				entity_status: permissions::calculate_level_for_protocol(self.permission),
 			},
 		);
@@ -1828,10 +1702,7 @@ impl Player {
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::GameEvent::PACKET_ID,
-			crate::packets::clientbound::play::GameEvent {
-				event: 13,
-				value: 0.0,
-			},
+			crate::packets::clientbound::play::GameEvent { event: 13, value: 0.0 },
 		);
 
 		self.is_dead = false;

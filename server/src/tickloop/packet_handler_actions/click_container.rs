@@ -6,7 +6,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 	//println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
-	let player_uuid = player.uuid;
+	let player_uuid = player.get_common_entity_data().uuid;
 
 	let Some(position) = player.opened_inventory_at else {
 		if player.get_gamemode() != Gamemode::Creative && parsed_packet.window_id == 0 {
@@ -52,12 +52,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					game.packet_sender.send_packet_to_player(
 						&player.peer_socket_address,
 						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-						lib::packets::clientbound::play::SetContainerSlot {
-							window_id: 0,
-							state_id: 1,
-							slot: 0,
-							slot_data: None,
-						},
+						lib::packets::clientbound::play::SetContainerSlot { window_id: 0, state_id: 1, slot: 0, slot_data: None },
 					);
 				}
 			} else if parsed_packet.slot == 0
@@ -362,12 +357,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				game.packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-					lib::packets::clientbound::play::SetContainerSlot {
-						window_id: 1,
-						state_id: 1,
-						slot: 0,
-						slot_data: None,
-					},
+					lib::packets::clientbound::play::SetContainerSlot { window_id: 1, state_id: 1, slot: 0, slot_data: None },
 				);
 			}
 		} else if parsed_packet.slot == 0

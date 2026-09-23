@@ -17,7 +17,7 @@ pub fn process(
 
 	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 
-	let player_entity_id = player.entity_id;
+	let player_entity_id = player.get_common_entity_data().entity_id;
 	let old_position = player.get_position();
 
 	let position_updated = position.is_some();
@@ -54,12 +54,7 @@ pub fn process(
 			),
 			(
 				lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-				lib::packets::clientbound::play::SetHeadRotation {
-					entity_id: player_entity_id,
-					head_yaw: player.get_yaw_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				lib::packets::clientbound::play::SetHeadRotation { entity_id: player_entity_id, head_yaw: player.get_yaw_u8() }.try_into().unwrap(),
 			),
 		]
 	} else if position_updated {
@@ -93,12 +88,7 @@ pub fn process(
 			),
 			(
 				lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
-				lib::packets::clientbound::play::SetHeadRotation {
-					entity_id: player_entity_id,
-					head_yaw: player.get_yaw_u8(),
-				}
-				.try_into()
-				.unwrap(),
+				lib::packets::clientbound::play::SetHeadRotation { entity_id: player_entity_id, head_yaw: player.get_yaw_u8() }.try_into().unwrap(),
 			),
 		]
 	} else {

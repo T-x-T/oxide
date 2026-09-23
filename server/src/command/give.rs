@@ -43,17 +43,12 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		return Ok(());
 	};
 
-	let slot = Slot {
-		id: item_id,
-		count: 1,
-		components_to_add: Vec::new(),
-		components_to_remove: Vec::new(),
-	};
+	let slot = Slot { id: item_id, count: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().summon_item(
 		position,
 		slot,
-		Some(player.uuid),
+		Some(player.get_common_entity_data().uuid),
 		&players,
 		&game.packet_sender,
 		&game.entity_id_manager,

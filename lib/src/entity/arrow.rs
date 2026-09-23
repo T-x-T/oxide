@@ -104,7 +104,7 @@ impl CommonEntityTrait for Arrow {
 						components_to_remove: Vec::new(),
 					},
 					self.get_common_entity_data().entity_id,
-					picking_up_player.uuid,
+					picking_up_player.get_common_entity_data().uuid,
 				));
 
 				return output;
@@ -114,7 +114,7 @@ impl CommonEntityTrait for Arrow {
 		//check if arrow left owners collision box, if not we dont have to check for collisions with other entities to deal damage
 		if !self.left_owner {
 			let mut owner_collision_shape: Option<CollisionShape> = None;
-			let player_owner = players.iter().find(|x| x.uuid == self.owner);
+			let player_owner = players.iter().find(|x| x.get_common_entity_data().uuid == self.owner);
 			if let Some(player_owner) = player_owner {
 				owner_collision_shape = Some(player_owner.get_common_entity_data_cloned().collision_shape);
 			} else {
@@ -147,7 +147,7 @@ impl CommonEntityTrait for Arrow {
 					.map(|x| x.0)
 					.filter(|x| x.get_common_entity_data_cloned().collision_shape.collides_with(&self.get_common_entity_data().collision_shape))
 					.inspect(|_| hit_something = true)
-					.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.entity_id, 5.0)));
+					.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.get_common_entity_data().entity_id, 5.0)));
 
 				dimension
 					.entities

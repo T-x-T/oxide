@@ -66,17 +66,14 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				pick_item_from_block::process(peer_addr, location, game.clone(), players_clone);
 			}
 			PacketHandlerAction::SwingArm(peer_addr, hand) => {
-				let entity_id = players_clone.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().entity_id;
+				let entity_id = players_clone.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().get_common_entity_data().entity_id;
 
 				for other_player in players_clone.iter() {
 					if other_player.peer_socket_address != peer_addr {
 						game.packet_sender.send_packet_to_player(
 							&other_player.peer_socket_address,
 							lib::packets::clientbound::play::EntityAnimation::PACKET_ID,
-							lib::packets::clientbound::play::EntityAnimation {
-								entity_id,
-								animation: if hand == 0 { 0 } else { 3 },
-							},
+							lib::packets::clientbound::play::EntityAnimation { entity_id, animation: if hand == 0 { 0 } else { 3 } },
 						);
 					}
 				}

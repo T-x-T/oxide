@@ -22,7 +22,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		&peer_addr,
 		lib::packets::clientbound::play::Login::PACKET_ID,
 		lib::packets::clientbound::play::Login {
-			entity_id: new_player.entity_id,
+			entity_id: new_player.get_common_entity_data().entity_id,
 			is_hardcore: false,
 			dimension_names: vec!["minecraft:overworld".to_string(), "minecraft:the_nether".to_string(), "minecraft:the_end".to_string()],
 			max_players: 9,
@@ -71,17 +71,14 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::GameEvent::PACKET_ID,
-		lib::packets::clientbound::play::GameEvent {
-			event: 13,
-			value: 0.0,
-		},
+		lib::packets::clientbound::play::GameEvent { event: 13, value: 0.0 },
 	);
 
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::EntityEvent::PACKET_ID,
 		lib::packets::clientbound::play::EntityEvent {
-			entity_id: new_player.entity_id,
+			entity_id: new_player.get_common_entity_data().entity_id,
 			entity_status: permissions::calculate_level_for_protocol(new_player.permission),
 		},
 	);
@@ -113,13 +110,11 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::SetHeldItem::PACKET_ID,
-		lib::packets::clientbound::play::SetHeldItem {
-			slot: new_player.get_selected_slot(),
-		},
+		lib::packets::clientbound::play::SetHeldItem { slot: new_player.get_selected_slot() },
 	);
 
-	let new_player_uuid = new_player.uuid;
-	let new_player_entity_id = new_player.entity_id;
+	let new_player_uuid = new_player.get_common_entity_data().uuid;
+	let new_player_entity_id = new_player.get_common_entity_data().entity_id;
 	let new_player_display_name = new_player.display_name.clone();
 	let new_player_x = new_player.get_position().x;
 	let new_player_y = new_player.get_position().y;
@@ -140,7 +135,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 				.iter()
 				.map(|y| {
 					(
-						y.uuid,
+						y.get_common_entity_data().uuid,
 						vec![
 							lib::packets::clientbound::play::PlayerAction::AddPlayer(y.display_name.clone(), vec![]),
 							lib::packets::clientbound::play::PlayerAction::InitializeChat(None),
@@ -183,7 +178,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 
 	//Spawn other already connected player entities for newly joined player
 	for player in players.iter() {
-		if player.uuid == new_player_uuid {
+		if player.get_common_entity_data().uuid == new_player_uuid {
 			continue;
 		}
 
@@ -195,8 +190,8 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&peer_addr,
 			lib::packets::clientbound::play::SpawnEntity::PACKET_ID,
 			lib::packets::clientbound::play::SpawnEntity {
-				entity_id: player.entity_id,
-				entity_uuid: player.uuid,
+				entity_id: player.get_common_entity_data().entity_id,
+				entity_uuid: player.get_common_entity_data().uuid,
 				entity_type: data::entities::get_id_from_name("minecraft:player"),
 				x: player.get_position().x,
 				y: player.get_position().y,
@@ -215,7 +210,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&peer_addr,
 			lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
 			lib::packets::clientbound::play::SetEntityMetadata {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				metadata: new_player_entity_metadata.clone(),
 			},
 		);
@@ -224,7 +219,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&peer_addr,
 			lib::packets::clientbound::play::SetEquipment::PACKET_ID,
 			lib::packets::clientbound::play::SetEquipment {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				equipment: vec![
 					(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
 					(1, player.get_inventory()[45].clone()),
@@ -240,7 +235,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&peer_addr,
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
@@ -250,7 +245,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&peer_addr,
 			lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 			lib::packets::clientbound::play::SetHeadRotation {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				head_yaw: player.get_yaw_u8(),
 			},
 		);
@@ -289,10 +284,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		game.packet_sender.send_packet_to_player(
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-			lib::packets::clientbound::play::SetEntityMetadata {
-				entity_id: new_player_entity_id,
-				metadata: new_player_entity_metadata.clone(),
-			},
+			lib::packets::clientbound::play::SetEntityMetadata { entity_id: new_player_entity_id, metadata: new_player_entity_metadata.clone() },
 		);
 
 		game.packet_sender.send_packet_to_player(
@@ -315,7 +307,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::UpdateEntityRotation::PACKET_ID,
 			lib::packets::clientbound::play::UpdateEntityRotation {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				on_ground: player.is_on_ground(world.dimensions.get(player.get_dimension()).unwrap(), &game.block_state_data),
 				yaw: player.get_yaw_u8(),
 				pitch: player.get_pitch_u8(),
@@ -325,12 +317,11 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			&player.peer_socket_address,
 			lib::packets::clientbound::play::SetHeadRotation::PACKET_ID,
 			lib::packets::clientbound::play::SetHeadRotation {
-				entity_id: player.entity_id,
+				entity_id: player.get_common_entity_data().entity_id,
 				head_yaw: player.get_yaw_u8(),
 			},
 		);
 	}
-
 
 	for entity in &world.dimensions.get(&new_player_dimension).unwrap().entities {
 		game.packet_sender.send_packet_to_player(

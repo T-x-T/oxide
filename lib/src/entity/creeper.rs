@@ -65,7 +65,6 @@ impl CommonEntityTrait for Creeper {
 			self.fuse -= 1;
 		}
 
-
 		if !self.is_manually_lit {
 			if are_players_nearby {
 				if !self.is_ignited {
@@ -115,29 +114,14 @@ impl CommonEntityTrait for Creeper {
 		let mut output: Vec<EntityMetadata> = Vec::new();
 
 		if self.is_ignited {
-			output.push(EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Varint(1),
-			});
-			output.push(EntityMetadata {
-				index: 18,
-				value: EntityMetadataValue::Boolean(true),
-			});
+			output.push(EntityMetadata { index: 16, value: EntityMetadataValue::Varint(1) });
+			output.push(EntityMetadata { index: 18, value: EntityMetadataValue::Boolean(true) });
 		} else {
-			output.push(EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Varint(-1),
-			});
-			output.push(EntityMetadata {
-				index: 18,
-				value: EntityMetadataValue::Boolean(false),
-			});
+			output.push(EntityMetadata { index: 16, value: EntityMetadataValue::Varint(-1) });
+			output.push(EntityMetadata { index: 18, value: EntityMetadataValue::Boolean(false) });
 		}
 
-		output.push(EntityMetadata {
-			index: 17,
-			value: EntityMetadataValue::Boolean(self.is_powered),
-		});
+		output.push(EntityMetadata { index: 17, value: EntityMetadataValue::Boolean(self.is_powered) });
 
 		return output;
 	}
@@ -207,14 +191,7 @@ impl Creeper {
 		for x in (creeper_position.x - 2)..creeper_position.x + 2 {
 			for y in (creeper_position.y - 2)..creeper_position.y + 2 {
 				for z in (creeper_position.z - 2)..creeper_position.z + 2 {
-					output.push(EntityTickOutcome::ReplaceBlock(
-						BlockPosition {
-							x,
-							y,
-							z,
-						},
-						0,
-					));
+					output.push(EntityTickOutcome::ReplaceBlock(BlockPosition { x, y, z }, 0));
 				}
 			}
 		}
@@ -229,7 +206,7 @@ impl Creeper {
 			.iter()
 			.filter(|x| x.get_gamemode() == Gamemode::Survival || x.get_gamemode() == Gamemode::Adventure)
 			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) < 2.5)
-			.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.entity_id, 20.0)));
+			.for_each(|x| output.push(EntityTickOutcome::DealDamage(x.get_common_entity_data().entity_id, 20.0)));
 
 		packet_sender.send_packet_to_everyone_in_dimension(
 			players_clone,

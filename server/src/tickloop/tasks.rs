@@ -10,15 +10,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 	for task_item in input_tasks {
 		if task_item.run_in_ticks > 0 {
-			output_tasks.push(Task {
-				task: task_item.task,
-				run_in_ticks: task_item.run_in_ticks - 1,
-			});
+			output_tasks.push(Task { task: task_item.task, run_in_ticks: task_item.run_in_ticks - 1 });
 			continue;
 		}
 		match task_item.task {
 			TaskItem::PlayerUseNetherPortal(uuid, new_dimension_name) => {
-				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == uuid).unwrap();
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
 				let current_position = player.get_position();
@@ -67,11 +64,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				for y in 0..256 {
 					for x in &x_range {
 						for z in &z_range {
-							let position_to_check = BlockPosition {
-								x: *x + new_position.x,
-								y,
-								z: *z + new_position.z,
-							};
+							let position_to_check = BlockPosition { x: *x + new_position.x, y, z: *z + new_position.z };
 
 							let block = dimension.get_block(position_to_check);
 
@@ -96,198 +89,30 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						data::blocks::get_block_from_name("minecraft:obsidian", &game.block_state_data).states.first().unwrap().id;
 					let nether_portal_block_id = *nether_portal_block_ids.first().unwrap();
 					let blocks_to_create = [
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y + 1,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y + 1,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y + 2,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y + 2,
-								z: new_position.z,
-							},
-							nether_portal_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y - 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x - 1,
-								y: new_position.y - 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y - 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 2,
-								y: new_position.y - 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y - 1,
-								z: new_position.z + 1,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y - 1,
-								z: new_position.z - 1,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y - 1,
-								z: new_position.z - 1,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y - 1,
-								z: new_position.z + 1,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x - 1,
-								y: new_position.y,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 2,
-								y: new_position.y,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x - 1,
-								y: new_position.y + 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 2,
-								y: new_position.y + 1,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x - 1,
-								y: new_position.y + 2,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 2,
-								y: new_position.y + 2,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x - 1,
-								y: new_position.y + 3,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 2,
-								y: new_position.y + 3,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x,
-								y: new_position.y + 3,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
-						(
-							BlockPosition {
-								x: new_position.x + 1,
-								y: new_position.y + 3,
-								z: new_position.z,
-							},
-							obsidian_block_id,
-						),
+						(BlockPosition { x: new_position.x, y: new_position.y, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y + 1, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y + 1, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y + 2, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y + 2, z: new_position.z }, nether_portal_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y - 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x - 1, y: new_position.y - 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y - 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 2, y: new_position.y - 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y - 1, z: new_position.z + 1 }, obsidian_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y - 1, z: new_position.z - 1 }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y - 1, z: new_position.z - 1 }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y - 1, z: new_position.z + 1 }, obsidian_block_id),
+						(BlockPosition { x: new_position.x - 1, y: new_position.y, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 2, y: new_position.y, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x - 1, y: new_position.y + 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 2, y: new_position.y + 1, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x - 1, y: new_position.y + 2, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 2, y: new_position.y + 2, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x - 1, y: new_position.y + 3, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 2, y: new_position.y + 3, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x, y: new_position.y + 3, z: new_position.z }, obsidian_block_id),
+						(BlockPosition { x: new_position.x + 1, y: new_position.y + 3, z: new_position.z }, obsidian_block_id),
 					];
 
 					for block_to_create in blocks_to_create {
@@ -296,10 +121,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 							players_clone,
 							&new_dimension_name,
 							lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-							lib::packets::clientbound::play::BlockUpdate {
-								location: block_to_create.0,
-								block_id: block_to_create.1 as i32,
-							},
+							lib::packets::clientbound::play::BlockUpdate { location: block_to_create.0, block_id: block_to_create.1 as i32 },
 						);
 					}
 
@@ -307,16 +129,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 			}
 			TaskItem::PlayerUseEndPortal(uuid, new_dimension_name) => {
-				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == uuid).unwrap();
 				let default_spawn_location = world.default_spawn_location;
 				let dimension = world.dimensions.get(&new_dimension_name).unwrap();
 
 				if new_dimension_name == "minecraft:the_end" {
-					let new_position = BlockPosition {
-						x: 100,
-						y: 49,
-						z: 0,
-					};
+					let new_position = BlockPosition { x: 100, y: 49, z: 0 };
 
 					let mut chunks_to_add: Vec<Chunk> = Vec::new();
 					let mut entities_to_add: Vec<Entity> = Vec::new();
@@ -340,40 +158,26 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 					for x in 98..=102 {
 						for z in -2..=2 {
-							let position = BlockPosition {
-								x,
-								y: 48,
-								z,
-							};
+							let position = BlockPosition { x, y: 48, z };
 							dimension.overwrite_block(position, obsidian_block_id).unwrap();
 							game.packet_sender.send_packet_to_everyone_in_dimension(
 								players_clone,
 								&new_dimension_name,
 								lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-								lib::packets::clientbound::play::BlockUpdate {
-									location: position,
-									block_id: obsidian_block_id as i32,
-								},
+								lib::packets::clientbound::play::BlockUpdate { location: position, block_id: obsidian_block_id as i32 },
 							);
 						}
 					}
 					for x in 98..=102 {
 						for y in 49..=51 {
 							for z in -2..=2 {
-								let position = BlockPosition {
-									x,
-									y,
-									z,
-								};
+								let position = BlockPosition { x, y, z };
 								dimension.overwrite_block(position, 0).unwrap();
 								game.packet_sender.send_packet_to_everyone_in_dimension(
 									players_clone,
 									&new_dimension_name,
 									lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-									lib::packets::clientbound::play::BlockUpdate {
-										location: position,
-										block_id: 0,
-									},
+									lib::packets::clientbound::play::BlockUpdate { location: position, block_id: 0 },
 								);
 							}
 						}
@@ -393,7 +197,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				};
 			}
 			TaskItem::SendMessageToPlayer(uuid, message) => {
-				let player = players.iter_mut().find(|x| x.uuid == uuid).unwrap();
+				let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == uuid).unwrap();
 				game.packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					lib::packets::clientbound::play::SystemChatMessage::PACKET_ID,
@@ -407,7 +211,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				);
 			}
 			TaskItem::SendDebugSubscriptionData(uuid) => {
-				let player = players.iter().find(|x| x.uuid == uuid).unwrap();
+				let player = players.iter().find(|x| x.get_common_entity_data().uuid == uuid).unwrap();
 				for packet in lib::debug_subscription::get_packets_for_player(world.dimensions.get(player.get_dimension()).unwrap()) {
 					game.packet_sender.send_packet_to_player(
 						&player.peer_socket_address,

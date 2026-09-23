@@ -9,7 +9,7 @@ pub fn process(peer_addr: SocketAddr, message: String, timestamp: i64, salt: i64
 
 	let mut packet_to_send = lib::packets::clientbound::play::PlayerChatMessage {
 		global_index: -1,
-		sender: player.uuid,
+		sender: player.get_common_entity_data().uuid,
 		index: 0,
 		message_signature_bytes: Vec::new(),
 		message: message.clone(),

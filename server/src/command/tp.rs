@@ -6,18 +6,8 @@ pub fn init(game: &mut Game) {
 		permission: Permission::Gamemaster,
 		execute,
 		arguments: vec![
-			CommandArgument {
-				name: "to player".to_string(),
-				properties: ParserProperty::Entity(3),
-				next_arguments: Vec::new(),
-				optional: false,
-			},
-			CommandArgument {
-				name: "to coordinates".to_string(),
-				properties: ParserProperty::Vec3,
-				next_arguments: Vec::new(),
-				optional: false,
-			},
+			CommandArgument { name: "to player".to_string(), properties: ParserProperty::Entity(3), next_arguments: Vec::new(), optional: false },
+			CommandArgument { name: "to coordinates".to_string(), properties: ParserProperty::Vec3, next_arguments: Vec::new(), optional: false },
 		],
 	});
 }
@@ -74,18 +64,12 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 			return Ok(());
 		}
 
-		EntityPosition {
-			x,
-			y,
-			z,
-			yaw: 0.0,
-			pitch: 0.0,
-		}
+		EntityPosition { x, y, z, yaw: 0.0, pitch: 0.0 }
 	};
 
 	let sending_player = players.iter_mut().find(|x| x.peer_socket_address == socket_addr).unwrap();
 
-	let sending_player_entity_id = sending_player.entity_id;
+	let sending_player_entity_id = sending_player.get_common_entity_data().entity_id;
 
 	let mut world = game.world.lock().unwrap();
 	let dimension = world.dimensions.get_mut(sending_player.get_dimension()).unwrap();

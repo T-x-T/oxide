@@ -9,10 +9,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 	for (entity_id, outcome) in entity_tick_outcomes {
 		match outcome {
 			EntityTickOutcome::SelfDied => {
-				let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
-					entity_id,
-					entity_status: 3,
-				};
+				let entity_event_packet = lib::packets::clientbound::play::EntityEvent { entity_id, entity_status: 3 };
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
 					players_clone,
@@ -46,10 +43,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 			}
 			//Currently unused, might not be needed after all?
 			EntityTickOutcome::KilledBy(entity_clone) => {
-				let entity_event_packet = lib::packets::clientbound::play::EntityEvent {
-					entity_id,
-					entity_status: 3,
-				};
+				let entity_event_packet = lib::packets::clientbound::play::EntityEvent { entity_id, entity_status: 3 };
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
 					players_clone,
@@ -60,7 +54,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				let mut used_tool: Slot = Slot::default();
 				let mut cloned_player: Option<Entity> = None;
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
+				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					used_tool = player.get_held_item(true).cloned().unwrap_or_default();
 					cloned_player = Some(Entity::Player(player.clone()));
 				};
@@ -85,9 +79,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				}
 			}
 			EntityTickOutcome::RemoveSelf => {
-				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: vec![entity_id],
-				};
+				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities { entity_ids: vec![entity_id] };
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
 					players_clone,
@@ -115,19 +107,16 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					dimension
 						.entities
 						.iter()
+						.filter(|x| data::entities::get_name_from_id(x.get_type()) != "minecraft:player")
 						.find(|x| x.get_common_entity_data().entity_id == entity_id)
-						.unwrap()
-						.get_common_entity_data()
-						.position
-						.into(),
+						.map(|x| x.get_common_entity_data().position.into())
+						.unwrap_or_default(),
 				) {
 					chunk.modified = true;
 				};
 			}
 			EntityTickOutcome::RemoveOthers(entity_ids) => {
-				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: entity_ids.clone(),
-				};
+				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities { entity_ids: entity_ids.clone() };
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
 					players_clone,
@@ -142,7 +131,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					entity.damage(damage, &game.packet_sender, players_clone);
 				};
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
+				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					player.damage(damage, &game.packet_sender, players_clone);
 				};
 			}
@@ -244,10 +233,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						players_clone,
 						&dimension.name,
 						lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-						lib::packets::clientbound::play::BlockUpdate {
-							location: block_position,
-							block_id: block_state_id as i32,
-						},
+						lib::packets::clientbound::play::BlockUpdate { location: block_position, block_id: block_state_id as i32 },
 					);
 				};
 			}
@@ -258,9 +244,9 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					//dont forget that entity needs to be put in the other dimension
 				}
 
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
+				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					game.task_queue.insert(Task {
-						task: TaskItem::PlayerUseNetherPortal(player.uuid, new_dimension_name),
+						task: TaskItem::PlayerUseNetherPortal(player.get_common_entity_data().uuid, new_dimension_name),
 						run_in_ticks: 0,
 					});
 				}
@@ -274,11 +260,10 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					//dont forget that entity needs to be put in the other dimension
 				}
 
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == entity_id) {
-					game.task_queue.insert(Task {
-						task: TaskItem::PlayerUseEndPortal(player.uuid, new_dimension_name),
-						run_in_ticks: 0,
-					});
+				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
+					game
+						.task_queue
+						.insert(Task { task: TaskItem::PlayerUseEndPortal(player.get_common_entity_data().uuid, new_dimension_name), run_in_ticks: 0 });
 				}
 
 				dimension.entities = entities;
@@ -308,7 +293,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				if let Some(entity) = dimension.entities.iter_mut().find(|x| x.get_common_entity_data().entity_id == target_entity_id) {
 					entity.damage(damage, &game.packet_sender, players_clone);
 				};
-				if let Some(player) = players.iter_mut().find(|x| x.entity_id == target_entity_id) {
+				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == target_entity_id) {
 					player.damage(damage, &game.packet_sender, players_clone);
 				};
 			}
@@ -320,16 +305,14 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				};
 			}
 			EntityTickOutcome::GetPickedUpByPlayer(item, item_entity_id, player_uuid) => {
-				let Some(player) = players.iter_mut().find(|x| x.uuid == player_uuid) else {
+				let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid) else {
 					continue;
 				};
 
 				player.pickup_item(item, item_entity_id, players_clone, &game.packet_sender);
 
 				//same as RemoveSelf
-				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities {
-					entity_ids: vec![entity_id],
-				};
+				let remove_entities_packet = lib::packets::clientbound::play::RemoveEntities { entity_ids: vec![entity_id] };
 
 				game.packet_sender.send_packet_to_everyone_in_dimension(
 					players_clone,

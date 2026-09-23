@@ -12,14 +12,11 @@ pub fn process(game: Arc<Game>, players: &[Player]) {
 			.filter(|x| x.get_dimension() == dimension.name)
 			.flat_map(|player| {
 				//TODO: move to tick function and only run if player is op / subscribed to debug events
-				game.task_queue.insert(Task {
-					task: TaskItem::SendDebugSubscriptionData(player.uuid),
-					run_in_ticks: 0,
-				});
+				game.task_queue.insert(Task { task: TaskItem::SendDebugSubscriptionData(player.get_common_entity_data().uuid), run_in_ticks: 0 });
 				let outcomes = player.tick(dimension, players, &game.packet_sender, &game.entity_id_manager, &game.block_state_data);
 				let mut output: Vec<(i32, EntityTickOutcome)> = Vec::new();
 				for outcome in outcomes {
-					output.push((player.entity_id, outcome));
+					output.push((player.get_common_entity_data().entity_id, outcome));
 				}
 				output
 			})

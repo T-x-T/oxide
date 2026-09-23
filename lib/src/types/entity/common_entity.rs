@@ -3,6 +3,7 @@ use super::*;
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct CommonEntity {
 	pub position: EntityPosition,
+	pub last_position: EntityPosition,
 	pub velocity: EntityPosition,
 	pub uuid: u128,
 	pub entity_id: i32,
@@ -48,10 +49,7 @@ pub trait CommonEntityTrait {
 	where
 		Self: std::marker::Sized,
 	{
-		let mut common_data = CommonEntity {
-			entity_id: entity_id_manager.get_new(),
-			..Default::default()
-		};
+		let mut common_data = CommonEntity { entity_id: entity_id_manager.get_new(), ..Default::default() };
 
 		let x = value.get_child("Pos").unwrap().as_list()[0].as_double();
 		let y = value.get_child("Pos").unwrap().as_list()[1].as_double();
@@ -59,13 +57,7 @@ pub trait CommonEntityTrait {
 		let yaw = value.get_child("Rotation").unwrap().as_list()[0].as_float();
 		let pitch = value.get_child("Rotation").unwrap().as_list()[1].as_float();
 
-		common_data.position = EntityPosition {
-			x,
-			y,
-			z,
-			yaw,
-			pitch,
-		};
+		common_data.position = EntityPosition { x, y, z, yaw, pitch };
 
 		if value.get_child("Motion").is_some() {
 			common_data.velocity = EntityPosition {
@@ -155,14 +147,7 @@ pub trait CommonEntityTrait {
 		let mut new_entity = Self::new(common_data, value.clone());
 
 		let (height, width) = new_entity.get_hitbox();
-		let cuboid = Cuboid {
-			x1: -(width / 2.0),
-			y1: 0.0,
-			z1: -(width / 2.0),
-			x2: width / 2.0,
-			y2: height,
-			z2: width / 2.0,
-		};
+		let cuboid = Cuboid { x1: -(width / 2.0), y1: 0.0, z1: -(width / 2.0), x2: width / 2.0, y2: height, z2: width / 2.0 };
 
 		new_entity.get_common_entity_data_mut().collision_shape =
 			CollisionShape::new_from_cuboid(cuboid, new_entity.get_common_entity_data().position);
@@ -208,6 +193,7 @@ pub trait CommonEntityTrait {
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
+		//Mob death
 		if self.is_mob() {
 			let mob_data = self.get_mob_data_mut();
 
@@ -232,6 +218,7 @@ pub trait CommonEntityTrait {
 			}
 		}
 
+		//Remove hostile spawnable mobs that are too far away from players
 		if crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.contains(&self.get_type_string().as_str()) {
 			let distance_to_closest_player = players
 				.iter()
@@ -245,97 +232,159 @@ pub trait CommonEntityTrait {
 			}
 		}
 
-		if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
-			if self.is_on_ground(dimension, block_state_data) {
-				self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
-			} else {
-				self.get_common_entity_data_mut().velocity.y -= 0.08;
+		//movement stuffs (skip for players)
+		if self.get_type_string() != "minecraft:player" {
+			//gravity
+			if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
+				if self.is_on_ground(dimension, block_state_data) {
+					self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
+				} else {
+					self.get_common_entity_data_mut().velocity.y -= 0.08;
+				}
 			}
-		}
 
-		//the order in which these are applied differs between different entities, see https://minecraft.wiki/w/Entity#Motion
-		let velocity = self.get_common_entity_data().velocity;
-		self.get_common_entity_data_mut().velocity = EntityPosition {
-			x: velocity.x * 0.91,
-			y: velocity.y * 0.98,
-			z: velocity.z * 0.91,
-			..velocity
-		};
+			//drag on velocity
+			//the order in which these are applied differs between different entities, see https://minecraft.wiki/w/Entity#Motion
+			let velocity = self.get_common_entity_data().velocity;
+			self.get_common_entity_data_mut().velocity =
+				EntityPosition { x: velocity.x * 0.91, y: velocity.y * 0.98, z: velocity.z * 0.91, ..velocity };
 
-
-		let mut velocity_from_ai = EntityPosition::default();
-		let (ai_result, mut ai_tick_outcome) = self.execute_ai(players, dimension, block_state_data);
-		match ai_result {
-			AiExecutionResult::DoNothing => (),
-			AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
-		};
-		output.append(&mut ai_tick_outcome);
-
-		let mut velocity = self.get_common_entity_data().velocity;
-		velocity += velocity_from_ai;
-
-		let old_position = self.get_common_entity_data().position;
-		let mut next_position = old_position + velocity;
-
-		let (mut x_collision_amount, mut y_collision_amount, mut z_collision_amount) = (0.0, 0.0, 0.0);
-		let mut collision_shape = self.get_common_entity_data().collision_shape.clone();
-		collision_shape.set_base_coordinates(next_position);
-
-		let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, next_position);
-		for occupied_block in occupied_blocks {
-			let block_state_id = dimension.get_block(occupied_block).unwrap_or(0);
-			if collision_shape.collides_with(&crate::block::get_collision_shape(block_state_id, occupied_block, block_state_data)) {
-				let collision_vector = (EntityPosition::from(occupied_block) - old_position) * velocity;
-
-				x_collision_amount = collision_vector.x.abs();
-				y_collision_amount = collision_vector.y.abs();
-				z_collision_amount = collision_vector.z.abs();
-
-				break;
-			}
-		}
-
-		//this probably falls apart when colliding with two blocks at once
-		if x_collision_amount > y_collision_amount && x_collision_amount > z_collision_amount {
-			next_position.x = old_position.x;
-			self.get_common_entity_data_mut().velocity.x = 0.0;
-		}
-
-		if y_collision_amount > x_collision_amount && y_collision_amount > z_collision_amount {
-			next_position.y = old_position.y;
-			self.get_common_entity_data_mut().velocity.y = 0.0;
-		}
-
-		if z_collision_amount > x_collision_amount && z_collision_amount > y_collision_amount {
-			next_position.z = old_position.z;
-			self.get_common_entity_data_mut().velocity.z = 0.0;
-		}
-
-
-		self.get_common_entity_data_mut().position = next_position;
-		self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
-
-		if old_position != self.get_common_entity_data().position {
-			let packet = crate::packets::clientbound::play::UpdateEntityPosition {
-				entity_id: self.get_common_entity_data().entity_id,
-				delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
-				delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-				delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
-				on_ground: self.is_on_ground(dimension, block_state_data),
+			//ai
+			let mut velocity_from_ai = EntityPosition::default();
+			let (ai_result, mut ai_tick_outcome) = self.execute_ai(players, dimension, block_state_data);
+			match ai_result {
+				AiExecutionResult::DoNothing => (),
+				AiExecutionResult::ApplyVelocity(x) => velocity_from_ai = x,
 			};
+			output.append(&mut ai_tick_outcome);
 
-			packet_sender.send_packet_to_everyone_in_dimension(
-				players,
-				&dimension.name,
-				crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
-				packet,
-			);
+			//collision detection
+			let mut velocity = self.get_common_entity_data().velocity;
+			velocity += velocity_from_ai;
 
-			output.push(EntityTickOutcome::Updated);
+			let old_position = self.get_common_entity_data().position;
+			let mut next_position = old_position + velocity;
+
+			let (mut x_collision_amount, mut y_collision_amount, mut z_collision_amount) = (0.0, 0.0, 0.0);
+			let mut collision_shape = self.get_common_entity_data().collision_shape.clone();
+			collision_shape.set_base_coordinates(next_position);
+
+			let occupied_blocks = self.get_occupied_block_positions_between_entity_positions(old_position, next_position);
+			for occupied_block in occupied_blocks {
+				let block_state_id = dimension.get_block(occupied_block).unwrap_or(0);
+				if collision_shape.collides_with(&crate::block::get_collision_shape(block_state_id, occupied_block, block_state_data)) {
+					let collision_vector = (EntityPosition::from(occupied_block) - old_position) * velocity;
+
+					x_collision_amount = collision_vector.x.abs();
+					y_collision_amount = collision_vector.y.abs();
+					z_collision_amount = collision_vector.z.abs();
+
+					break;
+				}
+			}
+
+			//this probably falls apart when colliding with two blocks at once
+			if x_collision_amount > y_collision_amount && x_collision_amount > z_collision_amount {
+				next_position.x = old_position.x;
+				self.get_common_entity_data_mut().velocity.x = 0.0;
+			}
+
+			if y_collision_amount > x_collision_amount && y_collision_amount > z_collision_amount {
+				next_position.y = old_position.y;
+				self.get_common_entity_data_mut().velocity.y = 0.0;
+			}
+
+			if z_collision_amount > x_collision_amount && z_collision_amount > y_collision_amount {
+				next_position.z = old_position.z;
+				self.get_common_entity_data_mut().velocity.z = 0.0;
+			}
+
+			self.get_common_entity_data_mut().position = next_position;
+			self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
+
+			if old_position != self.get_common_entity_data().position {
+				let packet = crate::packets::clientbound::play::UpdateEntityPosition {
+					entity_id: self.get_common_entity_data().entity_id,
+					delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+					delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+					delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+					on_ground: self.is_on_ground(dimension, block_state_data),
+				};
+
+				packet_sender.send_packet_to_everyone_in_dimension(
+					players,
+					&dimension.name,
+					crate::packets::clientbound::play::UpdateEntityPosition::PACKET_ID,
+					packet,
+				);
+
+				output.push(EntityTickOutcome::Updated);
+			}
+		} //end movement stuff
+
+		//fall damage
+		let self_is_in_liquid = self.is_in_liquid(dimension);
+		if self.get_common_entity_data().position.y - self.get_common_entity_data().last_position.y < 0.0 && !self_is_in_liquid {
+			self.get_common_entity_data_mut().fall_distance +=
+				-(self.get_common_entity_data().position.y - self.get_common_entity_data().last_position.y);
+		} else {
+			let fall_damage_multiplier = 1.0; //will be important with enchantments and such
+			let safe_fall_height = 4.0;
+			let fall_damage = ((self.get_common_entity_data().fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
+			if fall_damage > 0.0 {
+				output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
+			}
+			self.get_common_entity_data_mut().fall_distance = 0.0;
+
+			if self_is_in_liquid {
+				self.get_common_entity_data_mut().fall_distance = 0.0;
+			}
 		}
 
+		//Portal teleportation
+		if self.get_common_entity_data().last_position != self.get_common_entity_data().position {
+			let position = EntityPosition {
+				x: self.get_common_entity_data().position.x - 0.5,
+				z: self.get_common_entity_data().position.z - 0.5,
+				..self.get_common_entity_data().position
+			};
+			let blocks_to_check =
+				[BlockPosition::from(position), BlockPosition { y: BlockPosition::from(position).y + 1, ..BlockPosition::from(position) }];
+
+			let mut teleported = false;
+			for block_to_check in blocks_to_check {
+				let block_state_id = dimension.get_block(block_to_check).unwrap_or_default();
+				if self.get_common_entity_data_mut().portal_cooldown == 0
+					&& data::blocks::get_block_from_name("minecraft:nether_portal", block_state_data).states.iter().any(|x| x.id == block_state_id)
+				{
+					teleported = true;
+					if dimension.name.as_str() == "minecraft:overworld" {
+						output.push(EntityTickOutcome::UseNetherPortal("minecraft:the_nether".to_string()));
+					} else {
+						output.push(EntityTickOutcome::UseNetherPortal("minecraft:overworld".to_string()));
+					}
+				}
+			}
+			if teleported {
+				self.get_common_entity_data_mut().portal_cooldown = 20;
+			} else if self.get_common_entity_data().portal_cooldown > 0 {
+				self.get_common_entity_data_mut().portal_cooldown -= 1;
+			}
+
+			let block_at_position = dimension.get_block(position.into()).unwrap_or_default();
+			let end_portal_block_id = data::blocks::get_block_from_name("minecraft:end_portal", block_state_data).states.first().unwrap().id;
+			if block_at_position == end_portal_block_id {
+				if dimension.name.as_str() == "minecraft:the_end" {
+					output.push(EntityTickOutcome::UseEndPortal("minecraft:overworld".to_string()));
+				} else {
+					output.push(EntityTickOutcome::UseEndPortal("minecraft:the_end".to_string()));
+				}
+			}
+		}
 
 		output.append(&mut self.extra_tick(dimension, players, packet_sender, entity_id_manager, block_state_data));
+
+		self.get_common_entity_data_mut().last_position = self.get_common_entity_data().position;
 
 		return output;
 	}
@@ -448,11 +497,7 @@ pub trait CommonEntityTrait {
 		for x in x_range {
 			for y in y_range.iter() {
 				for z in z_range.iter() {
-					output.push(BlockPosition {
-						x,
-						y: *y,
-						z: *z,
-					});
+					output.push(BlockPosition { x, y: *y, z: *z });
 				}
 			}
 		}
@@ -707,126 +752,30 @@ pub trait CommonEntityTrait {
 			closed.push((node, cost, parent));
 
 			let neighbours = [
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y + 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y + 1,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y + 1,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y + 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y + 1,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y + 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y + 1,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y + 1,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y - 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y - 1,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x - 1,
-					y: node.y - 1,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y - 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x,
-					y: node.y - 1,
-					z: node.z + 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y - 1,
-					z: node.z - 1,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y - 1,
-					z: node.z,
-				},
-				BlockPosition {
-					x: node.x + 1,
-					y: node.y - 1,
-					z: node.z + 1,
-				},
+				BlockPosition { x: node.x - 1, y: node.y, z: node.z - 1 },
+				BlockPosition { x: node.x - 1, y: node.y, z: node.z },
+				BlockPosition { x: node.x - 1, y: node.y, z: node.z + 1 },
+				BlockPosition { x: node.x, y: node.y, z: node.z - 1 },
+				BlockPosition { x: node.x, y: node.y, z: node.z + 1 },
+				BlockPosition { x: node.x + 1, y: node.y, z: node.z - 1 },
+				BlockPosition { x: node.x + 1, y: node.y, z: node.z },
+				BlockPosition { x: node.x + 1, y: node.y, z: node.z + 1 },
+				BlockPosition { x: node.x - 1, y: node.y + 1, z: node.z - 1 },
+				BlockPosition { x: node.x - 1, y: node.y + 1, z: node.z },
+				BlockPosition { x: node.x - 1, y: node.y + 1, z: node.z + 1 },
+				BlockPosition { x: node.x, y: node.y + 1, z: node.z - 1 },
+				BlockPosition { x: node.x, y: node.y + 1, z: node.z + 1 },
+				BlockPosition { x: node.x + 1, y: node.y + 1, z: node.z - 1 },
+				BlockPosition { x: node.x + 1, y: node.y + 1, z: node.z },
+				BlockPosition { x: node.x + 1, y: node.y + 1, z: node.z + 1 },
+				BlockPosition { x: node.x - 1, y: node.y - 1, z: node.z - 1 },
+				BlockPosition { x: node.x - 1, y: node.y - 1, z: node.z },
+				BlockPosition { x: node.x - 1, y: node.y - 1, z: node.z + 1 },
+				BlockPosition { x: node.x, y: node.y - 1, z: node.z - 1 },
+				BlockPosition { x: node.x, y: node.y - 1, z: node.z + 1 },
+				BlockPosition { x: node.x + 1, y: node.y - 1, z: node.z - 1 },
+				BlockPosition { x: node.x + 1, y: node.y - 1, z: node.z },
+				BlockPosition { x: node.x + 1, y: node.y - 1, z: node.z + 1 },
 			];
 
 			for neighbour in neighbours {
@@ -836,10 +785,7 @@ pub trait CommonEntityTrait {
 					continue;
 				}
 
-				let neighbour_block_floor = dimension.get_block(BlockPosition {
-					y: neighbour.y - 1,
-					..neighbour
-				});
+				let neighbour_block_floor = dimension.get_block(BlockPosition { y: neighbour.y - 1, ..neighbour });
 
 				let Ok(neighbour_block_floor) = neighbour_block_floor else {
 					continue;
@@ -877,7 +823,6 @@ pub trait CommonEntityTrait {
 
 		return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
 	}
-
 
 	fn get_pathfinding_penalties(&self) -> Vec<(&'static str, i8)> {
 		return vec![
@@ -927,9 +872,32 @@ pub trait CommonEntityTrait {
 		};
 	}
 
-	fn damage(&mut self, damage: f32, _packet_sender: &PacketSender, _players: &[Player]) {
+	fn damage(&mut self, damage: f32, packet_sender: &PacketSender, players: &[Player]) {
 		if self.is_mob() {
-			self.get_mob_data_mut().health -= damage;
+			let entity_id = self.get_common_entity_data().entity_id;
+			let mob_data = self.get_mob_data_mut();
+
+			mob_data.health -= damage;
+			mob_data.hurt_time = 10;
+			mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
+
+			let entity_metadata_packet = crate::packets::clientbound::play::SetEntityMetadata {
+				entity_id,
+				metadata: vec![crate::packets::clientbound::play::EntityMetadata {
+					index: 9,
+					value: crate::packets::clientbound::play::EntityMetadataValue::Float(mob_data.health),
+				}],
+			};
+
+			let hurt_animation_packet =
+				crate::packets::clientbound::play::HurtAnimation { entity_id: self.get_common_entity_data().entity_id, yaw: 0.0 };
+			//TODO: should only send to players in same dimension
+			packet_sender.send_packet_to_everyone(players, crate::packets::clientbound::play::HurtAnimation::PACKET_ID, hurt_animation_packet);
+			packet_sender.send_packet_to_everyone(
+				players,
+				crate::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
+				entity_metadata_packet,
+			);
 		}
 	}
 
@@ -995,29 +963,14 @@ mod tests {
 		fn default_chunk_towards_pos_x() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
 				panic!("");
 			};
 			let dimension = Dimension::new("oxide:test");
-			let goal = EntityPosition {
-				x: 10.0,
-				y: 16.0,
-				z: 0.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: 10.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1028,29 +981,14 @@ mod tests {
 		fn default_chunk_towards_neg_x() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
 				panic!("");
 			};
 			let dimension = Dimension::new("oxide:test");
-			let goal = EntityPosition {
-				x: -10.0,
-				y: 16.0,
-				z: 0.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: -10.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1061,29 +999,14 @@ mod tests {
 		fn default_chunk_towards_pos_z() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
 				panic!("");
 			};
 			let dimension = Dimension::new("oxide:test");
-			let goal = EntityPosition {
-				x: 0.0,
-				y: 16.0,
-				z: 10.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: 0.0, y: 16.0, z: 10.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1094,29 +1017,14 @@ mod tests {
 		fn default_chunk_towards_neg_z() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
 				panic!("");
 			};
 			let dimension = Dimension::new("oxide:test");
-			let goal = EntityPosition {
-				x: 0.0,
-				y: 16.0,
-				z: -10.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: 0.0, y: 16.0, z: -10.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1126,29 +1034,14 @@ mod tests {
 		fn default_chunk_towards_pos_x_and_z() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
 				panic!("");
 			};
 			let dimension = Dimension::new("oxide:test");
-			let goal = EntityPosition {
-				x: 10.0,
-				y: 16.0,
-				z: 10.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: 10.0, y: 16.0, z: 10.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1160,16 +1053,7 @@ mod tests {
 		fn obstacle_towards_pos_x() {
 			let crate::Entity::Creeper(creeper) = entity::new(
 				"minecraft:creeper",
-				CommonEntity {
-					position: EntityPosition {
-						x: 0.0,
-						y: 16.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
-					..Default::default()
-				},
+				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
 			)
 			.unwrap() else {
@@ -1177,24 +1061,9 @@ mod tests {
 			};
 
 			let mut dimension = Dimension::new("oxide:test");
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 1,
-						y: 16,
-						z: 0,
-					},
-					1,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 1, y: 16, z: 0 }, 1).unwrap();
 
-			let goal = EntityPosition {
-				x: 10.0,
-				y: 16.0,
-				z: 0.0,
-				yaw: 0.0,
-				pitch: 0.0,
-			};
+			let goal = EntityPosition { x: 10.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 };
 
 			let res = creeper.ai_move_towards_goal(goal, &dimension, &data::blocks::get_blocks());
 			println!("{res:?}");
@@ -1224,15 +1093,7 @@ mod tests {
 			let mut dimension = Dimension::new("oxide:test");
 			for block in OBSTACLE_COURSE_BLOCKS {
 				dimension.overwrite_block(block, 1).unwrap();
-				dimension
-					.overwrite_block(
-						BlockPosition {
-							y: block.y + 1,
-							..block
-						},
-						1,
-					)
-					.unwrap();
+				dimension.overwrite_block(BlockPosition { y: block.y + 1, ..block }, 1).unwrap();
 			}
 
 			let goal = EntityPosition {
@@ -1257,16 +1118,8 @@ mod tests {
 			assert!(reached_goal);
 		}
 
-		const OBSTACLE_COURSE_START: BlockPosition = BlockPosition {
-			x: 0,
-			y: 16,
-			z: 0,
-		};
-		const OBSTACLE_COURSE_GOAL: BlockPosition = BlockPosition {
-			x: -9,
-			y: 16,
-			z: -11,
-		};
+		const OBSTACLE_COURSE_START: BlockPosition = BlockPosition { x: 0, y: 16, z: 0 };
+		const OBSTACLE_COURSE_GOAL: BlockPosition = BlockPosition { x: -9, y: 16, z: -11 };
 		#[rustfmt::skip]
 		const OBSTACLE_COURSE_BLOCKS: [BlockPosition; 216] = [
       BlockPosition {x: -6, y: 16, z: -17},

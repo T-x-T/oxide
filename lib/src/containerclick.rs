@@ -22,11 +22,12 @@ pub fn handle(
 	} else if chest_inventory_clicked {
 		if chest_items[parsed_packet.slot as usize].count > 0 { Some(chest_items[parsed_packet.slot as usize].clone()) } else { None }
 	} else {
-		players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().get_inventory()[player_inventory_index as usize].clone()
+		players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().get_inventory()[player_inventory_index as usize]
+			.clone()
 	};
 
 	//println!("orig item: {orig_inventory_item:?}");
-	let orig_cursor_item: Option<Slot> = players.iter().find(|x| x.uuid == player_uuid).unwrap().cursor_item.clone();
+	let orig_cursor_item: Option<Slot> = players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().cursor_item.clone();
 	//println!("orig cursor: {orig_cursor_item:?}");
 
 	if parsed_packet.mode == 0 {
@@ -54,7 +55,7 @@ pub fn handle(
 				}
 			} else {
 				//Player inventory got changed
-				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_slot(
+				players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().set_inventory_slot(
 					player_inventory_index as u8,
 					new_inventory_item,
 					players_clone,
@@ -65,12 +66,12 @@ pub fn handle(
 
 		//println!("new cursor: {new_cursor_item:?}");
 		if new_cursor_item != orig_cursor_item {
-			players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().cursor_item = new_cursor_item;
+			players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().cursor_item = new_cursor_item;
 		}
 	} else if parsed_packet.mode == 1 {
 		if parsed_packet.window_id == 0 {
 			println!("no shift clicking in your inventory!");
-			let player = players.iter().find(|x| x.uuid == player_uuid).unwrap();
+			let player = players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
 			packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
@@ -83,7 +84,8 @@ pub fn handle(
 			);
 		} else {
 			let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
-			let orig_player_inventory: Vec<Option<Slot>> = players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone();
+			let orig_player_inventory: Vec<Option<Slot>> =
+				players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().get_inventory().clone();
 			let (new_chest_inventory, new_player_inventory) =
 				handle_shift_click(orig_chest_inventory.clone(), orig_player_inventory.clone(), parsed_packet.slot);
 
@@ -107,7 +109,7 @@ pub fn handle(
 			}
 
 			if orig_player_inventory != new_player_inventory {
-				players.iter_mut().find(|x| x.uuid == player_uuid).unwrap().set_inventory_and_inform_client(
+				players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().set_inventory_and_inform_client(
 					new_player_inventory,
 					players_clone,
 					packet_sender,
@@ -117,7 +119,7 @@ pub fn handle(
 	} else {
 		//this just resets the inventory of the container and player if we dont know how to handle the used mode
 		packet_sender.send_packet_to_player(
-			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
+			&players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
 				window_id: 1,
@@ -127,12 +129,12 @@ pub fn handle(
 			},
 		);
 		packet_sender.send_packet_to_player(
-			&players.iter().find(|x| x.uuid == player_uuid).unwrap().peer_socket_address,
+			&players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().peer_socket_address,
 			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
 			crate::packets::clientbound::play::SetContainerContent {
 				window_id: 0,
 				state_id: 1,
-				slot_data: players.iter().find(|x| x.uuid == player_uuid).unwrap().get_inventory().clone(),
+				slot_data: players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().get_inventory().clone(),
 				carried_item: orig_cursor_item,
 			},
 		);
@@ -161,32 +163,17 @@ fn handle_click(left_click: bool, orig_inventory_item: Option<Slot>, orig_cursor
 						(item_count_chest + item_count_cursor) - max_stack_size
 					};
 					if left_over_item_count > 0 {
-						new_inventory_item = Some(Slot {
-							count: max_stack_size,
-							..orig_cursor_item.clone()
-						});
-						new_cursor_item = Some(Slot {
-							count: left_over_item_count,
-							..orig_cursor_item.clone()
-						});
+						new_inventory_item = Some(Slot { count: max_stack_size, ..orig_cursor_item.clone() });
+						new_cursor_item = Some(Slot { count: left_over_item_count, ..orig_cursor_item.clone() });
 					} else {
-						new_inventory_item = Some(Slot {
-							count: orig_inventory_item.count + item_count_cursor,
-							..orig_cursor_item.clone()
-						});
+						new_inventory_item = Some(Slot { count: orig_inventory_item.count + item_count_cursor, ..orig_cursor_item.clone() });
 						new_cursor_item = None;
 					}
 				} else {
 					//put one down
 					if orig_inventory_item.count != max_stack_size {
-						new_inventory_item = Some(Slot {
-							count: orig_inventory_item.count + 1,
-							..orig_inventory_item.clone()
-						});
-						new_cursor_item = Some(Slot {
-							count: orig_cursor_item.count - 1,
-							..orig_cursor_item.clone()
-						});
+						new_inventory_item = Some(Slot { count: orig_inventory_item.count + 1, ..orig_inventory_item.clone() });
+						new_cursor_item = Some(Slot { count: orig_cursor_item.count - 1, ..orig_cursor_item.clone() });
 					} else {
 						new_inventory_item = Some(orig_inventory_item.clone());
 						new_cursor_item = Some(orig_cursor_item.clone());
@@ -204,14 +191,8 @@ fn handle_click(left_click: bool, orig_inventory_item: Option<Slot>, orig_cursor
 				new_cursor_item = Some(orig_inventory_item);
 				new_inventory_item = None;
 			} else {
-				new_inventory_item = Some(Slot {
-					count: orig_inventory_item.count / 2,
-					..orig_inventory_item.clone()
-				});
-				new_cursor_item = Some(Slot {
-					count: (f64::from(orig_inventory_item.count) / 2.0).ceil() as i32,
-					..orig_inventory_item.clone()
-				});
+				new_inventory_item = Some(Slot { count: orig_inventory_item.count / 2, ..orig_inventory_item.clone() });
+				new_cursor_item = Some(Slot { count: (f64::from(orig_inventory_item.count) / 2.0).ceil() as i32, ..orig_inventory_item.clone() });
 			}
 		}
 	} else {
@@ -221,14 +202,8 @@ fn handle_click(left_click: bool, orig_inventory_item: Option<Slot>, orig_cursor
 				new_inventory_item = Some(orig_cursor_item.clone());
 				new_cursor_item = None;
 			} else {
-				new_inventory_item = Some(Slot {
-					count: 1,
-					..orig_cursor_item.clone()
-				});
-				new_cursor_item = Some(Slot {
-					count: orig_cursor_item.count - 1,
-					..orig_cursor_item.clone()
-				});
+				new_inventory_item = Some(Slot { count: 1, ..orig_cursor_item.clone() });
+				new_cursor_item = Some(Slot { count: orig_cursor_item.count - 1, ..orig_cursor_item.clone() });
 			}
 		}
 	}
@@ -272,10 +247,7 @@ fn handle_shift_click(
 						});
 						new_player_inventory[player_inventory_index] = None;
 					} else {
-						new_chest_inventory[i] = Some(Slot {
-							count: max_stack_size,
-							..orig_chest_inventory[i].clone().unwrap()
-						});
+						new_chest_inventory[i] = Some(Slot { count: max_stack_size, ..orig_chest_inventory[i].clone().unwrap() });
 						new_player_inventory[player_inventory_index] = Some(Slot {
 							count: (slot.as_ref().unwrap().count + new_player_inventory[player_inventory_index].as_ref().unwrap().count) - max_stack_size,
 							..new_player_inventory[player_inventory_index].clone().unwrap()
@@ -318,10 +290,7 @@ fn handle_shift_click(
 						});
 						new_chest_inventory[clicked_slot] = None;
 					} else {
-						new_player_inventory[i] = Some(Slot {
-							count: max_stack_size,
-							..new_player_inventory[i].clone().unwrap()
-						});
+						new_player_inventory[i] = Some(Slot { count: max_stack_size, ..new_player_inventory[i].clone().unwrap() });
 						new_chest_inventory[clicked_slot] = Some(Slot {
 							count: (slot.as_ref().unwrap().count + new_chest_inventory[clicked_slot].as_ref().unwrap().count) - max_stack_size,
 							..new_chest_inventory[clicked_slot].clone().unwrap()
@@ -357,12 +326,7 @@ mod test {
 
 		#[test]
 		fn pick_item_up() {
-			let orig_inventory_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 			let orig_cursor_item = None;
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
@@ -385,12 +349,7 @@ mod test {
 		#[test]
 		fn put_item_down() {
 			let orig_inventory_item = None;
-			let orig_cursor_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_cursor_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
@@ -400,18 +359,8 @@ mod test {
 
 		#[test]
 		fn put_item_down_on_full_stack() {
-			let orig_inventory_item = Some(Slot {
-				count: 64,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 64, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
@@ -421,18 +370,8 @@ mod test {
 
 		#[test]
 		fn swap_different_items() {
-			let orig_inventory_item = Some(Slot {
-				count: 12,
-				id: 2,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 12, id: 2, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
@@ -442,291 +381,101 @@ mod test {
 
 		#[test]
 		fn stack_up_under_limit() {
-			let orig_inventory_item = Some(Slot {
-				count: 12,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 12, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 13,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 13, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 			assert_eq!(new_cursor_item, None);
 		}
 
 		#[test]
 		fn stack_up_to_limit() {
-			let orig_inventory_item = Some(Slot {
-				count: 12,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 52,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 12, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 52, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 64,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 64, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 			assert_eq!(new_cursor_item, None);
 		}
 
 		#[test]
 		fn stack_up_over_limit() {
-			let orig_inventory_item = Some(Slot {
-				count: 22,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 52,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 22, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 52, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(true, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 64,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 10,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 64, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn pick_half_stack_up_even() {
-			let orig_inventory_item = Some(Slot {
-				count: 10,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 			let orig_cursor_item = None;
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 5,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 5,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 5, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 5, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn pick_half_stack_up_odd() {
-			let orig_inventory_item = Some(Slot {
-				count: 11,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 11, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 			let orig_cursor_item = None;
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 5,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 6,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 5, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 6, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn pick_half_stack_up_one() {
-			let orig_inventory_item = Some(Slot {
-				count: 1,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 			let orig_cursor_item = None;
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
 			assert_eq!(new_inventory_item, None);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 1,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_cursor_item, Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn put_one_item_down() {
 			let orig_inventory_item = None;
-			let orig_cursor_item = Some(Slot {
-				count: 10,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_cursor_item = Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 1,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 9,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 1, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 9, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn put_one_item_down_with_same_already_there() {
-			let orig_inventory_item = Some(Slot {
-				count: 10,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 10,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 11,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 9,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 11, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 9, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 
 		#[test]
 		fn put_one_item_down_with_stack_full() {
-			let orig_inventory_item = Some(Slot {
-				count: 64,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-			let orig_cursor_item = Some(Slot {
-				count: 10,
-				id: 1,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			let orig_inventory_item = Some(Slot { count: 64, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
+			let orig_cursor_item = Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() });
 
 			let (new_inventory_item, new_cursor_item) = handle_click(false, orig_inventory_item.clone(), orig_cursor_item.clone());
 
-			assert_eq!(
-				new_inventory_item,
-				Some(Slot {
-					count: 64,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
-			assert_eq!(
-				new_cursor_item,
-				Some(Slot {
-					count: 10,
-					id: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				})
-			);
+			assert_eq!(new_inventory_item, Some(Slot { count: 64, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
+			assert_eq!(new_cursor_item, Some(Slot { count: 10, id: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() }));
 		}
 	}
 
@@ -762,12 +511,7 @@ mod test {
 			let orig_chest_inventory: Vec<Option<Slot>> = vec![None; 27];
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -779,18 +523,10 @@ mod test {
 
 			assert_eq!(
 				new_chest_inventory,
-				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![None; 26],
-				]
-				.into_iter()
-				.flatten()
-				.collect::<Vec<Option<Slot>>>()
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26],]
+					.into_iter()
+					.flatten()
+					.collect::<Vec<Option<Slot>>>()
 			);
 
 			assert_eq!(new_player_inventory, vec![None; 46]);
@@ -799,19 +535,9 @@ mod test {
 		#[test]
 		fn shift_click_to_chest_with_items() {
 			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 2],
-				vec![Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 23],
 			]
 			.into_iter()
@@ -819,12 +545,7 @@ mod test {
 			.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 3,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -837,25 +558,10 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![Some(Slot {
-						id: 3,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
+					vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None],
-					vec![Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 23],
 				]
 				.into_iter()
@@ -869,19 +575,9 @@ mod test {
 		#[test]
 		fn shift_click_to_chest_with_items_stack_up() {
 			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 2],
-				vec![Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 23],
 			]
 			.into_iter()
@@ -889,12 +585,7 @@ mod test {
 			.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -907,19 +598,9 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 24,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 2],
-					vec![Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 23],
 				]
 				.into_iter()
@@ -933,19 +614,9 @@ mod test {
 		#[test]
 		fn shift_click_to_chest_with_items_stack_up_first_stack() {
 			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 2],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 23],
 			]
 			.into_iter()
@@ -953,12 +624,7 @@ mod test {
 			.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -971,19 +637,9 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 24,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 2],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 23],
 				]
 				.into_iter()
@@ -997,19 +653,9 @@ mod test {
 		#[test]
 		fn shift_click_to_chest_with_items_stack_up_multiple() {
 			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 60,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 60, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 2],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 23],
 			]
 			.into_iter()
@@ -1017,12 +663,7 @@ mod test {
 			.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1035,19 +676,9 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 64,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 2],
-					vec![Some(Slot {
-						id: 1,
-						count: 20,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 20, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 23],
 				]
 				.into_iter()
@@ -1060,29 +691,14 @@ mod test {
 
 		#[test]
 		fn shift_click_to_chest_with_items_stack_up_lots() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![
-					Some(Slot {
-						id: 1,
-						count: 63,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					20
-				],
-				vec![None; 7],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20], vec![None; 7]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1095,24 +711,8 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 64,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						12
-					],
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 63,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						8
-					],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 12],
+					vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 8],
 					vec![None; 7],
 				]
 				.into_iter()
@@ -1125,29 +725,14 @@ mod test {
 
 		#[test]
 		fn shift_click_to_chest_with_items_stack_up_lots_overflow() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![
-					Some(Slot {
-						id: 1,
-						count: 63,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					20
-				],
-				vec![None; 7],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20], vec![None; 7]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 24,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1160,21 +745,8 @@ mod test {
 			assert_eq!(
 				new_chest_inventory,
 				vec![
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 64,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						20
-					],
-					vec![Some(Slot {
-						id: 1,
-						count: 4,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20],
+					vec![Some(Slot { id: 1, count: 4, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 6],
 				]
 				.into_iter()
@@ -1187,26 +759,14 @@ mod test {
 
 		#[test]
 		fn shift_click_to_chest_full() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![vec![
-				Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				});
-				27
-			]]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 27]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 3,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1218,30 +778,17 @@ mod test {
 
 			assert_eq!(
 				new_chest_inventory,
-				vec![vec![
-					Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					27
-				],]
-				.into_iter()
-				.flatten()
-				.collect::<Vec<Option<Slot>>>()
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 27],]
+					.into_iter()
+					.flatten()
+					.collect::<Vec<Option<Slot>>>()
 			);
 
 			assert_eq!(
 				new_player_inventory,
 				vec![
 					vec![None; 36],
-					vec![Some(Slot {
-						id: 3,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 9]
 				]
 				.into_iter()
@@ -1252,18 +799,11 @@ mod test {
 
 		#[test]
 		fn shift_click_to_empty_inventory() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 
 			let orig_player_inventory: Vec<Option<Slot>> = vec![None; 46];
 			let clicked_slot = 0;
@@ -1276,12 +816,7 @@ mod test {
 				new_player_inventory,
 				vec![
 					vec![None; 44],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 1],
 				]
 				.into_iter()
@@ -1292,33 +827,16 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_items() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 43],
-				vec![Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![Some(Slot {
-					id: 3,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
+				vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 1],
 			]
 			.into_iter()
@@ -1334,24 +852,9 @@ mod test {
 				new_player_inventory,
 				vec![
 					vec![None; 42],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![Some(Slot {
-						id: 3,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
+					vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
+					vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 1],
 				]
 				.into_iter()
@@ -1362,37 +865,17 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_full_hotbar() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 9],
-				vec![Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 26],
-				vec![
-					Some(Slot {
-						id: 3,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					9
-				],
+				vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 9],
 				vec![None; 1],
 			]
 			.into_iter()
@@ -1408,28 +891,10 @@ mod test {
 				new_player_inventory,
 				vec![
 					vec![None; 9],
-					vec![Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 25],
-					vec![
-						Some(Slot {
-							id: 3,
-							count: 12,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						9
-					],
+					vec![Some(Slot { id: 3, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 9],
 					vec![None; 1],
 				]
 				.into_iter()
@@ -1440,96 +905,49 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_full() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 
-			let orig_player_inventory: Vec<Option<Slot>> = vec![vec![
-				Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new()
-				});
-				46
-			]]
-			.into_iter()
-			.flatten()
-			.collect::<Vec<Option<Slot>>>();
+			let orig_player_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 46]]
+					.into_iter()
+					.flatten()
+					.collect::<Vec<Option<Slot>>>();
 			let clicked_slot = 0;
 
 			let (new_chest_inventory, new_player_inventory) = handle_shift_click(orig_chest_inventory, orig_player_inventory, clicked_slot);
 
 			assert_eq!(
 				new_chest_inventory,
-				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
-					vec![None; 26]
-				]
-				.into_iter()
-				.flatten()
-				.collect::<Vec<Option<Slot>>>()
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect::<Vec<Option<Slot>>>()
 			);
 
 			assert_eq!(
 				new_player_inventory,
-				vec![vec![
-					Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					46
-				],]
-				.into_iter()
-				.flatten()
-				.collect::<Vec<Option<Slot>>>()
+				vec![vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 46],]
+					.into_iter()
+					.flatten()
+					.collect::<Vec<Option<Slot>>>()
 			);
 		}
 
 		#[test]
 		fn shift_click_to_inventory_with_items_stack_up() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 2,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1544,19 +962,9 @@ mod test {
 			assert_eq!(
 				new_player_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 2,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 2, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 36],
-					vec![Some(Slot {
-						id: 1,
-						count: 24,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 9]
 				]
 				.into_iter()
@@ -1567,32 +975,15 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_items_stack_up_first_stack() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1607,19 +998,9 @@ mod test {
 			assert_eq!(
 				new_player_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 24,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 36],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 9]
 				]
 				.into_iter()
@@ -1630,32 +1011,15 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_items_stack_up_multiple() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 60,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 60, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 36],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1670,19 +1034,9 @@ mod test {
 			assert_eq!(
 				new_player_inventory,
 				vec![
-					vec![Some(Slot {
-						id: 1,
-						count: 64,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 36],
-					vec![Some(Slot {
-						id: 1,
-						count: 20,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 20, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 9]
 				]
 				.into_iter()
@@ -1693,35 +1047,15 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_items_stack_up_lots() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 10,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 10, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
-				vec![
-					Some(Slot {
-						id: 1,
-						count: 63,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					20
-				],
+				vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20],
 				vec![None; 16],
-				vec![Some(Slot {
-					id: 1,
-					count: 12,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
+				vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 				vec![None; 9],
 			]
 			.into_iter()
@@ -1736,31 +1070,10 @@ mod test {
 			assert_eq!(
 				new_player_inventory,
 				vec![
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 64,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						10
-					],
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 63,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						10
-					],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 10],
+					vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 10],
 					vec![None; 16],
-					vec![Some(Slot {
-						id: 1,
-						count: 12,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 12, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 9]
 				]
 				.into_iter()
@@ -1771,29 +1084,14 @@ mod test {
 
 		#[test]
 		fn shift_click_to_inventory_with_items_stack_up_lots_with_overflow() {
-			let orig_chest_inventory: Vec<Option<Slot>> = vec![
-				vec![Some(Slot {
-					id: 1,
-					count: 24,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})],
-				vec![None; 26],
-			]
-			.into_iter()
-			.flatten()
-			.collect();
+			let orig_chest_inventory: Vec<Option<Slot>> =
+				vec![vec![Some(Slot { id: 1, count: 24, components_to_add: Vec::new(), components_to_remove: Vec::new() })], vec![None; 26]]
+					.into_iter()
+					.flatten()
+					.collect();
 			let orig_player_inventory: Vec<Option<Slot>> = vec![
 				vec![None; 9],
-				vec![
-					Some(Slot {
-						id: 1,
-						count: 63,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					});
-					20
-				],
+				vec![Some(Slot { id: 1, count: 63, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20],
 				vec![None; 17],
 			]
 			.into_iter()
@@ -1810,22 +1108,9 @@ mod test {
 				new_player_inventory,
 				vec![
 					vec![None; 9],
-					vec![
-						Some(Slot {
-							id: 1,
-							count: 64,
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new()
-						});
-						20
-					],
+					vec![Some(Slot { id: 1, count: 64, components_to_add: Vec::new(), components_to_remove: Vec::new() }); 20],
 					vec![None; 15],
-					vec![Some(Slot {
-						id: 1,
-						count: 4,
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new()
-					})],
+					vec![Some(Slot { id: 1, count: 4, components_to_add: Vec::new(), components_to_remove: Vec::new() })],
 					vec![None; 1],
 				]
 				.into_iter()

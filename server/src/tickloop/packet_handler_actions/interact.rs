@@ -6,7 +6,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: Interact, game: Arc<Game>, 
 	let players = game.players.lock().unwrap();
 	let world = game.world.lock().unwrap();
 
-	if players.iter().find(|x| x.entity_id == parsed_packet.entity_id).is_some() {
+	if players.iter().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id).is_some() {
 		target_is_player(parsed_packet, game.clone(), players, players_clone, peer_addr);
 	} else {
 		target_is_entity(parsed_packet, game.clone(), world, players, peer_addr, players_clone);
@@ -20,7 +20,7 @@ fn target_is_player(
 	players_clone: &[Player],
 	peer_addr: SocketAddr,
 ) {
-	let Some(target_player) = players.iter_mut().find(|x| x.entity_id == parsed_packet.entity_id) else {
+	let Some(target_player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == parsed_packet.entity_id) else {
 		return;
 	};
 	let Some(source_player) = players_clone.iter().find(|x| x.peer_socket_address == peer_addr) else {
@@ -63,8 +63,6 @@ fn target_is_entity(
 		world.dimensions = dimensions;
 		return;
 	};
-	let entity_id = entity.get_common_entity_data().entity_id;
-
 
 	if parsed_packet.interact_type == 1 {
 		//Attack
@@ -79,22 +77,7 @@ fn target_is_entity(
 				return;
 			}
 
-			mob_data.health -= damage;
-			mob_data.hurt_time = 10;
-			mob_data.hurt_by_timestamp = mob_data.alive_for_ticks;
-
-			let entity_metadata_packet = lib::packets::clientbound::play::SetEntityMetadata {
-				entity_id,
-				metadata: vec![lib::packets::clientbound::play::EntityMetadata {
-					index: 9,
-					value: lib::packets::clientbound::play::EntityMetadataValue::Float(mob_data.health),
-				}],
-			};
-
-			let hurt_animation_packet = lib::packets::clientbound::play::HurtAnimation {
-				entity_id,
-				yaw: 0.0,
-			};
+			entity.damage(damage, &game.packet_sender, &players);
 
 			let entity_data = entity.get_common_entity_data_mut();
 			entity_data.velocity.y += 0.05;
@@ -106,19 +89,6 @@ fn target_is_entity(
 				CardinalDirection::South => entity_data.velocity.z += horizontal_velocity,
 				CardinalDirection::West => entity_data.velocity.x -= horizontal_velocity,
 			};
-
-			game.packet_sender.send_packet_to_everyone_in_dimension(
-				&players,
-				&dimension.name,
-				lib::packets::clientbound::play::SetEntityMetadata::PACKET_ID,
-				entity_metadata_packet,
-			);
-			game.packet_sender.send_packet_to_everyone_in_dimension(
-				&players,
-				&dimension.name,
-				lib::packets::clientbound::play::HurtAnimation::PACKET_ID,
-				hurt_animation_packet,
-			);
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
@@ -143,7 +113,7 @@ fn target_is_entity(
 			dimension,
 			players_clone,
 			&mut players,
-			player.uuid,
+			player.get_common_entity_data().uuid,
 			&game.packet_sender,
 			&game.entity_id_manager,
 			&game.block_state_data,

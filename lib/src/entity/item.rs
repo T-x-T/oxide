@@ -143,7 +143,7 @@ impl CommonEntityTrait for ItemEntity {
 			return vec![EntityTickOutcome::GetPickedUpByPlayer(
 				self.item.clone(),
 				self.get_common_entity_data().entity_id,
-				picking_up_player.uuid,
+				picking_up_player.get_common_entity_data().uuid,
 			)];
 		}
 

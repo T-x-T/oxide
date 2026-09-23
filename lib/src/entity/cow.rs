@@ -14,11 +14,7 @@ impl CommonEntityTrait for Cow {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 		let breedable_mob = BreedableMob::from_nbt(extra_nbt);
 
-		return Self {
-			common: data,
-			mob,
-			breedable_mob,
-		};
+		return Self { common: data, mob, breedable_mob };
 	}
 
 	fn interact(
@@ -36,14 +32,11 @@ impl CommonEntityTrait for Cow {
 			return Vec::new();
 		}
 
-		let player = players.iter_mut().find(|x| x.uuid == player_uuid).unwrap();
+		let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
 
 		let held_item = player.get_held_item(true).unwrap();
 		if held_item.count > 1 {
-			let slot = Slot {
-				count: held_item.count - 1,
-				..held_item.clone()
-			};
+			let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
 			player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
 		} else {
 			player.set_selected_inventory_slot(None, players_clone, packet_sender);
@@ -85,15 +78,9 @@ impl CommonEntityTrait for Cow {
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
 		if self.breedable_mob.age < 0 {
-			vec![EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(true),
-			}]
+			vec![EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(true) }]
 		} else {
-			vec![EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(false),
-			}]
+			vec![EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(false) }]
 		}
 	}
 
