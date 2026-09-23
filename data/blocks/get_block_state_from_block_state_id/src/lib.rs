@@ -1,3 +1,4 @@
+#![allow(clippy::needless_return)]
 use basic_types::blocks::*;
 pub fn get_block_state_from_block_state_id(block_state_id: u16) -> State {
 	return match block_state_id {

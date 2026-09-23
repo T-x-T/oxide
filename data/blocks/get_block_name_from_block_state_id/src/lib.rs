@@ -1,3 +1,4 @@
+#![allow(clippy::needless_return)]
 pub fn get_block_name_from_block_state_id(block_state_id: u16) -> &'static str {
 	return match block_state_id {
 		10569 => "minecraft:acacia_button",
