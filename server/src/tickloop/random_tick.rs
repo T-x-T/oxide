@@ -25,11 +25,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					let y: i16 = (((block_index_to_tick & 0b1111_0000_0000) >> 8) as i16) + ((chunk_section_index as i16 - 4) * 16);
 					let z: i32 = ((block_index_to_tick & 0b0000_1111_0000) >> 4) + (chunk.z * 16);
 
-					let position = BlockPosition {
-						x,
-						y,
-						z,
-					};
+					let position = BlockPosition { x, y, z };
 
 					let new_block_id = lib::block::tick(block_id_to_tick, dimension, position, &game.block_state_data);
 
@@ -57,10 +53,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				players_clone,
 				&dimension.name,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-				lib::packets::clientbound::play::BlockUpdate {
-					location: position,
-					block_id: new_block_id as i32,
-				},
+				lib::packets::clientbound::play::BlockUpdate { location: position, block_id: new_block_id as i32 },
 			);
 		}
 	}

@@ -37,16 +37,8 @@ pub fn init(game: &mut Game) {
 	deop::init(game);
 }
 
-
 pub fn get_command_packet_data(game: Arc<Game>, player_permission: Permission) -> Vec<CommandNode> {
-	let root_node = CommandNode {
-		flags: 0,
-		children: Vec::new(),
-		redirect_node: None,
-		name: None,
-		properties: None,
-		suggestions_type: None,
-	};
+	let root_node = CommandNode { flags: 0, children: Vec::new(), redirect_node: None, name: None, properties: None, suggestions_type: None };
 
 	let mut nodes = vec![root_node];
 

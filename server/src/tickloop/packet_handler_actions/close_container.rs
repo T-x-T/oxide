@@ -5,7 +5,6 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let mut world = game.world.lock().unwrap();
 
-
 	if window_id == 0 {
 		//Drop items in crafting field
 		let mut inventory = player.get_inventory().clone();

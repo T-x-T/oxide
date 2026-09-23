@@ -21,16 +21,9 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 					entity_id: game.entity_id_manager.get_new(),
 					..Default::default()
 				},
-				mob: CommonMob {
-					health: 20.0,
-					..Default::default()
-				},
-				breedable_mob: BreedableMob {
-					age: -lib::MOB_GROW_UP_TICKS,
-					..Default::default()
-				},
+				mob: CommonMob { health: 20.0, ..Default::default() },
+				breedable_mob: BreedableMob { age: -lib::MOB_GROW_UP_TICKS, ..Default::default() },
 			};
-
 
 			let summon_packet = chicken.to_spawn_entity_packet();
 

@@ -78,11 +78,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		return Ok(());
 	}
 
-	let block_position = BlockPosition {
-		x,
-		y,
-		z,
-	};
+	let block_position = BlockPosition { x, y, z };
 	let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
 
 	let blocks_to_update = lib::block::get_block_state_id(
@@ -117,13 +113,9 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 			&players,
 			player.get_dimension(),
 			lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-			lib::packets::clientbound::play::BlockUpdate {
-				location: position,
-				block_id: block_state_id as i32,
-			},
+			lib::packets::clientbound::play::BlockUpdate { location: position, block_id: block_state_id as i32 },
 		);
 	}
-
 
 	return Ok(());
 }

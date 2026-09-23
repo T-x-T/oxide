@@ -47,7 +47,6 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	let players_clone = game.players.lock().unwrap().clone();
 	let duration_clone_players = std::time::Instant::now() - now;
 
-
 	let now = std::time::Instant::now();
 	packet_handler_actions::process(game.clone(), &players_clone);
 	let duration_packet_handler_actions = std::time::Instant::now() - now;

@@ -26,10 +26,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						z: rng.random_range(0..16),
 					};
 
-					let block_to_check_for_grass = BlockPosition {
-						y: chunk_coords_to_check.y - 1,
-						..chunk_coords_to_check
-					};
+					let block_to_check_for_grass = BlockPosition { y: chunk_coords_to_check.y - 1, ..chunk_coords_to_check };
 
 					let block = dimension.get_block(block_to_check_for_grass).unwrap_or_default();
 					let block_type = data::blocks::get_type_from_block_state_id(block);
@@ -140,7 +137,6 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				if distance_to_closest_player < 24.0 || distance_to_closest_player > 128.0 {
 					continue;
 				}
-
 
 				let mob_type_to_spawn = match dimension.name.as_str() {
 					"minecraft:overworld" => lib::HOSTILE_OVERWORLD_SPAWNABLE_MOBS[rng.random_range(0..lib::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.len())],

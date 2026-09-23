@@ -63,10 +63,7 @@ pub fn process(
 		if block_name == "minecraft:water" {
 			let held_item = player.get_held_item(true).unwrap();
 			if held_item.count > 1 {
-				let slot = Slot {
-					count: held_item.count - 1,
-					..held_item.clone()
-				};
+				let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
 				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
 			} else {
 				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
@@ -101,15 +98,8 @@ pub fn process(
 		vec![(full_water_block_id, new_block_location)]
 	} else {
 		//Let's go - we can place a block
-		let used_item_id = player
-			.get_held_item(true)
-			.unwrap_or(&Slot {
-				count: 0,
-				id: 0,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			})
-			.id;
+		let used_item_id =
+			player.get_held_item(true).unwrap_or(&Slot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).id;
 		let mut used_item_name = data::items::get_item_name_by_id(used_item_id).unwrap();
 
 		if block_type_at_location == Type::Farm {
@@ -160,14 +150,7 @@ pub fn process(
 			};
 
 			let hand_slot = hand_slot.clone();
-			let new_hand_slot = if hand_slot.count == 1 {
-				None
-			} else {
-				Some(Slot {
-					count: hand_slot.count - 1,
-					..hand_slot
-				})
-			};
+			let new_hand_slot = if hand_slot.count == 1 { None } else { Some(Slot { count: hand_slot.count - 1, ..hand_slot }) };
 
 			player.set_selected_inventory_slot(new_hand_slot, players_clone, &game.packet_sender);
 		}
@@ -189,10 +172,7 @@ pub fn process(
 					game.packet_sender.send_packet_to_player(
 						&peer_addr,
 						lib::packets::clientbound::play::OpenSignEditor::PACKET_ID,
-						lib::packets::clientbound::play::OpenSignEditor {
-							location: block_to_place.1,
-							is_front_text: true,
-						},
+						lib::packets::clientbound::play::OpenSignEditor { location: block_to_place.1, is_front_text: true },
 					);
 				}
 				#[allow(clippy::collapsible_if)]
@@ -216,25 +196,19 @@ pub fn process(
 		};
 	}
 
-
 	for player in players.iter() {
 		for block in &blocks_to_place {
 			game.packet_sender.send_packet_to_player(
 				&player.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-				lib::packets::clientbound::play::BlockUpdate {
-					location: block.1,
-					block_id: block.0 as i32,
-				},
+				lib::packets::clientbound::play::BlockUpdate { location: block.1, block_id: block.0 as i32 },
 			);
 		}
 	}
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-		lib::packets::clientbound::play::AcknowledgeBlockChange {
-			sequence_id: parsed_packet.sequence,
-		},
+		lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id: parsed_packet.sequence },
 	);
 
 	for block_to_place in blocks_to_place {

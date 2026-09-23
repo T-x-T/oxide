@@ -18,9 +18,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			game.packet_sender.send_packet_to_player(
 				&peer_addr,
 				lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-				lib::packets::clientbound::play::AcknowledgeBlockChange {
-					sequence_id,
-				},
+				lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id },
 			);
 			return;
 		} else if status == 1 {
@@ -28,9 +26,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			game.packet_sender.send_packet_to_player(
 				&peer_addr,
 				lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-				lib::packets::clientbound::play::AcknowledgeBlockChange {
-					sequence_id,
-				},
+				lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id },
 			);
 			return;
 		} else if status == 2 || (status == 0 && block_hardness == 0.0) {
@@ -55,7 +51,6 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		}
 	}
 
-
 	let res = dimension.overwrite_block(location, 0).unwrap();
 	if res.is_some() && matches!(res.unwrap(), BlockOverwriteOutcome::DestroyBlockentity) {
 		let block_entity =
@@ -70,10 +65,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::BlockUpdate::PACKET_ID,
-				lib::packets::clientbound::play::BlockUpdate {
-					location,
-					block_id: 0,
-				},
+				lib::packets::clientbound::play::BlockUpdate { location, block_id: 0 },
 			);
 		})
 		.filter(|x| x.peer_socket_address != peer_addr)
@@ -81,20 +73,14 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			game.packet_sender.send_packet_to_player(
 				&x.peer_socket_address,
 				lib::packets::clientbound::play::WorldEvent::PACKET_ID,
-				lib::packets::clientbound::play::WorldEvent {
-					event: 2001,
-					location,
-					data: old_block_id as i32,
-				},
+				lib::packets::clientbound::play::WorldEvent { event: 2001, location, data: old_block_id as i32 },
 			);
 		});
 
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,
 		lib::packets::clientbound::play::AcknowledgeBlockChange::PACKET_ID,
-		lib::packets::clientbound::play::AcknowledgeBlockChange {
-			sequence_id,
-		},
+		lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id },
 	);
 
 	lib::block::update_all_recursively(

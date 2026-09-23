@@ -27,7 +27,6 @@ fn execute(_command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) -
 		return Ok(());
 	}
 
-
 	eprintln!("panic command was used");
 	process::exit(1000);
 }

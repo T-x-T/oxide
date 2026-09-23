@@ -23,12 +23,7 @@ pub fn process(peer_addr: SocketAddr, location: BlockPosition, game: Arc<Game>, 
 		})
 		.id;
 
-	let new_slot_data = Slot {
-		count: 1,
-		id: item_id,
-		components_to_add: Vec::new(),
-		components_to_remove: Vec::new(),
-	};
+	let new_slot_data = Slot { count: 1, id: item_id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 	player.set_selected_inventory_slot(Some(new_slot_data), players_clone, &game.packet_sender);
 }
