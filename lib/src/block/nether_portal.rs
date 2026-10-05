@@ -4,41 +4,17 @@ pub fn update(position: BlockPosition, dimension: &Dimension, block_states: &Has
 	let state = data::blocks::get_block_state_from_block_state_id(block_id);
 	let positions_to_check = if state.properties.contains(&Property::NetherPortalAxis(NetherPortalAxis::X)) {
 		vec![
-			BlockPosition {
-				x: position.x + 1,
-				..position
-			},
-			BlockPosition {
-				x: position.x - 1,
-				..position
-			},
-			BlockPosition {
-				y: position.y + 1,
-				..position
-			},
-			BlockPosition {
-				y: position.y - 1,
-				..position
-			},
+			BlockPosition { x: position.x + 1, ..position },
+			BlockPosition { x: position.x - 1, ..position },
+			BlockPosition { y: position.y + 1, ..position },
+			BlockPosition { y: position.y - 1, ..position },
 		]
 	} else {
 		vec![
-			BlockPosition {
-				z: position.z + 1,
-				..position
-			},
-			BlockPosition {
-				z: position.z - 1,
-				..position
-			},
-			BlockPosition {
-				y: position.y + 1,
-				..position
-			},
-			BlockPosition {
-				y: position.y - 1,
-				..position
-			},
+			BlockPosition { z: position.z + 1, ..position },
+			BlockPosition { z: position.z - 1, ..position },
+			BlockPosition { y: position.y + 1, ..position },
+			BlockPosition { y: position.y - 1, ..position },
 		]
 	};
 

@@ -34,15 +34,7 @@ impl Client {
 		let join_handle = std::thread::spawn(move || {
 			let mut read_stream = read_stream_clone.try_clone().unwrap();
 			loop {
-				if tx
-					.send(lib::Packet {
-						id: 0xFF,
-						length: 0,
-						data: Vec::new(),
-						raw_data: Vec::new(),
-					})
-					.is_err()
-				{
+				if tx.send(lib::Packet { id: 0xFF, length: 0, data: Vec::new(), raw_data: Vec::new() }).is_err() {
 					//println!("couldnt send fake packet down the channel");
 					return;
 				}
@@ -162,12 +154,7 @@ impl Client {
 		self
 			.send_packet(
 				lib::packets::serverbound::login::LoginStart::PACKET_ID,
-				lib::packets::serverbound::login::LoginStart {
-					name: self.username.clone(),
-					uuid: self.uuid,
-				}
-				.try_into()
-				.unwrap(),
+				lib::packets::serverbound::login::LoginStart { name: self.username.clone(), uuid: self.uuid }.try_into().unwrap(),
 			)
 			.unwrap();
 		std::thread::sleep(std::time::Duration::from_millis(1000));

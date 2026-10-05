@@ -21,10 +21,7 @@ pub fn interact(
 		if player.get_gamemode() == Gamemode::Survival || player.get_gamemode() == Gamemode::Adventure {
 			let held_item = player.get_held_item(true).unwrap();
 			if held_item.count > 1 {
-				let slot = Slot {
-					count: held_item.count - 1,
-					..held_item.clone()
-				};
+				let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
 				player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
 			} else {
 				player.set_selected_inventory_slot(None, players_clone, packet_sender);
@@ -78,205 +75,52 @@ pub fn interact(
 			.any(|x| matches!(x, crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::North)))
 		{
 			let mut offset: Option<i32> = None;
-			if dimension
-				.get_block(BlockPosition {
-					x: position.x + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 1,
-						..position
-					})
-					.unwrap_or_default()
-					== north_filled_portal_id
+			if dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or_default() == north_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or_default() == north_filled_portal_id
 			{
 				offset = Some(0);
 				//middle one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					x: position.x + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2,
-						..position
-					})
-					.unwrap_or_default()
-					== north_filled_portal_id
+			} else if dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or_default() == north_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x + 2, ..position }).unwrap_or_default() == north_filled_portal_id
 			{
 				offset = Some(1);
 				//left one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					x: position.x - 1,
-					..position
-				})
-				.unwrap_or_default()
-				== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2,
-						..position
-					})
-					.unwrap_or_default()
-					== north_filled_portal_id
+			} else if dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or_default() == north_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x - 2, ..position }).unwrap_or_default() == north_filled_portal_id
 			{
 				offset = Some(-1);
 				//right one was filled last
 			}
 			if let Some(offset) = offset
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z - 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z - 1, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z - 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z - 2, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z - 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z - 3, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z - 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z - 1, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z - 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z - 2, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z - 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z - 3, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 1 + offset,
-						z: position.z - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 1 + offset, z: position.z - 4, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + offset,
-						z: position.z - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + offset, z: position.z - 4, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 1 + offset,
-						z: position.z - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 1 + offset, z: position.z - 4, ..position }).unwrap_or_default()
 					== south_filled_portal_id
 			{
 				blocks_to_overwrite.append(&mut vec![
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z - 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z - 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z - 3,
-							..position
-						},
-					),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z - 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z - 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z - 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z - 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z - 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z - 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z - 3, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z - 3, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z - 3, ..position }),
 				]);
 			}
 			crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::North)
@@ -286,205 +130,52 @@ pub fn interact(
 			.any(|x| matches!(x, crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::East)))
 		{
 			let mut offset: Option<i32> = None;
-			if dimension
-				.get_block(BlockPosition {
-					z: position.z + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 1,
-						..position
-					})
-					.unwrap_or_default()
-					== east_filled_portal_id
+			if dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or_default() == east_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or_default() == east_filled_portal_id
 			{
 				offset = Some(0);
 				//middle one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					z: position.z + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2,
-						..position
-					})
-					.unwrap_or_default()
-					== east_filled_portal_id
+			} else if dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or_default() == east_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z + 2, ..position }).unwrap_or_default() == east_filled_portal_id
 			{
 				offset = Some(1);
 				//left one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					z: position.z - 1,
-					..position
-				})
-				.unwrap_or_default()
-				== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2,
-						..position
-					})
-					.unwrap_or_default()
-					== east_filled_portal_id
+			} else if dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or_default() == east_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z - 2, ..position }).unwrap_or_default() == east_filled_portal_id
 			{
 				offset = Some(-1);
 				//right one was filled last
 			}
 			if let Some(offset) = offset
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x + 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x + 1, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x + 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x + 2, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x + 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x + 3, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x + 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x + 1, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x + 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x + 2, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x + 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x + 3, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 1 + offset,
-						x: position.x + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 1 + offset, x: position.x + 4, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + offset,
-						x: position.x + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + offset, x: position.x + 4, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 1 + offset,
-						x: position.x + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 1 + offset, x: position.x + 4, ..position }).unwrap_or_default()
 					== west_filled_portal_id
 			{
 				blocks_to_overwrite.append(&mut vec![
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x + 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x + 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x + 3,
-							..position
-						},
-					),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x + 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x + 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x + 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x + 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x + 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x + 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x + 3, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x + 3, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x + 3, ..position }),
 				]);
 			}
 			crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::East)
@@ -494,409 +185,103 @@ pub fn interact(
 			.any(|x| matches!(x, crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::South)))
 		{
 			let mut offset: Option<i32> = None;
-			if dimension
-				.get_block(BlockPosition {
-					x: position.x + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 1,
-						..position
-					})
-					.unwrap_or_default()
-					== south_filled_portal_id
+			if dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or_default() == south_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or_default() == south_filled_portal_id
 			{
 				offset = Some(0);
 				//middle one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					x: position.x + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2,
-						..position
-					})
-					.unwrap_or_default()
-					== south_filled_portal_id
+			} else if dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or_default() == south_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x + 2, ..position }).unwrap_or_default() == south_filled_portal_id
 			{
 				offset = Some(1);
 				//left one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					x: position.x - 1,
-					..position
-				})
-				.unwrap_or_default()
-				== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2,
-						..position
-					})
-					.unwrap_or_default()
-					== south_filled_portal_id
+			} else if dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or_default() == south_filled_portal_id
+				&& dimension.get_block(BlockPosition { x: position.x - 2, ..position }).unwrap_or_default() == south_filled_portal_id
 			{
 				offset = Some(-1);
 				//right one was filled last
 			}
 			if let Some(offset) = offset
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z + 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z + 1, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z + 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z + 2, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 2 + offset,
-						z: position.z + 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 2 + offset, z: position.z + 3, ..position }).unwrap_or_default()
 					== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z + 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z + 1, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z + 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z + 2, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 2 + offset,
-						z: position.z + 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 2 + offset, z: position.z + 3, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x - 1 + offset,
-						z: position.z + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x - 1 + offset, z: position.z + 4, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + offset,
-						z: position.z + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + offset, z: position.z + 4, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						x: position.x + 1 + offset,
-						z: position.z + 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { x: position.x + 1 + offset, z: position.z + 4, ..position }).unwrap_or_default()
 					== north_filled_portal_id
 			{
 				blocks_to_overwrite.append(&mut vec![
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z + 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z + 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x - 1 + offset,
-							z: position.z + 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + offset,
-							z: position.z + 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							x: position.x + 1 + offset,
-							z: position.z + 3,
-							..position
-						},
-					),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z + 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z + 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z + 1, ..position }),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z + 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z + 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z + 2, ..position }),
+					(end_portal_id, BlockPosition { x: position.x - 1 + offset, z: position.z + 3, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + offset, z: position.z + 3, ..position }),
+					(end_portal_id, BlockPosition { x: position.x + 1 + offset, z: position.z + 3, ..position }),
 				]);
 			}
 			crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::South)
 		} else {
 			let mut offset: Option<i32> = None;
-			if dimension
-				.get_block(BlockPosition {
-					z: position.z + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 1,
-						..position
-					})
-					.unwrap_or_default()
-					== west_filled_portal_id
+			if dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or_default() == west_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or_default() == west_filled_portal_id
 			{
 				offset = Some(0);
 				//middle one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					z: position.z + 1,
-					..position
-				})
-				.unwrap_or_default()
-				== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2,
-						..position
-					})
-					.unwrap_or_default()
-					== west_filled_portal_id
+			} else if dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or_default() == west_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z + 2, ..position }).unwrap_or_default() == west_filled_portal_id
 			{
 				offset = Some(1);
 				//left one was filled last
-			} else if dimension
-				.get_block(BlockPosition {
-					z: position.z - 1,
-					..position
-				})
-				.unwrap_or_default()
-				== west_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2,
-						..position
-					})
-					.unwrap_or_default()
-					== west_filled_portal_id
+			} else if dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or_default() == west_filled_portal_id
+				&& dimension.get_block(BlockPosition { z: position.z - 2, ..position }).unwrap_or_default() == west_filled_portal_id
 			{
 				offset = Some(-1);
 				//right one was filled last
 			}
 			if let Some(offset) = offset
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x - 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x - 1, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x - 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x - 2, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 2 + offset,
-						x: position.x - 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 2 + offset, x: position.x - 3, ..position }).unwrap_or_default()
 					== north_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x - 1,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x - 1, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x - 2,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x - 2, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 2 + offset,
-						x: position.x - 3,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 2 + offset, x: position.x - 3, ..position }).unwrap_or_default()
 					== south_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z - 1 + offset,
-						x: position.x - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z - 1 + offset, x: position.x - 4, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + offset,
-						x: position.x - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + offset, x: position.x - 4, ..position }).unwrap_or_default()
 					== east_filled_portal_id
-				&& dimension
-					.get_block(BlockPosition {
-						z: position.z + 1 + offset,
-						x: position.x - 4,
-						..position
-					})
-					.unwrap_or_default()
+				&& dimension.get_block(BlockPosition { z: position.z + 1 + offset, x: position.x - 4, ..position }).unwrap_or_default()
 					== east_filled_portal_id
 			{
 				blocks_to_overwrite.append(&mut vec![
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x - 1,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x - 2,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z - 1 + offset,
-							x: position.x - 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + offset,
-							x: position.x - 3,
-							..position
-						},
-					),
-					(
-						end_portal_id,
-						BlockPosition {
-							z: position.z + 1 + offset,
-							x: position.x - 3,
-							..position
-						},
-					),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x - 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x - 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x - 1, ..position }),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x - 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x - 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x - 2, ..position }),
+					(end_portal_id, BlockPosition { z: position.z - 1 + offset, x: position.x - 3, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + offset, x: position.x - 3, ..position }),
+					(end_portal_id, BlockPosition { z: position.z + 1 + offset, x: position.x - 3, ..position }),
 				]);
 			}
 			crate::blocks::Property::EndPortalFrameFacing(blocks::EndPortalFrameFacing::West)

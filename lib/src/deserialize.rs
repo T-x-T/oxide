@@ -171,11 +171,7 @@ pub fn bitset(data: &mut Vec<u8>) -> Result<Vec<u64>, Box<dyn Error>> {
 
 pub fn position(data: &mut Vec<u8>) -> Result<crate::types::position::BlockPosition, Box<dyn Error>> {
 	let raw = long(data)?;
-	return Ok(crate::types::position::BlockPosition {
-		x: (raw >> 38) as i32,
-		y: (raw << 52 >> 52) as i16,
-		z: (raw << 26 >> 38) as i32,
-	});
+	return Ok(crate::types::position::BlockPosition { x: (raw >> 38) as i32, y: (raw << 52 >> 52) as i16, z: (raw << 26 >> 38) as i32 });
 }
 
 const SEGMENT_BITS: u8 = 0b0111_1111;

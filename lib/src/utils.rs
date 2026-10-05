@@ -21,12 +21,7 @@ pub fn read_packet(mut stream: impl Read) -> Result<crate::Packet, Box<dyn Error
 
 	let packet_id = crate::deserialize::varint(&mut packet)?;
 
-	return Ok(crate::Packet {
-		id: packet_id as u8,
-		length: packet_length as u32,
-		data: packet,
-		raw_data: raw_packet,
-	});
+	return Ok(crate::Packet { id: packet_id as u8, length: packet_length as u32, data: packet, raw_data: raw_packet });
 }
 
 pub fn u128_to_uuid_without_dashes(input: u128) -> String {

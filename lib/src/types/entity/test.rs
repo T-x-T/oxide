@@ -114,28 +114,11 @@ mod get_occupied_block_positions_at_entity_position {
 	#[test]
 	fn integer_position() {
 		let entity = DefaultMob::default();
-		let entity_position = EntityPosition {
-			x: 10.0,
-			y: 10.0,
-			z: 10.0,
-			yaw: 0.0,
-			pitch: 0.0,
-		};
+		let entity_position = EntityPosition { x: 10.0, y: 10.0, z: 10.0, yaw: 0.0, pitch: 0.0 };
 
 		let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
-		let mut expected: Vec<BlockPosition> = vec![
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 10,
-			},
-		];
+		let mut expected: Vec<BlockPosition> = vec![BlockPosition { x: 10, y: 10, z: 10 }, BlockPosition { x: 10, y: 11, z: 10 }];
 
 		res.sort();
 		expected.sort();
@@ -146,77 +129,23 @@ mod get_occupied_block_positions_at_entity_position {
 	#[test]
 	fn block_center_pos() {
 		let entity = DefaultMob::default();
-		let entity_position = EntityPosition {
-			x: 10.5,
-			y: 10.5,
-			z: 10.5,
-			yaw: 0.0,
-			pitch: 0.0,
-		};
+		let entity_position = EntityPosition { x: 10.5, y: 10.5, z: 10.5, yaw: 0.0, pitch: 0.0 };
 
 		let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
 		let mut expected: Vec<BlockPosition> = vec![
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 11,
-			},
+			BlockPosition { x: 10, y: 10, z: 10 },
+			BlockPosition { x: 10, y: 10, z: 11 },
+			BlockPosition { x: 10, y: 11, z: 10 },
+			BlockPosition { x: 10, y: 11, z: 11 },
+			BlockPosition { x: 10, y: 12, z: 10 },
+			BlockPosition { x: 10, y: 12, z: 11 },
+			BlockPosition { x: 11, y: 10, z: 10 },
+			BlockPosition { x: 11, y: 10, z: 11 },
+			BlockPosition { x: 11, y: 11, z: 10 },
+			BlockPosition { x: 11, y: 11, z: 11 },
+			BlockPosition { x: 11, y: 12, z: 10 },
+			BlockPosition { x: 11, y: 12, z: 11 },
 		];
 
 		res.sort();
@@ -229,517 +158,111 @@ mod get_occupied_block_positions_at_entity_position {
 	#[test]
 	fn integer_position_big_mob() {
 		let entity = BigMob::default();
-		let entity_position = EntityPosition {
-			x: 10.5,
-			y: 10.0,
-			z: 10.5,
-			yaw: 0.0,
-			pitch: 0.0,
-		};
+		let entity_position = EntityPosition { x: 10.5, y: 10.0, z: 10.5, yaw: 0.0, pitch: 0.0 };
 
 		let mut res = entity.get_occupied_block_positions_at_entity_position(entity_position);
 
 		let mut expected: Vec<BlockPosition> = vec![
-			BlockPosition {
-				x: 9,
-				y: 10,
-				z: 9,
-			},
-			BlockPosition {
-				x: 9,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 9,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 9,
-				y: 10,
-				z: 12,
-			},
-			BlockPosition {
-				x: 9,
-				y: 10,
-				z: 13,
-			},
-			BlockPosition {
-				x: 9,
-				y: 11,
-				z: 9,
-			},
-			BlockPosition {
-				x: 9,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 9,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 9,
-				y: 11,
-				z: 12,
-			},
-			BlockPosition {
-				x: 9,
-				y: 11,
-				z: 13,
-			},
-			BlockPosition {
-				x: 9,
-				y: 12,
-				z: 9,
-			},
-			BlockPosition {
-				x: 9,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 9,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 9,
-				y: 12,
-				z: 12,
-			},
-			BlockPosition {
-				x: 9,
-				y: 12,
-				z: 13,
-			},
-			BlockPosition {
-				x: 9,
-				y: 13,
-				z: 9,
-			},
-			BlockPosition {
-				x: 9,
-				y: 13,
-				z: 10,
-			},
-			BlockPosition {
-				x: 9,
-				y: 13,
-				z: 11,
-			},
-			BlockPosition {
-				x: 9,
-				y: 13,
-				z: 12,
-			},
-			BlockPosition {
-				x: 9,
-				y: 13,
-				z: 13,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 9,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 12,
-			},
-			BlockPosition {
-				x: 10,
-				y: 10,
-				z: 13,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 9,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 12,
-			},
-			BlockPosition {
-				x: 10,
-				y: 11,
-				z: 13,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 9,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 12,
-			},
-			BlockPosition {
-				x: 10,
-				y: 12,
-				z: 13,
-			},
-			BlockPosition {
-				x: 10,
-				y: 13,
-				z: 9,
-			},
-			BlockPosition {
-				x: 10,
-				y: 13,
-				z: 10,
-			},
-			BlockPosition {
-				x: 10,
-				y: 13,
-				z: 11,
-			},
-			BlockPosition {
-				x: 10,
-				y: 13,
-				z: 12,
-			},
-			BlockPosition {
-				x: 10,
-				y: 13,
-				z: 13,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 9,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 12,
-			},
-			BlockPosition {
-				x: 11,
-				y: 10,
-				z: 13,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 9,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 12,
-			},
-			BlockPosition {
-				x: 11,
-				y: 11,
-				z: 13,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 9,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 12,
-			},
-			BlockPosition {
-				x: 11,
-				y: 12,
-				z: 13,
-			},
-			BlockPosition {
-				x: 11,
-				y: 13,
-				z: 9,
-			},
-			BlockPosition {
-				x: 11,
-				y: 13,
-				z: 10,
-			},
-			BlockPosition {
-				x: 11,
-				y: 13,
-				z: 11,
-			},
-			BlockPosition {
-				x: 11,
-				y: 13,
-				z: 12,
-			},
-			BlockPosition {
-				x: 11,
-				y: 13,
-				z: 13,
-			},
-			BlockPosition {
-				x: 12,
-				y: 10,
-				z: 9,
-			},
-			BlockPosition {
-				x: 12,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 12,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 12,
-				y: 10,
-				z: 12,
-			},
-			BlockPosition {
-				x: 12,
-				y: 10,
-				z: 13,
-			},
-			BlockPosition {
-				x: 12,
-				y: 11,
-				z: 9,
-			},
-			BlockPosition {
-				x: 12,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 12,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 12,
-				y: 11,
-				z: 12,
-			},
-			BlockPosition {
-				x: 12,
-				y: 11,
-				z: 13,
-			},
-			BlockPosition {
-				x: 12,
-				y: 12,
-				z: 9,
-			},
-			BlockPosition {
-				x: 12,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 12,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 12,
-				y: 12,
-				z: 12,
-			},
-			BlockPosition {
-				x: 12,
-				y: 12,
-				z: 13,
-			},
-			BlockPosition {
-				x: 12,
-				y: 13,
-				z: 9,
-			},
-			BlockPosition {
-				x: 12,
-				y: 13,
-				z: 10,
-			},
-			BlockPosition {
-				x: 12,
-				y: 13,
-				z: 11,
-			},
-			BlockPosition {
-				x: 12,
-				y: 13,
-				z: 12,
-			},
-			BlockPosition {
-				x: 12,
-				y: 13,
-				z: 13,
-			},
-			BlockPosition {
-				x: 13,
-				y: 10,
-				z: 9,
-			},
-			BlockPosition {
-				x: 13,
-				y: 10,
-				z: 10,
-			},
-			BlockPosition {
-				x: 13,
-				y: 10,
-				z: 11,
-			},
-			BlockPosition {
-				x: 13,
-				y: 10,
-				z: 12,
-			},
-			BlockPosition {
-				x: 13,
-				y: 10,
-				z: 13,
-			},
-			BlockPosition {
-				x: 13,
-				y: 11,
-				z: 9,
-			},
-			BlockPosition {
-				x: 13,
-				y: 11,
-				z: 10,
-			},
-			BlockPosition {
-				x: 13,
-				y: 11,
-				z: 11,
-			},
-			BlockPosition {
-				x: 13,
-				y: 11,
-				z: 12,
-			},
-			BlockPosition {
-				x: 13,
-				y: 11,
-				z: 13,
-			},
-			BlockPosition {
-				x: 13,
-				y: 12,
-				z: 9,
-			},
-			BlockPosition {
-				x: 13,
-				y: 12,
-				z: 10,
-			},
-			BlockPosition {
-				x: 13,
-				y: 12,
-				z: 11,
-			},
-			BlockPosition {
-				x: 13,
-				y: 12,
-				z: 12,
-			},
-			BlockPosition {
-				x: 13,
-				y: 12,
-				z: 13,
-			},
-			BlockPosition {
-				x: 13,
-				y: 13,
-				z: 9,
-			},
-			BlockPosition {
-				x: 13,
-				y: 13,
-				z: 10,
-			},
-			BlockPosition {
-				x: 13,
-				y: 13,
-				z: 11,
-			},
-			BlockPosition {
-				x: 13,
-				y: 13,
-				z: 12,
-			},
-			BlockPosition {
-				x: 13,
-				y: 13,
-				z: 13,
-			},
+			BlockPosition { x: 9, y: 10, z: 9 },
+			BlockPosition { x: 9, y: 10, z: 10 },
+			BlockPosition { x: 9, y: 10, z: 11 },
+			BlockPosition { x: 9, y: 10, z: 12 },
+			BlockPosition { x: 9, y: 10, z: 13 },
+			BlockPosition { x: 9, y: 11, z: 9 },
+			BlockPosition { x: 9, y: 11, z: 10 },
+			BlockPosition { x: 9, y: 11, z: 11 },
+			BlockPosition { x: 9, y: 11, z: 12 },
+			BlockPosition { x: 9, y: 11, z: 13 },
+			BlockPosition { x: 9, y: 12, z: 9 },
+			BlockPosition { x: 9, y: 12, z: 10 },
+			BlockPosition { x: 9, y: 12, z: 11 },
+			BlockPosition { x: 9, y: 12, z: 12 },
+			BlockPosition { x: 9, y: 12, z: 13 },
+			BlockPosition { x: 9, y: 13, z: 9 },
+			BlockPosition { x: 9, y: 13, z: 10 },
+			BlockPosition { x: 9, y: 13, z: 11 },
+			BlockPosition { x: 9, y: 13, z: 12 },
+			BlockPosition { x: 9, y: 13, z: 13 },
+			BlockPosition { x: 10, y: 10, z: 9 },
+			BlockPosition { x: 10, y: 10, z: 10 },
+			BlockPosition { x: 10, y: 10, z: 11 },
+			BlockPosition { x: 10, y: 10, z: 12 },
+			BlockPosition { x: 10, y: 10, z: 13 },
+			BlockPosition { x: 10, y: 11, z: 9 },
+			BlockPosition { x: 10, y: 11, z: 10 },
+			BlockPosition { x: 10, y: 11, z: 11 },
+			BlockPosition { x: 10, y: 11, z: 12 },
+			BlockPosition { x: 10, y: 11, z: 13 },
+			BlockPosition { x: 10, y: 12, z: 9 },
+			BlockPosition { x: 10, y: 12, z: 10 },
+			BlockPosition { x: 10, y: 12, z: 11 },
+			BlockPosition { x: 10, y: 12, z: 12 },
+			BlockPosition { x: 10, y: 12, z: 13 },
+			BlockPosition { x: 10, y: 13, z: 9 },
+			BlockPosition { x: 10, y: 13, z: 10 },
+			BlockPosition { x: 10, y: 13, z: 11 },
+			BlockPosition { x: 10, y: 13, z: 12 },
+			BlockPosition { x: 10, y: 13, z: 13 },
+			BlockPosition { x: 11, y: 10, z: 9 },
+			BlockPosition { x: 11, y: 10, z: 10 },
+			BlockPosition { x: 11, y: 10, z: 11 },
+			BlockPosition { x: 11, y: 10, z: 12 },
+			BlockPosition { x: 11, y: 10, z: 13 },
+			BlockPosition { x: 11, y: 11, z: 9 },
+			BlockPosition { x: 11, y: 11, z: 10 },
+			BlockPosition { x: 11, y: 11, z: 11 },
+			BlockPosition { x: 11, y: 11, z: 12 },
+			BlockPosition { x: 11, y: 11, z: 13 },
+			BlockPosition { x: 11, y: 12, z: 9 },
+			BlockPosition { x: 11, y: 12, z: 10 },
+			BlockPosition { x: 11, y: 12, z: 11 },
+			BlockPosition { x: 11, y: 12, z: 12 },
+			BlockPosition { x: 11, y: 12, z: 13 },
+			BlockPosition { x: 11, y: 13, z: 9 },
+			BlockPosition { x: 11, y: 13, z: 10 },
+			BlockPosition { x: 11, y: 13, z: 11 },
+			BlockPosition { x: 11, y: 13, z: 12 },
+			BlockPosition { x: 11, y: 13, z: 13 },
+			BlockPosition { x: 12, y: 10, z: 9 },
+			BlockPosition { x: 12, y: 10, z: 10 },
+			BlockPosition { x: 12, y: 10, z: 11 },
+			BlockPosition { x: 12, y: 10, z: 12 },
+			BlockPosition { x: 12, y: 10, z: 13 },
+			BlockPosition { x: 12, y: 11, z: 9 },
+			BlockPosition { x: 12, y: 11, z: 10 },
+			BlockPosition { x: 12, y: 11, z: 11 },
+			BlockPosition { x: 12, y: 11, z: 12 },
+			BlockPosition { x: 12, y: 11, z: 13 },
+			BlockPosition { x: 12, y: 12, z: 9 },
+			BlockPosition { x: 12, y: 12, z: 10 },
+			BlockPosition { x: 12, y: 12, z: 11 },
+			BlockPosition { x: 12, y: 12, z: 12 },
+			BlockPosition { x: 12, y: 12, z: 13 },
+			BlockPosition { x: 12, y: 13, z: 9 },
+			BlockPosition { x: 12, y: 13, z: 10 },
+			BlockPosition { x: 12, y: 13, z: 11 },
+			BlockPosition { x: 12, y: 13, z: 12 },
+			BlockPosition { x: 12, y: 13, z: 13 },
+			BlockPosition { x: 13, y: 10, z: 9 },
+			BlockPosition { x: 13, y: 10, z: 10 },
+			BlockPosition { x: 13, y: 10, z: 11 },
+			BlockPosition { x: 13, y: 10, z: 12 },
+			BlockPosition { x: 13, y: 10, z: 13 },
+			BlockPosition { x: 13, y: 11, z: 9 },
+			BlockPosition { x: 13, y: 11, z: 10 },
+			BlockPosition { x: 13, y: 11, z: 11 },
+			BlockPosition { x: 13, y: 11, z: 12 },
+			BlockPosition { x: 13, y: 11, z: 13 },
+			BlockPosition { x: 13, y: 12, z: 9 },
+			BlockPosition { x: 13, y: 12, z: 10 },
+			BlockPosition { x: 13, y: 12, z: 11 },
+			BlockPosition { x: 13, y: 12, z: 12 },
+			BlockPosition { x: 13, y: 12, z: 13 },
+			BlockPosition { x: 13, y: 13, z: 9 },
+			BlockPosition { x: 13, y: 13, z: 10 },
+			BlockPosition { x: 13, y: 13, z: 11 },
+			BlockPosition { x: 13, y: 13, z: 12 },
+			BlockPosition { x: 13, y: 13, z: 13 },
 		];
 
 		res.sort();

@@ -185,10 +185,7 @@ impl BlockUpdateOutcome {
 					players,
 					&dimension.name,
 					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-					crate::packets::clientbound::play::BlockUpdate {
-						location: position,
-						block_id: new_block_id as i32,
-					},
+					crate::packets::clientbound::play::BlockUpdate { location: position, block_id: new_block_id as i32 },
 				);
 			}
 			BlockUpdateOutcome::DestroyAndDropSelf(old_block_id) => {
@@ -196,10 +193,7 @@ impl BlockUpdateOutcome {
 					players,
 					&dimension.name,
 					crate::packets::clientbound::play::BlockUpdate::PACKET_ID,
-					crate::packets::clientbound::play::BlockUpdate {
-						location: position,
-						block_id: 0,
-					},
+					crate::packets::clientbound::play::BlockUpdate { location: position, block_id: 0 },
 				);
 
 				let res = dimension.overwrite_block(position, 0).unwrap();
@@ -233,30 +227,12 @@ pub fn update_all_recursively(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 ) {
 	let blocks_to_update = [
-		BlockPosition {
-			x: position.x + 1,
-			..position
-		},
-		BlockPosition {
-			x: position.x - 1,
-			..position
-		},
-		BlockPosition {
-			y: position.y + 1,
-			..position
-		},
-		BlockPosition {
-			y: position.y - 1,
-			..position
-		},
-		BlockPosition {
-			z: position.z + 1,
-			..position
-		},
-		BlockPosition {
-			z: position.z - 1,
-			..position
-		},
+		BlockPosition { x: position.x + 1, ..position },
+		BlockPosition { x: position.x - 1, ..position },
+		BlockPosition { y: position.y + 1, ..position },
+		BlockPosition { y: position.y - 1, ..position },
+		BlockPosition { z: position.z + 1, ..position },
+		BlockPosition { z: position.z - 1, ..position },
 	];
 
 	for block_to_update in blocks_to_update {
@@ -336,10 +312,7 @@ impl BlockInteractionResult {
 				packet_sender.send_packet_to_player(
 					&player.peer_socket_address,
 					crate::packets::clientbound::play::OpenSignEditor::PACKET_ID,
-					crate::packets::clientbound::play::OpenSignEditor {
-						location: position,
-						is_front_text: true,
-					},
+					crate::packets::clientbound::play::OpenSignEditor { location: position, is_front_text: true },
 				);
 				Ok(Vec::new())
 			}
@@ -475,17 +448,7 @@ pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_s
 
 	return match block_type_at_location {
 		Type::Slab => slab::get_collision_shape(block_state_id, position, block_states),
-		_ => CollisionShape::new_from_cuboid(
-			Cuboid {
-				x1: 0.0,
-				y1: 0.0,
-				z1: 0.0,
-				x2: 1.0,
-				y2: 1.0,
-				z2: 1.0,
-			},
-			position.into(),
-		),
+		_ => CollisionShape::new_from_cuboid(Cuboid { x1: 0.0, y1: 0.0, z1: 0.0, x2: 1.0, y2: 1.0, z2: 1.0 }, position.into()),
 	};
 }
 

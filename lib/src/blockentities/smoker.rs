@@ -41,10 +41,7 @@ impl CommonBlockEntity for Smoker {
 			let mut can_cook = true;
 			if self.lit_time_remaining == 0 {
 				if self.inventory[1].count > 0 {
-					self.inventory[1] = Slot {
-						count: self.inventory[1].count - 1,
-						..self.inventory[1].clone()
-					};
+					self.inventory[1] = Slot { count: self.inventory[1].count - 1, ..self.inventory[1].clone() };
 					self.lit_time_remaining =
 						(recipe_manager.get_fuel_burning_time(data::items::get_item_name_by_id(self.inventory[1].id).unwrap()) as f64 * 0.5) as i16;
 				} else {
@@ -58,10 +55,7 @@ impl CommonBlockEntity for Smoker {
 					self.cooking_time_spent = 1;
 				} else if self.cooking_time_spent == self.current_recipe.as_ref().unwrap().cooking_time.unwrap_or(200) as i16 {
 					if self.inventory[2].id == data::items::get_item_id_by_name(self.current_recipe.as_ref().unwrap().result_id).unwrap() {
-						self.inventory[2] = Slot {
-							count: self.inventory[2].count + 1,
-							..self.inventory[2].clone()
-						};
+						self.inventory[2] = Slot { count: self.inventory[2].count + 1, ..self.inventory[2].clone() };
 					} else if self.inventory[2].count > 0 {
 						return;
 					} else {
@@ -73,10 +67,7 @@ impl CommonBlockEntity for Smoker {
 						};
 					}
 					self.cooking_time_spent = 0;
-					self.inventory[0] = Slot {
-						count: self.inventory[0].count - 1,
-						..self.inventory[0].clone()
-					};
+					self.inventory[0] = Slot { count: self.inventory[0].count - 1, ..self.inventory[0].clone() };
 				} else {
 					self.cooking_time_spent += 1;
 				}
@@ -225,11 +216,7 @@ impl TryFrom<NbtListTag> for Smoker {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let mut inventory = vec![Slot::default(); 3];
 		if let Some(items) = value.get_child("Items") {

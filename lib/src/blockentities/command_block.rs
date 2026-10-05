@@ -72,11 +72,7 @@ impl TryFrom<NbtListTag> for CommandBlock {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let auto = value.get_child("auto").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1;
 		let command = value.get_child("Command").unwrap_or(&NbtTag::String(String::new(), String::new())).as_string().to_string();

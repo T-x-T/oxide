@@ -23,11 +23,7 @@ impl CommonEntityTrait for Chicken {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 		let breedable_mob = BreedableMob::from_nbt(extra_nbt);
 
-		return Self {
-			common: data,
-			mob,
-			breedable_mob,
-		};
+		return Self { common: data, mob, breedable_mob };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -60,13 +56,7 @@ impl CommonEntityTrait for Chicken {
 			let item_entity = ItemEntity {
 				common: CommonEntity {
 					position: self.common.position,
-					velocity: EntityPosition {
-						x: 0.0,
-						y: 1.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
+					velocity: EntityPosition { x: 0.0, y: 1.0, z: 0.0, yaw: 0.0, pitch: 0.0 },
 					uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 					entity_id: entity_id_manager.get_new(),
 					..Default::default()
@@ -93,15 +83,9 @@ impl CommonEntityTrait for Chicken {
 
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
 		if self.breedable_mob.age < 0 {
-			vec![EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(true),
-			}]
+			vec![EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(true) }]
 		} else {
-			vec![EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(false),
-			}]
+			vec![EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(false) }]
 		}
 	}
 

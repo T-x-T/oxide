@@ -7,9 +7,7 @@ pub struct ChestMinecart {
 
 impl CommonEntityTrait for ChestMinecart {
 	fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
-		return Self {
-			common: data,
-		};
+		return Self { common: data };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {

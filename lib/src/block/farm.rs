@@ -12,11 +12,7 @@ pub fn tick(
 	'outer: for x in (block_position.x - 4)..=(block_position.x + 4) {
 		for y in (block_position.y)..=(block_position.y + 1) {
 			for z in (block_position.z - 4)..=(block_position.z + 4) {
-				let block_to_check = dimension.get_block(BlockPosition {
-					x,
-					y,
-					z,
-				});
+				let block_to_check = dimension.get_block(BlockPosition { x, y, z });
 
 				if block_to_check.is_ok_and(|id| block_states.get("minecraft:water").unwrap().states.iter().any(|x| x.id == id)) {
 					found_water = true;

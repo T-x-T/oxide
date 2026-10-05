@@ -11,11 +11,7 @@ impl CommonEntityTrait for Skeleton {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 
-		return Self {
-			common: data,
-			mob,
-			damage_cooldown: 80,
-		};
+		return Self { common: data, mob, damage_cooldown: 80 };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {
@@ -53,17 +49,11 @@ impl CommonEntityTrait for Skeleton {
 				let direction = closest_player.0.get_position() - self.get_common_entity_data().position;
 				let normalized_direction = direction / closest_player.0.get_position().distance_to(self.get_common_entity_data().position);
 				let direction_with_speed = normalized_direction * 1.5;
-				let direction_with_angle = EntityPosition {
-					y: direction_with_speed.y + 0.45,
-					..direction_with_speed
-				};
+				let direction_with_angle = EntityPosition { y: direction_with_speed.y + 0.45, ..direction_with_speed };
 				let arrow = entity::new(
 					"minecraft:arrow",
 					CommonEntity {
-						position: EntityPosition {
-							y: self.get_common_entity_data().position.y + 1.2,
-							..self.get_common_entity_data().position
-						},
+						position: EntityPosition { y: self.get_common_entity_data().position.y + 1.2, ..self.get_common_entity_data().position },
 						velocity: direction_with_angle,
 						uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 						entity_id: entity_id_manager.get_new(),

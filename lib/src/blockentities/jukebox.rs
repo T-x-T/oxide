@@ -10,12 +10,7 @@ pub struct Jukebox {
 
 impl CommonBlockEntity for Jukebox {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			record_item: Slot::default(),
-			ticks_since_song_started: None,
-		};
+		return Self { position, components: Vec::new(), record_item: Slot::default(), ticks_since_song_started: None };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -53,11 +48,7 @@ impl TryFrom<NbtListTag> for Jukebox {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let record_item_raw = value.get_child("RecordItem").unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new())).clone();
 		let record_item = Slot {
@@ -69,11 +60,6 @@ impl TryFrom<NbtListTag> for Jukebox {
 
 		let ticks_since_song_started = value.get_child("ticks_since_song_started").map(|x| x.as_long());
 
-		return Ok(Jukebox {
-			position,
-			components: Vec::new(),
-			record_item,
-			ticks_since_song_started,
-		});
+		return Ok(Jukebox { position, components: Vec::new(), record_item, ticks_since_song_started });
 	}
 }

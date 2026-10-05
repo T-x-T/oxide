@@ -9,11 +9,7 @@ pub struct Hopper {
 
 impl CommonBlockEntity for Hopper {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			inventory: vec![Slot::default(); 5],
-		};
+		return Self { position, components: Vec::new(), inventory: vec![Slot::default(); 5] };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -38,11 +34,7 @@ impl TryFrom<NbtListTag> for Hopper {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let mut inventory = vec![Slot::default(); 5];
 		if let Some(items) = value.get_child("Items") {
@@ -56,10 +48,6 @@ impl TryFrom<NbtListTag> for Hopper {
 			}
 		}
 
-		return Ok(Hopper {
-			position,
-			components: Vec::new(),
-			inventory,
-		});
+		return Ok(Hopper { position, components: Vec::new(), inventory });
 	}
 }

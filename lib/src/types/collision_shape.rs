@@ -8,10 +8,7 @@ pub struct CollisionShape {
 
 impl CollisionShape {
 	pub fn new_from_cuboid(cuboid: Cuboid, base_coordinates: EntityPosition) -> CollisionShape {
-		return CollisionShape {
-			cuboids: vec![cuboid],
-			base_coordinates,
-		};
+		return CollisionShape { cuboids: vec![cuboid], base_coordinates };
 	}
 
 	pub fn add_cuboid(&mut self, cuboid: Cuboid) -> &mut CollisionShape {

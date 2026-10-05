@@ -78,11 +78,7 @@ fn handle_packet(
 					client_lib::actually_send_packet(
 						send_stream,
 						lib::packets::serverbound::play::ServerboundKeepAlive::PACKET_ID,
-						lib::packets::serverbound::play::ServerboundKeepAlive {
-							keep_alive_id: parsed_packet.keep_alive_id,
-						}
-						.try_into()
-						.unwrap(),
+						lib::packets::serverbound::play::ServerboundKeepAlive { keep_alive_id: parsed_packet.keep_alive_id }.try_into().unwrap(),
 					)
 					.unwrap();
 				}

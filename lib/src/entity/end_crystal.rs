@@ -7,9 +7,7 @@ pub struct EndCrystal {
 
 impl CommonEntityTrait for EndCrystal {
 	fn new(data: CommonEntity, _extra_nbt: NbtListTag) -> Self {
-		return Self {
-			common: data,
-		};
+		return Self { common: data };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {

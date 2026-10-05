@@ -109,25 +109,9 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = interact(
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-				block_state_id_closed,
-				0,
-				&block_states,
-			);
+			let res = interact(BlockPosition { x: 100, y: 80, z: -100 }, block_state_id_closed, 0, &block_states);
 
-			let expected = BlockInteractionResult::OverwriteBlocks(vec![(
-				block_state_id_opened,
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-			)]);
+			let expected = BlockInteractionResult::OverwriteBlocks(vec![(block_state_id_opened, BlockPosition { x: 100, y: 80, z: -100 })]);
 
 			assert_eq!(res, expected);
 		}
@@ -162,25 +146,9 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = interact(
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-				block_state_id_opened,
-				0,
-				&block_states,
-			);
+			let res = interact(BlockPosition { x: 100, y: 80, z: -100 }, block_state_id_opened, 0, &block_states);
 
-			let expected = BlockInteractionResult::OverwriteBlocks(vec![(
-				block_state_id_closed,
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-			)]);
+			let expected = BlockInteractionResult::OverwriteBlocks(vec![(block_state_id_closed, BlockPosition { x: 100, y: 80, z: -100 })]);
 
 			assert_eq!(res, expected);
 		}
@@ -212,11 +180,7 @@ mod test {
 				1,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_trapdoor",
 				0.0,
 				0.0,
@@ -224,14 +188,7 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -259,11 +216,7 @@ mod test {
 				0,
 				CardinalDirection::East,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_trapdoor",
 				0.0,
 				0.0,
@@ -271,14 +224,7 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}

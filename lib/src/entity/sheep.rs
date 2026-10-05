@@ -53,13 +53,7 @@ impl CommonEntityTrait for Sheep {
 			let item_entity = ItemEntity {
 				common: CommonEntity {
 					position: self.common.position,
-					velocity: EntityPosition {
-						x: 0.0,
-						y: 1.0,
-						z: 0.0,
-						yaw: 0.0,
-						pitch: 0.0,
-					},
+					velocity: EntityPosition { x: 0.0, y: 1.0, z: 0.0, yaw: 0.0, pitch: 0.0 },
 					uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 					entity_id: entity_id_manager.get_new(),
 					..Default::default()
@@ -108,10 +102,8 @@ impl CommonEntityTrait for Sheep {
 			let mut rng = rng();
 
 			if rng.random_ratio(1, 1000) {
-				let position = BlockPosition {
-					y: self.get_common_entity_data().position.y as i16 - 1,
-					..self.get_common_entity_data().position.into()
-				};
+				let position =
+					BlockPosition { y: self.get_common_entity_data().position.y as i16 - 1, ..self.get_common_entity_data().position.into() };
 				let block = dimension.get_block(position).unwrap_or(0);
 				let grass_block = data::blocks::get_block_from_name("minecraft:grass_block", block_state_data);
 				if block == grass_block.states[grass_block.default_state].id {
@@ -137,15 +129,9 @@ impl CommonEntityTrait for Sheep {
 		let mut output: Vec<EntityMetadata> = Vec::new();
 
 		if self.breedable_mob.age < 0 {
-			output.push(EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(true),
-			})
+			output.push(EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(true) })
 		} else {
-			output.push(EntityMetadata {
-				index: 16,
-				value: EntityMetadataValue::Boolean(false),
-			})
+			output.push(EntityMetadata { index: 16, value: EntityMetadataValue::Boolean(false) })
 		}
 
 		let mut value: u8 = 0;
@@ -153,10 +139,7 @@ impl CommonEntityTrait for Sheep {
 		if self.sheared {
 			value += 0x10;
 		}
-		output.push(EntityMetadata {
-			index: 17,
-			value: EntityMetadataValue::Byte(value),
-		});
+		output.push(EntityMetadata { index: 17, value: EntityMetadataValue::Byte(value) });
 
 		return output;
 	}

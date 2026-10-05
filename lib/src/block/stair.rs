@@ -22,30 +22,10 @@ pub fn get_block_state_id(
 	let flip_it = face == 0 || (cursor_position_y > 0.5 && cursor_position_y < 0.9999);
 	let stair_half = if flip_it { StairHalf::Top } else { StairHalf::Bottom };
 
-	let north_block = dimension
-		.get_block(BlockPosition {
-			z: position.z - 1,
-			..position
-		})
-		.unwrap_or(0);
-	let east_block = dimension
-		.get_block(BlockPosition {
-			x: position.x + 1,
-			..position
-		})
-		.unwrap_or(0);
-	let south_block = dimension
-		.get_block(BlockPosition {
-			z: position.z + 1,
-			..position
-		})
-		.unwrap_or(0);
-	let west_block = dimension
-		.get_block(BlockPosition {
-			x: position.x - 1,
-			..position
-		})
-		.unwrap_or(0);
+	let north_block = dimension.get_block(BlockPosition { z: position.z - 1, ..position }).unwrap_or(0);
+	let east_block = dimension.get_block(BlockPosition { x: position.x + 1, ..position }).unwrap_or(0);
+	let south_block = dimension.get_block(BlockPosition { z: position.z + 1, ..position }).unwrap_or(0);
+	let west_block = dimension.get_block(BlockPosition { x: position.x - 1, ..position }).unwrap_or(0);
 
 	let stair_block_ids: Vec<u16> = block_states
 		.iter()
@@ -340,23 +320,12 @@ mod test {
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -384,23 +353,12 @@ mod test {
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -428,23 +386,12 @@ mod test {
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -472,23 +419,12 @@ mod test {
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -516,23 +452,12 @@ mod test {
 				CardinalDirection::North,
 				0.49,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
 
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -554,27 +479,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -590,14 +502,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -619,27 +524,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -655,14 +547,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -684,27 +569,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -720,14 +592,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -749,27 +614,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -785,14 +637,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -814,27 +659,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -850,14 +682,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -879,27 +704,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -915,14 +727,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -944,27 +749,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -980,14 +772,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1009,27 +794,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1045,14 +817,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1074,57 +839,17 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1140,14 +865,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1169,57 +887,17 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1235,14 +913,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1264,57 +935,17 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1330,14 +961,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1359,57 +983,17 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1425,14 +1009,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1454,27 +1031,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1490,14 +1054,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1519,27 +1076,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1555,14 +1099,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1584,27 +1121,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1620,14 +1144,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1649,27 +1166,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1685,14 +1189,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1714,27 +1211,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1750,14 +1234,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1779,27 +1256,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1815,14 +1279,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1844,27 +1301,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1880,14 +1324,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1909,27 +1346,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -1945,14 +1369,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -1974,27 +1391,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2010,14 +1414,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2039,27 +1436,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2075,14 +1459,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2104,27 +1481,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2140,14 +1504,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2169,27 +1526,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2205,14 +1549,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2234,27 +1571,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2270,14 +1594,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2299,27 +1616,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2335,14 +1639,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2364,27 +1661,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2400,14 +1684,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2429,27 +1706,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2465,14 +1729,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2494,27 +1751,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2531,14 +1775,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2560,27 +1797,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				0,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2597,14 +1821,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2626,27 +1843,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2663,14 +1867,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2692,16 +1889,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2713,16 +1901,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2734,27 +1913,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2770,14 +1936,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2799,16 +1958,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2820,16 +1970,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2841,27 +1982,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2877,14 +2005,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -2906,16 +2027,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2927,16 +2039,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -2948,27 +2051,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -2984,14 +2074,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3013,16 +2096,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3034,16 +2108,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3055,27 +2120,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3091,14 +2143,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3120,16 +2165,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3141,27 +2177,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3177,14 +2200,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3206,16 +2222,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3227,27 +2234,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3263,14 +2257,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3292,16 +2279,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3313,27 +2291,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3349,14 +2314,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3378,16 +2336,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3399,27 +2348,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3435,14 +2371,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3464,16 +2393,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3485,27 +2405,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3521,14 +2428,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3550,16 +2450,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3571,27 +2462,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3607,14 +2485,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3636,16 +2507,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3657,27 +2519,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3693,14 +2542,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3722,16 +2564,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3743,27 +2576,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3779,14 +2599,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3808,16 +2621,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3829,27 +2633,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3865,14 +2656,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3894,16 +2678,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -3915,27 +2690,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::East,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -3951,14 +2713,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -3980,16 +2735,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4001,27 +2747,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::South,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -4037,14 +2770,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -4066,16 +2792,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4087,27 +2804,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::West,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -4123,14 +2827,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -4152,16 +2849,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4173,16 +2861,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: -1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: -1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4194,16 +2873,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 0 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4215,16 +2885,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 10, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 			let block_state_id_to_place = block
 				.states
 				.iter()
@@ -4236,27 +2897,14 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 11,
-						y: 80,
-						z: 1,
-					},
-					block_state_id_to_place,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 11, y: 80, z: 1 }, block_state_id_to_place).unwrap();
 
 			let res = get_block_state_id(
 				1,
 				CardinalDirection::North,
 				0.0,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_stairs",
 				&block_states,
 			);
@@ -4272,14 +2920,7 @@ mod test {
 				})
 				.unwrap()
 				.id;
-			let expected = vec![(
-				block_state_id,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
-			)];
+			let expected = vec![(block_state_id, BlockPosition { x: 10, y: 80, z: 0 })];
 
 			assert_eq!(res, expected);
 		}

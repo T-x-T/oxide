@@ -42,11 +42,7 @@ impl TryFrom<NbtListTag> for HangingSign {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		return Ok(HangingSign {
 			position,

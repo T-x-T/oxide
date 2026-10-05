@@ -17,12 +17,7 @@ pub struct Bee {
 
 impl CommonBlockEntity for Beehive {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			bees: Vec::new(),
-			flower_position: None,
-		};
+		return Self { position, components: Vec::new(), bees: Vec::new(), flower_position: None };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -65,11 +60,7 @@ impl TryFrom<NbtListTag> for Beehive {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let bees = value
 			.get_child("bees")
@@ -85,20 +76,11 @@ impl TryFrom<NbtListTag> for Beehive {
 
 		let raw_flower_pos = value.get_child("flower_pos").unwrap_or(&NbtTag::IntArray(String::new(), vec![])).as_int_array();
 		let flower_position: Option<BlockPosition> = if raw_flower_pos.len() == 3 {
-			Some(BlockPosition {
-				x: raw_flower_pos[0],
-				y: raw_flower_pos[1] as i16,
-				z: raw_flower_pos[2],
-			})
+			Some(BlockPosition { x: raw_flower_pos[0], y: raw_flower_pos[1] as i16, z: raw_flower_pos[2] })
 		} else {
 			None
 		};
 
-		return Ok(Beehive {
-			position,
-			components: Vec::new(),
-			bees,
-			flower_position,
-		});
+		return Ok(Beehive { position, components: Vec::new(), bees, flower_position });
 	}
 }

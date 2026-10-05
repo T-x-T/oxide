@@ -8,9 +8,7 @@ pub struct RecipeManager {
 
 impl RecipeManager {
 	pub fn new(recipes: HashMap<&'static str, Recipe>) -> RecipeManager {
-		return RecipeManager {
-			recipes,
-		};
+		return RecipeManager { recipes };
 	}
 
 	pub fn get_crafting_recipe_2x2(&self, slots: &[Option<Slot>; 4]) -> Option<&Recipe> {

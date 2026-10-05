@@ -10,10 +10,7 @@ impl CommonEntityTrait for Parrot {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt);
 
-		return Self {
-			common: data,
-			mob,
-		};
+		return Self { common: data, mob };
 	}
 
 	fn to_nbt_extras(&self) -> Vec<NbtTag> {

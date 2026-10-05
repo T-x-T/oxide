@@ -11,13 +11,7 @@ pub struct SoulCampfire {
 
 impl CommonBlockEntity for SoulCampfire {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			items: Vec::new(),
-			cooking_times: Vec::new(),
-			cooking_total_times: Vec::new(),
-		};
+		return Self { position, components: Vec::new(), items: Vec::new(), cooking_times: Vec::new(), cooking_total_times: Vec::new() };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -46,11 +40,7 @@ impl TryFrom<NbtListTag> for SoulCampfire {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let items: Vec<Slot> = value
 			.get_child("Items")
@@ -68,12 +58,6 @@ impl TryFrom<NbtListTag> for SoulCampfire {
 		let cooking_times = value.get_child("CookingTimes").unwrap_or(&NbtTag::IntArray(String::new(), Vec::new())).as_int_array();
 		let cooking_total_times = value.get_child("CookingTotalTimes").unwrap_or(&NbtTag::IntArray(String::new(), Vec::new())).as_int_array();
 
-		return Ok(SoulCampfire {
-			position,
-			components: Vec::new(),
-			items,
-			cooking_times,
-			cooking_total_times,
-		});
+		return Ok(SoulCampfire { position, components: Vec::new(), items, cooking_times, cooking_total_times });
 	}
 }

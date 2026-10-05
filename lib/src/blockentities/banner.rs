@@ -9,11 +9,7 @@ pub struct Banner {
 
 impl CommonBlockEntity for Banner {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			patterns: Vec::new(),
-		};
+		return Self { position, components: Vec::new(), patterns: Vec::new() };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -51,11 +47,7 @@ impl TryFrom<NbtListTag> for Banner {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let mut patterns: Vec<(String, String)> = Vec::new();
 		if let Some(raw_patterns) = value.get_child("patterns") {
@@ -65,10 +57,6 @@ impl TryFrom<NbtListTag> for Banner {
 			}
 		}
 
-		return Ok(Banner {
-			position,
-			components: Vec::new(),
-			patterns,
-		});
+		return Ok(Banner { position, components: Vec::new(), patterns });
 	}
 }

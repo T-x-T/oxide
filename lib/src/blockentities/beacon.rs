@@ -10,12 +10,7 @@ pub struct Beacon {
 
 impl CommonBlockEntity for Beacon {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			primary_potion_effect: None,
-			secondary_potion_effect: None,
-		};
+		return Self { position, components: Vec::new(), primary_potion_effect: None, secondary_potion_effect: None };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -49,11 +44,7 @@ impl TryFrom<NbtListTag> for Beacon {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		return Ok(Beacon {
 			position,

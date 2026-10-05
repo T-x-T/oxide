@@ -84,18 +84,10 @@ impl World {
 			dimensions.insert("minecraft:overworld".to_string(), Dimension::new("minecraft:overworld"));
 			dimensions.insert("minecraft:the_nether".to_string(), Dimension::new("minecraft:the_nether"));
 			dimensions.insert("minecraft:the_end".to_string(), Dimension::new("minecraft:the_end"));
-			default_spawn_location = BlockPosition {
-				x: 0,
-				y: -48,
-				z: 0,
-			};
+			default_spawn_location = BlockPosition { x: 0, y: -48, z: 0 };
 			println!("creation of new world finished");
 		}
-		return Self {
-			dimensions,
-			loader: Box::new(loader),
-			default_spawn_location,
-		};
+		return Self { dimensions, loader: Box::new(loader), default_spawn_location };
 	}
 
 	pub fn save_to_disk(&mut self, block_states: &HashMap<String, Block>) {
@@ -266,11 +258,7 @@ impl Dimension {
 	) {
 		let new_entity = ItemEntity {
 			common: CommonEntity {
-				position: EntityPosition {
-					x: position.x + 0.5,
-					z: position.z + 0.5,
-					..position
-				},
+				position: EntityPosition { x: position.x + 0.5, z: position.z + 0.5, ..position },
 				velocity: EntityPosition::default(),
 				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 				entity_id: entity_id_manager.get_new(),
@@ -424,24 +412,13 @@ impl Dimension {
 
 impl Chunk {
 	pub fn new(chunk_x: i32, chunk_z: i32, chunk_sections: u8) -> Self {
-		let filled_chunk_sections = vec![
-			ChunkSection {
-				blocks: vec![1; 4096],
-				biomes: vec![40; 64],
-				sky_lights: vec![0x00; 2048],
-				block_lights: vec![0x00; 2048]
-			};
-			1
-		];
-		let empty_chunk_sections = vec![
-			ChunkSection {
-				blocks: vec![0; 4096],
-				biomes: vec![40; 64],
-				sky_lights: vec![0xFF; 2048],
-				block_lights: vec![0x00; 2048]
-			};
-			chunk_sections as usize - 1
-		];
+		let filled_chunk_sections =
+			vec![ChunkSection { blocks: vec![1; 4096], biomes: vec![40; 64], sky_lights: vec![0x00; 2048], block_lights: vec![0x00; 2048] }; 1];
+		let empty_chunk_sections =
+			vec![
+				ChunkSection { blocks: vec![0; 4096], biomes: vec![40; 64], sky_lights: vec![0xFF; 2048], block_lights: vec![0x00; 2048] };
+				chunk_sections as usize - 1
+			];
 		let mut all_chunk_sections = filled_chunk_sections.clone();
 		all_chunk_sections.append(&mut empty_chunk_sections.clone());
 
@@ -605,13 +582,7 @@ impl Chunk {
 		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in position_in_chunk.y..=highest_block_y {
-			let block = self.get_block(
-				BlockPosition {
-					y,
-					..position_in_chunk
-				},
-				lowest_block_y,
-			);
+			let block = self.get_block(BlockPosition { y, ..position_in_chunk }, lowest_block_y);
 
 			let block_type = data::blocks::get_type_from_block_state_id(block);
 
@@ -627,15 +598,7 @@ impl Chunk {
 		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
-			let block = self.get_block(
-				BlockPosition {
-					x,
-					y,
-					z,
-				}
-				.convert_to_position_in_chunk(),
-				lowest_block_y,
-			);
+			let block = self.get_block(BlockPosition { x, y, z }.convert_to_position_in_chunk(), lowest_block_y);
 
 			let block_type = data::blocks::get_type_from_block_state_id(block);
 
@@ -651,15 +614,7 @@ impl Chunk {
 		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
-			let block = self.get_block(
-				BlockPosition {
-					x,
-					y,
-					z,
-				}
-				.convert_to_position_in_chunk(),
-				lowest_block_y,
-			);
+			let block = self.get_block(BlockPosition { x, y, z }.convert_to_position_in_chunk(), lowest_block_y);
 
 			let block_type = data::blocks::get_type_from_block_state_id(block);
 
@@ -682,15 +637,7 @@ impl Chunk {
 		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
-			let block = self.get_block(
-				BlockPosition {
-					x,
-					y,
-					z,
-				}
-				.convert_to_position_in_chunk(),
-				lowest_block_y,
-			);
+			let block = self.get_block(BlockPosition { x, y, z }.convert_to_position_in_chunk(), lowest_block_y);
 
 			if block != 0 {
 				return y;
@@ -704,15 +651,7 @@ impl Chunk {
 		let highest_block_y = if lowest_block_y == -64 { 319 } else { 256 };
 
 		for y in (lowest_block_y..=highest_block_y).rev() {
-			let block = self.get_block(
-				BlockPosition {
-					x,
-					y,
-					z,
-				}
-				.convert_to_position_in_chunk(),
-				lowest_block_y,
-			);
+			let block = self.get_block(BlockPosition { x, y, z }.convert_to_position_in_chunk(), lowest_block_y);
 
 			let block_type = data::blocks::get_type_from_block_state_id(block);
 

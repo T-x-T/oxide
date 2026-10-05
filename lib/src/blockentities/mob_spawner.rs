@@ -69,11 +69,7 @@ impl TryFrom<NbtListTag> for MobSpawner {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let delay = value.get_child("Delay").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short();
 		let max_nearby_entities = value.get_child("MaxNearbyEntities").unwrap_or(&NbtTag::Short(String::new(), 8)).as_short();

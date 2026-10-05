@@ -1303,12 +1303,7 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 		components_to_remove.push(crate::deserialize::varint(data)?);
 	}
 
-	return Ok(Some(Slot {
-		count: item_count,
-		id: item_id,
-		components_to_add,
-		components_to_remove,
-	}));
+	return Ok(Some(Slot { count: item_count, id: item_id, components_to_add, components_to_remove }));
 }
 
 pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
@@ -1363,12 +1358,7 @@ pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<d
 	}
 
 	//might have to do something about the components_to_add but probably not(?)
-	return Ok(Some(Slot {
-		count: item_count,
-		id: item_id,
-		components_to_add: Vec::new(),
-		components_to_remove,
-	}));
+	return Ok(Some(Slot { count: item_count, id: item_id, components_to_add: Vec::new(), components_to_remove }));
 }
 
 pub fn serialize_hashed_slot(input: Option<&Slot>) -> Vec<u8> {

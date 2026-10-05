@@ -766,14 +766,7 @@ pub fn new(entity_type: &str, common_data: CommonEntity, extra_nbt: NbtListTag) 
 
 	if let Some(mut new_entity) = new_entity {
 		let (height, width) = new_entity.get_hitbox();
-		let cuboid = Cuboid {
-			x1: -(width / 2.0),
-			y1: 0.0,
-			z1: -(width / 2.0),
-			x2: width / 2.0,
-			y2: height,
-			z2: width / 2.0,
-		};
+		let cuboid = Cuboid { x1: -(width / 2.0), y1: 0.0, z1: -(width / 2.0), x2: width / 2.0, y2: height, z2: width / 2.0 };
 
 		new_entity.get_common_entity_data_mut().collision_shape =
 			CollisionShape::new_from_cuboid(cuboid, new_entity.get_common_entity_data().position);
@@ -792,13 +785,8 @@ pub fn create_and_spawn_entity_from_egg(
 	packet_sender: &PacketSender,
 ) {
 	let entity_type = spawn_egg_name.replace("_spawn_egg", "");
-	let entity_position = EntityPosition {
-		x: position.x as f64 + 0.5,
-		y: position.y as f64,
-		z: position.z as f64 + 0.5,
-		yaw: 0.0,
-		pitch: 0.0,
-	};
+	let entity_position =
+		EntityPosition { x: position.x as f64 + 0.5, y: position.y as f64, z: position.z as f64 + 0.5, yaw: 0.0, pitch: 0.0 };
 	create_and_spawn_entity(&entity_type, entity_id, entity_position, dimension, players, packet_sender);
 }
 

@@ -113,10 +113,7 @@ impl TryFrom<Vec<u8>> for EntityAnimation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			animation: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, animation: value.remove(0) });
 	}
 }
 
@@ -155,9 +152,7 @@ impl TryFrom<Vec<u8>> for AcknowledgeBlockChange {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			sequence_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { sequence_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -295,10 +290,7 @@ impl TryFrom<Vec<u8>> for BlockUpdate {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			location: crate::deserialize::position(&mut value)?,
-			block_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { location: crate::deserialize::position(&mut value)?, block_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -337,9 +329,7 @@ impl TryFrom<Vec<u8>> for ChunkBatchFinished {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			number_of_chunks: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { number_of_chunks: crate::deserialize::varint(&mut value)? });
 	}
 }
 //
@@ -417,10 +407,7 @@ impl TryFrom<Vec<u8>> for Commands {
 		let nodes: Vec<CommandNode> = (0..nodes_len).map(|_| CommandNode::try_from(&mut value).unwrap()).collect();
 		let root_index = crate::deserialize::varint(&mut value)?;
 
-		return Ok(Self {
-			nodes,
-			root_index,
-		});
+		return Ok(Self { nodes, root_index });
 	}
 }
 
@@ -459,9 +446,7 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			window_id: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { window_id: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -513,12 +498,7 @@ impl TryFrom<Vec<u8>> for SetContainerContent {
 		let slot_data = (0..slot_data_len).map(|_| crate::slot::deserialize_slot(&mut value).unwrap()).collect();
 		let carried_item = crate::slot::deserialize_slot(&mut value)?;
 
-		return Ok(Self {
-			window_id,
-			state_id,
-			slot_data,
-			carried_item,
-		});
+		return Ok(Self { window_id, state_id, slot_data, carried_item });
 	}
 }
 
@@ -673,10 +653,7 @@ impl TryFrom<Vec<u8>> for DebugEntityValue {
 			None
 		};
 
-		return Ok(Self {
-			entity_id,
-			update,
-		});
+		return Ok(Self { entity_id, update });
 	}
 }
 //
@@ -751,10 +728,7 @@ impl TryFrom<Vec<u8>> for EntityEvent {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::int(&mut value)?,
-			entity_status: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::int(&mut value)?, entity_status: value.remove(0) });
 	}
 }
 
@@ -899,17 +873,7 @@ impl TryFrom<Vec<u8>> for Explosion {
 		let particle_id = crate::deserialize::varint(&mut value)?;
 		let sound = crate::deserialize::varint(&mut value)?;
 
-		return Ok(Self {
-			x,
-			y,
-			z,
-			radius,
-			block_count,
-			player_delta_velocity,
-			particle_id,
-			particle_data: (),
-			sound,
-		});
+		return Ok(Self { x, y, z, radius, block_count, player_delta_velocity, particle_id, particle_data: (), sound });
 	}
 }
 
@@ -950,10 +914,7 @@ impl TryFrom<Vec<u8>> for UnloadChunk {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			z: crate::deserialize::int(&mut value)?,
-			x: crate::deserialize::int(&mut value)?,
-		});
+		return Ok(Self { z: crate::deserialize::int(&mut value)?, x: crate::deserialize::int(&mut value)? });
 	}
 }
 
@@ -994,10 +955,7 @@ impl TryFrom<Vec<u8>> for GameEvent {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			event: value.remove(0),
-			value: crate::deserialize::float(&mut value)?,
-		});
+		return Ok(Self { event: value.remove(0), value: crate::deserialize::float(&mut value)? });
 	}
 }
 
@@ -1038,10 +996,7 @@ impl TryFrom<Vec<u8>> for HurtAnimation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			yaw: crate::deserialize::float(&mut value)?,
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, yaw: crate::deserialize::float(&mut value)? });
 	}
 }
 
@@ -1080,9 +1035,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			keep_alive_id: crate::deserialize::long(&mut value)?,
-		});
+		return Ok(Self { keep_alive_id: crate::deserialize::long(&mut value)? });
 	}
 }
 
@@ -1360,10 +1313,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			for _ in 0..data_len {
 				data.push(crate::deserialize::unsigned_long(&mut value)?);
 			}
-			heightmaps.push(HeightMap {
-				data_type,
-				data,
-			});
+			heightmaps.push(HeightMap { data_type, data });
 		}
 		let _size = crate::deserialize::varint(&mut value)?;
 		let mut data: Vec<ChunkSection> = Vec::new();
@@ -1379,12 +1329,7 @@ impl TryFrom<Vec<u8>> for ChunkDataAndUpdateLight {
 			let y = crate::deserialize::short(&mut value)?;
 			let block_entity_type = crate::deserialize::varint(&mut value)?;
 			let data = if *value.first().unwrap() == 0 { None } else { Some(crate::deserialize::nbt_network(&mut value)?) };
-			block_entities.push(BlockEntity {
-				packed_xz,
-				y,
-				block_entity_type,
-				data,
-			});
+			block_entities.push(BlockEntity { packed_xz, y, block_entity_type, data });
 		}
 		let sky_light_mask = crate::deserialize::bitset(&mut value)?;
 		let block_light_mask = crate::deserialize::bitset(&mut value)?;
@@ -1449,10 +1394,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
 		return match bits_per_entry {
 			0 => {
 				let value_entry = crate::deserialize::varint(value)?;
-				Ok(BlockStatesPalettedContainer::SingleValued(SingleValued {
-					bits_per_entry,
-					value: value_entry,
-				}))
+				Ok(BlockStatesPalettedContainer::SingleValued(SingleValued { bits_per_entry, value: value_entry }))
 			}
 			1..=14 => {
 				let palette_length = crate::deserialize::varint(value)?;
@@ -1471,11 +1413,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
 						data_array.push(entry as i32);
 					}
 				}
-				Ok(BlockStatesPalettedContainer::Indirect(Indirect {
-					bits_per_entry,
-					data_array,
-					palette,
-				}))
+				Ok(BlockStatesPalettedContainer::Indirect(Indirect { bits_per_entry, data_array, palette }))
 			}
 			_ => {
 				let entries_per_long = 64 / bits_per_entry as i32;
@@ -1489,10 +1427,7 @@ impl TryFrom<&mut Vec<u8>> for BlockStatesPalettedContainer {
 						data_array.push(entry as i32);
 					}
 				}
-				Ok(BlockStatesPalettedContainer::Direct(Direct {
-					bits_per_entry,
-					data_array,
-				}))
+				Ok(BlockStatesPalettedContainer::Direct(Direct { bits_per_entry, data_array }))
 			}
 		};
 	}
@@ -1507,10 +1442,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 		return match bits_per_entry {
 			0 => {
 				let value_entry = crate::deserialize::varint(value)?;
-				Ok(BiomesPalettedContainer::SingleValued(SingleValued {
-					bits_per_entry,
-					value: value_entry,
-				}))
+				Ok(BiomesPalettedContainer::SingleValued(SingleValued { bits_per_entry, value: value_entry }))
 			}
 			1..=5 => {
 				let palette_length = crate::deserialize::varint(value)?;
@@ -1530,11 +1462,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 						data_array.push(entry as i32);
 					}
 				}
-				Ok(BiomesPalettedContainer::Indirect(Indirect {
-					bits_per_entry,
-					data_array,
-					palette,
-				}))
+				Ok(BiomesPalettedContainer::Indirect(Indirect { bits_per_entry, data_array, palette }))
 			}
 			_ => {
 				let entries_per_long = 64 / bits_per_entry as i32;
@@ -1548,10 +1476,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 						data_array.push(entry as i32);
 					}
 				}
-				Ok(BiomesPalettedContainer::Direct(Direct {
-					bits_per_entry,
-					data_array,
-				}))
+				Ok(BiomesPalettedContainer::Direct(Direct { bits_per_entry, data_array }))
 			}
 		};
 	}
@@ -2074,10 +1999,7 @@ impl TryFrom<Vec<u8>> for OpenSignEditor {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			location: crate::deserialize::position(&mut value)?,
-			is_front_text: crate::deserialize::boolean(&mut value)?,
-		});
+		return Ok(Self { location: crate::deserialize::position(&mut value)?, is_front_text: crate::deserialize::boolean(&mut value)? });
 	}
 }
 
@@ -2244,10 +2166,7 @@ impl TryFrom<Vec<u8>> for CombatDeath {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			player_id: crate::deserialize::varint(&mut value)?,
-			message: crate::deserialize::nbt_network(&mut value)?,
-		});
+		return Ok(Self { player_id: crate::deserialize::varint(&mut value)?, message: crate::deserialize::nbt_network(&mut value)? });
 	}
 }
 
@@ -2294,9 +2213,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoRemove {
 			uuids.push(crate::deserialize::uuid(&mut value)?);
 		}
 
-		return Ok(Self {
-			uuids,
-		});
+		return Ok(Self { uuids });
 	}
 }
 
@@ -2467,10 +2384,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 			players.push((uuid, player_actions));
 		}
 
-		return Ok(Self {
-			actions,
-			players,
-		});
+		return Ok(Self { actions, players });
 	}
 }
 
@@ -2585,9 +2499,7 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 			entity_ids.push(crate::deserialize::varint(&mut value)?);
 		}
 
-		return Ok(Self {
-			entity_ids,
-		});
+		return Ok(Self { entity_ids });
 	}
 }
 
@@ -2628,10 +2540,7 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			entity_id: crate::deserialize::varint(&mut value)?,
-			head_yaw: value.remove(0),
-		});
+		return Ok(Self { entity_id: crate::deserialize::varint(&mut value)?, head_yaw: value.remove(0) });
 	}
 }
 //
@@ -2769,10 +2678,7 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			chunk_x: crate::deserialize::varint(&mut value)?,
-			chunk_z: crate::deserialize::varint(&mut value)?,
-		});
+		return Ok(Self { chunk_x: crate::deserialize::varint(&mut value)?, chunk_z: crate::deserialize::varint(&mut value)? });
 	}
 }
 
@@ -2811,9 +2717,7 @@ impl TryFrom<Vec<u8>> for SetCursorItem {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			carried_item: slot::deserialize_slot(&mut value)?.unwrap(),
-		});
+		return Ok(Self { carried_item: slot::deserialize_slot(&mut value)?.unwrap() });
 	}
 }
 
@@ -3113,16 +3017,10 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 				id => panic!("type_id {id} is not a recognized entity type"),
 			};
 
-			metadata.push(EntityMetadata {
-				index,
-				value: metadata_value,
-			});
+			metadata.push(EntityMetadata { index, value: metadata_value });
 		}
 
-		return Ok(Self {
-			entity_id,
-			metadata,
-		});
+		return Ok(Self { entity_id, metadata });
 	}
 }
 
@@ -3180,10 +3078,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 			}
 		}
 
-		return Ok(Self {
-			entity_id,
-			equipment,
-		});
+		return Ok(Self { entity_id, equipment });
 	}
 }
 
@@ -3268,9 +3163,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			slot: crate::deserialize::varint(&mut value)? as u8,
-		});
+		return Ok(Self { slot: crate::deserialize::varint(&mut value)? as u8 });
 	}
 }
 
@@ -3311,10 +3204,7 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			slot: crate::deserialize::varint(&mut value)?,
-			slot_data: crate::slot::deserialize_slot(&mut value)?,
-		});
+		return Ok(Self { slot: crate::deserialize::varint(&mut value)?, slot_data: crate::slot::deserialize_slot(&mut value)? });
 	}
 }
 
@@ -3355,10 +3245,7 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			content: crate::deserialize::nbt_network(&mut value)?,
-			overlay: crate::deserialize::boolean(&mut value)?,
-		});
+		return Ok(Self { content: crate::deserialize::nbt_network(&mut value)?, overlay: crate::deserialize::boolean(&mut value)? });
 	}
 }
 
@@ -3399,10 +3286,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self {
-			header: crate::deserialize::nbt_network(&mut value)?,
-			footer: crate::deserialize::nbt_network(&mut value)?,
-		});
+		return Ok(Self { header: crate::deserialize::nbt_network(&mut value)?, footer: crate::deserialize::nbt_network(&mut value)? });
 	}
 }
 
@@ -3494,8 +3378,6 @@ impl TryFrom<Vec<u8>> for ServerLinks {
 		let links_len = crate::deserialize::varint(&mut value)?;
 		let links: Vec<ServerLink> = (0..links_len).map(|_| ServerLink::try_from(&mut value).unwrap()).collect();
 
-		return Ok(Self {
-			links,
-		});
+		return Ok(Self { links });
 	}
 }

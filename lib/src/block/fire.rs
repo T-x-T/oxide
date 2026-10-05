@@ -12,30 +12,12 @@ pub fn get_block_state_id(
 	let obsidian_block_state_id = data::blocks::get_block_from_name("minecraft:obsidian", block_states).states.first().unwrap().id;
 
 	let position_to_check = match face {
-		0 => BlockPosition {
-			y: position.y + 1,
-			..position
-		},
-		1 => BlockPosition {
-			y: position.y - 1,
-			..position
-		},
-		2 => BlockPosition {
-			z: position.z + 1,
-			..position
-		},
-		3 => BlockPosition {
-			z: position.z - 1,
-			..position
-		},
-		4 => BlockPosition {
-			x: position.x + 1,
-			..position
-		},
-		5 => BlockPosition {
-			x: position.x - 1,
-			..position
-		},
+		0 => BlockPosition { y: position.y + 1, ..position },
+		1 => BlockPosition { y: position.y - 1, ..position },
+		2 => BlockPosition { z: position.z + 1, ..position },
+		3 => BlockPosition { z: position.z - 1, ..position },
+		4 => BlockPosition { x: position.x + 1, ..position },
+		5 => BlockPosition { x: position.x - 1, ..position },
 		_ => panic!("invalid face {face}"),
 	};
 
@@ -101,37 +83,25 @@ fn get_portal_block_positions(
 
 		if ((x_pos_blocks + x_neg_blocks) >= 1) && ((x_pos_blocks + x_neg_blocks) <= 23) {
 			for x in -x_neg_blocks..=x_pos_blocks {
-				let block_to_check = BlockPosition {
-					x: starting_position.x + x as i32,
-					y: starting_position.y + y_pos_blocks as i16 + 1,
-					z: starting_position.z,
-				};
+				let block_to_check =
+					BlockPosition { x: starting_position.x + x as i32, y: starting_position.y + y_pos_blocks as i16 + 1, z: starting_position.z };
 				if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 					return Vec::new();
 				}
-				let block_to_check = BlockPosition {
-					x: starting_position.x + x as i32,
-					y: starting_position.y - y_neg_blocks as i16 - 1,
-					z: starting_position.z,
-				};
+				let block_to_check =
+					BlockPosition { x: starting_position.x + x as i32, y: starting_position.y - y_neg_blocks as i16 - 1, z: starting_position.z };
 				if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 					return Vec::new();
 				}
 
 				for y in -y_neg_blocks..=y_pos_blocks {
-					let block_to_check = BlockPosition {
-						x: starting_position.x + x_pos_blocks as i32 + 1,
-						y: starting_position.y + y as i16,
-						z: starting_position.z,
-					};
+					let block_to_check =
+						BlockPosition { x: starting_position.x + x_pos_blocks as i32 + 1, y: starting_position.y + y as i16, z: starting_position.z };
 					if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 						return Vec::new();
 					}
-					let block_to_check = BlockPosition {
-						x: starting_position.x - x_neg_blocks as i32 - 1,
-						y: starting_position.y + y as i16,
-						z: starting_position.z,
-					};
+					let block_to_check =
+						BlockPosition { x: starting_position.x - x_neg_blocks as i32 - 1, y: starting_position.y + y as i16, z: starting_position.z };
 					if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 						return Vec::new();
 					}
@@ -149,37 +119,25 @@ fn get_portal_block_positions(
 
 			if ((z_pos_blocks + z_neg_blocks) >= 1) && ((z_pos_blocks + z_neg_blocks) <= 23) {
 				for z in -z_neg_blocks..=z_pos_blocks {
-					let block_to_check = BlockPosition {
-						x: starting_position.x,
-						y: starting_position.y + y_pos_blocks as i16 + 1,
-						z: starting_position.z + z as i32,
-					};
+					let block_to_check =
+						BlockPosition { x: starting_position.x, y: starting_position.y + y_pos_blocks as i16 + 1, z: starting_position.z + z as i32 };
 					if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 						return Vec::new();
 					}
-					let block_to_check = BlockPosition {
-						x: starting_position.x,
-						y: starting_position.y - y_neg_blocks as i16 - 1,
-						z: starting_position.z + z as i32,
-					};
+					let block_to_check =
+						BlockPosition { x: starting_position.x, y: starting_position.y - y_neg_blocks as i16 - 1, z: starting_position.z + z as i32 };
 					if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 						return Vec::new();
 					}
 
 					for y in -y_neg_blocks..=y_pos_blocks {
-						let block_to_check = BlockPosition {
-							x: starting_position.x,
-							y: starting_position.y + y as i16,
-							z: starting_position.z + z_pos_blocks as i32 + 1,
-						};
+						let block_to_check =
+							BlockPosition { x: starting_position.x, y: starting_position.y + y as i16, z: starting_position.z + z_pos_blocks as i32 + 1 };
 						if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 							return Vec::new();
 						}
-						let block_to_check = BlockPosition {
-							x: starting_position.x,
-							y: starting_position.y + y as i16,
-							z: starting_position.z - z_neg_blocks as i32 - 1,
-						};
+						let block_to_check =
+							BlockPosition { x: starting_position.x, y: starting_position.y + y as i16, z: starting_position.z - z_neg_blocks as i32 - 1 };
 						if dimension.get_block(block_to_check).unwrap_or_default() != obsidian_block_state_id {
 							return Vec::new();
 						}
@@ -203,30 +161,12 @@ fn find_air_blocks_in_direction(dimension: &Dimension, direction: Direction, sta
 
 	for i in 1..=23 {
 		let position_to_check = match direction {
-			Direction::XPos => BlockPosition {
-				x: starting_position.x + i,
-				..starting_position
-			},
-			Direction::XNeg => BlockPosition {
-				x: starting_position.x - i,
-				..starting_position
-			},
-			Direction::YPos => BlockPosition {
-				y: starting_position.y + i as i16,
-				..starting_position
-			},
-			Direction::YNeg => BlockPosition {
-				y: starting_position.y - i as i16,
-				..starting_position
-			},
-			Direction::ZPos => BlockPosition {
-				z: starting_position.z + i,
-				..starting_position
-			},
-			Direction::ZNeg => BlockPosition {
-				z: starting_position.z - i,
-				..starting_position
-			},
+			Direction::XPos => BlockPosition { x: starting_position.x + i, ..starting_position },
+			Direction::XNeg => BlockPosition { x: starting_position.x - i, ..starting_position },
+			Direction::YPos => BlockPosition { y: starting_position.y + i as i16, ..starting_position },
+			Direction::YNeg => BlockPosition { y: starting_position.y - i as i16, ..starting_position },
+			Direction::ZPos => BlockPosition { z: starting_position.z + i, ..starting_position },
+			Direction::ZNeg => BlockPosition { z: starting_position.z - i, ..starting_position },
 		};
 
 		if dimension.get_block(position_to_check).is_ok_and(|x| x == 0) {

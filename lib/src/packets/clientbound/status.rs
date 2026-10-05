@@ -32,9 +32,7 @@ impl TryFrom<Vec<u8>> for StatusResponse {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(StatusResponse {
-			status: crate::deserialize::string(&mut value)?,
-		});
+		return Ok(StatusResponse { status: crate::deserialize::string(&mut value)? });
 	}
 }
 
@@ -69,8 +67,6 @@ impl TryFrom<Vec<u8>> for PingResponse {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(PingResponse {
-			timestamp: crate::deserialize::long(&mut value)?,
-		});
+		return Ok(PingResponse { timestamp: crate::deserialize::long(&mut value)? });
 	}
 }

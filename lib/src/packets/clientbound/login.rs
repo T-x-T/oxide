@@ -31,9 +31,7 @@ impl TryFrom<Vec<u8>> for Disconnect {
 	type Error = Box<dyn Error>;
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Disconnect {
-			reason: crate::deserialize::string(&mut value)?,
-		});
+		return Ok(Disconnect { reason: crate::deserialize::string(&mut value)? });
 	}
 }
 
@@ -73,9 +71,6 @@ impl TryFrom<Vec<u8>> for LoginSuccess {
 
 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
 		let uuid = crate::deserialize::uuid(&mut value)?;
-		return Ok(LoginSuccess {
-			uuid,
-			username: crate::deserialize::string(&mut value)?,
-		});
+		return Ok(LoginSuccess { uuid, username: crate::deserialize::string(&mut value)? });
 	}
 }

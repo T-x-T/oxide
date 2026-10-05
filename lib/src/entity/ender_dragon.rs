@@ -10,10 +10,7 @@ impl CommonEntityTrait for EnderDragon {
 	fn new(data: CommonEntity, extra_nbt: NbtListTag) -> Self {
 		let mob = CommonMob::from_nbt(extra_nbt.clone());
 
-		return Self {
-			common: data,
-			mob,
-		};
+		return Self { common: data, mob };
 	}
 
 	fn is_mob(&self) -> bool {

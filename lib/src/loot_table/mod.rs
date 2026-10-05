@@ -556,12 +556,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -614,12 +610,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -682,12 +674,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -701,12 +689,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 1,
-			id: all_items.get("minecraft:shears").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
@@ -721,12 +705,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -761,12 +741,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:basalt").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -799,12 +775,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -817,12 +789,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 1,
-			id: all_items.get("minecraft:shears").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
@@ -837,12 +805,8 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
-			count: 0,
-			id: all_items.get("minecraft:air").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item =
+			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -877,11 +841,7 @@ mod test {
 					&crate::EntityIdManager::default(),
 					&basic_types::Gamemode::Survival,
 					Box::new(MockReadWriter()),
-					BlockPosition {
-						x: 0,
-						y: 100,
-						z: 0,
-					},
+					BlockPosition { x: 0, y: 100, z: 0 },
 				))),
 			);
 			println!("{res:?}");

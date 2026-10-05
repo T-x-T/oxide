@@ -10,12 +10,7 @@ pub struct Lectern {
 
 impl CommonBlockEntity for Lectern {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			book: None,
-			page: None,
-		};
+		return Self { position, components: Vec::new(), book: None, page: None };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -54,11 +49,7 @@ impl TryFrom<NbtListTag> for Lectern {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let book = value.get_child("Book").map(|x| Slot {
 			id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
@@ -69,11 +60,6 @@ impl TryFrom<NbtListTag> for Lectern {
 
 		let page = value.get_child("Page").map(|x| x.as_int());
 
-		return Ok(Lectern {
-			position,
-			components: Vec::new(),
-			book,
-			page,
-		});
+		return Ok(Lectern { position, components: Vec::new(), book, page });
 	}
 }

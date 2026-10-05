@@ -39,10 +39,7 @@ impl TryFrom<Vec<u8>> for ServerboundPluginMessage {
 		let channel = crate::deserialize::string(&mut value)?;
 		let data = value;
 
-		Ok(ServerboundPluginMessage {
-			channel,
-			data,
-		})
+		Ok(ServerboundPluginMessage { channel, data })
 	}
 }
 

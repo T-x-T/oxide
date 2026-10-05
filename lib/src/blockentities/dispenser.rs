@@ -9,11 +9,7 @@ pub struct Dispenser {
 
 impl CommonBlockEntity for Dispenser {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			inventory: vec![Slot::default(); 9],
-		};
+		return Self { position, components: Vec::new(), inventory: vec![Slot::default(); 9] };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -38,11 +34,7 @@ impl TryFrom<NbtListTag> for Dispenser {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let mut inventory = vec![Slot::default(); 9];
 		if let Some(items) = value.get_child("Items") {
@@ -56,10 +48,6 @@ impl TryFrom<NbtListTag> for Dispenser {
 			}
 		}
 
-		return Ok(Dispenser {
-			position,
-			components: Vec::new(),
-			inventory,
-		});
+		return Ok(Dispenser { position, components: Vec::new(), inventory });
 	}
 }

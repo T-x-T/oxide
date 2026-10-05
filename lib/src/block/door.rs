@@ -19,18 +19,12 @@ pub fn interact(
 	let other_half: (u16, BlockPosition) = if is_upper {
 		block_properties.push(("half".to_string(), "lower".to_string()));
 		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
-		let other_half_location = BlockPosition {
-			y: location.y - 1,
-			..location
-		};
+		let other_half_location = BlockPosition { y: location.y - 1, ..location };
 		(other_half_id, other_half_location)
 	} else {
 		block_properties.push(("half".to_string(), "upper".to_string()));
 		let other_half_id = data::blocks::get_block_state_id_from_raw(block_states, block_name, &block_properties);
-		let other_half_location = BlockPosition {
-			y: location.y + 1,
-			..location
-		};
+		let other_half_location = BlockPosition { y: location.y + 1, ..location };
 		(other_half_id, other_half_location)
 	};
 
@@ -95,54 +89,30 @@ pub fn get_block_state_id(
 	let position_to_check = match cardinal_direction {
 		CardinalDirection::North => {
 			if hinge_side == DoorHinge::Left {
-				BlockPosition {
-					x: position.x - 1,
-					..position
-				}
+				BlockPosition { x: position.x - 1, ..position }
 			} else {
-				BlockPosition {
-					x: position.x + 1,
-					..position
-				}
+				BlockPosition { x: position.x + 1, ..position }
 			}
 		}
 		CardinalDirection::East => {
 			if hinge_side == DoorHinge::Left {
-				BlockPosition {
-					z: position.z - 1,
-					..position
-				}
+				BlockPosition { z: position.z - 1, ..position }
 			} else {
-				BlockPosition {
-					z: position.z + 1,
-					..position
-				}
+				BlockPosition { z: position.z + 1, ..position }
 			}
 		}
 		CardinalDirection::South => {
 			if hinge_side == DoorHinge::Left {
-				BlockPosition {
-					x: position.x + 1,
-					..position
-				}
+				BlockPosition { x: position.x + 1, ..position }
 			} else {
-				BlockPosition {
-					x: position.x - 1,
-					..position
-				}
+				BlockPosition { x: position.x - 1, ..position }
 			}
 		}
 		CardinalDirection::West => {
 			if hinge_side == DoorHinge::Left {
-				BlockPosition {
-					z: position.z + 1,
-					..position
-				}
+				BlockPosition { z: position.z + 1, ..position }
 			} else {
-				BlockPosition {
-					z: position.z - 1,
-					..position
-				}
+				BlockPosition { z: position.z - 1, ..position }
 			}
 		}
 	};
@@ -191,11 +161,7 @@ pub fn get_block_state_id(
 			})
 			.unwrap()
 			.id,
-		BlockPosition {
-			x: position.x,
-			y: position.y + 1,
-			z: position.z,
-		},
+		BlockPosition { x: position.x, y: position.y + 1, z: position.z },
 	));
 
 	return output;
@@ -214,10 +180,7 @@ pub fn update(
 	let block_state = data::blocks::get_block_state_from_block_state_id(block_state_id);
 
 	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Lower)) {
-		let position_to_check = BlockPosition {
-			y: position.y + 1,
-			..position
-		};
+		let position_to_check = BlockPosition { y: position.y + 1, ..position };
 
 		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
 			return BlockUpdateOutcome::ChangeOwnBlockId(0);
@@ -229,10 +192,7 @@ pub fn update(
 		}
 	}
 	if block_state.properties.contains(&Property::DoorHalf(DoorHalf::Upper)) {
-		let position_to_check = BlockPosition {
-			y: position.y - 1,
-			..position
-		};
+		let position_to_check = BlockPosition { y: position.y - 1, ..position };
 
 		let Ok(block_state_id) = dimension.get_block(position_to_check) else {
 			return BlockUpdateOutcome::ChangeOwnBlockId(0);
@@ -296,34 +256,11 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = interact(
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-				block_state_id_lower_closed,
-				0,
-				&block_states,
-			);
+			let res = interact(BlockPosition { x: 100, y: 80, z: -100 }, block_state_id_lower_closed, 0, &block_states);
 
 			let expected = BlockInteractionResult::OverwriteBlocks(vec![
-				(
-					block_state_id_lower_opened,
-					BlockPosition {
-						x: 100,
-						y: 80,
-						z: -100,
-					},
-				),
-				(
-					block_state_id_upper_opened,
-					BlockPosition {
-						x: 100,
-						y: 81,
-						z: -100,
-					},
-				),
+				(block_state_id_lower_opened, BlockPosition { x: 100, y: 80, z: -100 }),
+				(block_state_id_upper_opened, BlockPosition { x: 100, y: 81, z: -100 }),
 			]);
 
 			assert_eq!(res, expected);
@@ -371,34 +308,11 @@ mod test {
 				.unwrap()
 				.id;
 
-			let res = interact(
-				BlockPosition {
-					x: 100,
-					y: 80,
-					z: -100,
-				},
-				block_state_id_lower_opened,
-				0,
-				&block_states,
-			);
+			let res = interact(BlockPosition { x: 100, y: 80, z: -100 }, block_state_id_lower_opened, 0, &block_states);
 
 			let expected = BlockInteractionResult::OverwriteBlocks(vec![
-				(
-					block_state_id_lower_closed,
-					BlockPosition {
-						x: 100,
-						y: 80,
-						z: -100,
-					},
-				),
-				(
-					block_state_id_upper_closed,
-					BlockPosition {
-						x: 100,
-						y: 81,
-						z: -100,
-					},
-				),
+				(block_state_id_lower_closed, BlockPosition { x: 100, y: 80, z: -100 }),
+				(block_state_id_upper_closed, BlockPosition { x: 100, y: 81, z: -100 }),
 			]);
 
 			assert_eq!(res, expected);
@@ -444,11 +358,7 @@ mod test {
 				0,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_door",
 				0.0,
 				0.0,
@@ -456,24 +366,8 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![
-				(
-					block_state_id_lower,
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-				),
-				(
-					block_state_id_upper,
-					BlockPosition {
-						x: 10,
-						y: 81,
-						z: 0,
-					},
-				),
-			];
+			let expected =
+				vec![(block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }), (block_state_id_upper, BlockPosition { x: 10, y: 81, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -514,11 +408,7 @@ mod test {
 				0,
 				CardinalDirection::West,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_door",
 				0.0,
 				0.0,
@@ -526,24 +416,8 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![
-				(
-					block_state_id_lower,
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-				),
-				(
-					block_state_id_upper,
-					BlockPosition {
-						x: 10,
-						y: 81,
-						z: 0,
-					},
-				),
-			];
+			let expected =
+				vec![(block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }), (block_state_id_upper, BlockPosition { x: 10, y: 81, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -584,11 +458,7 @@ mod test {
 				0,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_door",
 				0.9,
 				0.0,
@@ -596,24 +466,8 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![
-				(
-					block_state_id_lower,
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-				),
-				(
-					block_state_id_upper,
-					BlockPosition {
-						x: 10,
-						y: 81,
-						z: 0,
-					},
-				),
-			];
+			let expected =
+				vec![(block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }), (block_state_id_upper, BlockPosition { x: 10, y: 81, z: 0 })];
 
 			assert_eq!(res, expected);
 		}
@@ -673,36 +527,14 @@ mod test {
 				.unwrap()
 				.id;
 
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 80,
-						z: 0,
-					},
-					block_state_id_lower,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 81,
-						z: 0,
-					},
-					block_state_id_upper,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 80, z: 0 }, block_state_id_lower).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_upper).unwrap();
 
 			let res = get_block_state_id(
 				0,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_door",
 				0.0,
 				0.0,
@@ -711,22 +543,8 @@ mod test {
 			);
 
 			let expected = vec![
-				(
-					block_state_id_lower_double,
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-				),
-				(
-					block_state_id_upper_double,
-					BlockPosition {
-						x: 10,
-						y: 81,
-						z: 0,
-					},
-				),
+				(block_state_id_lower_double, BlockPosition { x: 10, y: 80, z: 0 }),
+				(block_state_id_upper_double, BlockPosition { x: 10, y: 81, z: 0 }),
 			];
 
 			assert_eq!(res, expected);
@@ -763,36 +581,14 @@ mod test {
 				.unwrap()
 				.id;
 
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 81,
-						z: 0,
-					},
-					block_state_id_lower,
-				)
-				.unwrap();
-			dimension
-				.overwrite_block(
-					BlockPosition {
-						x: 9,
-						y: 82,
-						z: 0,
-					},
-					block_state_id_upper,
-				)
-				.unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 81, z: 0 }, block_state_id_lower).unwrap();
+			dimension.overwrite_block(BlockPosition { x: 9, y: 82, z: 0 }, block_state_id_upper).unwrap();
 
 			let res = get_block_state_id(
 				0,
 				CardinalDirection::North,
 				&dimension,
-				BlockPosition {
-					x: 10,
-					y: 80,
-					z: 0,
-				},
+				BlockPosition { x: 10, y: 80, z: 0 },
 				"minecraft:oak_door",
 				0.0,
 				0.0,
@@ -800,24 +596,8 @@ mod test {
 				&block_states,
 			);
 
-			let expected = vec![
-				(
-					block_state_id_lower,
-					BlockPosition {
-						x: 10,
-						y: 80,
-						z: 0,
-					},
-				),
-				(
-					block_state_id_upper,
-					BlockPosition {
-						x: 10,
-						y: 81,
-						z: 0,
-					},
-				),
-			];
+			let expected =
+				vec![(block_state_id_lower, BlockPosition { x: 10, y: 80, z: 0 }), (block_state_id_upper, BlockPosition { x: 10, y: 81, z: 0 })];
 
 			assert_eq!(res, expected);
 		}

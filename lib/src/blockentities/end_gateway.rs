@@ -11,17 +11,7 @@ pub struct EndGateway {
 
 impl CommonBlockEntity for EndGateway {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			age: 0,
-			exact_teleport: false,
-			exit_portal: BlockPosition {
-				x: 0,
-				y: 0,
-				z: 0,
-			},
-		};
+		return Self { position, components: Vec::new(), age: 0, exact_teleport: false, exit_portal: BlockPosition { x: 0, y: 0, z: 0 } };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -50,27 +40,13 @@ impl TryFrom<NbtListTag> for EndGateway {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let age = value.get_child("Age").unwrap_or(&NbtTag::Long(String::new(), 0)).as_long();
 		let exact_teleport = value.get_child("ExactTeleport").unwrap_or(&NbtTag::Byte(String::new(), 0)).as_byte() == 1;
 		let exit_portal_raw = value.get_child("exit_portal").unwrap_or(&NbtTag::IntArray(String::new(), vec![0, 0, 0])).as_int_array();
-		let exit_portal = BlockPosition {
-			x: exit_portal_raw[0],
-			y: exit_portal_raw[1] as i16,
-			z: exit_portal_raw[2],
-		};
+		let exit_portal = BlockPosition { x: exit_portal_raw[0], y: exit_portal_raw[1] as i16, z: exit_portal_raw[2] };
 
-		return Ok(EndGateway {
-			position,
-			components: Vec::new(),
-			age,
-			exact_teleport,
-			exit_portal,
-		});
+		return Ok(EndGateway { position, components: Vec::new(), age, exact_teleport, exit_portal });
 	}
 }

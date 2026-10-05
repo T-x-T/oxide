@@ -10,12 +10,7 @@ pub struct ChiseledBookshelf {
 
 impl CommonBlockEntity for ChiseledBookshelf {
 	fn new(position: BlockPosition) -> Self {
-		return Self {
-			position,
-			components: Vec::new(),
-			items: vec![Slot::default(); 6],
-			last_interacted_slot: -1,
-		};
+		return Self { position, components: Vec::new(), items: vec![Slot::default(); 6], last_interacted_slot: -1 };
 	}
 
 	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
@@ -40,11 +35,7 @@ impl TryFrom<NbtListTag> for ChiseledBookshelf {
 		let x = value.get_child("x").unwrap().as_int();
 		let y = value.get_child("y").unwrap().as_int() as i16;
 		let z = value.get_child("z").unwrap().as_int();
-		let position = BlockPosition {
-			x,
-			y,
-			z,
-		};
+		let position = BlockPosition { x, y, z };
 
 		let mut items = vec![Slot::default(); 27];
 		if let Some(raw_items) = value.get_child("Items") {
@@ -60,11 +51,6 @@ impl TryFrom<NbtListTag> for ChiseledBookshelf {
 
 		let last_interacted_slot = value.get_child("last_interacted_slot").unwrap_or(&NbtTag::Int(String::new(), -1)).as_int();
 
-		return Ok(ChiseledBookshelf {
-			position,
-			components: Vec::new(),
-			items,
-			last_interacted_slot,
-		});
+		return Ok(ChiseledBookshelf { position, components: Vec::new(), items, last_interacted_slot });
 	}
 }
