@@ -3,8 +3,7 @@ use super::*;
 pub fn generate() {
 	let mut output = String::new();
 
-	let items_file = fs::read_to_string("../official_server/generated/reports/items.json").expect("failed to read items.json report");
-	let items_json = jzon::parse(&items_file).expect("failed to parse items.json report");
+	let files = fs::read_dir("../official_server/generated/reports/minecraft/components/item").expect("failed to read items dir");
 	let registries_file =
 		fs::read_to_string("../official_server/generated/reports/registries.json").expect("failed to read registries.json report");
 	let registries_json = jzon::parse(&registries_file).expect("failed to parse registries.json report");
@@ -64,10 +63,15 @@ pub fn get_items() -> HashMap<&'static str, Item> {
 	let mut items = HashMap::new();
 "#;
 
-	for x in items_json.as_object().unwrap().iter() {
-		let components = x.1.as_object().unwrap()["components"].clone();
+	for file in files.into_iter() {
+		let file = file.unwrap();
 
-		let key = x.0;
+		let file_content = fs::read_to_string(file.path()).unwrap();
+		let json = jzon::parse(&file_content).expect("failed to parse items.json report");
+
+		let key = "minecraft:".to_string() + file.file_name().into_string().unwrap().replace(".json", "").as_str();
+		let components = json["components"].clone();
+
 		let max_stack_size = components["minecraft:max_stack_size"].as_i32().unwrap();
 		let rarity: String = components["minecraft:rarity"]
 			.as_str()
@@ -77,7 +81,7 @@ pub fn get_items() -> HashMap<&'static str, Item> {
 			.map(|i| if i.0 == 0 { i.1.to_ascii_uppercase() } else { i.1 })
 			.collect();
 		let repair_cost = components["minecraft:repair_cost"].as_i32().unwrap();
-		let id = items_registry[key]["protocol_id"].as_i32().unwrap();
+		let id = items_registry[key.clone()]["protocol_id"].as_i32().unwrap();
 
 		let mut tool_rules = String::new();
 		tool_rules += "vec![";

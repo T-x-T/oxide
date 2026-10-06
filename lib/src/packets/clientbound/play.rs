@@ -295,7 +295,7 @@ impl TryFrom<Vec<u8>> for BlockUpdate {
 }
 
 //
-// MARK: 0x0c Chunk Batch Finished
+// MARK: 0x0b Chunk Batch Finished
 //
 
 #[derive(Debug, Clone)]
@@ -304,7 +304,7 @@ pub struct ChunkBatchFinished {
 }
 
 impl Packet for ChunkBatchFinished {
-	const PACKET_ID: u8 = 0x0c;
+	const PACKET_ID: u8 = 0x0b;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -333,14 +333,14 @@ impl TryFrom<Vec<u8>> for ChunkBatchFinished {
 	}
 }
 //
-// MARK: 0x0d Chunk Batch Start
+// MARK: 0x0c Chunk Batch Start
 //
 
 #[derive(Debug, Clone)]
 pub struct ChunkBatchStart {}
 
 impl Packet for ChunkBatchStart {
-	const PACKET_ID: u8 = 0x0d;
+	const PACKET_ID: u8 = 0x0c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -878,7 +878,7 @@ impl TryFrom<Vec<u8>> for Explosion {
 }
 
 //
-// MARK: 0x25 Unload Chunk
+// MARK: 0x26 Unload Chunk
 //
 
 #[derive(Debug, Clone)]
@@ -888,7 +888,7 @@ pub struct UnloadChunk {
 }
 
 impl Packet for UnloadChunk {
-	const PACKET_ID: u8 = 0x25;
+	const PACKET_ID: u8 = 0x26;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -919,7 +919,7 @@ impl TryFrom<Vec<u8>> for UnloadChunk {
 }
 
 //
-// MARK: 0x26 Game event
+// MARK: 0x27 Game event
 //
 
 #[derive(Debug, Clone)]
@@ -929,7 +929,7 @@ pub struct GameEvent {
 }
 
 impl Packet for GameEvent {
-	const PACKET_ID: u8 = 0x26;
+	const PACKET_ID: u8 = 0x27;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -960,7 +960,7 @@ impl TryFrom<Vec<u8>> for GameEvent {
 }
 
 //
-// MARK: 0x29 Hurt Animation
+// MARK: 0x2b Hurt Animation
 //
 
 #[derive(Debug, Clone)]
@@ -970,7 +970,7 @@ pub struct HurtAnimation {
 }
 
 impl Packet for HurtAnimation {
-	const PACKET_ID: u8 = 0x29;
+	const PACKET_ID: u8 = 0x2b;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1001,7 +1001,7 @@ impl TryFrom<Vec<u8>> for HurtAnimation {
 }
 
 //
-// MARK: 0x2b clientbound keep alive
+// MARK: 0x2d clientbound keep alive
 //
 
 #[derive(Debug, Clone)]
@@ -1010,7 +1010,7 @@ pub struct ClientboundKeepAlive {
 }
 
 impl Packet for ClientboundKeepAlive {
-	const PACKET_ID: u8 = 0x2b;
+	const PACKET_ID: u8 = 0x2d;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1040,7 +1040,7 @@ impl TryFrom<Vec<u8>> for ClientboundKeepAlive {
 }
 
 //
-// MARK: 0x2c Chunk Data and Update Light
+// MARK: 0x2e Chunk Data and Update Light
 //
 
 #[derive(Debug, Clone)]
@@ -1059,7 +1059,7 @@ pub struct ChunkDataAndUpdateLight {
 }
 
 impl Packet for ChunkDataAndUpdateLight {
-	const PACKET_ID: u8 = 0x2c;
+	const PACKET_ID: u8 = 0x2e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1483,7 +1483,7 @@ impl TryFrom<&mut Vec<u8>> for BiomesPalettedContainer {
 }
 
 //
-// MARK: 0x2d world event
+// MARK: 0x2f world event
 //
 
 #[derive(Debug, Clone)]
@@ -1494,7 +1494,7 @@ pub struct WorldEvent {
 }
 
 impl Packet for WorldEvent {
-	const PACKET_ID: u8 = 0x2d;
+	const PACKET_ID: u8 = 0x2f;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1535,7 +1535,7 @@ impl TryFrom<Vec<u8>> for WorldEvent {
 }
 
 //
-// MARK: 0x2e particle
+// MARK: 0x30 particle
 //
 
 #[derive(Debug, Clone)]
@@ -1555,7 +1555,7 @@ pub struct Particle {
 }
 
 impl Packet for Particle {
-	const PACKET_ID: u8 = 0x2e;
+	const PACKET_ID: u8 = 0x30;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1608,7 +1608,7 @@ impl TryFrom<Vec<u8>> for Particle {
 }
 
 //
-// MARK: 0x30 Login
+// MARK: 0x32 Login
 //
 
 #[derive(Debug, Clone)]
@@ -1638,7 +1638,7 @@ pub struct Login {
 }
 
 impl Packet for Login {
-	const PACKET_ID: u8 = 0x30;
+	const PACKET_ID: u8 = 0x32;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1754,7 +1754,7 @@ impl TryFrom<Vec<u8>> for Login {
 }
 
 //
-// MARK: 0x33 Update entity position
+// MARK: 0x36 Update entity position
 //
 
 #[derive(Debug, Clone)]
@@ -1767,7 +1767,7 @@ pub struct UpdateEntityPosition {
 }
 
 impl Packet for UpdateEntityPosition {
-	const PACKET_ID: u8 = 0x33;
+	const PACKET_ID: u8 = 0x36;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1807,7 +1807,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPosition {
 }
 
 //
-// MARK: 0x34 Update entity position and rotation
+// MARK: 0x37 Update entity position and rotation
 //
 
 #[derive(Debug, Clone)]
@@ -1822,7 +1822,7 @@ pub struct UpdateEntityPositionAndRotation {
 }
 
 impl Packet for UpdateEntityPositionAndRotation {
-	const PACKET_ID: u8 = 0x34;
+	const PACKET_ID: u8 = 0x37;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1866,7 +1866,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityPositionAndRotation {
 }
 
 //
-// MARK: 0x36 Update entity rotation
+// MARK: 0x39 Update entity rotation
 //
 
 #[derive(Debug, Clone)]
@@ -1878,7 +1878,7 @@ pub struct UpdateEntityRotation {
 }
 
 impl Packet for UpdateEntityRotation {
-	const PACKET_ID: u8 = 0x36;
+	const PACKET_ID: u8 = 0x39;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1916,7 +1916,7 @@ impl TryFrom<Vec<u8>> for UpdateEntityRotation {
 }
 
 //
-// MARK: 0x39 Open Screen
+// MARK: 0x3c Open Screen
 //
 
 #[derive(Debug, Clone)]
@@ -1927,7 +1927,7 @@ pub struct OpenScreen {
 }
 
 impl Packet for OpenScreen {
-	const PACKET_ID: u8 = 0x39;
+	const PACKET_ID: u8 = 0x3c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -1963,7 +1963,7 @@ impl TryFrom<Vec<u8>> for OpenScreen {
 }
 
 //
-// MARK: 0x3a Open Sign Editor
+// MARK: 0x3d Open Sign Editor
 //
 
 #[derive(Debug, Clone)]
@@ -1973,7 +1973,7 @@ pub struct OpenSignEditor {
 }
 
 impl Packet for OpenSignEditor {
-	const PACKET_ID: u8 = 0x3a;
+	const PACKET_ID: u8 = 0x3d;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2004,7 +2004,7 @@ impl TryFrom<Vec<u8>> for OpenSignEditor {
 }
 
 //
-// MARK: 0x3f player chat message
+// MARK: 0x42 player chat message
 //
 
 #[derive(Debug, Clone)]
@@ -2026,7 +2026,7 @@ pub struct PlayerChatMessage {
 }
 
 impl Packet for PlayerChatMessage {
-	const PACKET_ID: u8 = 0x3f;
+	const PACKET_ID: u8 = 0x42;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2130,7 +2130,7 @@ impl TryFrom<Vec<u8>> for PlayerChatMessage {
 }
 
 //
-// MARK: 0x42 combat death
+// MARK: 0x45 combat death
 //
 
 #[derive(Debug, Clone)]
@@ -2140,7 +2140,7 @@ pub struct CombatDeath {
 }
 
 impl Packet for CombatDeath {
-	const PACKET_ID: u8 = 0x42;
+	const PACKET_ID: u8 = 0x45;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2171,7 +2171,7 @@ impl TryFrom<Vec<u8>> for CombatDeath {
 }
 
 //
-// MARK: 0x43 player info remove
+// MARK: 0x46 player info remove
 //
 
 #[derive(Debug, Clone)]
@@ -2180,7 +2180,7 @@ pub struct PlayerInfoRemove {
 }
 
 impl Packet for PlayerInfoRemove {
-	const PACKET_ID: u8 = 0x43;
+	const PACKET_ID: u8 = 0x46;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2218,7 +2218,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoRemove {
 }
 
 //
-// MARK: 0x44 PlayerInfoUpdate
+// MARK: 0x47 PlayerInfoUpdate
 //
 
 #[derive(Debug, Clone)]
@@ -2228,7 +2228,7 @@ pub struct PlayerInfoUpdate {
 }
 
 impl Packet for PlayerInfoUpdate {
-	const PACKET_ID: u8 = 0x44;
+	const PACKET_ID: u8 = 0x47;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2389,7 +2389,7 @@ impl TryFrom<Vec<u8>> for PlayerInfoUpdate {
 }
 
 //
-// MARK: 0x46 synchronize player position
+// MARK: 0x49 synchronize player position
 //
 
 #[derive(Debug, Clone)]
@@ -2407,7 +2407,7 @@ pub struct SynchronizePlayerPosition {
 }
 
 impl Packet for SynchronizePlayerPosition {
-	const PACKET_ID: u8 = 0x46;
+	const PACKET_ID: u8 = 0x49;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2457,7 +2457,7 @@ impl TryFrom<Vec<u8>> for SynchronizePlayerPosition {
 }
 
 //
-// MARK: 0x4b remove entities
+// MARK: 0x4e remove entities
 //
 
 #[derive(Debug, Clone)]
@@ -2466,7 +2466,7 @@ pub struct RemoveEntities {
 }
 
 impl Packet for RemoveEntities {
-	const PACKET_ID: u8 = 0x4b;
+	const PACKET_ID: u8 = 0x4e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2504,7 +2504,7 @@ impl TryFrom<Vec<u8>> for RemoveEntities {
 }
 
 //
-// MARK: 0x51 set head rotation
+// MARK: 0x55 set head rotation
 //
 
 #[derive(Debug, Clone)]
@@ -2514,7 +2514,7 @@ pub struct SetHeadRotation {
 }
 
 impl Packet for SetHeadRotation {
-	const PACKET_ID: u8 = 0x51;
+	const PACKET_ID: u8 = 0x55;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2544,7 +2544,7 @@ impl TryFrom<Vec<u8>> for SetHeadRotation {
 	}
 }
 //
-// MARK: 0x50 respawn
+// MARK: 0x54 respawn
 //
 
 #[derive(Debug, Clone)]
@@ -2565,7 +2565,7 @@ pub struct Respawn {
 }
 
 impl Packet for Respawn {
-	const PACKET_ID: u8 = 0x50;
+	const PACKET_ID: u8 = 0x54;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2642,7 +2642,7 @@ impl TryFrom<Vec<u8>> for Respawn {
 }
 
 //
-// MARK: 0x5c set center chunk
+// MARK: 0x60 set center chunk
 //
 
 #[derive(Debug, Clone)]
@@ -2652,7 +2652,7 @@ pub struct SetCenterChunk {
 }
 
 impl Packet for SetCenterChunk {
-	const PACKET_ID: u8 = 0x5c;
+	const PACKET_ID: u8 = 0x60;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2683,7 +2683,7 @@ impl TryFrom<Vec<u8>> for SetCenterChunk {
 }
 
 //
-// MARK: 0x5e Set Cursor Item
+// MARK: 0x62 Set Cursor Item
 //
 
 #[derive(Debug, Clone)]
@@ -2692,7 +2692,7 @@ pub struct SetCursorItem {
 }
 
 impl Packet for SetCursorItem {
-	const PACKET_ID: u8 = 0x5e;
+	const PACKET_ID: u8 = 0x62;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -2722,7 +2722,7 @@ impl TryFrom<Vec<u8>> for SetCursorItem {
 }
 
 //
-// MARK: 0x61 Set Entity Metadata
+// MARK: 0x65 Set Entity Metadata
 //
 
 #[derive(Debug, Clone)]
@@ -2732,7 +2732,7 @@ pub struct SetEntityMetadata {
 }
 
 impl Packet for SetEntityMetadata {
-	const PACKET_ID: u8 = 0x61;
+	const PACKET_ID: u8 = 0x65;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3025,7 +3025,7 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 }
 
 //
-// MARK: 0x64 set equipment
+// MARK: 0x68 set equipment
 //
 
 #[derive(Debug, Clone)]
@@ -3035,7 +3035,7 @@ pub struct SetEquipment {
 }
 
 impl Packet for SetEquipment {
-	const PACKET_ID: u8 = 0x64;
+	const PACKET_ID: u8 = 0x68;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3083,7 +3083,7 @@ impl TryFrom<Vec<u8>> for SetEquipment {
 }
 
 //
-// MARK: 0x66 set health
+// MARK: 0x6a set health
 //
 
 #[derive(Debug, Clone)]
@@ -3094,7 +3094,7 @@ pub struct SetHealth {
 }
 
 impl Packet for SetHealth {
-	const PACKET_ID: u8 = 0x66;
+	const PACKET_ID: u8 = 0x6a;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3129,7 +3129,7 @@ impl TryFrom<Vec<u8>> for SetHealth {
 	}
 }
 //
-// MARK: 0x67 set held item
+// MARK: 0x6b set held item
 //
 
 #[derive(Debug, Clone)]
@@ -3138,7 +3138,7 @@ pub struct SetHeldItem {
 }
 
 impl Packet for SetHeldItem {
-	const PACKET_ID: u8 = 0x67;
+	const PACKET_ID: u8 = 0x6b;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3168,7 +3168,7 @@ impl TryFrom<Vec<u8>> for SetHeldItem {
 }
 
 //
-// MARK: 0x6a set player inventory slot
+// MARK: 0x6e set player inventory slot
 //
 
 #[derive(Debug, Clone)]
@@ -3178,7 +3178,7 @@ pub struct SetPlayerInventorySlot {
 }
 
 impl Packet for SetPlayerInventorySlot {
-	const PACKET_ID: u8 = 0x6a;
+	const PACKET_ID: u8 = 0x6e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3209,7 +3209,7 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 }
 
 //
-// MARK: 0x77 system chat message
+// MARK: 0x7c system chat message
 //
 
 #[derive(Debug, Clone)]
@@ -3219,7 +3219,7 @@ pub struct SystemChatMessage {
 }
 
 impl Packet for SystemChatMessage {
-	const PACKET_ID: u8 = 0x77;
+	const PACKET_ID: u8 = 0x7c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3250,7 +3250,7 @@ impl TryFrom<Vec<u8>> for SystemChatMessage {
 }
 
 //
-// MARK: 0x78 set tab list header and footer
+// MARK: 0x7d set tab list header and footer
 //
 
 #[derive(Debug, Clone)]
@@ -3260,7 +3260,7 @@ pub struct SetTabListHeaderAndFooter {
 }
 
 impl Packet for SetTabListHeaderAndFooter {
-	const PACKET_ID: u8 = 0x78;
+	const PACKET_ID: u8 = 0x7d;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3291,7 +3291,7 @@ impl TryFrom<Vec<u8>> for SetTabListHeaderAndFooter {
 }
 
 //
-// MARK: 0x7a pickup item
+// MARK: 0x7f pickup item
 //
 
 #[derive(Debug, Clone)]
@@ -3302,7 +3302,7 @@ pub struct PickupItem {
 }
 
 impl Packet for PickupItem {
-	const PACKET_ID: u8 = 0x7a;
+	const PACKET_ID: u8 = 0x7f;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -3338,7 +3338,7 @@ impl TryFrom<Vec<u8>> for PickupItem {
 }
 
 //
-// MARK: 0x87 server links
+// MARK: 0x8c server links
 //
 
 #[derive(Debug, Clone)]
@@ -3347,7 +3347,7 @@ pub struct ServerLinks {
 }
 
 impl Packet for ServerLinks {
-	const PACKET_ID: u8 = 0x87;
+	const PACKET_ID: u8 = 0x8c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}

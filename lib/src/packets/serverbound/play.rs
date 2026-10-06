@@ -41,7 +41,7 @@ impl TryFrom<Vec<u8>> for ConfirmTeleportation {
 }
 
 //
-// MARK: 0x04 change game mode
+// MARK: 0x05 change game mode
 //
 
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ pub struct ChangeGamemode {
 }
 
 impl Packet for ChangeGamemode {
-	const PACKET_ID: u8 = 0x04;
+	const PACKET_ID: u8 = 0x05;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -87,7 +87,7 @@ impl TryFrom<Vec<u8>> for ChangeGamemode {
 }
 
 //
-// MARK: 0x06 chat command
+// MARK: 0x07 chat command
 //
 
 #[derive(Debug, Clone)]
@@ -96,7 +96,7 @@ pub struct ChatCommand {
 }
 
 impl Packet for ChatCommand {
-	const PACKET_ID: u8 = 0x06;
+	const PACKET_ID: u8 = 0x07;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -126,7 +126,7 @@ impl TryFrom<Vec<u8>> for ChatCommand {
 }
 
 //
-// MARK: 0x08 chat message
+// MARK: 0x09 chat message
 //
 
 #[derive(Debug, Clone)]
@@ -141,7 +141,7 @@ pub struct ChatMessage {
 }
 
 impl Packet for ChatMessage {
-	const PACKET_ID: u8 = 0x08;
+	const PACKET_ID: u8 = 0x09;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -197,7 +197,7 @@ impl TryFrom<Vec<u8>> for ChatMessage {
 }
 
 //
-// MARK: 0x0a Chunk Batch Received
+// MARK: 0x0b Chunk Batch Received
 //
 
 #[derive(Debug, Clone)]
@@ -206,7 +206,7 @@ pub struct ChunkBatchReceived {
 }
 
 impl Packet for ChunkBatchReceived {
-	const PACKET_ID: u8 = 0x0a;
+	const PACKET_ID: u8 = 0x0b;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -236,7 +236,7 @@ impl TryFrom<Vec<u8>> for ChunkBatchReceived {
 }
 
 //
-// MARK: 0x0b client status
+// MARK: 0x0c client status
 //
 
 #[derive(Debug, Clone)]
@@ -245,7 +245,7 @@ pub struct ClientStatus {
 }
 
 impl Packet for ClientStatus {
-	const PACKET_ID: u8 = 0x0b;
+	const PACKET_ID: u8 = 0x0c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -275,7 +275,7 @@ impl TryFrom<Vec<u8>> for ClientStatus {
 }
 
 //
-// MARK: 0x11 click container
+// MARK: 0x12 click container
 //
 
 #[derive(Debug, Clone, PartialEq)]
@@ -290,7 +290,7 @@ pub struct ClickContainer {
 }
 
 impl Packet for ClickContainer {
-	const PACKET_ID: u8 = 0x11;
+	const PACKET_ID: u8 = 0x12;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -343,7 +343,7 @@ impl TryFrom<Vec<u8>> for ClickContainer {
 }
 
 //
-// MARK: 0x12 close container
+// MARK: 0x13 close container
 //
 
 #[derive(Debug, Clone)]
@@ -352,7 +352,7 @@ pub struct CloseContainer {
 }
 
 impl Packet for CloseContainer {
-	const PACKET_ID: u8 = 0x12;
+	const PACKET_ID: u8 = 0x13;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -383,7 +383,7 @@ impl TryFrom<Vec<u8>> for CloseContainer {
 }
 
 //
-// MARK: 0x19 interact
+// MARK: 0x1a interact
 //
 
 #[derive(Debug, Clone, PartialEq)]
@@ -398,7 +398,7 @@ pub struct Interact {
 }
 
 impl Packet for Interact {
-	const PACKET_ID: u8 = 0x19;
+	const PACKET_ID: u8 = 0x1a;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -446,7 +446,7 @@ impl TryFrom<Vec<u8>> for Interact {
 }
 
 //
-// MARK: 0x1b serverbound keep alive (play)
+// MARK: 0x1c serverbound keep alive (play)
 //
 
 #[derive(Debug, Clone)]
@@ -455,7 +455,7 @@ pub struct ServerboundKeepAlive {
 }
 
 impl Packet for ServerboundKeepAlive {
-	const PACKET_ID: u8 = 0x1b;
+	const PACKET_ID: u8 = 0x1c;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -484,7 +484,7 @@ impl TryFrom<Vec<u8>> for ServerboundKeepAlive {
 	}
 }
 //
-// MARK: 0x1d set player position
+// MARK: 0x1e set player position
 //
 
 #[derive(Debug, Clone)]
@@ -496,7 +496,7 @@ pub struct SetPlayerPosition {
 }
 
 impl Packet for SetPlayerPosition {
-	const PACKET_ID: u8 = 0x1d;
+	const PACKET_ID: u8 = 0x1e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -534,7 +534,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPosition {
 }
 
 //
-// MARK: 0x1e set player position and rotation
+// MARK: 0x1f set player position and rotation
 //
 
 #[derive(Debug, Clone)]
@@ -548,7 +548,7 @@ pub struct SetPlayerPositionAndRotation {
 }
 
 impl Packet for SetPlayerPositionAndRotation {
-	const PACKET_ID: u8 = 0x1e;
+	const PACKET_ID: u8 = 0x1f;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -590,7 +590,7 @@ impl TryFrom<Vec<u8>> for SetPlayerPositionAndRotation {
 }
 
 //
-// MARK: 0x1f set player rotation
+// MARK: 0x20 set player rotation
 //
 
 #[derive(Debug, Clone)]
@@ -601,7 +601,7 @@ pub struct SetPlayerRotation {
 }
 
 impl Packet for SetPlayerRotation {
-	const PACKET_ID: u8 = 0x1f;
+	const PACKET_ID: u8 = 0x20;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -633,7 +633,7 @@ impl TryFrom<Vec<u8>> for SetPlayerRotation {
 }
 
 //
-// MARK: 0x23 pick item from block
+// MARK: 0x24 pick item from block
 //
 
 #[derive(Debug, Clone)]
@@ -643,7 +643,7 @@ pub struct PickItemFromBlock {
 }
 
 impl Packet for PickItemFromBlock {
-	const PACKET_ID: u8 = 0x23;
+	const PACKET_ID: u8 = 0x24;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -674,7 +674,7 @@ impl TryFrom<Vec<u8>> for PickItemFromBlock {
 }
 
 //
-// MARK: 0x28 player action
+// MARK: 0x29 player action
 //
 
 #[derive(Debug, Clone)]
@@ -686,7 +686,7 @@ pub struct PlayerAction {
 }
 
 impl Packet for PlayerAction {
-	const PACKET_ID: u8 = 0x28;
+	const PACKET_ID: u8 = 0x29;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -724,7 +724,7 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
-// MARK: 0x2A player input
+// MARK: 0x2b player input
 //
 
 #[derive(Debug, Clone, PartialEq)]
@@ -739,7 +739,7 @@ pub struct PlayerInput {
 }
 
 impl Packet for PlayerInput {
-	const PACKET_ID: u8 = 0x2a;
+	const PACKET_ID: u8 = 0x2b;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -783,7 +783,7 @@ impl TryFrom<Vec<u8>> for PlayerInput {
 }
 
 //
-// MARK: 0x34 set hand item
+// MARK: 0x36 set hand item
 //
 
 #[derive(Debug, Clone)]
@@ -792,7 +792,7 @@ pub struct SetHandItem {
 }
 
 impl Packet for SetHandItem {
-	const PACKET_ID: u8 = 0x34;
+	const PACKET_ID: u8 = 0x36;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -822,7 +822,7 @@ impl TryFrom<Vec<u8>> for SetHandItem {
 }
 
 //
-// MARK: 0x37 set creative mode slot
+// MARK: 0x39 set creative mode slot
 //
 
 #[derive(Debug, Clone)]
@@ -832,7 +832,7 @@ pub struct SetCreativeModeSlot {
 }
 
 impl Packet for SetCreativeModeSlot {
-	const PACKET_ID: u8 = 0x37;
+	const PACKET_ID: u8 = 0x39;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -863,7 +863,7 @@ impl TryFrom<Vec<u8>> for SetCreativeModeSlot {
 }
 
 //
-// MARK: 0x3b update sign
+// MARK: 0x3e update sign
 //
 
 #[derive(Debug, Clone)]
@@ -877,7 +877,7 @@ pub struct UpdateSign {
 }
 
 impl Packet for UpdateSign {
-	const PACKET_ID: u8 = 0x3b;
+	const PACKET_ID: u8 = 0x3e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -918,47 +918,48 @@ impl TryFrom<Vec<u8>> for UpdateSign {
 	}
 }
 
+// removed in 26.3?
+// //
+// // MARK: 0x3c swing arm
+// //
 //
-// MARK: 0x3c swing arm
+// #[derive(Debug, Clone)]
+// pub struct SwingArm {
+// 	pub hand: i32,
+// }
 //
-
-#[derive(Debug, Clone)]
-pub struct SwingArm {
-	pub hand: i32,
-}
-
-impl Packet for SwingArm {
-	const PACKET_ID: u8 = 0x3c;
-	fn get_target() -> PacketTarget {
-		PacketTarget::Server
-	}
-	fn get_state() -> ConnectionState {
-		ConnectionState::Play
-	}
-}
-
-impl TryFrom<SwingArm> for Vec<u8> {
-	type Error = Box<dyn Error>;
-
-	fn try_from(value: SwingArm) -> Result<Self, Box<dyn Error>> {
-		let mut result: Vec<u8> = Vec::new();
-
-		result.append(&mut crate::serialize::varint(value.hand));
-
-		return Ok(result);
-	}
-}
-
-impl TryFrom<Vec<u8>> for SwingArm {
-	type Error = Box<dyn Error>;
-
-	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
-		return Ok(Self { hand: crate::deserialize::varint(&mut value)? });
-	}
-}
+// impl Packet for SwingArm {
+// 	const PACKET_ID: u8 = 0x3c;
+// 	fn get_target() -> PacketTarget {
+// 		PacketTarget::Server
+// 	}
+// 	fn get_state() -> ConnectionState {
+// 		ConnectionState::Play
+// 	}
+// }
+//
+// impl TryFrom<SwingArm> for Vec<u8> {
+// 	type Error = Box<dyn Error>;
+//
+// 	fn try_from(value: SwingArm) -> Result<Self, Box<dyn Error>> {
+// 		let mut result: Vec<u8> = Vec::new();
+//
+// 		result.append(&mut crate::serialize::varint(value.hand));
+//
+// 		return Ok(result);
+// 	}
+// }
+//
+// impl TryFrom<Vec<u8>> for SwingArm {
+// 	type Error = Box<dyn Error>;
+//
+// 	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+// 		return Ok(Self { hand: crate::deserialize::varint(&mut value)? });
+// 	}
+// }
 
 //
-// MARK: 0x3f use item on
+// MARK: 0x42 use item on
 //
 
 #[derive(Debug, Clone)]
@@ -975,7 +976,7 @@ pub struct UseItemOn {
 }
 
 impl Packet for UseItemOn {
-	const PACKET_ID: u8 = 0x3f;
+	const PACKET_ID: u8 = 0x42;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}
@@ -1023,7 +1024,7 @@ impl TryFrom<Vec<u8>> for UseItemOn {
 }
 
 //
-// MARK: 0x40 use item
+// MARK: 0x43 use item
 //
 
 #[derive(Debug, Clone)]
@@ -1035,7 +1036,7 @@ pub struct UseItem {
 }
 
 impl Packet for UseItem {
-	const PACKET_ID: u8 = 0x40;
+	const PACKET_ID: u8 = 0x43;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Server
 	}

@@ -16,9 +16,9 @@ pub trait Packet {
 }
 
 pub fn get_protocol_version() -> i32 {
-	return 773;
+	return 777;
 }
 
 pub fn get_version_string() -> String {
-	return "1.21.10".to_string();
+	return "26.3".to_string();
 }

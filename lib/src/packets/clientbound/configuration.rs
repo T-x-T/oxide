@@ -45,7 +45,7 @@ impl TryFrom<Vec<u8>> for ClientboundPluginMessage {
 }
 
 //
-// MARK: 0x0e ClientBoundKnownPacks
+// MARK: 0x0f ClientBoundKnownPacks
 //
 #[derive(Debug, Clone, Default)]
 pub struct ClientboundKnownPacks {
@@ -53,7 +53,7 @@ pub struct ClientboundKnownPacks {
 }
 
 impl Packet for ClientboundKnownPacks {
-	const PACKET_ID: u8 = 0x0e;
+	const PACKET_ID: u8 = 0x0f;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -203,7 +203,7 @@ impl TryFrom<Vec<u8>> for FinishConfiguration {
 }
 
 //
-// MARK: 0x0d UpdateTags
+// MARK: 0x0e UpdateTags
 //
 
 #[derive(Debug, Clone, Default)]
@@ -218,7 +218,7 @@ pub struct Tag {
 }
 
 impl Packet for UpdateTags {
-	const PACKET_ID: u8 = 0x0d;
+	const PACKET_ID: u8 = 0x0e;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -278,7 +278,7 @@ impl TryFrom<Vec<u8>> for UpdateTags {
 }
 
 //
-// MARK: 0x10 server links
+// MARK: 0x11 server links
 //
 
 #[derive(Debug, Clone)]
@@ -287,7 +287,7 @@ pub struct ServerLinks {
 }
 
 impl Packet for ServerLinks {
-	const PACKET_ID: u8 = 0x10;
+	const PACKET_ID: u8 = 0x11;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}
@@ -322,7 +322,7 @@ impl TryFrom<Vec<u8>> for ServerLinks {
 	}
 }
 //
-// MARK: 0x12 show dialog
+// MARK: 0x13 show dialog
 //
 
 #[derive(Debug, Clone)]
@@ -331,7 +331,7 @@ pub struct ShowDialog {
 }
 
 impl Packet for ShowDialog {
-	const PACKET_ID: u8 = 0x12;
+	const PACKET_ID: u8 = 0x13;
 	fn get_target() -> PacketTarget {
 		PacketTarget::Client
 	}

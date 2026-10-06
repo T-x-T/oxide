@@ -52,7 +52,7 @@ pub fn handle_packet(
 			}
 			lib::packets::serverbound::play::SetPlayerRotation::PACKET_ID => play::set_player_rotation(&mut packet.data, stream),
 			lib::packets::serverbound::play::PickItemFromBlock::PACKET_ID => play::pick_item_from_block(&mut packet.data, stream),
-			lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream),
+			// lib::packets::serverbound::play::SwingArm::PACKET_ID => play::swing_arm(&mut packet.data, stream),
 			lib::packets::serverbound::play::ClickContainer::PACKET_ID => play::click_container(&mut packet.data, stream),
 			lib::packets::serverbound::play::CloseContainer::PACKET_ID => play::close_container(stream, &mut packet.data),
 			lib::packets::serverbound::play::UpdateSign::PACKET_ID => play::update_sign(stream, &mut packet.data),
@@ -769,10 +769,10 @@ pub mod play {
 		return Ok(Some(PacketHandlerAction::PickItemFromBlock(stream.peer_addr()?, parsed_packet.location, parsed_packet.include_data)));
 	}
 
-	pub fn swing_arm(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
-		let parsed_packet = lib::packets::serverbound::play::SwingArm::try_from(data.to_vec())?;
-		return Ok(Some(PacketHandlerAction::SwingArm(stream.peer_addr()?, parsed_packet.hand as u8)));
-	}
+	// pub fn swing_arm(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
+	// 	let parsed_packet = lib::packets::serverbound::play::SwingArm::try_from(data.to_vec())?;
+	// 	return Ok(Some(PacketHandlerAction::SwingArm(stream.peer_addr()?, parsed_packet.hand as u8)));
+	// }
 
 	pub fn click_container(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
 		let parsed_packet = lib::packets::serverbound::play::ClickContainer::try_from(data.to_vec())?;

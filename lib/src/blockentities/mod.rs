@@ -6,7 +6,6 @@ use crate::types::*;
 pub mod banner;
 pub mod barrel;
 pub mod beacon;
-pub mod bed;
 pub mod beehive;
 pub mod bell;
 pub mod blast_furnace;

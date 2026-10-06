@@ -9,7 +9,6 @@ pub enum BlockEntity {
 	Banner(crate::blockentities::banner::Banner),
 	Barrel(crate::blockentities::barrel::Barrel),
 	Beacon(crate::blockentities::beacon::Beacon),
-	Bed(crate::blockentities::bed::Bed),
 	Beehive(crate::blockentities::beehive::Beehive),
 	Bell(crate::blockentities::bell::Bell),
 	BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace),
@@ -70,7 +69,6 @@ impl BlockEntity {
 			BlockEntity::Chest(chest) => chest.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::Sign(sign) => sign.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::Barrel(barrel) => barrel.tick(players, dimension_name, packet_sender, recipe_manager),
-			BlockEntity::Bed(bed) => bed.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::Beacon(beacon) => beacon.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.tick(players, dimension_name, packet_sender, recipe_manager),
@@ -123,7 +121,6 @@ impl BlockEntity {
 			Type::Chest => Some(BlockEntity::Chest(crate::blockentities::chest::Chest::new(position))),
 			Type::WallSign | Type::StandingSign => Some(BlockEntity::Sign(crate::blockentities::sign::Sign::new(position))),
 			Type::Barrel => Some(BlockEntity::Barrel(crate::blockentities::barrel::Barrel::new(position))),
-			Type::Bed => Some(BlockEntity::Bed(crate::blockentities::bed::Bed::new(position))),
 			Type::Spawner => Some(BlockEntity::MobSpawner(crate::blockentities::mob_spawner::MobSpawner::new(position))),
 			Type::Beacon => Some(BlockEntity::Beacon(crate::blockentities::beacon::Beacon::new(position))),
 			Type::BlastFurnace => Some(BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::new(position))),
@@ -182,7 +179,6 @@ impl BlockEntity {
 			BlockEntity::Chest(chest) => chest.position,
 			BlockEntity::Sign(sign) => sign.position,
 			BlockEntity::Barrel(barrel) => barrel.position,
-			BlockEntity::Bed(bed) => bed.position,
 			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.position,
 			BlockEntity::Beacon(beacon) => beacon.position,
 			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.position,
@@ -233,7 +229,6 @@ impl BlockEntity {
 			BlockEntity::Chest(_) => "minecraft:chest".to_string(),
 			BlockEntity::Sign(_) => "minecraft:sign".to_string(),
 			BlockEntity::Barrel(_) => "minecraft:barrel".to_string(),
-			BlockEntity::Bed(_) => "minecraft:bed".to_string(),
 			BlockEntity::MobSpawner(_) => "minecraft:mob_spawner".to_string(),
 			BlockEntity::Beacon(_) => "minecraft:beacon".to_string(),
 			BlockEntity::BlastFurnace(_) => "minecraft:blast_furnace".to_string(),
@@ -347,7 +342,6 @@ impl TryFrom<NbtListTag> for BlockEntity {
 			BlockEntityId::Banner => BlockEntity::Banner(crate::blockentities::banner::Banner::try_from(value)?),
 			BlockEntityId::Barrel => BlockEntity::Barrel(crate::blockentities::barrel::Barrel::try_from(value)?),
 			BlockEntityId::Beacon => BlockEntity::Beacon(crate::blockentities::beacon::Beacon::try_from(value)?),
-			BlockEntityId::Bed => BlockEntity::Bed(crate::blockentities::bed::Bed::try_from(value)?),
 			BlockEntityId::BlastFurnace => BlockEntity::BlastFurnace(crate::blockentities::blast_furnace::BlastFurnace::try_from(value)?),
 			BlockEntityId::BrewingStand => BlockEntity::BrewingStand(crate::blockentities::brewing_stand::BrewingStand::try_from(value)?),
 			BlockEntityId::Chest => BlockEntity::Chest(crate::blockentities::chest::Chest::try_from(value)?),
@@ -409,7 +403,6 @@ impl From<BlockEntity> for Vec<NbtTag> {
 			BlockEntity::Chest(chest) => chest.into(),
 			BlockEntity::Sign(sign) => sign.into(),
 			BlockEntity::Barrel(barrel) => barrel.into(),
-			BlockEntity::Bed(bed) => bed.into(),
 			BlockEntity::MobSpawner(mob_spawner) => mob_spawner.into(),
 			BlockEntity::Beacon(beacon) => beacon.into(),
 			BlockEntity::BlastFurnace(blast_furnace) => blast_furnace.into(),
@@ -476,7 +469,6 @@ pub enum BlockEntityId {
 	Banner,
 	Barrel,
 	Beacon,
-	Bed,
 	Beehive,
 	Bell,
 	BlastFurnace,
@@ -521,6 +513,7 @@ pub enum BlockEntityId {
 	Vault,
 }
 
+#[allow(clippy::try_from_instead_of_from_str)]
 impl TryFrom<&str> for BlockEntityId {
 	type Error = Box<dyn Error>;
 
@@ -529,7 +522,6 @@ impl TryFrom<&str> for BlockEntityId {
 			"minecraft:banner" => Ok(BlockEntityId::Banner),
 			"minecraft:barrel" => Ok(BlockEntityId::Barrel),
 			"minecraft:beacon" => Ok(BlockEntityId::Beacon),
-			"minecraft:bed" => Ok(BlockEntityId::Bed),
 			"minecraft:beehive" => Ok(BlockEntityId::Beehive),
 			"minecraft:bell" => Ok(BlockEntityId::Bell),
 			"minecraft:blast_furnace" => Ok(BlockEntityId::BlastFurnace),
