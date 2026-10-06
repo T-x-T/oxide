@@ -521,6 +521,8 @@ pub enum BlockEntityId {
 	Vault,
 }
 
+//otherwise try_into wont be available(?)
+#[allow(clippy::try_from_instead_of_from_str)]
 impl TryFrom<&str> for BlockEntityId {
 	type Error = Box<dyn Error>;
 

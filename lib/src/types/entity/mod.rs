@@ -18,6 +18,7 @@ use crate::packets::clientbound::play::EntityMetadata;
 use crate::types::*;
 
 #[derive(Debug, Clone, PartialEq)]
+#[allow(clippy::large_enum_variant)]
 pub enum Entity {
 	Armadillo(Armadillo),
 	Arrow(Arrow),
