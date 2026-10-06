@@ -138,4 +138,5 @@ pub enum TaskItem {
 	PlayerUseEndPortal(u128, String),
 	SendMessageToPlayer(u128, String),
 	SendDebugSubscriptionData(u128),
+	SendUpdateTimePacket,
 }

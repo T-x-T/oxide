@@ -383,7 +383,7 @@ fn main() {
 								//println!("parsed packet: {parsed_packet:?}");
 								//parsed_client_packet = Some(parsed_packet.try_into().unwrap());
 							}
-							0x6f => (), //update time
+							lib::packets::clientbound::play::UpdateTime::PACKET_ID => (),
 							_ => {
 								println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
 							}

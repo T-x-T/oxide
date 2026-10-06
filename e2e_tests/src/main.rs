@@ -82,7 +82,7 @@ fn handle_packet(
 					)
 					.unwrap();
 				}
-				0x6f => (), //update time
+				lib::packets::clientbound::play::UpdateTime::PACKET_ID => (),
 				_ => {
 					//println!("unkown clientbound packet received with id: 0x{packet_id:02x}");
 				}

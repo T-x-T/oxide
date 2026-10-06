@@ -18,6 +18,7 @@ pub struct World {
 	pub dimensions: HashMap<String, Dimension>,
 	pub loader: Box<dyn WorldLoader>,
 	pub default_spawn_location: BlockPosition,
+	pub world_age: i64,
 }
 
 pub struct Dimension {
@@ -64,10 +65,12 @@ impl World {
 	pub fn new(loader: impl WorldLoader + 'static, entity_id_manager: &EntityIdManager, block_states: &HashMap<String, Block>) -> Self {
 		let mut dimensions: HashMap<String, Dimension> = HashMap::new();
 		let default_spawn_location: BlockPosition;
+		let world_age: i64;
 		if loader.is_initialized() {
 			let now = std::time::Instant::now();
 			println!("loading existing world");
 			default_spawn_location = loader.get_default_spawn_location();
+			world_age = loader.get_world_age();
 			dimensions.insert(
 				"minecraft:overworld".to_string(),
 				Dimension::new_from_loader(&loader, entity_id_manager, block_states, "minecraft:overworld"),
@@ -85,14 +88,15 @@ impl World {
 			dimensions.insert("minecraft:the_nether".to_string(), Dimension::new("minecraft:the_nether"));
 			dimensions.insert("minecraft:the_end".to_string(), Dimension::new("minecraft:the_end"));
 			default_spawn_location = BlockPosition { x: 0, y: -48, z: 0 };
+			world_age = 0;
 			println!("creation of new world finished");
 		}
-		return Self { dimensions, loader: Box::new(loader), default_spawn_location };
+		return Self { dimensions, loader: Box::new(loader), default_spawn_location, world_age };
 	}
 
 	pub fn save_to_disk(&mut self, block_states: &HashMap<String, Block>) {
 		self.dimensions.iter_mut().for_each(|x| x.1.save_to_disk(&*self.loader, block_states));
-		self.loader.write_level_dat(self.default_spawn_location);
+		self.loader.write_level_dat(self.default_spawn_location, self.world_age);
 	}
 }
 

@@ -17,6 +17,8 @@ pub trait WorldLoader: InnerWorldLoader + std::fmt::Debug + Send + Sync {
 		block_states: &HashMap<String, Block>,
 		dimension_name: &str,
 	);
+	//TODO: merge functions that get level.dat content
 	fn get_default_spawn_location(&self) -> BlockPosition;
-	fn write_level_dat(&self, default_spawn_location: BlockPosition);
+	fn get_world_age(&self) -> i64;
+	fn write_level_dat(&self, default_spawn_location: BlockPosition, world_age: i64);
 }

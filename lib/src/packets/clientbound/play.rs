@@ -3207,6 +3207,52 @@ impl TryFrom<Vec<u8>> for SetPlayerInventorySlot {
 		return Ok(Self { slot: crate::deserialize::varint(&mut value)?, slot_data: crate::slot::deserialize_slot(&mut value)? });
 	}
 }
+//
+// MARK: 0x6f update time
+//
+
+#[derive(Debug, Clone)]
+pub struct UpdateTime {
+	pub world_age: i64,
+	pub time_of_day: i64,
+	pub time_of_day_increasing: bool,
+}
+
+impl Packet for UpdateTime {
+	const PACKET_ID: u8 = 0x6f;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<UpdateTime> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UpdateTime) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::long(value.world_age));
+		output.append(&mut crate::serialize::long(value.time_of_day));
+		output.append(&mut crate::serialize::boolean(value.time_of_day_increasing));
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UpdateTime {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			world_age: crate::deserialize::long(&mut value)?,
+			time_of_day: crate::deserialize::long(&mut value)?,
+			time_of_day_increasing: crate::deserialize::boolean(&mut value)?,
+		});
+	}
+}
 
 //
 // MARK: 0x77 system chat message

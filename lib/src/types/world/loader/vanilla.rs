@@ -418,7 +418,25 @@ impl super::WorldLoader for Loader {
 		};
 	}
 
-	fn write_level_dat(&self, default_spawn_location: BlockPosition) {
+	fn get_world_age(&self) -> i64 {
+		let mut level_dat_path = self.path.clone();
+		level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
+
+		let mut file = File::open(&level_dat_path).unwrap();
+
+		let mut compressed_file_content: Vec<u8> = Vec::new();
+		file.read_to_end(&mut compressed_file_content).unwrap();
+
+		let mut file_content: Vec<u8> = Vec::new();
+		let mut decoder: GzDecoder<&[u8]> = GzDecoder::new(compressed_file_content.as_slice());
+		decoder.read_to_end(&mut file_content).unwrap();
+
+		let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
+
+		return level_data.get_child("Data").unwrap().get_child("Time").unwrap_or(&NbtTag::Long("Time".to_string(), 0)).as_long();
+	}
+
+	fn write_level_dat(&self, default_spawn_location: BlockPosition, world_age: i64) {
 		let mut level_dat_path = self.path.clone();
 		level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
 
@@ -430,6 +448,7 @@ impl super::WorldLoader for Loader {
 				NbtTag::Int("SpawnX".to_string(), default_spawn_location.x),
 				NbtTag::Int("SpawnY".to_string(), default_spawn_location.y as i32),
 				NbtTag::Int("SpawnZ".to_string(), default_spawn_location.z),
+				NbtTag::Long("Time".to_string(), world_age),
 			],
 		)]);
 

@@ -85,6 +85,10 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 			chunk.1.keep_loaded_for_ticks -= 1;
 		}
 	}
+	world.world_age += 1;
+	if world.world_age % 20 == 0 {
+		game.task_queue.insert(Task { task: TaskItem::SendUpdateTimePacket, run_in_ticks: 0 });
+	}
 
 	return TickTimings {
 		save_all: duration_save_all,

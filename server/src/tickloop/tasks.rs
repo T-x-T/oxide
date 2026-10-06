@@ -220,6 +220,17 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					);
 				}
 			}
+			TaskItem::SendUpdateTimePacket => {
+				game.packet_sender.send_packet_to_everyone(
+					&players,
+					lib::packets::clientbound::play::UpdateTime::PACKET_ID,
+					lib::packets::clientbound::play::UpdateTime {
+						world_age: world.world_age,
+						time_of_day: world.world_age,
+						time_of_day_increasing: true,
+					},
+				);
+			}
 		}
 	}
 
