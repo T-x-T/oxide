@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 mod barell;
+mod bed;
 mod beetroot;
 #[allow(clippy::module_inception)]
 mod block;
@@ -141,6 +142,7 @@ pub fn get_block_state_id(
 			cursor_position_z,
 			block_states,
 		)),
+		Type::Bed => output.append(&mut bed::get_block_state_id(cardinal_direction, dimension, position, used_item_name, block_states)),
 		_ => (),
 	}
 
@@ -265,6 +267,7 @@ fn update(
 		Type::Carrot => carrot::update(position, dimension, block_states, block_state_id),
 		Type::Potato => potato::update(position, dimension, block_states, block_state_id),
 		Type::NetherPortal => nether_portal::update(position, dimension, block_states, block_state_id),
+		Type::Bed => bed::update(position, dimension, block_states, block_state_id),
 		_ => BlockUpdateOutcome::DoNothing,
 	};
 
