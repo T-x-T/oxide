@@ -280,6 +280,7 @@ pub enum BlockInteractionResult {
 	OverwriteBlocks(Vec<(u16, BlockPosition)>),
 	OpenInventory(Inventory),
 	OpenSignEditor,
+	GoToBed(BlockPosition),
 	Nothing,
 }
 
@@ -319,6 +320,10 @@ impl BlockInteractionResult {
 				);
 				Ok(Vec::new())
 			}
+			BlockInteractionResult::GoToBed(position_of_bed) => {
+				player.set_is_sleeping(players, packet_sender, true, Some(position_of_bed), dimension)?;
+				Ok(Vec::new())
+			}
 			BlockInteractionResult::Nothing => Ok(Vec::new()),
 		}
 	}
@@ -349,6 +354,7 @@ pub fn interact_with_block_at(
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
 	return match block_type_at_location {
+		Type::Bed => BlockInteractionResult::GoToBed(location),
 		Type::Door => door::interact(location, block_id_at_location, face, block_states),
 		Type::Trapdoor => trapdoor::interact(location, block_id_at_location, face, block_states),
 		Type::FenceGate => fencegate::interact(location, block_id_at_location, face, block_states),

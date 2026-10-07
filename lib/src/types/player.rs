@@ -91,6 +91,8 @@ pub struct Player {
 	pub portal_cooldown: u8,
 	pub permission: Permission,
 	common_entity_data: CommonEntity,
+	is_sleeping: bool,
+	position_of_bed: Option<BlockPosition>,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -128,6 +130,8 @@ impl Clone for Player {
 			portal_cooldown: self.portal_cooldown,
 			permission: self.permission,
 			common_entity_data: self.common_entity_data.clone(),
+			is_sleeping: self.is_sleeping,
+			position_of_bed: self.position_of_bed,
 		}
 	}
 }
@@ -183,6 +187,18 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::EntityMetadata {
 				index: 16,
 				value: crate::packets::clientbound::play::EntityMetadataValue::Byte(127),
+			},
+			crate::packets::clientbound::play::EntityMetadata {
+				index: 14,
+				value: crate::packets::clientbound::play::EntityMetadataValue::OptionalPosition(self.position_of_bed), //is none when not sleeping
+			},
+			crate::packets::clientbound::play::EntityMetadata {
+				index: 6,
+				value: if self.position_of_bed.is_some() {
+					crate::packets::clientbound::play::EntityMetadataValue::Pose(2)
+				} else {
+					crate::packets::clientbound::play::EntityMetadataValue::Pose(0)
+				},
 			},
 		];
 	}
@@ -677,6 +693,8 @@ impl Player {
 				loaded_chunks: Vec::new(),
 				portal_cooldown: 0,
 				permission: Permission::Everyone,
+				is_sleeping: false,
+				position_of_bed: None,
 				common_entity_data: CommonEntity {
 					position: default_spawn_location.into(),
 					last_position: default_spawn_location.into(),
@@ -824,6 +842,8 @@ impl Player {
 			loaded_chunks: Vec::new(),
 			portal_cooldown: 0,
 			permission,
+			is_sleeping: false,
+			position_of_bed: None,
 			common_entity_data: CommonEntity {
 				position: EntityPosition {
 					x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
@@ -1006,7 +1026,7 @@ impl Player {
 		x: f64,
 		y: f64,
 		z: f64,
-		dimension: &mut Dimension,
+		dimension: &Dimension,
 		packet_sender: &PacketSender,
 	) -> Result<EntityPosition, Box<dyn Error>> {
 		let old_x = self.common_entity_data.position.x;
@@ -1776,5 +1796,86 @@ impl Player {
 
 	pub fn get_dimension(&self) -> &str {
 		return &self.dimension;
+	}
+
+	pub fn get_is_sleeping(&self) -> bool {
+		return self.is_sleeping;
+	}
+
+	pub fn set_is_sleeping(
+		&mut self,
+		players: &[Player],
+		packet_sender: &PacketSender,
+		is_sleeping: bool,
+		position_of_bed: Option<BlockPosition>,
+		dimension: &Dimension,
+	) -> Result<(), Box<dyn Error>> {
+		if self.is_sleeping == is_sleeping {
+			return Ok(());
+		}
+
+		self.position_of_bed = position_of_bed;
+
+		if is_sleeping && let Some(position_of_bed) = position_of_bed {
+			self.new_position(position_of_bed.x as f64, position_of_bed.y as f64, position_of_bed.z as f64, dimension, packet_sender)?;
+		} else if !is_sleeping {
+			self.new_position(
+				self.common_entity_data.position.x,
+				self.common_entity_data.position.y,
+				self.common_entity_data.position.z,
+				dimension,
+				packet_sender,
+			)?;
+		};
+
+		self.is_sleeping = is_sleeping;
+
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SynchronizePlayerPosition::PACKET_ID,
+			crate::packets::clientbound::play::SynchronizePlayerPosition {
+				teleport_id: self.current_teleport_id,
+				x: self.get_position().x,
+				y: self.get_position().y,
+				z: self.get_position().z,
+				velocity_x: 0.0,
+				velocity_y: 0.0,
+				velocity_z: 0.0,
+				yaw: self.get_position().yaw,
+				pitch: self.get_position().pitch,
+				flags: 0,
+			},
+		);
+
+		packet_sender.send_packet_to_everyone_in_dimension(
+			players,
+			&self.dimension,
+			crate::packets::clientbound::play::TeleportEntity::PACKET_ID,
+			crate::packets::clientbound::play::TeleportEntity {
+				entity_id: self.common_entity_data.entity_id,
+				x: self.get_position().x,
+				y: self.get_position().y,
+				z: self.get_position().z,
+				velocity_x: 0.0,
+				velocity_y: 0.0,
+				velocity_z: 0.0,
+				yaw: self.get_position().yaw,
+				pitch: self.get_position().pitch,
+				on_ground: true,
+			},
+		);
+
+		self.resend_metadata_to_players(players, packet_sender, &self.dimension);
+
+		if !self.is_sleeping {
+			packet_sender.send_packet_to_everyone_in_dimension(
+				players,
+				&self.dimension,
+				crate::packets::clientbound::play::EntityAnimation::PACKET_ID,
+				crate::packets::clientbound::play::EntityAnimation { entity_id: self.common_entity_data.entity_id, animation: 2 },
+			);
+		}
+
+		return Ok(());
 	}
 }

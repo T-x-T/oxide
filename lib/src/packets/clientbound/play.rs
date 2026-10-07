@@ -2759,8 +2759,8 @@ pub enum EntityMetadataValue {
 	Slot(Slot),
 	Boolean(bool),
 	Rotations(f32, f32, f32),
-	Position(i64),
-	OptionalPosition(Option<i64>), //absence of value indicated by a 0x00, if present append 0x01 byte
+	Position(BlockPosition),
+	OptionalPosition(Option<BlockPosition>), //absence of value indicated by a 0x00, if present append 0x01 byte
 	Direction(i32),
 	OptionalUuid(bool, u128),
 	BlockState(i32),
@@ -2868,11 +2868,11 @@ impl TryFrom<SetEntityMetadata> for Vec<u8> {
 					output.append(&mut crate::serialize::float(b));
 					output.append(&mut crate::serialize::float(c));
 				}
-				EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::long(a)),
+				EntityMetadataValue::Position(a) => output.append(&mut crate::serialize::position(&a)),
 				EntityMetadataValue::OptionalPosition(a) => match a {
 					Some(a) => {
 						output.push(0x01);
-						output.append(&mut crate::serialize::long(a));
+						output.append(&mut crate::serialize::position(&a));
 					}
 					None => {
 						output.push(0x00);
@@ -2970,10 +2970,10 @@ impl TryFrom<Vec<u8>> for SetEntityMetadata {
 					crate::deserialize::float(&mut value)?,
 					crate::deserialize::float(&mut value)?,
 				),
-				10 => EntityMetadataValue::Position(crate::deserialize::long(&mut value)?),
+				10 => EntityMetadataValue::Position(crate::deserialize::position(&mut value)?),
 				11 => {
 					let position_present = crate::deserialize::boolean(&mut value)?;
-					let position = if position_present { Some(crate::deserialize::long(&mut value)?) } else { None };
+					let position = if position_present { Some(crate::deserialize::position(&mut value)?) } else { None };
 					EntityMetadataValue::OptionalPosition(position)
 				}
 				12 => EntityMetadataValue::Direction(crate::deserialize::varint(&mut value)?),

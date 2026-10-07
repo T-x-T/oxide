@@ -7,6 +7,7 @@ mod interact;
 mod move_player;
 mod new_player;
 mod pick_item_from_block;
+mod player_command;
 mod respawn;
 mod send_chat_message;
 mod send_command;
@@ -123,6 +124,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				respawn::process(peer_addr, game.clone(), players_clone);
 			}
 			PacketHandlerAction::UseItem(peer_addr, parsed_packet) => use_item::process(peer_addr, parsed_packet, game.clone()),
+			PacketHandlerAction::PlayerCommand(peer_addr, parsed_packet) => {
+				player_command::process(peer_addr, game.clone(), players_clone, parsed_packet)
+			}
 		}
 	}
 	*game.packet_handler_actions.lock().unwrap() = Vec::new();

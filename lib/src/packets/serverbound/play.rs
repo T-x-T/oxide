@@ -724,6 +724,82 @@ impl TryFrom<Vec<u8>> for PlayerAction {
 }
 
 //
+// MARK: 0x29 player command
+//
+
+#[derive(Debug, Clone)]
+#[repr(i32)]
+pub enum PlayerCommandAction {
+	LeaveBed,
+	StartSprinting,
+	StopSprinting,
+	StartJumpWithHorse,
+	StopJumpWithHorse,
+	OpenVehicleInventory,
+	StartFlyingWithElytra,
+}
+
+impl TryFrom<i32> for PlayerCommandAction {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: i32) -> Result<Self, Self::Error> {
+		match value {
+			0 => Ok(PlayerCommandAction::LeaveBed),
+			1 => Ok(PlayerCommandAction::StartSprinting),
+			2 => Ok(PlayerCommandAction::StopSprinting),
+			3 => Ok(PlayerCommandAction::StartJumpWithHorse),
+			4 => Ok(PlayerCommandAction::StopJumpWithHorse),
+			5 => Ok(PlayerCommandAction::OpenVehicleInventory),
+			6 => Ok(PlayerCommandAction::StartFlyingWithElytra),
+			_ => Err(Box::new(crate::CustomError::InvalidInput(format!("{value} is not a valid PlayerCommandAction")))),
+		}
+	}
+}
+
+#[derive(Debug, Clone)]
+pub struct PlayerCommand {
+	pub entity_id: i32,
+	pub action_id: PlayerCommandAction,
+	pub jump_boost: i32,
+}
+
+impl Packet for PlayerCommand {
+	const PACKET_ID: u8 = 0x29;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Server
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<PlayerCommand> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: PlayerCommand) -> Result<Self, Box<dyn Error>> {
+		let mut result: Vec<u8> = Vec::new();
+
+		result.append(&mut crate::serialize::varint(value.entity_id));
+		result.append(&mut crate::serialize::varint(value.action_id as i32));
+		result.append(&mut crate::serialize::varint(value.jump_boost));
+
+		return Ok(result);
+	}
+}
+
+impl TryFrom<Vec<u8>> for PlayerCommand {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut value: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		return Ok(Self {
+			entity_id: crate::deserialize::varint(&mut value)?,
+			action_id: PlayerCommandAction::try_from(crate::deserialize::varint(&mut value)?)?,
+			jump_boost: crate::deserialize::varint(&mut value)?,
+		});
+	}
+}
+
+//
 // MARK: 0x2A player input
 //
 
