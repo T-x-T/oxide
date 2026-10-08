@@ -6,7 +6,13 @@ pub fn init(game: &mut Game) {
 		permission: Permission::Everyone,
 		execute,
 		arguments: vec![
-			CommandArgument { name: "message".to_string(), properties: ParserProperty::String(1), next_arguments: Vec::new(), optional: true },
+			CommandArgument {
+				name: "message".to_string(),
+				properties: ParserProperty::String(1),
+				next_arguments: Vec::new(),
+				optional: true,
+				is_literal: false,
+			},
 			CommandArgument {
 				name: "first_arg".to_string(),
 				properties: ParserProperty::String(1),
@@ -18,10 +24,13 @@ pub fn init(game: &mut Game) {
 						properties: ParserProperty::Gamemode,
 						next_arguments: Vec::new(),
 						optional: true,
+						is_literal: false,
 					}],
 					optional: false,
+					is_literal: false,
 				}],
 				optional: false,
+				is_literal: false,
 			},
 		],
 	});

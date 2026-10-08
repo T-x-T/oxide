@@ -13,8 +13,10 @@ pub fn init(game: &mut Game) {
 				properties: ParserProperty::Integer(2, Some(0), Some(4)),
 				next_arguments: Vec::new(),
 				optional: true,
+				is_literal: false,
 			}],
 			optional: false,
+			is_literal: false,
 		}],
 	});
 }

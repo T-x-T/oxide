@@ -10,6 +10,7 @@ pub fn init(game: &mut Game) {
 			properties: ParserProperty::Gamemode,
 			next_arguments: Vec::new(),
 			optional: false,
+			is_literal: false,
 		}],
 	});
 }

@@ -10,6 +10,7 @@ pub fn init(game: &mut Game) {
 			properties: ParserProperty::ResourceKey("minecraft:entity_type".to_string()),
 			next_arguments: Vec::new(),
 			optional: false,
+			is_literal: false,
 		}],
 	});
 }

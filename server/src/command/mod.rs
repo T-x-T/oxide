@@ -11,6 +11,7 @@ mod saveall;
 mod setblock;
 mod summon;
 mod tell;
+mod time;
 mod tp;
 
 use lib::packets::Packet;
@@ -35,6 +36,7 @@ pub fn init(game: &mut Game) {
 	setblock::init(game);
 	op::init(game);
 	deop::init(game);
+	time::init(game);
 }
 
 pub fn get_command_packet_data(game: Arc<Game>, player_permission: Permission) -> Vec<CommandNode> {
@@ -68,8 +70,17 @@ pub fn get_command_packet_data(game: Arc<Game>, player_permission: Permission) -
 fn process_arguments(arguments: &Vec<CommandArgument>, nodes: &mut Vec<CommandNode>, command_index: usize) {
 	for argument in arguments {
 		let is_executable = argument.next_arguments.is_empty() || argument.next_arguments.iter().any(|x| x.optional);
+		let mut flags = 0b0000_0000;
+		if argument.is_literal {
+			flags |= 0b0000_0001;
+		} else {
+			flags |= 0b0000_0010;
+		}
+		if is_executable {
+			flags |= 0b0000_0100;
+		}
 		nodes.push(CommandNode {
-			flags: if is_executable { 6 } else { 2 },
+			flags,
 			children: Vec::new(),
 			redirect_node: None,
 			name: Some(argument.name.clone()),

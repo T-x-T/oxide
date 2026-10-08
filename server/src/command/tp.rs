@@ -6,8 +6,20 @@ pub fn init(game: &mut Game) {
 		permission: Permission::Gamemaster,
 		execute,
 		arguments: vec![
-			CommandArgument { name: "to player".to_string(), properties: ParserProperty::Entity(3), next_arguments: Vec::new(), optional: false },
-			CommandArgument { name: "to coordinates".to_string(), properties: ParserProperty::Vec3, next_arguments: Vec::new(), optional: false },
+			CommandArgument {
+				name: "to player".to_string(),
+				properties: ParserProperty::Entity(3),
+				next_arguments: Vec::new(),
+				optional: false,
+				is_literal: false,
+			},
+			CommandArgument {
+				name: "to coordinates".to_string(),
+				properties: ParserProperty::Vec3,
+				next_arguments: Vec::new(),
+				optional: false,
+				is_literal: false,
+			},
 		],
 	});
 }

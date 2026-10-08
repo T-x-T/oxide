@@ -436,11 +436,41 @@ impl super::WorldLoader for Loader {
 		return level_data.get_child("Data").unwrap().get_child("Time").unwrap_or(&NbtTag::Long("Time".to_string(), 0)).as_long();
 	}
 
-	fn write_level_dat(&self, default_spawn_location: BlockPosition, world_age: i64) {
+	fn get_time(&self) -> i64 {
+		let mut world_clocks_path = self.path.clone();
+		world_clocks_path.push(PathBuf::from_str("data/world_clocks.dat").unwrap());
+
+		let mut file = File::open(&world_clocks_path).unwrap();
+
+		let mut compressed_file_content: Vec<u8> = Vec::new();
+		file.read_to_end(&mut compressed_file_content).unwrap();
+
+		let mut file_content: Vec<u8> = Vec::new();
+		let mut decoder: GzDecoder<&[u8]> = GzDecoder::new(compressed_file_content.as_slice());
+		decoder.read_to_end(&mut file_content).unwrap();
+
+		let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
+
+		let default = NbtTag::default();
+		return level_data
+			.get_child("data")
+			.unwrap_or(&default)
+			.get_child("minecraft:overworld")
+			.unwrap_or(&default)
+			.get_child("total_ticks")
+			.unwrap_or(&NbtTag::Long("Time".to_string(), 0))
+			.as_long();
+	}
+
+	fn write_level_dat(&self, default_spawn_location: BlockPosition, world_age: i64, time: i64) {
 		let mut level_dat_path = self.path.clone();
 		level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
 
-		let mut file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(level_dat_path).unwrap();
+		let mut world_clocks_path = self.path.clone();
+		world_clocks_path.push(PathBuf::from_str("data/world_clocks.dat").unwrap());
+
+		let mut level_file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(level_dat_path).unwrap();
+		let mut world_clocks_file = OpenOptions::new().read(true).write(true).truncate(true).create(true).open(world_clocks_path).unwrap();
 
 		let level_data = NbtTag::Root(vec![NbtTag::TagCompound(
 			"Data".to_string(),
@@ -452,12 +482,30 @@ impl super::WorldLoader for Loader {
 			],
 		)]);
 
+		let world_clocks_data = NbtTag::Root(vec![
+			NbtTag::TagCompound(
+				"data".to_string(),
+				vec![NbtTag::TagCompound(
+					"minecraft:overworld".to_string(),
+					vec![NbtTag::Byte("paused".to_string(), 0), NbtTag::Long("total_ticks".to_string(), time)],
+				)],
+			),
+			NbtTag::Int("DataVersion".to_string(), 4772),
+		]);
+
 		let mut uncompressed_data = crate::serialize::nbt_disk(level_data);
 		let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
 		encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
 		let compressed_data = encoder.finish().unwrap();
-		file.write_all(&compressed_data).unwrap();
-		file.flush().unwrap();
+		level_file.write_all(&compressed_data).unwrap();
+		level_file.flush().unwrap();
+
+		let mut uncompressed_data = crate::serialize::nbt_disk(world_clocks_data);
+		let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+		encoder.write_all(uncompressed_data.as_mut_slice()).unwrap();
+		let compressed_data = encoder.finish().unwrap();
+		world_clocks_file.write_all(&compressed_data).unwrap();
+		world_clocks_file.flush().unwrap();
 	}
 }
 

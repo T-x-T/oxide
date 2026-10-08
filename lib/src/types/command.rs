@@ -22,6 +22,7 @@ pub struct CommandArgument {
 	pub properties: ParserProperty,
 	pub next_arguments: Vec<CommandArgument>,
 	pub optional: bool,
+	pub is_literal: bool,
 }
 
 
