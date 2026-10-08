@@ -105,7 +105,20 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 }
 
 fn parse_time(input: &str) -> i64 {
-	return input.parse().unwrap();
+	let mut input = input.to_string();
+	let last_char = input.chars().last().unwrap_or_default();
+	if !['t', 's', 'd', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].contains(&last_char) {
+		return 0;
+	}
+	let mode = if ['t', 's', 'd'].contains(&last_char) { input.remove(input.len() - 1) } else { 't' };
+	let input_number: f32 = input.parse().unwrap_or_default();
+	if mode == 's' {
+		return (input_number * 20.0) as i64;
+	} else if mode == 'd' {
+		return (input_number * 24_000.0) as i64;
+	} else {
+		return input_number as i64;
+	}
 }
 
 fn query(argument: &str, world: &World) -> String {
@@ -125,4 +138,54 @@ fn add(ticks: i64, world: &mut World) -> String {
 fn set(ticks: i64, world: &mut World) -> String {
 	world.time = ticks;
 	return format!("Set the time to {}", world.time);
+}
+
+#[cfg(test)]
+mod test {
+	use super::*;
+
+	#[test]
+	fn parse_time_positive_integer() {
+		assert_eq!(parse_time("1234"), 1234);
+	}
+
+	#[test]
+	fn parse_time_negative_integer() {
+		assert_eq!(parse_time("-1234"), -1234);
+	}
+
+	#[test]
+	fn parse_time_zero() {
+		assert_eq!(parse_time("0"), 0);
+	}
+
+	#[test]
+	fn random_mess() {
+		assert_eq!(parse_time("oeirgnoe"), 0);
+	}
+
+	#[test]
+	fn with_ticks() {
+		assert_eq!(parse_time("123t"), 123);
+	}
+
+	#[test]
+	fn with_seconds() {
+		assert_eq!(parse_time("123s"), 2460);
+	}
+
+	#[test]
+	fn with_days() {
+		assert_eq!(parse_time("2d"), 48_000);
+	}
+
+	#[test]
+	fn with_days_fraction() {
+		assert_eq!(parse_time("0.5d"), 12_000);
+	}
+
+	#[test]
+	fn with_days_fraction_no_leading_zero() {
+		assert_eq!(parse_time(".5d"), 12_000);
+	}
 }
