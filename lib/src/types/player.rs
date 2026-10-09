@@ -93,6 +93,7 @@ pub struct Player {
 	common_entity_data: CommonEntity,
 	is_sleeping: bool,
 	position_of_bed: Option<BlockPosition>,
+	sleeping_for_ticks: i16,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -132,6 +133,7 @@ impl Clone for Player {
 			common_entity_data: self.common_entity_data.clone(),
 			is_sleeping: self.is_sleeping,
 			position_of_bed: self.position_of_bed,
+			sleeping_for_ticks: self.sleeping_for_ticks,
 		}
 	}
 }
@@ -236,6 +238,11 @@ impl CommonEntityTrait for Player {
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
+
+		//advance sleep timer
+		if self.is_sleeping && self.sleeping_for_ticks < 100 {
+			self.sleeping_for_ticks += 1;
+		}
 
 		//keep chunks around player loaded
 		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
@@ -695,6 +702,7 @@ impl Player {
 				permission: Permission::Everyone,
 				is_sleeping: false,
 				position_of_bed: None,
+				sleeping_for_ticks: 0,
 				common_entity_data: CommonEntity {
 					position: default_spawn_location.into(),
 					last_position: default_spawn_location.into(),
@@ -822,6 +830,7 @@ impl Player {
 			food_saturation_level: player_data.get_child("foodSaturationLevel").unwrap_or(&NbtTag::Float(String::new(), 5.0)).as_float(),
 			food_tick_timer: player_data.get_child("foodTickTimer").unwrap_or(&NbtTag::Int(String::new(), 0)).as_int() as u8,
 			food_exhaustion_level: player_data.get_child("foodExhaustionLevel").unwrap_or(&NbtTag::Float(String::new(), 0.0)).as_float(),
+			sleeping_for_ticks: player_data.get_child("SleepTimer").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short(),
 			last_starvation_ticks_ago: 0,
 			started_eating_ticks_ago: 0,
 			exhaustion_swimming_for_meters: 0.0,
@@ -905,6 +914,7 @@ impl Player {
 			NbtTag::Float("foodSaturationLevel".to_string(), self.food_saturation_level),
 			NbtTag::Int("foodTickTimer".to_string(), self.food_tick_timer as i32),
 			NbtTag::Double("fall_distance".to_string(), self.common_entity_data.fall_distance),
+			NbtTag::Short("SleepTimer".to_string(), self.sleeping_for_ticks),
 			NbtTag::String("Dimension".to_string(), self.get_dimension().to_string()),
 			NbtTag::List(
 				"Inventory".to_string(),
@@ -1814,6 +1824,10 @@ impl Player {
 			return Ok(());
 		}
 
+		if !is_sleeping {
+			self.sleeping_for_ticks = 0;
+		}
+
 		self.position_of_bed = position_of_bed;
 
 		if is_sleeping && let Some(position_of_bed) = position_of_bed {
@@ -1877,5 +1891,9 @@ impl Player {
 		}
 
 		return Ok(());
+	}
+
+	pub fn get_sleeping_for_ticks(&self) -> i16 {
+		return self.sleeping_for_ticks;
 	}
 }

@@ -79,12 +79,29 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	mob_spawning::process(game.clone(), &players_clone);
 	let duration_mob_spawning = std::time::Instant::now() - now;
 
+	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 	for dimension in &mut world.dimensions {
 		for chunk in &mut dimension.1.chunks {
 			chunk.1.keep_loaded_for_ticks -= 1;
 		}
 	}
+
+	let players_clone = players.clone();
+
+	let sleeping_players: Vec<&mut Player> = players.iter_mut().filter(|x| x.get_sleeping_for_ticks() == 100).collect();
+
+	if sleeping_players.len() == players.len() {
+		for player in players.iter_mut() {
+			player
+				.set_is_sleeping(&players_clone, &game.packet_sender, false, None, world.dimensions.get(player.get_dimension()).unwrap())
+				.unwrap();
+		}
+
+		let time_till_next_morning = 24_000 - world.time % 24_000;
+		world.time += time_till_next_morning - 1; //-1 because we increment by one a little further down
+	}
+
 	world.time += 1;
 	world.world_age += 1;
 	if world.world_age % 20 == 0 {
