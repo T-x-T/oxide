@@ -29,7 +29,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 					let mut new_blocks = lib::block::tick(block_id_to_tick, dimension, position, &game.block_state_data);
 
-					if new_blocks.len() > 0 && block_id_to_tick != new_blocks.first().unwrap().1 {
+					if !new_blocks.is_empty() && block_id_to_tick != new_blocks.first().unwrap().1 {
 						blocks_to_update.append(&mut new_blocks);
 					}
 				}

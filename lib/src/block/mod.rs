@@ -428,6 +428,7 @@ pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32
 		Type::Carrot => 0.0,
 		Type::Potato => 0.0,
 		Type::Beetroot => 0.0,
+		Type::Sapling => 0.0,
 		_ => 1.0,
 	};
 }

@@ -1,16 +1,17 @@
 use super::*;
 
 pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, sequence_id: i32, game: Arc<Game>) {
+	println!("break the sapling");
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
-	let player_clone = players.iter().find(|x| x.peer_socket_address == peer_addr).unwrap().clone();
+	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
+	let player_clone = player.clone();
 
 	let dimension = world.dimensions.get_mut(player_clone.get_dimension()).unwrap();
 
 	let old_block_id = dimension.get_block(location).unwrap();
 
-	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	if player_clone.get_gamemode() == Gamemode::Survival {
 		let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);
 		if status == 0 && block_hardness != 0.0 {
