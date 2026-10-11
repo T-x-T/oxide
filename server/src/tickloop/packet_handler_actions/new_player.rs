@@ -96,6 +96,8 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 		},
 	);
 
+	new_player.send_armor_points(&game.packet_sender);
+
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
 
 	let dimension = world.dimensions.get_mut(new_player.get_dimension()).unwrap();

@@ -28,6 +28,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 
 			let inventory_to_set: Vec<Option<Slot>> = inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect();
 			player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
+			player.send_armor_points(&game.packet_sender);
 
 			let crafting_slots = player.get_inventory()[1..=4].to_vec();
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {

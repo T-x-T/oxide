@@ -3384,6 +3384,90 @@ impl TryFrom<Vec<u8>> for PickupItem {
 }
 
 //
+// MARK: 0x81 update attributes
+//
+
+#[derive(Debug, Clone)]
+pub struct UpdateAttributesProperty {
+	pub id: i32,
+	pub value: f64,
+	pub modifiers: Vec<UpdateAttributesModifier>,
+}
+
+#[derive(Debug, Clone)]
+pub struct UpdateAttributesModifier {
+	pub id: String,
+	pub amount: f64,
+	pub operation: u8,
+}
+
+#[derive(Debug, Clone)]
+pub struct UpdateAttributes {
+	pub entity_id: i32,
+	pub properties: Vec<UpdateAttributesProperty>,
+}
+
+impl Packet for UpdateAttributes {
+	const PACKET_ID: u8 = 0x81;
+	fn get_target() -> PacketTarget {
+		PacketTarget::Client
+	}
+	fn get_state() -> ConnectionState {
+		ConnectionState::Play
+	}
+}
+
+impl TryFrom<UpdateAttributes> for Vec<u8> {
+	type Error = Box<dyn Error>;
+
+	fn try_from(value: UpdateAttributes) -> Result<Self, Box<dyn Error>> {
+		let mut output: Vec<u8> = Vec::new();
+
+		output.append(&mut crate::serialize::varint(value.entity_id));
+		output.append(&mut crate::serialize::varint(value.properties.len() as i32));
+		for property in value.properties {
+			output.append(&mut crate::serialize::varint(property.id));
+			output.append(&mut crate::serialize::double(property.value));
+			output.append(&mut crate::serialize::varint(property.modifiers.len() as i32));
+			for modifier in property.modifiers {
+				output.append(&mut crate::serialize::string(&modifier.id));
+				output.append(&mut crate::serialize::double(modifier.amount));
+				output.push(modifier.operation);
+			}
+		}
+
+		return Ok(output);
+	}
+}
+
+impl TryFrom<Vec<u8>> for UpdateAttributes {
+	type Error = Box<dyn Error>;
+
+	fn try_from(mut input: Vec<u8>) -> Result<Self, Box<dyn Error>> {
+		let entity_id = crate::deserialize::varint(&mut input)?;
+		let properties_len = crate::deserialize::varint(&mut input)?;
+		let mut properties: Vec<UpdateAttributesProperty> = Vec::new();
+		for _ in 0..properties_len {
+			let id = crate::deserialize::varint(&mut input)?;
+			let value = crate::deserialize::double(&mut input)?;
+			let modifiers_len = crate::deserialize::varint(&mut input)?;
+			let mut modifiers: Vec<UpdateAttributesModifier> = Vec::new();
+			for _ in 0..modifiers_len {
+				modifiers.push(UpdateAttributesModifier {
+					id: crate::deserialize::string(&mut input)?,
+					amount: crate::deserialize::double(&mut input)?,
+					operation: input.remove(0),
+				});
+			}
+
+			properties.push(UpdateAttributesProperty { id, value, modifiers });
+		}
+
+		return Ok(Self { entity_id, properties });
+	}
+}
+
+//
 // MARK: 0x87 server links
 //
 

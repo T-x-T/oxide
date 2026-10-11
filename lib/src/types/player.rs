@@ -1294,6 +1294,10 @@ impl Player {
 			return;
 		}
 
+		if [5, 6, 7, 8].contains(&slot) {
+			self.send_armor_points(packet_sender);
+		}
+
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 			let mut equipment: Vec<(u8, Option<Slot>)> = vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())];
 
@@ -1329,6 +1333,8 @@ impl Player {
 				carried_item: self.cursor_item.clone(),
 			},
 		);
+
+		self.send_armor_points(packet_sender);
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 			let equipment: Vec<(u8, Option<Slot>)> = vec![
@@ -1895,5 +1901,127 @@ impl Player {
 
 	pub fn get_sleeping_for_ticks(&self) -> i16 {
 		return self.sleeping_for_ticks;
+	}
+
+	pub fn get_armor_points(&self) -> u8 {
+		let mut armor_points = 0;
+
+		let head = &self.inventory[5];
+		let chest = &self.inventory[6];
+		let legs = &self.inventory[7];
+		let feet = &self.inventory[8];
+
+		if let Some(head) = head {
+			match data::items::get_item_name_by_id(head.id).unwrap_or_default() {
+				"minecraft:leather_helmet" => armor_points += 1,
+				"minecraft:golden_helmet" => armor_points += 2,
+				"minecraft:copper_helmet" => armor_points += 2,
+				"minecraft:iron_helmet" => armor_points += 2,
+				"minecraft:chainmail_helmet" => armor_points += 2,
+				"minecraft:turtle_helmet" => armor_points += 2,
+				"minecraft:diamond_helmet" => armor_points += 3,
+				"minecraft:netherite_helmet" => armor_points += 3,
+				_ => (),
+			}
+		}
+
+		if let Some(chest) = chest {
+			match data::items::get_item_name_by_id(chest.id).unwrap_or_default() {
+				"minecraft:leather_chestplate" => armor_points += 3,
+				"minecraft:copper_chestplate" => armor_points += 4,
+				"minecraft:golden_chestplate" => armor_points += 5,
+				"minecraft:chainmail_chestplate" => armor_points += 5,
+				"minecraft:iron_chestplate" => armor_points += 6,
+				"minecraft:diamond_chestplate" => armor_points += 8,
+				"minecraft:netherite_chestplate" => armor_points += 8,
+				_ => (),
+			}
+		}
+
+		if let Some(legs) = legs {
+			match data::items::get_item_name_by_id(legs.id).unwrap_or_default() {
+				"minecraft:leather_leggings" => armor_points += 2,
+				"minecraft:golden_leggings" => armor_points += 3,
+				"minecraft:copper_leggings" => armor_points += 3,
+				"minecraft:chainmail_leggings" => armor_points += 4,
+				"minecraft:iron_leggings" => armor_points += 5,
+				"minecraft:diamond_leggings" => armor_points += 6,
+				"minecraft:netherite_leggings" => armor_points += 6,
+				_ => (),
+			}
+		}
+
+		if let Some(feet) = feet {
+			match data::items::get_item_name_by_id(feet.id).unwrap_or_default() {
+				"minecraft:leather_boots" => armor_points += 1,
+				"minecraft:golden_boots" => armor_points += 1,
+				"minecraft:copper_boots" => armor_points += 1,
+				"minecraft:chainmail_boots" => armor_points += 1,
+				"minecraft:iron_boots" => armor_points += 2,
+				"minecraft:diamond_boots" => armor_points += 3,
+				"minecraft:netherite_boots" => armor_points += 3,
+				_ => (),
+			}
+		}
+
+		return armor_points;
+	}
+
+	pub fn get_armor_toughness(&self) -> u8 {
+		let mut armor_toughness = 0;
+
+		let head = &self.inventory[5];
+		let chest = &self.inventory[6];
+		let legs = &self.inventory[7];
+		let feet = &self.inventory[8];
+
+		if let Some(head) = head {
+			match data::items::get_item_name_by_id(head.id).unwrap_or_default() {
+				"minecraft:diamond_helmet" => armor_toughness += 2,
+				"minecraft:netherite_helmet" => armor_toughness += 3,
+				_ => (),
+			}
+		}
+
+		if let Some(chest) = chest {
+			match data::items::get_item_name_by_id(chest.id).unwrap_or_default() {
+				"minecraft:diamond_chestplate" => armor_toughness += 2,
+				"minecraft:netherite_chestplate" => armor_toughness += 3,
+				_ => (),
+			}
+		}
+
+		if let Some(legs) = legs {
+			match data::items::get_item_name_by_id(legs.id).unwrap_or_default() {
+				"minecraft:diamond_leggings" => armor_toughness += 2,
+				"minecraft:netherite_leggings" => armor_toughness += 3,
+				_ => (),
+			}
+		}
+
+		if let Some(feet) = feet {
+			match data::items::get_item_name_by_id(feet.id).unwrap_or_default() {
+				"minecraft:diamond_boots" => armor_toughness += 2,
+				"minecraft:netherite_boots" => armor_toughness += 3,
+				_ => (),
+			}
+		}
+
+		return armor_toughness;
+	}
+
+	pub fn send_armor_points(&self, packet_sender: &PacketSender) {
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::UpdateAttributes::PACKET_ID,
+			crate::packets::clientbound::play::UpdateAttributes {
+				entity_id: self.common_entity_data.entity_id,
+				properties: vec![crate::packets::clientbound::play::UpdateAttributesProperty {
+					id: 0,
+					value: self.get_armor_points() as f64,
+					modifiers: Vec::new(),
+				}],
+			},
+		);
 	}
 }
