@@ -148,6 +148,13 @@ impl Type {
 			Type::TintedParticleLeaves => true,
 			Type::UntintedParticleLeaves => true,
 			Type::Air => true,
+			Type::Sapling => true,
+			Type::Crop => true,
+			Type::Carrot => true,
+			Type::Potato => true,
+			Type::Beetroot => true,
+			Type::Farm => true,
+			Type::Bed => true,
 			_ => false,
 		};
 	}
