@@ -13,6 +13,7 @@ pub mod entity;
 pub mod loot_table;
 pub mod packets;
 pub mod serialize;
+pub mod structures;
 pub mod types;
 pub mod utils;
 

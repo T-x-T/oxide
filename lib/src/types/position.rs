@@ -5,6 +5,13 @@ pub struct BlockPosition {
 	pub z: i32,
 }
 
+impl std::ops::Add for BlockPosition {
+	type Output = BlockPosition;
+	fn add(self, rhs: BlockPosition) -> BlockPosition {
+		return Self { x: self.x + rhs.x, y: self.y + rhs.y, z: self.z + rhs.z };
+	}
+}
+
 impl BlockPosition {
 	pub fn convert_to_position_in_chunk(&self) -> BlockPosition {
 		return BlockPosition {

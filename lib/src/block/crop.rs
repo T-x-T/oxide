@@ -5,26 +5,28 @@ pub fn tick(
 	_dimension: &Dimension,
 	_block_position: BlockPosition,
 	block_states: &HashMap<String, Block>,
-) -> u16 {
+) -> Vec<(BlockPosition, u16)> {
 	let properties = data::blocks::get_block_state_from_block_state_id(current_block_state_id);
 	let block = data::blocks::get_block_from_block_state_id(current_block_state_id, block_states);
-	if properties.properties.contains(&Property::CropAge(CropAge::Num0)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num1))).unwrap().id;
+	let new_block_state_id = if properties.properties.contains(&Property::CropAge(CropAge::Num0)) {
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num1))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num1)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num2))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num2))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num2)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num3))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num3))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num3)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num4))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num4))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num4)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num5))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num5))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num5)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num6))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num6))).unwrap().id
 	} else if properties.properties.contains(&Property::CropAge(CropAge::Num6)) {
-		return block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num7))).unwrap().id;
+		block.states.iter().find(|x| x.properties.contains(&Property::CropAge(CropAge::Num7))).unwrap().id
 	} else {
-		return current_block_state_id;
-	}
+		current_block_state_id
+	};
+
+	return vec![(BlockPosition::default(), new_block_state_id)];
 }
 
 pub fn update(position: BlockPosition, dimension: &Dimension, _block_states: &HashMap<String, Block>, block_id: u16) -> BlockUpdateOutcome {

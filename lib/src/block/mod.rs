@@ -24,6 +24,7 @@ mod iron_bars;
 mod nether_portal;
 mod potato;
 mod rotated_pillar;
+mod sapling;
 mod slab;
 mod stained_glass_pane;
 mod stair;
@@ -436,17 +437,26 @@ pub fn tick(
 	dimension: &Dimension,
 	block_position: BlockPosition,
 	block_states: &HashMap<String, Block>,
-) -> u16 {
+) -> Vec<(BlockPosition, u16)> {
 	let block_type = data::blocks::get_type_from_block_state_id(current_block_state_id);
 
-	return match block_type {
+	let new_blocks = match block_type {
 		Type::Crop => crop::tick(current_block_state_id, dimension, block_position, block_states),
 		Type::Carrot => carrot::tick(current_block_state_id, dimension, block_position, block_states),
 		Type::Potato => potato::tick(current_block_state_id, dimension, block_position, block_states),
 		Type::Beetroot => beetroot::tick(current_block_state_id, dimension, block_position, block_states),
 		Type::Farm => farm::tick(current_block_state_id, dimension, block_position, block_states),
-		_ => current_block_state_id,
+		Type::Sapling => sapling::tick(current_block_state_id, dimension, block_position, block_states),
+		_ => vec![(BlockPosition::default(), current_block_state_id)],
 	};
+
+	return new_blocks
+		.into_iter()
+		.map(|mut x| {
+			x.0 = x.0 + block_position;
+			x
+		})
+		.collect();
 }
 
 pub fn get_collision_shape(block_state_id: u16, position: BlockPosition, block_states: &HashMap<String, Block>) -> CollisionShape {
