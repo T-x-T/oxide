@@ -80,7 +80,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				}
 			}
 			PacketHandlerAction::BreakBlock(peer_addr, status, location, _face, sequence_id) => {
-				break_block::process(peer_addr, status, location, sequence_id, game.clone());
+				break_block::process(peer_addr, status, location, sequence_id, game.clone(), players_clone);
 			}
 			PacketHandlerAction::UseItemOn(peer_addr, parsed_packet) => {
 				use_item_on::process(peer_addr, parsed_packet, game.clone(), players_clone);

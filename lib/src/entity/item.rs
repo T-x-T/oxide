@@ -134,17 +134,22 @@ impl CommonEntityTrait for ItemEntity {
 			return vec![EntityTickOutcome::RemoveSelf];
 		}
 
-		let picking_up_player = players
-			.iter()
-			.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
-			.find(|x| x.1 < crate::ITEM_PICKUP_DISTANCE);
+		if self.pickup_delay > 0 {
+			self.pickup_delay -= 1;
+		}
+		if self.pickup_delay == 0 {
+			let picking_up_player = players
+				.iter()
+				.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
+				.find(|x| x.1 < crate::ITEM_PICKUP_DISTANCE);
 
-		if let Some((picking_up_player, _)) = picking_up_player {
-			return vec![EntityTickOutcome::GetPickedUpByPlayer(
-				self.item.clone(),
-				self.get_common_entity_data().entity_id,
-				picking_up_player.get_common_entity_data().uuid,
-			)];
+			if let Some((picking_up_player, _)) = picking_up_player {
+				return vec![EntityTickOutcome::GetPickedUpByPlayer(
+					self.item.clone(),
+					self.get_common_entity_data().entity_id,
+					picking_up_player.get_common_entity_data().uuid,
+				)];
+			}
 		}
 
 		return vec![EntityTickOutcome::Updated];

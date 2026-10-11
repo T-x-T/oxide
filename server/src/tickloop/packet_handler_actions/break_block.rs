@@ -1,7 +1,6 @@
 use super::*;
 
-pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, sequence_id: i32, game: Arc<Game>) {
-	println!("break the sapling");
+pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, sequence_id: i32, game: Arc<Game>, players_clone: &[Player]) {
 	let mut players = game.players.lock().unwrap();
 	let mut world = game.world.lock().unwrap();
 
@@ -35,6 +34,39 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 			player.apply_exhaustion_from_mining_block();
 		} else if status == 5 {
 			player.stop_eating();
+		} else if status == 4 {
+			let mut slot = player.get_selected_inventory_slot().clone().unwrap_or_default();
+			slot.count -= 1;
+
+			dimension.summon_item(
+				player.get_position(),
+				Slot { count: 1, ..slot.clone() },
+				Some(player.get_common_entity_data().uuid),
+				players_clone,
+				&game.packet_sender,
+				&game.entity_id_manager,
+				20,
+			);
+
+			if slot.count > 0 {
+				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
+			} else {
+				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
+			}
+		} else if status == 3 {
+			let slot = player.get_selected_inventory_slot().clone().unwrap_or_default();
+
+			dimension.summon_item(
+				player.get_position(),
+				slot,
+				Some(player.get_common_entity_data().uuid),
+				players_clone,
+				&game.packet_sender,
+				&game.entity_id_manager,
+				20,
+			);
+
+			player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 		}
 
 		let items_to_drop = lib::loot_table::get_block_drops(
@@ -47,7 +79,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 		for item_to_drop in items_to_drop {
 			if item_to_drop.id != 0 {
-				dimension.summon_item(location.into(), item_to_drop, None, &players, &game.packet_sender, &game.entity_id_manager);
+				dimension.summon_item(location.into(), item_to_drop, None, &players, &game.packet_sender, &game.entity_id_manager, 0);
 			}
 		}
 	}

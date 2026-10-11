@@ -37,6 +37,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 							players_clone,
 							&game.packet_sender,
 							&game.entity_id_manager,
+							0,
 						);
 					}
 				}
@@ -75,6 +76,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 						players_clone,
 						&game.packet_sender,
 						&game.entity_id_manager,
+						0,
 					);
 				}
 			}

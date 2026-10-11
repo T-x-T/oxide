@@ -53,6 +53,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		&players,
 		&game.packet_sender,
 		&game.entity_id_manager,
+		0,
 	);
 
 	return Ok(());

@@ -263,6 +263,7 @@ impl Dimension {
 		players_clone: &[Player],
 		packet_sender: &PacketSender,
 		entity_id_manager: &EntityIdManager,
+		pickup_delay: i16,
 	) {
 		let new_entity = ItemEntity {
 			common: CommonEntity {
@@ -276,7 +277,7 @@ impl Dimension {
 			health: 5,
 			item: slot,
 			owner: player_uuid.unwrap_or_default(),
-			pickup_delay: 0,
+			pickup_delay,
 			thrower: player_uuid.unwrap_or_default(),
 		};
 

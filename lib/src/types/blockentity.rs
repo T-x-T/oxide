@@ -303,7 +303,7 @@ impl BlockEntity {
 		entity_id_manager: &EntityIdManager,
 	) {
 		for item in self.get_contained_items_owned() {
-			dimension.summon_item(self.get_position().into(), item, None, players, packet_sender, entity_id_manager);
+			dimension.summon_item(self.get_position().into(), item, None, players, packet_sender, entity_id_manager, 0);
 		}
 
 		dimension

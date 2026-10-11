@@ -212,7 +212,7 @@ impl BlockUpdateOutcome {
 
 				for item_to_drop in items_to_drop {
 					if item_to_drop.id != 0 {
-						dimension.summon_item(position.into(), item_to_drop, None, players, packet_sender, entity_id_manager);
+						dimension.summon_item(position.into(), item_to_drop, None, players, packet_sender, entity_id_manager, 0);
 					}
 				}
 			}
