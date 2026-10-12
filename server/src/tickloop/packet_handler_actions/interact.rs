@@ -31,7 +31,8 @@ fn target_is_player(
 
 	if parsed_packet.interact_type == 1 {
 		//attack
-		let damage = if held_item.is_some() { 10.0 } else { 1.0 };
+		let damage =
+			if let Some(held_item) = held_item { get_attack_damage(data::items::get_item_name_by_id(held_item.id).unwrap()) } else { 1 } as f32;
 		target_player.damage(damage, &game.packet_sender, players_clone);
 	}
 }
@@ -66,9 +67,11 @@ fn target_is_entity(
 
 	if parsed_packet.interact_type == 1 {
 		//Attack
-		let damage = if held_item.is_some() { 10.0 } else { 1.0 };
 
 		if entity.is_mob() {
+			let damage =
+				if let Some(held_item) = held_item { get_attack_damage(data::items::get_item_name_by_id(held_item.id).unwrap()) } else { 1 } as f32;
+
 			let mob_data = entity.get_mob_data_mut();
 
 			if mob_data.hurt_time > 0 {
@@ -145,4 +148,25 @@ fn target_is_entity(
 
 	dimension.entities = entities;
 	world.dimensions = dimensions;
+}
+
+//TODO: move to data::items at some point
+fn get_attack_damage(item: &str) -> u8 {
+	return match item {
+		"minecraft:wooden_sword" => 4,
+		"minecraft:stone_sword" => 5,
+		"minecraft:copper_sword" => 5,
+		"minecraft:iron_sword" => 5,
+		"minecraft:golden_sword" => 4,
+		"minecraft:diamond_sword" => 7,
+		"minecraft:netherite_sword" => 8,
+		"minecraft:wooden_axe" => 7,
+		"minecraft:stone_axe" => 9,
+		"minecraft:copper_axe" => 9,
+		"minecraft:iron_axe" => 9,
+		"minecraft:golden_axe" => 7,
+		"minecraft:diamond_axe" => 9,
+		"minecraft:netherite_axe" => 10,
+		_ => 1,
+	};
 }
