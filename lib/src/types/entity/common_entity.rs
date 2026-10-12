@@ -25,6 +25,8 @@ pub struct CommonEntity {
 	pub ticks_frozen: i32,
 	pub debug_data_pathfinding: Option<DebugEntityPath>,
 	pub collision_shape: CollisionShape,
+	pub current_path: Vec<BlockPosition>,
+	pub current_path_ttl: u8,
 }
 
 #[derive(Debug)]
@@ -382,6 +384,10 @@ pub trait CommonEntityTrait {
 			}
 		}
 
+		if self.get_common_entity_data().current_path_ttl > 0 {
+			self.get_common_entity_data_mut().current_path_ttl -= 1;
+		}
+
 		output.append(&mut self.extra_tick(dimension, players, packet_sender, entity_id_manager, block_state_data));
 
 		self.get_common_entity_data_mut().last_position = self.get_common_entity_data().position;
@@ -593,7 +599,7 @@ pub trait CommonEntityTrait {
 	}
 
 	fn execute_ai_move_towards_player(
-		&self,
+		&mut self,
 		players: &[Player],
 		dimension: &Dimension,
 		block_state_data: &HashMap<String, basic_types::blocks::Block>,
@@ -617,18 +623,29 @@ pub trait CommonEntityTrait {
 	}
 
 	fn ai_move_towards_goal(
-		&self,
+		&mut self,
 		goal: EntityPosition,
 		dimension: &Dimension,
 		block_states: &HashMap<String, basic_types::blocks::Block>,
 	) -> (EntityPosition, Vec<EntityTickOutcome>) {
-		let path = self.ai_calculate_path_towards_goal(goal, dimension, block_states);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
-		let path: Vec<BlockPosition> = path.into_iter().filter(|x| *x != starting_point).collect();
+
+		let path = if self.get_common_entity_data().current_path.is_empty() || self.get_common_entity_data().current_path_ttl == 0 {
+			self.get_common_entity_data_mut().current_path_ttl = crate::PATHFINDING_CACHE_TTL;
+			self.ai_calculate_path_towards_goal(goal, dimension, block_states).into_iter().filter(|x| *x != starting_point).collect()
+		} else {
+			std::mem::take(&mut self.get_common_entity_data_mut().current_path)
+		};
+
+		let path: Vec<BlockPosition> = path.into_iter().filter(|x| *x != self.get_common_entity_data().position.into()).collect();
+
 		if path.is_empty() {
 			return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
 		}
-		let last_node = path.last().unwrap();
+
+		let last_node = path.last().cloned().unwrap();
+
+		self.get_common_entity_data_mut().current_path = path;
 
 		let speed = 0.075;
 
@@ -903,7 +920,7 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_pos_x() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
@@ -921,7 +938,7 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_neg_x() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
@@ -939,7 +956,7 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_pos_z() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
@@ -957,7 +974,7 @@ mod tests {
 
 		#[test]
 		fn default_chunk_towards_neg_z() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
@@ -974,7 +991,7 @@ mod tests {
 		}
 		#[test]
 		fn default_chunk_towards_pos_x_and_z() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),
@@ -993,7 +1010,7 @@ mod tests {
 
 		#[test]
 		fn obstacle_towards_pos_x() {
-			let crate::Entity::Creeper(creeper) = entity::new(
+			let crate::Entity::Creeper(mut creeper) = entity::new(
 				"minecraft:creeper",
 				CommonEntity { position: EntityPosition { x: 0.0, y: 16.0, z: 0.0, yaw: 0.0, pitch: 0.0 }, ..Default::default() },
 				NbtListTag::default(),

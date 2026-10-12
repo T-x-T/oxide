@@ -37,6 +37,7 @@ pub const MOB_SPAWN_LIMIT_PER_DIMENSION_CREATURE: u16 = 200;
 pub const MOB_SPAWN_LIMIT_PER_CHUNK_CREATURE: u16 = MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE / 100;
 pub const CREATURE_OVERWORLD_SPAWNABLE_MOBS: [&str; 5] =
 	["minecraft:cow", "minecraft:rabbit", "minecraft:sheep", "minecraft:chicken", "minecraft:pig"];
+pub const PATHFINDING_CACHE_TTL: u8 = 20;
 
 #[derive(Debug, Clone)]
 pub enum CustomError {
