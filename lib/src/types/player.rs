@@ -349,7 +349,16 @@ impl CommonEntityTrait for Player {
 		if self.gamemode == Gamemode::Creative || self.gamemode == Gamemode::Spectator {
 			return;
 		}
-		self.health -= damage;
+
+		let armor_points = self.get_armor_points() as f32;
+		let armor_toughness = self.get_armor_toughness() as f32;
+		let damage_reduction_percent =
+			(((armor_points / 5.0).max(armor_points - ((4.0 * damage) / (armor_toughness.min(20.0) + 8.0))).min(20.0)) / 25.0) * 100.0;
+
+		let damage_reduction = (damage_reduction_percent / 100.0) * damage;
+		assert!(damage_reduction < damage);
+
+		self.health -= damage - damage_reduction;
 		self.food_exhaustion_level += 0.1;
 
 		self.send_health_and_food_to_client(packet_sender);
