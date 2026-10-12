@@ -622,6 +622,34 @@ pub trait CommonEntityTrait {
 		dimension: &Dimension,
 		block_states: &HashMap<String, basic_types::blocks::Block>,
 	) -> (EntityPosition, Vec<EntityTickOutcome>) {
+		let path = self.ai_calculate_path_towards_goal(goal, dimension, block_states);
+		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
+		let path: Vec<BlockPosition> = path.into_iter().filter(|x| *x != starting_point).collect();
+		if path.is_empty() {
+			return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
+		}
+		let last_node = path.last().unwrap();
+
+		let speed = 0.075;
+
+		return (
+			EntityPosition {
+				x: (last_node.x - starting_point.x) as f64 * speed,
+				y: if last_node.y > starting_point.y { 1.0 } else { 0.0 },
+				z: (last_node.z - starting_point.z) as f64 * speed,
+				yaw: 0.0,
+				pitch: 0.0,
+			},
+			Vec::new(),
+		);
+	}
+
+	fn ai_calculate_path_towards_goal(
+		&self,
+		goal: EntityPosition,
+		dimension: &Dimension,
+		block_states: &HashMap<String, basic_types::blocks::Block>,
+	) -> Vec<BlockPosition> {
 		let goal_block = BlockPosition::from(goal);
 		let starting_point = BlockPosition::from(self.get_common_entity_data().position);
 		//println!("starting on block: {starting_point:?}");
@@ -650,99 +678,15 @@ pub trait CommonEntityTrait {
 				let mut current_node = node;
 				let mut current_cost = cost;
 				let mut current_parent = parent;
-				let mut last_node = node;
 				let mut nodes: Vec<(BlockPosition, f64)> = Vec::new();
 				loop {
 					nodes.push((current_node, current_cost));
 					//println!("current_node: {current_node:?} current_parent: {current_parent:?} last_node: {last_node:?}");
 					if current_node == starting_point {
-						//println!("next block towards goal: {last_node:?}");
-
-						//Update debug data
-						let debug_pathfinding_data = {
-							let mut lowest_cost_index = 0;
-							let mut lowest_cost = f64::INFINITY;
-							for (i, (_, cost, _)) in open.iter().enumerate() {
-								if *cost < lowest_cost {
-									lowest_cost = *cost;
-									lowest_cost_index = i;
-								}
-							}
-
-							DebugEntityPath {
-								reached: true,
-								next_block_index: lowest_cost_index as i32,
-								block_position: self.get_common_entity_data().position.into(),
-								nodes: nodes
-									.iter()
-									.map(|(node, cost)| DebugPathNode {
-										x: node.x,
-										y: node.y as i32,
-										z: node.z,
-										walked_distance: *cost as f32,
-										cost_malus: 0.0,
-										closed: true,
-										node_type: 0,
-										f: 0.0,
-									})
-									.collect(),
-								target_nodes: vec![DebugPathNode {
-									x: goal_block.x,
-									y: goal_block.y as i32,
-									z: goal_block.z,
-									walked_distance: 0.0,
-									cost_malus: 0.0,
-									closed: false,
-									node_type: 0,
-									f: 0.0,
-								}],
-								open_set: open
-									.iter()
-									.map(|x| DebugPathNode {
-										x: x.0.x,
-										y: x.0.y as i32,
-										z: x.0.z,
-										walked_distance: x.1 as f32,
-										cost_malus: 0.0,
-										closed: false,
-										node_type: 0,
-										f: 0.0,
-									})
-									.collect(),
-								closed_set: closed
-									.iter()
-									.map(|x| DebugPathNode {
-										x: x.0.x,
-										y: x.0.y as i32,
-										z: x.0.z,
-										walked_distance: x.1 as f32,
-										cost_malus: 0.0,
-										closed: true,
-										node_type: 0,
-										f: 0.0,
-									})
-									.collect(),
-								max_node_distance: 0.0,
-							}
-						};
-						// END Update debug data
-
-						let speed = 0.075;
-
-						return (
-							EntityPosition {
-								x: (last_node.x - starting_point.x) as f64 * speed,
-								y: if last_node.y > starting_point.y { 1.0 } else { 0.0 },
-								z: (last_node.z - starting_point.z) as f64 * speed,
-								yaw: 0.0,
-								pitch: 0.0,
-							},
-							vec![EntityTickOutcome::UpdateDebugDataPathfinding(Some(debug_pathfinding_data))],
-						);
+						return nodes.into_iter().map(|x| x.0).collect();
 					}
 
 					let (next_node, next_cost, next_parent) = closed.iter().find(|(node, _, _)| *node == current_parent).unwrap();
-					last_node = current_node;
 					current_node = *next_node;
 					current_cost = *next_cost;
 					current_parent = *next_parent;
@@ -819,9 +763,7 @@ pub trait CommonEntityTrait {
 			}
 		}
 
-		//println!("didnt find way to goal, aborting");
-
-		return (EntityPosition::default(), vec![EntityTickOutcome::UpdateDebugDataPathfinding(None)]);
+		return Vec::new();
 	}
 
 	fn get_pathfinding_penalties(&self) -> Vec<(&'static str, i8)> {
