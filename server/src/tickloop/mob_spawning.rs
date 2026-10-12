@@ -97,6 +97,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 		}
 	}
 
+	let time = world.time;
 	for dimension in world.dimensions.values_mut() {
 		let dimension_hostile_mob_count = dimension.entities.iter().filter(|x| x.is_mob() && x.get_mob_type() == MobType::Monster).count();
 		if dimension_hostile_mob_count >= lib::MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE as usize {
@@ -121,7 +122,8 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 				};
 
 				if dimension.name.as_str() != "minecraft:the_end" {
-					let light_level = chunk.get_light(chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z), dimension.lowest_block_y);
+					let light_level =
+						chunk.get_light(chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z), dimension.lowest_block_y, time);
 					if light_level > 7 {
 						continue;
 					}

@@ -533,8 +533,10 @@ impl Chunk {
 		return self.block_entities.iter_mut().find(|x| x.get_position() == position);
 	}
 
-	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16) -> u8 {
-		let skylight = self.get_skylight(position_global, lowest_block_y);
+	pub fn get_light(&self, position_global: BlockPosition, lowest_block_y: i16, time: i64) -> u8 {
+		let normalized_time = time % 24000;
+		let max_skylight = if (13000..23000).contains(&normalized_time) { 0 } else { 15 };
+		let skylight = self.get_skylight(position_global, lowest_block_y).min(max_skylight);
 		assert!(skylight < 16);
 		let blocklight = self.get_blocklight(position_global, lowest_block_y);
 		assert!(blocklight < 16);
