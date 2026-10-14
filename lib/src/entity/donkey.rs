@@ -81,6 +81,10 @@ impl CommonEntityTrait for Donkey {
 		return (1.5, 0.3965);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.425;
+	}
+
 	fn get_mob_type(&self) -> MobType {
 		return MobType::Creature;
 	}

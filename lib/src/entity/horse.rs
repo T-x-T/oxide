@@ -81,6 +81,10 @@ impl CommonEntityTrait for Horse {
 		return (1.6, 1.3965);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.52;
+	}
+
 	fn get_mob_type(&self) -> MobType {
 		return MobType::Creature;
 	}

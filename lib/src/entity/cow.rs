@@ -117,6 +117,10 @@ impl CommonEntityTrait for Cow {
 		return (1.4, 0.9);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.3;
+	}
+
 	fn get_mob_type(&self) -> MobType {
 		return MobType::Creature;
 	}

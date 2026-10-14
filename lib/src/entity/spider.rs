@@ -90,6 +90,10 @@ impl CommonEntityTrait for Spider {
 		return (0.9, 1.4);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 0.65;
+	}
+
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
 		return Vec::new();
 	}

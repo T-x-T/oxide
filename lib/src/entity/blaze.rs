@@ -88,6 +88,10 @@ impl CommonEntityTrait for Blaze {
 		return (1.8, 0.6);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.53;
+	}
+
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
 		return Vec::new();
 	}

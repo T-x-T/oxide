@@ -448,6 +448,10 @@ pub trait CommonEntityTrait {
 		return (1.7, 0.6);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.445;
+	}
+
 	fn get_occupied_block_positions(&self) -> Vec<BlockPosition> {
 		return self.get_occupied_block_positions_at_entity_position(self.get_common_entity_data().position);
 	}

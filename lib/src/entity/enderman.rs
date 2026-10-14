@@ -88,6 +88,10 @@ impl CommonEntityTrait for Enderman {
 		return (2.9, 0.6);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 2.55;
+	}
+
 	fn get_metadata(&self) -> Vec<crate::packets::clientbound::play::EntityMetadata> {
 		return Vec::new();
 	}

@@ -159,6 +159,10 @@ impl CommonEntityTrait for Creeper {
 		return (1.7, 0.6);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 1.445;
+	}
+
 	fn get_default_ai_behavior(&self) -> AiBehavior {
 		return AiBehavior::MoveTowardsPlayer;
 	}

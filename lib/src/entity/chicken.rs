@@ -122,6 +122,10 @@ impl CommonEntityTrait for Chicken {
 		return (0.7, 0.4);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 0.664;
+	}
+
 	fn get_mob_type(&self) -> MobType {
 		return MobType::Creature;
 	}

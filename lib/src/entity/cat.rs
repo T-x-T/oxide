@@ -81,6 +81,10 @@ impl CommonEntityTrait for Cat {
 		return (0.7, 0.6);
 	}
 
+	fn get_eye_height(&self) -> f64 {
+		return 0.35;
+	}
+
 	fn get_mob_type(&self) -> MobType {
 		return MobType::Creature;
 	}
