@@ -420,7 +420,7 @@ pub trait CommonEntityTrait {
 			let block_at_location = dimension.get_block(block_position_to_check).unwrap_or(0);
 			let block_collision_shape = crate::block::get_collision_shape(block_at_location, block_position_to_check, block_states);
 
-			let mut entity_collision_shape = self.get_common_entity_data_cloned().collision_shape; //must call _cloned variant, because Player only implements this
+			let mut entity_collision_shape = self.get_common_entity_data().collision_shape.clone();
 			entity_collision_shape.set_base_coordinates(entity_position_to_check);
 
 			if entity_collision_shape.collides_with(&block_collision_shape) {
