@@ -30,6 +30,17 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 		player.crafting_table_slots.iter_mut().filter(|x| x.count > 0).for_each(|x| {
 			dimension.summon_item(player_position, x.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager, 0);
 		});
+		player.crafting_table_slots = [
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+		];
 
 		if let Some(position) = player.opened_inventory_at {
 			let number_of_players_with_container_opened =
