@@ -653,6 +653,15 @@ impl CommonEntityTrait for Player {
 			);
 		}
 	}
+
+	//(height, width) https://minecraft.wiki/w/Hitbox
+	fn get_hitbox(&self) -> (f64, f64) {
+		return (1.8, 0.6);
+	}
+
+	fn get_eye_height(&self) -> f64 {
+		return 1.62;
+	}
 }
 
 impl Player {

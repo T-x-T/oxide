@@ -1,3 +1,5 @@
+use crate::block;
+
 use super::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -556,6 +558,7 @@ pub trait CommonEntityTrait {
 					.iter()
 					.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
 					.filter(|x| x.1 < 25.0)
+					.filter(|x| self.can_see_player(x.0, dimension, block_state_data))
 					.collect::<Vec<(&Player, f64)>>();
 				player_distances.sort_by(|a, b| a.1.total_cmp(&b.1));
 				let closest_player = player_distances.first();
@@ -913,6 +916,24 @@ pub trait CommonEntityTrait {
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) {
 		return;
+	}
+
+	fn can_see_player(&self, player: &Player, dimension: &Dimension, block_states: &HashMap<String, basic_types::blocks::Block>) -> bool {
+		let starting_point =
+			EntityPosition { y: self.get_common_entity_data().position.y + self.get_eye_height(), ..self.get_common_entity_data().position };
+		let target_point = EntityPosition {
+			y: player.get_common_entity_data().position.y + player.get_eye_height(),
+			..player.get_common_entity_data().position
+		};
+
+		return starting_point
+			.calculate_line_positions_to(target_point)
+			.into_iter()
+			.find(|x| {
+				block::get_collision_shape(dimension.get_block(BlockPosition::from(*x)).unwrap_or_default(), BlockPosition::from(*x), block_states)
+					.collides_with(&CollisionShape::new_from_cuboid(Cuboid { x1: -0.1, y1: -0.1, z1: -0.1, x2: 0.1, y2: 0.1, z2: 0.1 }, *x))
+			})
+			.is_none();
 	}
 }
 
