@@ -358,7 +358,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				});
 			} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap() {
 				player.cursor_item = Some(Slot {
-					count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(),
+					count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(), //TODO: possible overflow??
 					id: player.cursor_item.as_ref().unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
@@ -384,16 +384,18 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				.unwrap()
 				.clone();
 
-			player.send_container_slot_data(
-				&game.packet_sender,
-				0,
-				Some(Slot {
-					count: recipe.get_result_count(),
-					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				}),
-			);
+			let mut container_content: Vec<Option<Slot>> = vec![Some(Slot {
+				count: recipe.get_result_count(),
+				id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			})];
+			container_content
+				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+
+			container_content.append(&mut player.get_inventory()[10..=45].to_vec());
+
+			player.send_container_content_data(&game.packet_sender, 0, container_content, player.cursor_item.clone());
 		}
 	}
 
