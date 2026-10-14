@@ -84,18 +84,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	);
 
 	new_player.send_health_and_food_to_client(&game.packet_sender);
-
-	game.packet_sender.send_packet_to_player(
-		&peer_addr,
-		lib::packets::clientbound::play::SetContainerContent::PACKET_ID,
-		lib::packets::clientbound::play::SetContainerContent {
-			window_id: 0,
-			state_id: 1,
-			slot_data: new_player.get_inventory().clone(),
-			carried_item: None,
-		},
-	);
-
+	new_player.send_container_content_data(&game.packet_sender, 0, new_player.get_inventory().clone(), None);
 	new_player.send_armor_points(&game.packet_sender);
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();

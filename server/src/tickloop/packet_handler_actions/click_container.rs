@@ -34,27 +34,18 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
 				// Player tries to craft in their own inventory
 				if let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap()) {
-					game.packet_sender.send_packet_to_player(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-						lib::packets::clientbound::play::SetContainerSlot {
-							window_id: 0,
-							state_id: 1,
-							slot: 0,
-							slot_data: Some(Slot {
-								count: recipe.get_result_count(),
-								id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-								components_to_add: Vec::new(),
-								components_to_remove: Vec::new(),
-							}),
-						},
+					player.send_container_slot_data(
+						&game.packet_sender,
+						0,
+						Some(Slot {
+							count: recipe.get_result_count(),
+							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+							components_to_add: Vec::new(),
+							components_to_remove: Vec::new(),
+						}),
 					);
 				} else {
-					game.packet_sender.send_packet_to_player(
-						&player.peer_socket_address,
-						lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-						lib::packets::clientbound::play::SetContainerSlot { window_id: 0, state_id: 1, slot: 0, slot_data: None },
-					);
+					player.send_container_slot_data(&game.packet_sender, 0, None);
 				}
 			} else if parsed_packet.slot == 0
 				&& let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap())
@@ -96,20 +87,15 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 					&game.packet_sender,
 				);
 
-				game.packet_sender.send_packet_to_player(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-					lib::packets::clientbound::play::SetContainerSlot {
-						window_id: 0,
-						state_id: 1,
-						slot: 0,
-						slot_data: Some(Slot {
-							count: recipe.get_result_count(),
-							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new(),
-						}),
-					},
+				player.send_container_slot_data(
+					&game.packet_sender,
+					0,
+					Some(Slot {
+						count: recipe.get_result_count(),
+						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					}),
 				);
 			}
 		} else {
@@ -339,27 +325,18 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			if let Some(recipe) = game.recipe_manager.get_crafting_recipe_3x3(
 				crafting_slots.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect::<Vec<Option<Slot>>>().as_array().unwrap(),
 			) {
-				game.packet_sender.send_packet_to_player(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-					lib::packets::clientbound::play::SetContainerSlot {
-						window_id: 1,
-						state_id: 1,
-						slot: 0,
-						slot_data: Some(Slot {
-							count: recipe.get_result_count(),
-							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new(),
-						}),
-					},
+				player.send_container_slot_data(
+					&game.packet_sender,
+					0,
+					Some(Slot {
+						count: recipe.get_result_count(),
+						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					}),
 				);
 			} else {
-				game.packet_sender.send_packet_to_player(
-					&player.peer_socket_address,
-					lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-					lib::packets::clientbound::play::SetContainerSlot { window_id: 1, state_id: 1, slot: 0, slot_data: None },
-				);
+				player.send_container_slot_data(&game.packet_sender, 0, None);
 			}
 		} else if parsed_packet.slot == 0
 			&& let Some(recipe) = game.recipe_manager.get_crafting_recipe_3x3(
@@ -407,20 +384,15 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				.unwrap()
 				.clone();
 
-			game.packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				lib::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-				lib::packets::clientbound::play::SetContainerSlot {
-					window_id: 1,
-					state_id: 1,
-					slot: 0,
-					slot_data: Some(Slot {
-						count: recipe.get_result_count(),
-						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new(),
-					}),
-				},
+			player.send_container_slot_data(
+				&game.packet_sender,
+				0,
+				Some(Slot {
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				}),
 			);
 		}
 	}

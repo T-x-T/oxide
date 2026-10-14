@@ -94,6 +94,7 @@ pub struct Player {
 	is_sleeping: bool,
 	position_of_bed: Option<BlockPosition>,
 	sleeping_for_ticks: i16,
+	container_click_state_id: i32,
 }
 
 //Manual implementation because TcpStream doesn't implement Clone, instead just call unwrap here on its try_clone() function
@@ -134,6 +135,7 @@ impl Clone for Player {
 			is_sleeping: self.is_sleeping,
 			position_of_bed: self.position_of_bed,
 			sleeping_for_ticks: self.sleeping_for_ticks,
+			container_click_state_id: self.container_click_state_id,
 		}
 	}
 }
@@ -468,16 +470,7 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::GameEvent { event: 13, value: 0.0 },
 		);
 
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 0,
-				state_id: 1,
-				slot_data: self.get_inventory().clone(),
-				carried_item: None,
-			},
-		);
+		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), None);
 
 		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
 
@@ -721,6 +714,7 @@ impl Player {
 				is_sleeping: false,
 				position_of_bed: None,
 				sleeping_for_ticks: 0,
+				container_click_state_id: 0,
 				common_entity_data: CommonEntity {
 					position: default_spawn_location.into(),
 					last_position: default_spawn_location.into(),
@@ -854,6 +848,7 @@ impl Player {
 			exhaustion_swimming_for_meters: 0.0,
 			exhaustion_sprinting_for_meters: 0.0,
 			is_sprinting: false,
+			container_click_state_id: 0,
 			crafting_table_slots: [
 				Slot::default(),
 				Slot::default(),
@@ -1340,18 +1335,7 @@ impl Player {
 
 	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_and_dont_inform_client(items);
-
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 0,
-				state_id: 1,
-				slot_data: self.inventory.clone(),
-				carried_item: self.cursor_item.clone(),
-			},
-		);
-
+		self.send_container_content_data(packet_sender, 0, self.inventory.clone(), self.cursor_item.clone());
 		self.send_armor_points(packet_sender);
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
@@ -1395,15 +1379,11 @@ impl Player {
 
 		self.opened_inventory_at = Some(location);
 		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
-			packet_sender.send_packet_to_player(
-				&self.peer_socket_address,
-				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-				crate::packets::clientbound::play::SetContainerContent {
-					window_id: 1,
-					state_id: 1,
-					slot_data: block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
-					carried_item: None,
-				},
+			self.send_container_content_data(
+				packet_sender,
+				1,
+				block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
+				None,
 			);
 		};
 	}
@@ -1761,16 +1741,7 @@ impl Player {
 
 		self.is_dead = false;
 
-		packet_sender.send_packet_to_player(
-			&self.peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 0,
-				state_id: 1,
-				slot_data: self.get_inventory().clone(),
-				carried_item: None,
-			},
-		);
+		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), None);
 	}
 
 	pub fn get_health(&self) -> f32 {
@@ -2039,6 +2010,35 @@ impl Player {
 					value: self.get_armor_points() as f64,
 					modifiers: Vec::new(),
 				}],
+			},
+		);
+	}
+
+	pub fn send_container_slot_data(&mut self, packet_sender: &PacketSender, slot: i16, slot_data: Option<Slot>) {
+		self.container_click_state_id += 1;
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
+			crate::packets::clientbound::play::SetContainerSlot { window_id: 1, state_id: self.container_click_state_id, slot, slot_data },
+		);
+	}
+
+	pub fn send_container_content_data(
+		&mut self,
+		packet_sender: &PacketSender,
+		window_id: i32,
+		slot_data: Vec<Option<Slot>>,
+		carried_item: Option<Slot>,
+	) {
+		self.container_click_state_id += 1;
+		packet_sender.send_packet_to_player(
+			&self.peer_socket_address,
+			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
+			crate::packets::clientbound::play::SetContainerContent {
+				window_id,
+				state_id: self.container_click_state_id,
+				slot_data,
+				carried_item,
 			},
 		);
 	}

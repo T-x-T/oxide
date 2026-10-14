@@ -55,7 +55,7 @@ pub enum BlockEntity {
 }
 
 pub trait CommonBlockEntity {
-	fn tick(&mut self, _players: &[Player], _dimension_name: &str, _packet_sender: &PacketSender, _recipe_manager: &RecipeManager) {
+	fn tick(&mut self, _players: &mut [Player], _dimension_name: &str, _packet_sender: &PacketSender, _recipe_manager: &RecipeManager) {
 		return;
 	}
 	fn new(position: BlockPosition) -> Self;
@@ -64,7 +64,7 @@ pub trait CommonBlockEntity {
 }
 
 impl BlockEntity {
-	pub fn tick(&mut self, players: &[Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
+	pub fn tick(&mut self, players: &mut [Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
 		match self {
 			BlockEntity::Furnace(furnace) => furnace.tick(players, dimension_name, packet_sender, recipe_manager),
 			BlockEntity::Chest(chest) => chest.tick(players, dimension_name, packet_sender, recipe_manager),

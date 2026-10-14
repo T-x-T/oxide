@@ -56,7 +56,7 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 	let duration_send_keepalives = std::time::Instant::now() - now;
 
 	let now = std::time::Instant::now();
-	tick_blockentities::process(game.clone(), &players_clone);
+	tick_blockentities::process(game.clone());
 	let duration_tick_blockentities = std::time::Instant::now() - now;
 
 	let now = std::time::Instant::now();

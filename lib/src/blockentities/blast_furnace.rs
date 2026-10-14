@@ -16,7 +16,7 @@ pub struct BlastFurnace {
 }
 
 impl CommonBlockEntity for BlastFurnace {
-	fn tick(&mut self, players: &[Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
+	fn tick(&mut self, players: &mut [Player], dimension_name: &str, packet_sender: &PacketSender, recipe_manager: &RecipeManager) {
 		if self.needs_ticking {
 			if self.inventory[0].count == 0 {
 				self.reset_state(players, dimension_name, packet_sender);
@@ -76,20 +76,11 @@ impl CommonBlockEntity for BlastFurnace {
 			}
 
 			players
-				.iter()
+				.iter_mut()
 				.filter(|x| x.get_dimension() == dimension_name)
 				.filter(|x| x.opened_inventory_at.is_some_and(|y| y == self.position))
 				.for_each(|x| {
-					packet_sender.send_packet_to_player(
-						&x.peer_socket_address,
-						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-						crate::packets::clientbound::play::SetContainerContent {
-							window_id: 1,
-							state_id: 1,
-							slot_data: self.inventory.iter().cloned().map(Into::into).collect(),
-							carried_item: None,
-						},
-					);
+					x.send_container_content_data(packet_sender, 1, self.inventory.iter().cloned().map(Into::into).collect(), None);
 
 					packet_sender.send_packet_to_player(
 						&x.peer_socket_address,

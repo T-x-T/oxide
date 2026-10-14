@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 
-use crate::packets::Packet;
 use crate::types::*;
 
 pub fn handle(
@@ -42,15 +41,10 @@ pub fn handle(
 				//Chest inventory got changed
 				chest_items[parsed_packet.slot as usize] = new_inventory_item.clone().unwrap_or_default();
 				for peer in peers_with_container_opened {
-					packet_sender.send_packet_to_player(
-						&peer,
-						crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-						crate::packets::clientbound::play::SetContainerSlot {
-							window_id: 1,
-							state_id: 1,
-							slot: parsed_packet.slot,
-							slot_data: new_inventory_item.clone(),
-						},
+					players.iter_mut().find(|x| x.peer_socket_address == peer).unwrap().send_container_slot_data(
+						packet_sender,
+						parsed_packet.slot,
+						new_inventory_item.clone(),
 					);
 				}
 			} else {
@@ -71,17 +65,8 @@ pub fn handle(
 	} else if parsed_packet.mode == 1 {
 		if parsed_packet.window_id == 0 {
 			println!("no shift clicking in your inventory!");
-			let player = players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
-			packet_sender.send_packet_to_player(
-				&player.peer_socket_address,
-				crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-				crate::packets::clientbound::play::SetContainerContent {
-					window_id: 0,
-					state_id: 1,
-					slot_data: player.get_inventory().clone(),
-					carried_item: orig_cursor_item.clone(),
-				},
-			);
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			player.send_container_content_data(packet_sender, 0, player.get_inventory().clone(), orig_cursor_item.clone());
 		} else {
 			let orig_chest_inventory: Vec<Option<Slot>> = chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect();
 			let orig_player_inventory: Vec<Option<Slot>> =
@@ -95,15 +80,11 @@ pub fn handle(
 				chest_items.clone_from_slice(&new_chest_items);
 
 				for peer in peers_with_container_opened {
-					packet_sender.send_packet_to_player(
-						&peer,
-						crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-						crate::packets::clientbound::play::SetContainerContent {
-							window_id: 1,
-							state_id: 1,
-							slot_data: chest_items.iter().cloned().map(|x| x.into()).collect(),
-							carried_item: None,
-						},
+					players.iter_mut().find(|x| x.peer_socket_address == peer).unwrap().send_container_content_data(
+						packet_sender,
+						1,
+						chest_items.iter().cloned().map(|x| x.into()).collect(),
+						None,
 					);
 				}
 			}
@@ -118,26 +99,14 @@ pub fn handle(
 		}
 	} else {
 		//this just resets the inventory of the container and player if we dont know how to handle the used mode
-		packet_sender.send_packet_to_player(
-			&players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 1,
-				state_id: 1,
-				slot_data: chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect(),
-				carried_item: orig_cursor_item.clone(),
-			},
+		let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+		player.send_container_content_data(
+			packet_sender,
+			1,
+			chest_items.to_vec().clone().into_iter().map(|x| x.into()).collect(),
+			orig_cursor_item.clone(),
 		);
-		packet_sender.send_packet_to_player(
-			&players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().peer_socket_address,
-			crate::packets::clientbound::play::SetContainerContent::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerContent {
-				window_id: 0,
-				state_id: 1,
-				slot_data: players.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().get_inventory().clone(),
-				carried_item: orig_cursor_item,
-			},
-		);
+		player.send_container_content_data(packet_sender, 0, player.get_inventory().clone(), orig_cursor_item);
 	}
 }
 
