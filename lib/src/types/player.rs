@@ -1529,7 +1529,7 @@ impl Player {
 					&& inventory_slot.count
 						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.id).unwrap()).unwrap().max_stack_size as i32
 				{
-					inventory_slot.count += 1;
+					inventory_slot.count += slot.count; //TODO: can overflow
 					inventory_updated = true;
 
 					break;
