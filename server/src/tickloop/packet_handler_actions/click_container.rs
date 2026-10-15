@@ -7,6 +7,61 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let player_uuid = player.get_common_entity_data().uuid;
 
+	if parsed_packet.state_id != player.get_container_click_state_id() {
+		if parsed_packet.window_id == 0 {
+			player.send_container_content_data(&game.packet_sender, 0, player.get_inventory().clone(), player.cursor_item.clone());
+			println!("resent player inventory upon state mismatch, returning");
+			return;
+		} else {
+			if let Some(position) = player.opened_inventory_at {
+				let world = game.world.lock().unwrap();
+				let dimension = world.dimensions.get(player.get_dimension()).unwrap();
+				let player_currently_interacts_with_crafting_table = dimension
+					.get_block(position)
+					.is_ok_and(|x| game.block_state_data.get("minecraft:crafting_table").unwrap().states.first().unwrap().id == x);
+
+				if let Some(block_entity) = dimension.get_chunk_from_position(position).unwrap().try_get_block_entity(position) {
+					player.send_container_content_data(
+						&game.packet_sender,
+						1,
+						block_entity.get_contained_items_owned().clone().into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect(),
+						player.cursor_item.clone(),
+					);
+					println!("resent blockentities inventory upon state mismatch, returning");
+					return;
+				} else if player_currently_interacts_with_crafting_table {
+					let output = game
+						.recipe_manager
+						.get_crafting_recipe_3x3(
+							player
+								.crafting_table_slots
+								.clone()
+								.into_iter()
+								.map(|x| if x.count == 0 { None } else { Some(x) })
+								.collect::<Vec<Option<Slot>>>()
+								.as_array()
+								.unwrap(),
+						)
+						.map(|recipe| Slot {
+							count: recipe.get_result_count(),
+							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+							components_to_add: Vec::new(),
+							components_to_remove: Vec::new(),
+						});
+					let mut container_content: Vec<Option<Slot>> = vec![output];
+					container_content
+						.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+
+					container_content.append(&mut player.get_inventory()[9..=44].to_vec());
+
+					player.send_container_content_data(&game.packet_sender, 1, container_content, player.cursor_item.clone());
+					println!("resent crafting tables inventory upon state mismatch, returning");
+					return;
+				}
+			}
+		}
+	}
+
 	let Some(position) = player.opened_inventory_at else {
 		if player.get_gamemode() != Gamemode::Creative && parsed_packet.window_id == 0 {
 			let mut inventory: Vec<Slot> = player.get_inventory().clone().into_iter().map(|x| x.unwrap_or_default()).collect();

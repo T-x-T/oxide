@@ -2042,4 +2042,8 @@ impl Player {
 			},
 		);
 	}
+
+	pub fn get_container_click_state_id(&self) -> i32 {
+		return self.container_click_state_id;
+	}
 }
