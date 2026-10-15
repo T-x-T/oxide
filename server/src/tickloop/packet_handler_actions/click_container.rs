@@ -3,7 +3,6 @@ use lib::packets::serverbound::play::ClickContainer;
 use super::*;
 
 pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<Game>, players_clone: &[Player]) {
-	//println!("{parsed_packet:?}");
 	let mut players = game.players.lock().unwrap();
 	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
 	let player_uuid = player.get_common_entity_data().uuid;
@@ -33,20 +32,18 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 			let crafting_slots = player.get_inventory()[1..=4].to_vec();
 			if [1, 2, 3, 4].contains(&parsed_packet.slot) {
 				// Player tries to craft in their own inventory
+				let mut inventory_to_set = inventory_to_set;
 				if let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap()) {
-					player.send_container_slot_data(
-						&game.packet_sender,
-						0,
-						Some(Slot {
-							count: recipe.get_result_count(),
-							id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-							components_to_add: Vec::new(),
-							components_to_remove: Vec::new(),
-						}),
-					);
+					inventory_to_set[0] = Some(Slot {
+						count: recipe.get_result_count(),
+						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					});
 				} else {
-					player.send_container_slot_data(&game.packet_sender, 0, None);
+					inventory_to_set[0] = None;
 				}
+				player.set_inventory_and_inform_client(inventory_to_set, players_clone, &game.packet_sender);
 			} else if parsed_packet.slot == 0
 				&& let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap())
 			{
@@ -61,7 +58,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap()
 				{
 					player.cursor_item = Some(Slot {
-						count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(),
+						count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(), //TODO: can overflow
 						id: player.cursor_item.as_ref().unwrap().id,
 						components_to_add: Vec::new(),
 						components_to_remove: Vec::new(),
