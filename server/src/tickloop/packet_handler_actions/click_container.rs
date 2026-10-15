@@ -64,25 +64,39 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 						components_to_remove: Vec::new(),
 					});
 				}
-				player.set_inventory_and_inform_client(
-					player
-						.get_inventory()
-						.iter()
-						.enumerate()
-						.map(|(i, x)| {
-							if ![1, 2, 3, 4].contains(&i) {
-								return x.clone();
-							}
-							if let Some(mut slot) = x.clone() {
+
+				let mut inventory_after_crafting: Vec<Option<Slot>> = player
+					.get_inventory()
+					.iter()
+					.enumerate()
+					.map(|(i, x)| {
+						if ![1, 2, 3, 4].contains(&i) {
+							return x.clone();
+						} else if let Some(mut slot) = x.clone() {
+							if slot.count > 1 {
 								slot.count -= 1;
 								return Some(slot.clone());
+							} else {
+								return None;
 							}
-							x.clone()
-						})
-						.collect(),
-					players_clone,
-					&game.packet_sender,
-				);
+						}
+						x.clone()
+					})
+					.collect();
+
+
+				let crafting_slots = inventory_after_crafting[1..=4].to_vec();
+				if let Some(recipe) = game.recipe_manager.get_crafting_recipe_2x2(crafting_slots.as_array().unwrap()) {
+					inventory_after_crafting[0] = Some(Slot {
+						count: recipe.get_result_count(),
+						id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+						components_to_add: Vec::new(),
+						components_to_remove: Vec::new(),
+					});
+				} else {
+					inventory_after_crafting[0] = None;
+				}
+				player.set_inventory_and_inform_client(inventory_after_crafting, players_clone, &game.packet_sender);
 
 				player.send_container_slot_data(
 					&game.packet_sender,
