@@ -395,18 +395,32 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 				.unwrap()
 				.clone();
 
-			let mut container_content: Vec<Option<Slot>> = vec![Some(Slot {
-				count: recipe.get_result_count(),
-				id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			})];
+			let output_after_crafting = game
+				.recipe_manager
+				.get_crafting_recipe_3x3(
+					player
+						.crafting_table_slots
+						.clone()
+						.into_iter()
+						.map(|x| if x.count == 0 { None } else { Some(x) })
+						.collect::<Vec<Option<Slot>>>()
+						.as_array()
+						.unwrap(),
+				)
+				.map(|recipe| Slot {
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+
+			let mut container_content: Vec<Option<Slot>> = vec![output_after_crafting];
 			container_content
 				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
 
-			container_content.append(&mut player.get_inventory()[10..=45].to_vec());
+			container_content.append(&mut player.get_inventory()[9..=44].to_vec());
 
-			player.send_container_content_data(&game.packet_sender, 0, container_content, player.cursor_item.clone());
+			player.send_container_content_data(&game.packet_sender, 1, container_content, player.cursor_item.clone());
 		}
 	}
 
