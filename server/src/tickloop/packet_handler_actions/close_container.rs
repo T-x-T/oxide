@@ -9,15 +9,24 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 		//Drop items in crafting field
 		let mut inventory = player.get_inventory().clone();
 		let mut inventory_updated = false;
+		if inventory[0].is_some() {
+			inventory[0] = None;
+			inventory_updated = true;
+		}
 		for i in 1..=4 {
 			let slot = &mut inventory[i];
-			if let Some(slot) = slot
-				&& slot.count > 0
-			{
+			if slot.as_mut().is_some_and(|x| x.count > 0) {
 				inventory_updated = true;
 				let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
-
-				dimension.summon_item(player.get_position(), slot.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager, 0);
+				dimension.summon_item(
+					player.get_position(),
+					slot.take().unwrap(),
+					None,
+					players_clone,
+					&game.packet_sender,
+					&game.entity_id_manager,
+					0,
+				);
 			}
 		}
 
