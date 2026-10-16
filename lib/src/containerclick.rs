@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use crate::types::*;
 
 pub fn handle(
-	parsed_packet: crate::packets::serverbound::play::ClickContainer,
+	parsed_packet: &crate::packets::serverbound::play::ClickContainer,
 	chest_items: &mut [Slot],
 	player_uuid: u128,
 	peers_with_container_opened: Vec<SocketAddr>,
