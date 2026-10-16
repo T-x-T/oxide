@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use lib::packets::serverbound::play::ClickContainer;
 
 use super::*;
@@ -11,7 +13,7 @@ pub fn process(peer_addr: SocketAddr, parsed_packet: ClickContainer, game: Arc<G
 	// println!("{:?}", parsed_packet.changed_slots);
 
 	if parsed_packet.state_id != player.get_container_click_state_id() {
-		resolve_state_id_mismatch(parsed_packet, game.clone(), player);
+		resolve_state_id_mismatch(parsed_packet, game.clone(), player, dimensions);
 		return;
 	}
 
@@ -453,14 +455,13 @@ fn handle_crafting_table(
 	resend_inventory_on_changed_slot_mismatch(parsed_packet);
 }
 
-fn resolve_state_id_mismatch(parsed_packet: ClickContainer, game: Arc<Game>, player: &mut Player) {
+fn resolve_state_id_mismatch(parsed_packet: ClickContainer, game: Arc<Game>, player: &mut Player, dimensions: &HashMap<String, Dimension>) {
 	if parsed_packet.window_id == 0 {
 		player.send_container_content_data(&game.packet_sender, 0, player.get_inventory().clone(), player.cursor_item.clone());
 		println!("resent player inventory upon state mismatch, returning");
 	} else {
 		if let Some(position) = player.opened_inventory_at {
-			let world = game.world.lock().unwrap();
-			let dimension = world.dimensions.get(player.get_dimension()).unwrap();
+			let dimension = dimensions.get(player.get_dimension()).unwrap();
 			let player_currently_interacts_with_crafting_table = dimension
 				.get_block(position)
 				.is_ok_and(|x| game.block_state_data.get("minecraft:crafting_table").unwrap().states.first().unwrap().id == x);
