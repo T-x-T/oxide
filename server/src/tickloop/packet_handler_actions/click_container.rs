@@ -62,7 +62,6 @@ fn handle_player_inventory(
 		}
 
 		let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
-
 		let inventory_to_set: Vec<Option<Slot>> = inventory.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect();
 		player.set_inventory_and_dont_inform_client(inventory_to_set.clone());
 		player.send_armor_points(&game.packet_sender);
@@ -146,10 +145,11 @@ fn handle_player_inventory(
 				}),
 			);
 		}
+		let inventory = player.get_inventory().clone();
+		resend_inventory_on_changed_slot_mismatch(parsed_packet, &inventory, player, game);
 	} else {
 		println!("player doesn't seem to have a container opened at the moment");
 	}
-	resend_inventory_on_changed_slot_mismatch(parsed_packet);
 }
 
 fn handle_blockentity(
@@ -175,6 +175,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::BlastFurnace(blast_furnace) => {
 			let items = blast_furnace.get_contained_items_mut();
@@ -189,6 +192,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 			block_entity.set_needs_ticking(true);
 		}
 		BlockEntity::BrewingStand(brewing_stand) => {
@@ -204,6 +210,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Chest(chest) => {
 			let items = chest.get_contained_items_mut();
@@ -218,6 +227,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Crafter(crafter) => {
 			let items = crafter.get_contained_items_mut();
@@ -232,6 +244,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Dispenser(dispenser) => {
 			let items = dispenser.get_contained_items_mut();
@@ -246,6 +261,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Dropper(dropper) => {
 			let items = dropper.get_contained_items_mut();
@@ -260,6 +278,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Furnace(furnace) => {
 			let items = furnace.get_contained_items_mut();
@@ -274,6 +295,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 			block_entity.set_needs_ticking(true);
 		}
 		BlockEntity::Hopper(hopper) => {
@@ -289,6 +313,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::ShulkerBox(shulker_box) => {
 			let items = shulker_box.get_contained_items_mut();
@@ -303,6 +330,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
 		BlockEntity::Smoker(smoker) => {
 			let items = smoker.get_contained_items_mut();
@@ -317,6 +347,9 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 			block_entity.set_needs_ticking(true);
 		}
 		BlockEntity::TrappedChest(trapped_chest) => {
@@ -332,11 +365,15 @@ fn handle_blockentity(
 				players_clone,
 				&game.packet_sender,
 			);
+			let items: Vec<Option<Slot>> = items.iter().map(|x| if x.count == 0 { None } else { Some(x.clone()) }).collect();
+			let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, items.as_slice(), player, game);
 		}
-		x => println!("can't handle click_container packet for entity {x:?}"),
+		x => {
+			println!("can't handle click_container packet for entity {x:?}");
+			return;
+		}
 	}
-
-	resend_inventory_on_changed_slot_mismatch(parsed_packet);
 }
 
 fn handle_crafting_table(
@@ -347,18 +384,18 @@ fn handle_crafting_table(
 	player_uuid: u128,
 	peer_addr: SocketAddr,
 ) {
-	let mut items =
+	let mut crafting_slots =
 		players_clone.iter().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap().crafting_table_slots.clone().to_vec();
-	items.insert(0, Slot::default()); //need to append empty result slot
+	crafting_slots.insert(0, Slot::default()); //need to append empty result slot
 
 	//no need to handle when taking from result slot as that gets handled further down
 	if parsed_packet.slot != 0 {
-		lib::containerclick::handle(&parsed_packet, &mut items, player_uuid, Vec::new(), players, players_clone, &game.packet_sender);
+		lib::containerclick::handle(&parsed_packet, &mut crafting_slots, player_uuid, Vec::new(), players, players_clone, &game.packet_sender);
 	}
-	items.remove(0); //remove empty result slot again
+	crafting_slots.remove(0); //remove empty result slot again
 
 	let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
-	player.crafting_table_slots = items.as_array().unwrap().clone();
+	player.crafting_table_slots = crafting_slots.as_array().unwrap().clone();
 
 	//crafting in a crafting table
 	let crafting_slots = player.crafting_table_slots.to_vec();
@@ -377,8 +414,23 @@ fn handle_crafting_table(
 					components_to_remove: Vec::new(),
 				}),
 			);
+			let mut container_content: Vec<Option<Slot>> = vec![Some(Slot {
+				count: recipe.get_result_count(),
+				id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+				components_to_add: Vec::new(),
+				components_to_remove: Vec::new(),
+			})];
+			container_content
+				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+			container_content.append(&mut player.get_inventory()[9..=44].to_vec());
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, &container_content, player, game);
 		} else {
 			player.send_container_slot_data(&game.packet_sender, 0, None);
+			let mut container_content: Vec<Option<Slot>> = vec![None];
+			container_content
+				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+			container_content.append(&mut player.get_inventory()[9..=44].to_vec());
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, &container_content, player, game);
 		}
 	} else if parsed_packet.slot == 0
 		&& let Some(recipe) = game.recipe_manager.get_crafting_recipe_3x3(
@@ -447,12 +499,11 @@ fn handle_crafting_table(
 
 		let mut container_content: Vec<Option<Slot>> = vec![output_after_crafting];
 		container_content.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
-
 		container_content.append(&mut player.get_inventory()[9..=44].to_vec());
 
-		player.send_container_content_data(&game.packet_sender, 1, container_content, player.cursor_item.clone());
+		player.send_container_content_data(&game.packet_sender, 1, container_content.clone(), player.cursor_item.clone());
+		resend_inventory_on_changed_slot_mismatch(parsed_packet, &container_content, player, game);
 	}
-	resend_inventory_on_changed_slot_mismatch(parsed_packet);
 }
 
 fn resolve_state_id_mismatch(parsed_packet: ClickContainer, game: Arc<Game>, player: &mut Player, dimensions: &HashMap<String, Dimension>) {
@@ -498,7 +549,7 @@ fn resolve_state_id_mismatch(parsed_packet: ClickContainer, game: Arc<Game>, pla
 					.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
 
 				container_content.append(&mut player.get_inventory()[9..=44].to_vec());
-
+				println!("{parsed_packet:?}");
 				player.send_container_content_data(&game.packet_sender, 1, container_content, player.cursor_item.clone());
 				println!("resent crafting tables inventory upon state mismatch, returning");
 			}
@@ -506,4 +557,23 @@ fn resolve_state_id_mismatch(parsed_packet: ClickContainer, game: Arc<Game>, pla
 	}
 }
 
-fn resend_inventory_on_changed_slot_mismatch(parsed_packet: ClickContainer) {}
+fn resend_inventory_on_changed_slot_mismatch(
+	parsed_packet: ClickContainer,
+	inventory: &[Option<Slot>],
+	player: &mut Player,
+	game: Arc<Game>,
+) {
+	for (i, predicted_slot) in parsed_packet.changed_slots {
+		if let Some(actual_slot) = inventory.get(i as usize)
+			&& predicted_slot != actual_slot.clone()
+		{
+			let cursor_item = player.cursor_item.clone();
+			if parsed_packet.window_id == 1 {
+				player.send_container_content_data(&game.packet_sender, 1, inventory.to_vec(), cursor_item);
+			} else {
+				player.send_container_content_data(&game.packet_sender, 0, player.get_inventory().clone(), cursor_item);
+			}
+			// println!("predicted: {predicted_slot:?}, actual: {actual_slot:?}");
+		}
+	}
+}
