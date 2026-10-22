@@ -21,6 +21,7 @@ mod fence;
 mod fencegate;
 mod fire;
 mod iron_bars;
+mod ladder;
 mod nether_portal;
 mod potato;
 mod rotated_pillar;
@@ -144,6 +145,17 @@ pub fn get_block_state_id(
 			block_states,
 		)),
 		Type::Bed => output.append(&mut bed::get_block_state_id(cardinal_direction, dimension, position, used_item_name, block_states)),
+		Type::Ladder => output.append(&mut ladder::get_block_state_id(
+			face,
+			cardinal_direction,
+			dimension,
+			position,
+			used_item_name,
+			cursor_position_x,
+			cursor_position_y,
+			cursor_position_z,
+			block_states,
+		)),
 		_ => (),
 	}
 
@@ -269,6 +281,7 @@ fn update(
 		Type::Potato => potato::update(position, dimension, block_states, block_state_id),
 		Type::NetherPortal => nether_portal::update(position, dimension, block_states, block_state_id),
 		Type::Bed => bed::update(position, dimension, block_states, block_state_id),
+		Type::Ladder => ladder::update(position, dimension, block_states, block_state_id),
 		_ => BlockUpdateOutcome::DoNothing,
 	};
 
