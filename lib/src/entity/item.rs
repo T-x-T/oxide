@@ -120,7 +120,7 @@ impl CommonEntityTrait for ItemEntity {
 		return (0.25, 0.25);
 	}
 
-	fn tick(
+	fn extra_tick(
 		&mut self,
 		_dimension: &Dimension,
 		players: &[Player],

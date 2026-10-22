@@ -271,6 +271,10 @@ impl Dimension {
 				velocity: EntityPosition::default(),
 				uuid: std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_micros(), //TODO: add proper UUID
 				entity_id: entity_id_manager.get_new(),
+				collision_shape: CollisionShape::new_from_cuboid(
+					Cuboid { x1: -0.125, y1: 0.0, z1: -0.125, x2: 0.125, y2: 0.25, z2: 0.125 },
+					EntityPosition { x: position.x + 0.5, z: position.z + 0.5, ..position },
+				),
 				..Default::default()
 			},
 			age: 0,

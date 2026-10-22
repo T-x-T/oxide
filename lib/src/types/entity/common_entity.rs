@@ -239,13 +239,7 @@ pub trait CommonEntityTrait {
 		//movement stuffs (skip for players)
 		if self.get_type_string() != "minecraft:player" {
 			//gravity
-			if !(self.is_mob() && self.get_mob_data().hurt_time != 0) {
-				if self.is_on_ground(dimension, block_state_data) {
-					self.get_common_entity_data_mut().position.y = self.get_common_entity_data_mut().position.y.floor();
-				} else {
-					self.get_common_entity_data_mut().velocity.y -= 0.08;
-				}
-			}
+			self.get_common_entity_data_mut().velocity.y -= 0.08;
 
 			//drag on velocity
 			//the order in which these are applied differs between different entities, see https://minecraft.wiki/w/Entity#Motion
@@ -306,15 +300,16 @@ pub trait CommonEntityTrait {
 			self.get_common_entity_data_mut().position = next_position;
 			self.get_common_entity_data_mut().collision_shape.set_base_coordinates(next_position);
 
-			if old_position != self.get_common_entity_data().position {
+			if old_position != next_position {
 				let packet = crate::packets::clientbound::play::UpdateEntityPosition {
 					entity_id: self.get_common_entity_data().entity_id,
-					delta_x: ((self.get_common_entity_data().position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
-					delta_y: ((self.get_common_entity_data().position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
-					delta_z: ((self.get_common_entity_data().position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
+					delta_x: ((next_position.x * 4096.0) - (old_position.x * 4096.0)) as i16,
+					delta_y: ((next_position.y * 4096.0) - (old_position.y * 4096.0)) as i16,
+					delta_z: ((next_position.z * 4096.0) - (old_position.z * 4096.0)) as i16,
 					on_ground: self.is_on_ground(dimension, block_state_data),
 				};
 
+				//TODO: this should be handled in the EntityTickOutcome handling, maybe with a new variant like EntityMoved
 				packet_sender.send_packet_to_everyone_in_dimension(
 					players,
 					&dimension.name,
