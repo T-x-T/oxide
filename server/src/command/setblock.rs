@@ -29,6 +29,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 
 	let mut world = game.world.lock().unwrap();
 	let players = game.players.lock().unwrap();
+	let players_clone = players.clone();
 	let player = players.iter().find(|x| x.peer_socket_address == socket_addr).unwrap();
 
 	let command_parts: Vec<&str> = command.split(" ").collect();
@@ -94,6 +95,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		0.0,
 		0.0,
 		&game.block_state_data,
+		&players_clone, //TODO: this should force place anyways, maybe break lib::block::get_block_state_id apart
 	);
 
 	for (block_state_id, position) in blocks_to_update {

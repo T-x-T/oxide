@@ -820,6 +820,13 @@ impl Player {
 
 		let entity_id = entity_id_manager.get_new();
 		let permission = permissions::get_permission_from_file(uuid);
+		let entity_position = EntityPosition {
+			x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
+			y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
+			z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
+			yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
+			pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
+		};
 		let player = Self {
 			display_name,
 			peer_socket_address,
@@ -867,13 +874,7 @@ impl Player {
 			is_sleeping: false,
 			position_of_bed: None,
 			common_entity_data: CommonEntity {
-				position: EntityPosition {
-					x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
-					y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
-					z: player_data.get_child("Pos").unwrap().as_list()[2].as_double(),
-					yaw: player_data.get_child("Rotation").unwrap().as_list()[0].as_float(),
-					pitch: player_data.get_child("Rotation").unwrap().as_list()[1].as_float(),
-				},
+				position: entity_position,
 				last_position: EntityPosition {
 					x: player_data.get_child("Pos").unwrap().as_list()[0].as_double(),
 					y: player_data.get_child("Pos").unwrap().as_list()[1].as_double(),
@@ -885,6 +886,10 @@ impl Player {
 				uuid,
 				entity_id,
 				fall_distance: player_data.get_child("fall_distance").unwrap_or(&NbtTag::Double(String::new(), 0.0)).as_double(),
+				collision_shape: CollisionShape::new_from_cuboid(
+					Cuboid { x1: -0.3, y1: 0.0, z1: -0.3, x2: 0.3, y2: 1.8, z2: 0.3 },
+					entity_position,
+				),
 				..Default::default()
 			},
 		};

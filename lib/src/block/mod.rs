@@ -43,6 +43,7 @@ pub fn get_block_state_id(
 	cursor_position_y: f32,
 	cursor_position_z: f32,
 	block_states: &HashMap<String, Block>,
+	players: &[Player],
 ) -> Vec<(u16, BlockPosition)> {
 	let block = data::blocks::get_block_from_name(used_item_name, block_states);
 	if block.block_name == "minecraft:air" {
@@ -161,6 +162,30 @@ pub fn get_block_state_id(
 
 	if output.is_empty() {
 		output.push((block.states[block.default_state].id, position));
+	}
+
+	for (block_state_id, position_to_check) in &output {
+		let blocks_collision_shape = get_collision_shape(*block_state_id, *position_to_check, block_states);
+		let closeby_players: Vec<&Player> =
+			players.iter().filter(|x| x.get_common_entity_data().position.distance_to((*position_to_check).into()) < 2.0).collect();
+		for player in closeby_players {
+			let mut collision_shape = player.get_common_entity_data().collision_shape.clone();
+			collision_shape.set_base_coordinates(player.get_common_entity_data().position);
+			println!("{collision_shape:?}");
+			if collision_shape.collides_with(&blocks_collision_shape) {
+				return vec![(0, position)];
+			}
+		}
+
+		let closeby_entities: Vec<&Entity> =
+			dimension.entities.iter().filter(|x| x.get_common_entity_data().position.distance_to((*position_to_check).into()) < 10.0).collect();
+		for entity in closeby_entities {
+			let mut collision_shape = entity.get_common_entity_data().collision_shape.clone();
+			collision_shape.set_base_coordinates(entity.get_common_entity_data().position);
+			if collision_shape.collides_with(&blocks_collision_shape) {
+				return vec![(0, position)];
+			}
+		}
 	}
 
 	return output;

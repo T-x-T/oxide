@@ -141,6 +141,7 @@ pub fn process(
 			parsed_packet.cursor_position_y,
 			parsed_packet.cursor_position_z,
 			&game.block_state_data,
+			players_clone,
 		);
 
 		//first part of the if tries to check if player just right clicked an item that doesnt place a block
