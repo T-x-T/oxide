@@ -229,7 +229,7 @@ fn handle_shift_click(
 			return (new_chest_inventory, new_player_inventory);
 		}
 
-		let first_free_slot = orig_chest_inventory.iter().enumerate().find(|x| x.1.is_none()).map(|x| x.0);
+		let first_free_slot = orig_chest_inventory.iter().enumerate().find(|x| x.1.as_ref().is_none_or(|x| x.count == 0)).map(|x| x.0);
 		if let Some(first_free_slot) = first_free_slot {
 			new_chest_inventory[first_free_slot] = new_player_inventory[player_inventory_index].clone();
 			new_player_inventory[player_inventory_index] = None;
@@ -276,7 +276,7 @@ fn handle_shift_click(
 			.into_iter()
 			.flatten()
 			.collect();
-		let first_free_slot = slot_order.into_iter().find(|x| new_player_inventory[*x].is_none());
+		let first_free_slot = slot_order.into_iter().find(|x| new_player_inventory[*x].as_ref().is_none_or(|x| x.count == 0));
 		if let Some(first_free_slot) = first_free_slot {
 			new_player_inventory[first_free_slot] = new_chest_inventory[clicked_slot].clone();
 			new_chest_inventory[clicked_slot] = None;
