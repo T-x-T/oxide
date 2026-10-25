@@ -399,7 +399,7 @@ fn handle_crafting_table(
 
 	//crafting in a crafting table
 	let crafting_slots = player.crafting_table_slots.to_vec();
-	if [1, 2, 3, 4, 5, 6, 7, 8, 9, 9].contains(&parsed_packet.slot) {
+	if [1, 2, 3, 4, 5, 6, 7, 8, 9].contains(&parsed_packet.slot) {
 		// Player tries to craft in the crafting table
 		if let Some(recipe) = game.recipe_manager.get_crafting_recipe_3x3(
 			crafting_slots.into_iter().map(|x| if x.count == 0 { None } else { Some(x) }).collect::<Vec<Option<Slot>>>().as_array().unwrap(),
@@ -443,66 +443,133 @@ fn handle_crafting_table(
 				.unwrap(),
 		) {
 		// Player takes from the result slot
-		if player.cursor_item.as_ref().is_none_or(|x| x.count == 0) {
-			player.cursor_item = Some(Slot {
-				count: recipe.get_result_count(),
+		if parsed_packet.mode == 1 {
+			//shift clicked
+			let number_of_items_to_be_crafted = crafting_slots
+				.iter()
+				.filter(|x| x.count > 0)
+				.min_by_key(|x| x.count)
+				.unwrap_or(&Slot { count: 0, id: 0, components_to_add: vec![], components_to_remove: vec![] })
+				.count;
+
+			let output_slot = Slot {
+				count: recipe.get_result_count() * number_of_items_to_be_crafted,
 				id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
-			});
-		} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap() {
-			player.cursor_item = Some(Slot {
-				count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(), //TODO: possible overflow??
-				id: player.cursor_item.as_ref().unwrap().id,
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
+			};
+
+			let crafting_slots_after_crafting: Vec<Slot> = crafting_slots
+				.clone()
+				.iter()
+				.map(|x| {
+					let mut slot = x.clone();
+					if slot.count > 0 {
+						slot.count -= number_of_items_to_be_crafted;
+						return slot;
+					}
+					slot
+				})
+				.collect();
+
+			player.crafting_table_slots = crafting_slots_after_crafting.as_array().unwrap().clone();
+
+			let output_after_crafting = game
+				.recipe_manager
+				.get_crafting_recipe_3x3(
+					crafting_slots_after_crafting
+						.clone()
+						.into_iter()
+						.map(|x| if x.count == 0 { None } else { Some(x) })
+						.collect::<Vec<Option<Slot>>>()
+						.as_array()
+						.unwrap(),
+				)
+				.map(|recipe| Slot {
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+
+			let mut container_content: Vec<Option<Slot>> = vec![output_after_crafting];
+			container_content
+				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+			container_content.append(&mut player.get_inventory()[9..=44].to_vec());
+
+			player.send_container_content_data(&game.packet_sender, 1, container_content.clone(), player.cursor_item.clone());
+			resend_inventory_on_changed_slot_mismatch(parsed_packet.clone(), &container_content, player, game.clone());
+
+			let mut chest_items: Vec<Slot> = vec![vec![output_slot], crafting_slots_after_crafting.clone()].into_iter().flatten().collect();
+			lib::containerclick::handle(
+				&parsed_packet,
+				&mut chest_items,
+				player_uuid,
+				vec![peer_addr],
+				players,
+				players_clone,
+				&game.packet_sender,
+			);
+		} else {
+			//we're treating it as a normal click
+			if player.cursor_item.as_ref().is_none_or(|x| x.count == 0) {
+				player.cursor_item = Some(Slot {
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+			} else if player.cursor_item.as_ref().unwrap().id == data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap() {
+				player.cursor_item = Some(Slot {
+					count: player.cursor_item.as_ref().unwrap().count + recipe.get_result_count(), //TODO: possible overflow??
+					id: player.cursor_item.as_ref().unwrap().id,
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+			}
+			player.crafting_table_slots = crafting_slots
+				.clone()
+				.iter()
+				.map(|x| {
+					let mut slot = x.clone();
+					if slot.count > 0 {
+						slot.count -= 1;
+						return slot;
+					}
+					slot
+				})
+				.collect::<Vec<Slot>>()
+				.as_array()
+				.unwrap()
+				.clone();
+
+			let output_after_crafting = game
+				.recipe_manager
+				.get_crafting_recipe_3x3(
+					player
+						.crafting_table_slots
+						.clone()
+						.into_iter()
+						.map(|x| if x.count == 0 { None } else { Some(x) })
+						.collect::<Vec<Option<Slot>>>()
+						.as_array()
+						.unwrap(),
+				)
+				.map(|recipe| Slot {
+					count: recipe.get_result_count(),
+					id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
+					components_to_add: Vec::new(),
+					components_to_remove: Vec::new(),
+				});
+
+			let mut container_content: Vec<Option<Slot>> = vec![output_after_crafting];
+			container_content
+				.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
+			container_content.append(&mut player.get_inventory()[9..=44].to_vec());
+
+			player.send_container_content_data(&game.packet_sender, 1, container_content.clone(), player.cursor_item.clone());
+			resend_inventory_on_changed_slot_mismatch(parsed_packet, &container_content, player, game);
 		}
-		player.crafting_table_slots = crafting_slots
-			.clone()
-			.iter()
-			.enumerate()
-			.map(|(i, x)| {
-				let mut slot = x.clone();
-				if ![1, 2, 3, 4, 5, 6, 7, 8, 9].contains(&i) {
-					return slot;
-				}
-				if slot.count > 0 {
-					slot.count -= 1;
-					return slot;
-				}
-				slot
-			})
-			.collect::<Vec<Slot>>()
-			.as_array()
-			.unwrap()
-			.clone();
-
-		let output_after_crafting = game
-			.recipe_manager
-			.get_crafting_recipe_3x3(
-				player
-					.crafting_table_slots
-					.clone()
-					.into_iter()
-					.map(|x| if x.count == 0 { None } else { Some(x) })
-					.collect::<Vec<Option<Slot>>>()
-					.as_array()
-					.unwrap(),
-			)
-			.map(|recipe| Slot {
-				count: recipe.get_result_count(),
-				id: data::items::get_item_id_by_name(recipe.get_result_item_id().unwrap()).unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			});
-
-		let mut container_content: Vec<Option<Slot>> = vec![output_after_crafting];
-		container_content.append(&mut player.crafting_table_slots.iter().cloned().map(|x| if x.count != 0 { Some(x) } else { None }).collect());
-		container_content.append(&mut player.get_inventory()[9..=44].to_vec());
-
-		player.send_container_content_data(&game.packet_sender, 1, container_content.clone(), player.cursor_item.clone());
-		resend_inventory_on_changed_slot_mismatch(parsed_packet, &container_content, player, game);
 	}
 }
 
