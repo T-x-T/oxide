@@ -88,15 +88,12 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	new_player.send_armor_points(&game.packet_sender);
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
-
 	let dimension = world.dimensions.get_mut(new_player.get_dimension()).unwrap();
-	let now = std::time::Instant::now();
 	for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 		for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {
 			new_player.send_chunk(dimension, x, z, &game.packet_sender).unwrap();
 		}
 	}
-	println!("send chunks: {:?}", std::time::Instant::now() - now);
 
 	game.packet_sender.send_packet_to_player(
 		&peer_addr,

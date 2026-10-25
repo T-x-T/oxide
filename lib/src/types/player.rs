@@ -241,6 +241,15 @@ impl CommonEntityTrait for Player {
 	) -> Vec<EntityTickOutcome> {
 		let mut output: Vec<EntityTickOutcome> = Vec::new();
 
+		//resend all chunks around the player to make sure we actually sent them, as they might be loaded in a different thread
+		//because the first thing this checks is if the chunk has already been sent, we are not resending chunks the client already has
+		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
+		for x in current_chunk_coords.x - crate::VIEW_DISTANCE as i32..=current_chunk_coords.x + crate::VIEW_DISTANCE as i32 {
+			for z in current_chunk_coords.z - crate::VIEW_DISTANCE as i32..=current_chunk_coords.z + crate::VIEW_DISTANCE as i32 {
+				self.send_chunk(dimension, x, z, packet_sender).unwrap();
+			}
+		}
+
 		//advance sleep timer
 		if self.is_sleeping && self.sleeping_for_ticks < 100 {
 			self.sleeping_for_ticks += 1;
