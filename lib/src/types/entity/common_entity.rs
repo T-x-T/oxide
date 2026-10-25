@@ -322,20 +322,21 @@ pub trait CommonEntityTrait {
 		} //end movement stuff
 
 		//fall damage
-		let self_is_in_liquid = self.is_in_liquid(dimension);
-		if self.get_common_entity_data().position.y - self.get_common_entity_data().last_position.y < 0.0 && !self_is_in_liquid {
-			self.get_common_entity_data_mut().fall_distance +=
-				-(self.get_common_entity_data().position.y - self.get_common_entity_data().last_position.y);
-		} else {
-			let fall_damage_multiplier = 1.0; //will be important with enchantments and such
-			let safe_fall_height = 4.0;
-			let fall_damage = ((self.get_common_entity_data().fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
-			if fall_damage > 0.0 {
-				output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
-			}
+		let self_is_in_block_resetting_falldamage = self.is_in_fall_damage_resetting_block(dimension);
+		if self_is_in_block_resetting_falldamage {
 			self.get_common_entity_data_mut().fall_distance = 0.0;
-
-			if self_is_in_liquid {
+		}
+		if !self_is_in_block_resetting_falldamage {
+			let distance_fallen_since_last_tick = self.get_common_entity_data().last_position.y - self.get_common_entity_data().position.y;
+			if distance_fallen_since_last_tick > 0.0 {
+				self.get_common_entity_data_mut().fall_distance += distance_fallen_since_last_tick;
+			} else {
+				let fall_damage_multiplier = 1.0; //will be important with enchantments and such
+				let safe_fall_height = 4.0;
+				let fall_damage = ((self.get_common_entity_data().fall_distance - safe_fall_height) * fall_damage_multiplier).ceil();
+				if fall_damage > 0.0 {
+					output.push(EntityTickOutcome::DamageSelf(fall_damage as f32));
+				}
 				self.get_common_entity_data_mut().fall_distance = 0.0;
 			}
 		}
@@ -863,9 +864,29 @@ pub trait CommonEntityTrait {
 	}
 
 	fn is_in_liquid(&self, dimension: &Dimension) -> bool {
-		//need to use self.get_common_entity_data_cloned() because Player doesnt implement self.get_common_entity_data()
-		let block_at_pos = dimension.get_block(self.get_common_entity_data_cloned().position.into()).unwrap_or_default();
+		let block_at_pos = dimension.get_block(self.get_block_position()).unwrap_or_default();
 		return data::blocks::get_type_from_block_state_id(block_at_pos) == basic_types::blocks::Type::Liquid;
+	}
+
+	fn is_in_fall_damage_resetting_block(&self, dimension: &Dimension) -> bool {
+		let block_at_pos = dimension.get_block(self.get_block_position()).unwrap_or_default();
+		let block_name_at_pos = data::blocks::get_block_name_from_block_state_id(block_at_pos);
+		if self.is_in_liquid(dimension) {
+			return true;
+		}
+		let is_in_fall_damage_resetting = data::tags::get_block().get("fall_damage_resetting").unwrap().contains(&block_name_at_pos);
+		if is_in_fall_damage_resetting {
+			return true;
+		}
+
+		return false;
+	}
+
+	fn get_block_position(&self) -> BlockPosition {
+		let position = self.get_common_entity_data().position;
+		let x = if position.x < 0.0 { position.x as i32 - 1 } else { position.x as i32 };
+		let z = if position.z < 0.0 { position.z as i32 - 1 } else { position.z as i32 };
+		return BlockPosition { x, y: self.get_common_entity_data().position.y as i16, z };
 	}
 
 	//returns true if feeding was successfull, to signal to caller that players inventory needs updating
