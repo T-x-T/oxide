@@ -9,27 +9,6 @@ on:
       - "**"
 
 jobs:
-  build_server_docker_image:
-    runs-on: vm
-    container:
-      image: git.thetxt.io/thetxt/runner-base:latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Build server image
-        env:
-          IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
-        run: |
-          nohup dockerd-entrypoint.sh &
-          sleep 5
-          docker build -t $IMAGE_TAG .
-          docker save -o server_image.tar $IMAGE_TAG
-      - name: Save docker image
-        uses: actions/upload-artifact@v3
-        with:
-          name: server_image
-          path: server_image.tar
-
   test:
     runs-on: vm
     container:
@@ -61,6 +40,31 @@ jobs:
       - name: Check formatting
         run: |
           cargo fmt --check
+
+  build_server_docker_image:
+    runs-on: vm
+    container:
+      image: git.thetxt.io/thetxt/runner-base:latest
+    needs:
+      - test
+      - clippy
+      - formatting
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build server image
+        env:
+          IMAGE_TAG: git.thetxt.io/thetxt/oxide/server:${{ github.ref_name }}
+        run: |
+          nohup dockerd-entrypoint.sh &
+          sleep 5
+          docker build -t $IMAGE_TAG .
+          docker save -o server_image.tar $IMAGE_TAG
+      - name: Save docker image
+        uses: actions/upload-artifact@v3
+        with:
+          name: server_image
+          path: server_image.tar
 
   push_server:
     runs-on: vm
