@@ -89,7 +89,7 @@ impl PacketSender {
 				println!("failed to send packet to player {}", peer_addr);
 			};
 		} else {
-			println!("failed to get player_send_queue for {}", peer_addr);
+			//we dont care
 		}
 	}
 
@@ -104,7 +104,6 @@ impl PacketSender {
 					println!("failed to send packet to player {}", player.display_name);
 				}
 			} else {
-				println!("failed to get player_send_queue for {}", player.display_name);
 				continue;
 			}
 		}
@@ -121,7 +120,7 @@ impl PacketSender {
 					println!("failed to send packet to player {}", x.display_name);
 				}
 			} else {
-				println!("failed to get player_send_queue for {}", x.display_name);
+				//we dont care
 			}
 		});
 	}
