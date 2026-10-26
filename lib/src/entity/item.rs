@@ -5,7 +5,7 @@ pub struct ItemEntity {
 	pub common: CommonEntity,
 	pub age: i16,
 	pub health: i16,
-	pub item: Slot,
+	pub item: ProtocolSlot,
 	pub owner: u128,
 	pub pickup_delay: i16,
 	pub thrower: u128,
@@ -17,7 +17,7 @@ impl CommonEntityTrait for ItemEntity {
 			common: data,
 			age: extra_nbt.get_child("Age").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short(),
 			health: extra_nbt.get_child("Health").unwrap_or(&NbtTag::Short(String::new(), 5)).as_short(),
-			item: Slot {
+			item: ProtocolSlot {
 				id: data::items::get_item_id_by_name(
 					extra_nbt
 						.get_child("Item")
@@ -94,7 +94,7 @@ impl CommonEntityTrait for ItemEntity {
 	fn get_metadata(&self) -> Vec<EntityMetadata> {
 		return vec![EntityMetadata {
 			index: 8,
-			value: EntityMetadataValue::Slot(Slot {
+			value: EntityMetadataValue::Slot(ProtocolSlot {
 				count: self.item.count,
 				id: self.item.id,
 				components_to_add: Vec::new(),

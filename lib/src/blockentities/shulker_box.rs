@@ -4,19 +4,19 @@ use super::*;
 pub struct ShulkerBox {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub inventory: Vec<Slot>,
+	pub inventory: Vec<ProtocolSlot>,
 }
 
 impl CommonBlockEntity for ShulkerBox {
 	fn new(position: BlockPosition) -> Self {
-		return Self { position, components: Vec::new(), inventory: vec![Slot::default(); 27] };
+		return Self { position, components: Vec::new(), inventory: vec![ProtocolSlot::default(); 27] };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut self.inventory;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return self.inventory.clone();
 	}
 }
@@ -36,10 +36,10 @@ impl TryFrom<NbtListTag> for ShulkerBox {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let mut inventory = vec![Slot::default(); 27];
+		let mut inventory = vec![ProtocolSlot::default(); 27];
 		if let Some(items) = value.get_child("Items") {
 			for entry in items.as_list() {
-				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
+				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = ProtocolSlot {
 					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
 					count: entry.get_child("count").unwrap().as_int(),
 					components_to_add: Vec::new(),

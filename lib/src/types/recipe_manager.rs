@@ -11,7 +11,7 @@ impl RecipeManager {
 		return RecipeManager { recipes };
 	}
 
-	pub fn get_crafting_recipe_2x2(&self, slots: &[Option<Slot>; 4]) -> Option<&Recipe> {
+	pub fn get_crafting_recipe_2x2(&self, slots: &[Option<ProtocolSlot>; 4]) -> Option<&Recipe> {
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}
@@ -29,7 +29,7 @@ impl RecipeManager {
 		}
 	}
 
-	pub fn get_crafting_recipe_3x3(&self, slots: &[Option<Slot>; 9]) -> Option<&Recipe> {
+	pub fn get_crafting_recipe_3x3(&self, slots: &[Option<ProtocolSlot>; 9]) -> Option<&Recipe> {
 		if slots.iter().all(|x| x.is_none()) {
 			return None;
 		}
@@ -46,7 +46,7 @@ impl RecipeManager {
 		}
 	}
 
-	pub fn get_smelting_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+	pub fn get_smelting_recipe(&self, slot: &ProtocolSlot) -> Option<FurnaceData> {
 		for recipe in self.recipes.values() {
 			match recipe {
 				Recipe::Smelting(recipe) => {
@@ -71,7 +71,7 @@ impl RecipeManager {
 		return None;
 	}
 
-	pub fn get_smoking_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+	pub fn get_smoking_recipe(&self, slot: &ProtocolSlot) -> Option<FurnaceData> {
 		for recipe in self.recipes.values() {
 			match recipe {
 				Recipe::Smoking(recipe) => {
@@ -96,7 +96,7 @@ impl RecipeManager {
 		return None;
 	}
 
-	pub fn get_blasting_recipe(&self, slot: &Slot) -> Option<FurnaceData> {
+	pub fn get_blasting_recipe(&self, slot: &ProtocolSlot) -> Option<FurnaceData> {
 		for recipe in self.recipes.values() {
 			match recipe {
 				Recipe::Blasting(recipe) => {
@@ -308,7 +308,7 @@ impl RecipeManager {
 	}
 }
 
-fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
+fn is_recipe_a_match_2x2(slots: &[Option<ProtocolSlot>; 4], recipe: &Recipe) -> bool {
 	return match recipe {
 		Recipe::CraftingShaped(crafting_shaped_data) => {
 			if crafting_shaped_data.pattern.len() > 2 || crafting_shaped_data.pattern.first().unwrap().len() > 2 {
@@ -447,7 +447,7 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 				}
 			}
 
-			slots_vec.iter().filter(|x| x.is_some()).collect::<Vec<&Option<Slot>>>().is_empty()
+			slots_vec.iter().filter(|x| x.is_some()).collect::<Vec<&Option<ProtocolSlot>>>().is_empty()
 		}
 		Recipe::CraftingTransmute(_crafting_transmute_data) => false,
 		Recipe::CraftingSpecial(_crafting_special_data) => false,
@@ -456,7 +456,7 @@ fn is_recipe_a_match_2x2(slots: &[Option<Slot>; 4], recipe: &Recipe) -> bool {
 	};
 }
 
-fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
+fn is_recipe_a_match_3x3(slots: &[Option<ProtocolSlot>; 9], recipe: &Recipe) -> bool {
 	return match recipe {
 		Recipe::CraftingShaped(crafting_shaped_data) => {
 			let used_item_count = slots.iter().filter(|x| x.is_some()).count();
@@ -717,7 +717,7 @@ fn is_recipe_a_match_3x3(slots: &[Option<Slot>; 9], recipe: &Recipe) -> bool {
 				}
 			}
 
-			slots_vec.iter().filter(|x| x.is_some()).collect::<Vec<&Option<Slot>>>().is_empty()
+			slots_vec.iter().filter(|x| x.is_some()).collect::<Vec<&Option<ProtocolSlot>>>().is_empty()
 		}
 		Recipe::CraftingTransmute(_crafting_transmute_data) => false,
 		Recipe::CraftingSpecial(_crafting_special_data) => false,
@@ -754,8 +754,8 @@ mod tests {
 
 		#[test]
 		fn crafting_planks_from_acacia_log() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
@@ -774,14 +774,14 @@ mod tests {
 
 		#[test]
 		fn crafting_planks_from_2acacia_logs_doesnt_work() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:acacia_log").unwrap().id,
 					components_to_add: Vec::new(),
@@ -799,26 +799,26 @@ mod tests {
 
 		#[test]
 		fn crafting_book() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:leather").unwrap().id,
 					components_to_add: Vec::new(),
@@ -834,8 +834,8 @@ mod tests {
 
 		#[test]
 		fn crafting_book_from_one_paper_doesnt_work() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:paper").unwrap().id,
 					components_to_add: Vec::new(),
@@ -854,15 +854,15 @@ mod tests {
 
 		#[test]
 		fn matches_torch_recipe_left() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
@@ -879,16 +879,16 @@ mod tests {
 
 		#[test]
 		fn matches_torch_recipe_right() {
-			let slots: &[Option<Slot>; 4] = &[
+			let slots: &[Option<ProtocolSlot>; 4] = &[
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
@@ -904,8 +904,8 @@ mod tests {
 
 		#[test]
 		fn doesnt_match_torch_recipe_wrong() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:coal").unwrap().id,
 					components_to_add: Vec::new(),
@@ -913,7 +913,7 @@ mod tests {
 				}),
 				None,
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:stick").unwrap().id,
 					components_to_add: Vec::new(),
@@ -929,14 +929,14 @@ mod tests {
 
 		#[test]
 		fn matches_pressure_plate_up() {
-			let slots: &[Option<Slot>; 4] = &[
-				Some(Slot {
+			let slots: &[Option<ProtocolSlot>; 4] = &[
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
@@ -954,16 +954,16 @@ mod tests {
 
 		#[test]
 		fn doesnt_match_pressure_plate_wrong() {
-			let slots: &[Option<Slot>; 4] = &[
+			let slots: &[Option<ProtocolSlot>; 4] = &[
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),
 					components_to_remove: Vec::new(),
 				}),
 				None,
-				Some(Slot {
+				Some(ProtocolSlot {
 					count: 1,
 					id: data::items::get_items().get("minecraft:oak_planks").unwrap().id,
 					components_to_add: Vec::new(),

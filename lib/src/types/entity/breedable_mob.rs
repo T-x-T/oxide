@@ -59,7 +59,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 	fn get_breedable_data(&self) -> &BreedableMob;
 	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
 	fn get_food(&self) -> &[&'static str];
-	fn feed_breedable_mob(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed_breedable_mob(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		if self.get_breedable_data().age != 0 {
 			return false;
 		}

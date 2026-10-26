@@ -4,19 +4,19 @@ use super::*;
 pub struct DecoratedPot {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub item: Slot,
+	pub item: ProtocolSlot,
 }
 
 impl CommonBlockEntity for DecoratedPot {
 	fn new(position: BlockPosition) -> Self {
-		return Self { position, components: Vec::new(), item: Slot::default() };
+		return Self { position, components: Vec::new(), item: ProtocolSlot::default() };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return vec![self.item.clone()];
 	}
 }
@@ -36,9 +36,9 @@ impl TryFrom<NbtListTag> for DecoratedPot {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let mut item = Slot::default();
+		let mut item = ProtocolSlot::default();
 		if let Some(raw_item) = value.get_child("Item") {
-			item = Slot {
+			item = ProtocolSlot {
 				id: data::items::get_item_id_by_name(raw_item.get_child("id").unwrap().as_string()).unwrap(),
 				count: raw_item.get_child("count").unwrap().as_int(),
 				components_to_add: Vec::new(),

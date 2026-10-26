@@ -29,7 +29,7 @@ impl CommonEntityTrait for Sheep {
 
 	fn interact(
 		&mut self,
-		held_item: &Slot,
+		held_item: &ProtocolSlot,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],
@@ -43,7 +43,7 @@ impl CommonEntityTrait for Sheep {
 
 			let mut rng = rng();
 			let wool_drops = rng.random_range(1..=3);
-			let wool_slot = Slot {
+			let wool_slot = ProtocolSlot {
 				count: wool_drops,
 				id: data::items::get_item_id_by_name("minecraft:white_wool").unwrap(),
 				components_to_add: Vec::new(),
@@ -85,7 +85,7 @@ impl CommonEntityTrait for Sheep {
 		.collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 

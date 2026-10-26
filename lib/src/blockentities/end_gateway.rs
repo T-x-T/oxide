@@ -14,11 +14,11 @@ impl CommonBlockEntity for EndGateway {
 		return Self { position, components: Vec::new(), age: 0, exact_teleport: false, exit_portal: BlockPosition { x: 0, y: 0, z: 0 } };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return Vec::new();
 	}
 }

@@ -24,7 +24,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					let items_to_drop = loot_table::get_entity_drops(
 						&game.loot_tables,
 						&data::entities::get_name_from_id(entity_clone.get_type()),
-						&Slot::default(),
+						&ProtocolSlot::default(),
 						&game.block_state_data,
 						None,
 					);
@@ -53,7 +53,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					entity_event_packet,
 				);
 
-				let mut used_tool: Slot = Slot::default();
+				let mut used_tool: ProtocolSlot = ProtocolSlot::default();
 				let mut cloned_player: Option<Entity> = None;
 				if let Some(player) = players.iter_mut().find(|x| x.get_common_entity_data().entity_id == entity_id) {
 					used_tool = player.get_held_item(true).cloned().unwrap_or_default();

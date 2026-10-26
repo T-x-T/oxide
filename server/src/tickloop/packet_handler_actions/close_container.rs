@@ -40,15 +40,15 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 			dimension.summon_item(player_position, x.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager, 0);
 		});
 		player.crafting_table_slots = [
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
-			Slot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
+			ProtocolSlot::default(),
 		];
 
 		if let Some(position) = player.opened_inventory_at {

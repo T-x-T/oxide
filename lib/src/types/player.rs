@@ -65,10 +65,10 @@ pub struct Player {
 	pub connection_stream: Box<dyn ReadWrite>,
 	pub waiting_for_confirm_teleportation: bool,
 	pub current_teleport_id: i32,
-	inventory: Vec<Option<Slot>>,
+	inventory: Vec<Option<ProtocolSlot>>,
 	selected_slot: u8,
 	pub opened_inventory_at: Option<BlockPosition>,
-	pub cursor_item: Option<Slot>,
+	pub cursor_item: Option<ProtocolSlot>,
 	is_sneaking: bool,
 	pub chat_message_index: i32,
 	gamemode: Gamemode,
@@ -85,7 +85,7 @@ pub struct Player {
 	exhaustion_swimming_for_meters: f64,
 	exhaustion_sprinting_for_meters: f64,
 	is_sprinting: bool,
-	pub crafting_table_slots: [Slot; 9],
+	pub crafting_table_slots: [ProtocolSlot; 9],
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
@@ -346,7 +346,7 @@ impl CommonEntityTrait for Player {
 					let selected_slot = self.get_selected_inventory_slot().clone();
 					let selected_slot = selected_slot.map(|x| {
 						let new_item_count = x.count - 1;
-						if new_item_count == 0 { None } else { Some(Slot { count: new_item_count, ..x }) }
+						if new_item_count == 0 { None } else { Some(ProtocolSlot { count: new_item_count, ..x }) }
 					});
 					self.set_selected_inventory_slot(selected_slot.flatten(), players, packet_sender);
 				};
@@ -706,15 +706,15 @@ impl Player {
 				exhaustion_sprinting_for_meters: 0.0,
 				is_sprinting: false,
 				crafting_table_slots: [
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
-					Slot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
+					ProtocolSlot::default(),
 				],
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
@@ -756,7 +756,7 @@ impl Player {
 			let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
 			let count = x.get_child("count").unwrap().as_int();
 			if count > 0 {
-				inventory[slot_index] = Some(Slot {
+				inventory[slot_index] = Some(ProtocolSlot {
 					count,
 					id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -767,7 +767,7 @@ impl Player {
 
 		if let Some(equipment) = player_data.get_child("equipment") {
 			if let Some(head) = equipment.get_child("head") {
-				inventory[5] = Some(Slot {
+				inventory[5] = Some(ProtocolSlot {
 					count: head.get_child("count").unwrap().as_int(),
 					id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -775,7 +775,7 @@ impl Player {
 				})
 			}
 			if let Some(chest) = equipment.get_child("chest") {
-				inventory[6] = Some(Slot {
+				inventory[6] = Some(ProtocolSlot {
 					count: chest.get_child("count").unwrap().as_int(),
 					id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -783,7 +783,7 @@ impl Player {
 				})
 			}
 			if let Some(legs) = equipment.get_child("legs") {
-				inventory[7] = Some(Slot {
+				inventory[7] = Some(ProtocolSlot {
 					count: legs.get_child("count").unwrap().as_int(),
 					id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -791,7 +791,7 @@ impl Player {
 				})
 			}
 			if let Some(feet) = equipment.get_child("feet") {
-				inventory[8] = Some(Slot {
+				inventory[8] = Some(ProtocolSlot {
 					count: feet.get_child("count").unwrap().as_int(),
 					id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -799,7 +799,7 @@ impl Player {
 				})
 			}
 			if let Some(offhand) = equipment.get_child("offhand") {
-				inventory[45] = Some(Slot {
+				inventory[45] = Some(ProtocolSlot {
 					count: offhand.get_child("count").unwrap().as_int(),
 					id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()).unwrap(),
 					components_to_add: Vec::new(),
@@ -866,15 +866,15 @@ impl Player {
 			is_sprinting: false,
 			container_click_state_id: 0,
 			crafting_table_slots: [
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
-				Slot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
+				ProtocolSlot::default(),
 			],
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
@@ -919,7 +919,7 @@ impl Player {
 			.open(Player::get_playerdata_path(self.common_entity_data.uuid))
 			.unwrap();
 
-		let empty_slot = Slot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let empty_slot = ProtocolSlot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let player_data = NbtTag::Root(vec![
 			NbtTag::List(
 				"Pos".to_string(),
@@ -1025,7 +1025,7 @@ impl Player {
 		file.flush().unwrap();
 	}
 
-	pub fn get_held_item(&self, main_hand: bool) -> Option<&Slot> {
+	pub fn get_held_item(&self, main_hand: bool) -> Option<&ProtocolSlot> {
 		if main_hand {
 			return self.inventory.get(36 + self.selected_slot as usize).unwrap().as_ref();
 		} else {
@@ -1293,19 +1293,19 @@ impl Player {
 			});
 	}
 
-	pub fn get_inventory(&self) -> &Vec<Option<Slot>> {
+	pub fn get_inventory(&self) -> &Vec<Option<ProtocolSlot>> {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Option<Slot>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_selected_inventory_slot(&mut self, item: Option<ProtocolSlot>, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, packet_sender);
 	}
 
-	pub fn get_selected_inventory_slot(&self) -> &Option<Slot> {
+	pub fn get_selected_inventory_slot(&self) -> &Option<ProtocolSlot> {
 		return &self.get_inventory()[(self.get_selected_slot() + 36) as usize];
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<Slot>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<ProtocolSlot>, players: &[Player], packet_sender: &PacketSender) {
 		self.inventory[slot as usize] = item.clone();
 
 		packet_sender.send_packet_to_player(
@@ -1326,7 +1326,7 @@ impl Player {
 		}
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
-			let mut equipment: Vec<(u8, Option<Slot>)> = vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())];
+			let mut equipment: Vec<(u8, Option<ProtocolSlot>)> = vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())];
 
 			if [5, 6, 7, 8, 45].contains(&slot) {
 				equipment.push(match slot {
@@ -1347,13 +1347,13 @@ impl Player {
 		});
 	}
 
-	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<Slot>>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<ProtocolSlot>>, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_and_dont_inform_client(items);
 		self.send_container_content_data(packet_sender, 0, self.inventory.clone(), self.cursor_item.clone());
 		self.send_armor_points(packet_sender);
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
-			let equipment: Vec<(u8, Option<Slot>)> = vec![
+			let equipment: Vec<(u8, Option<ProtocolSlot>)> = vec![
 				(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone()),
 				(1, self.inventory[45].clone()),
 				(2, self.inventory[8].clone()),
@@ -1370,7 +1370,7 @@ impl Player {
 		});
 	}
 
-	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Option<Slot>>) {
+	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Option<ProtocolSlot>>) {
 		self.inventory = items.clone();
 	}
 
@@ -1526,7 +1526,7 @@ impl Player {
 		return self.is_mining;
 	}
 
-	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], packet_sender: &PacketSender) -> bool {
+	pub fn add_item_to_inventory(&mut self, slot: ProtocolSlot, players: &[Player], packet_sender: &PacketSender) -> bool {
 		let slot_indecies = [
 			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
 			33, 34, 35,
@@ -1570,7 +1570,7 @@ impl Player {
 	}
 
 	//returns true when item pickup was succesfull and false when not
-	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], packet_sender: &PacketSender) -> bool {
+	pub fn pickup_item(&mut self, item: ProtocolSlot, item_entity_id: i32, players: &[Player], packet_sender: &PacketSender) -> bool {
 		if self.is_dead {
 			return false;
 		}
@@ -2028,7 +2028,7 @@ impl Player {
 		);
 	}
 
-	pub fn send_container_slot_data(&mut self, packet_sender: &PacketSender, slot: i16, slot_data: Option<Slot>) {
+	pub fn send_container_slot_data(&mut self, packet_sender: &PacketSender, slot: i16, slot_data: Option<ProtocolSlot>) {
 		self.container_click_state_id += 1;
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
@@ -2041,8 +2041,8 @@ impl Player {
 		&mut self,
 		packet_sender: &PacketSender,
 		window_id: i32,
-		slot_data: Vec<Option<Slot>>,
-		carried_item: Option<Slot>,
+		slot_data: Vec<Option<ProtocolSlot>>,
+		carried_item: Option<ProtocolSlot>,
 	) {
 		self.container_click_state_id += 1;
 		packet_sender.send_packet_to_player(

@@ -59,8 +59,8 @@ pub trait CommonBlockEntity {
 		return;
 	}
 	fn new(position: BlockPosition) -> Self;
-	fn get_contained_items_mut(&mut self) -> &mut [Slot];
-	fn get_contained_items_owned(&self) -> Vec<Slot>;
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot];
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot>;
 }
 
 impl BlockEntity {
@@ -278,7 +278,7 @@ impl BlockEntity {
 		}
 	}
 
-	pub fn get_contained_items_owned(&self) -> Vec<Slot> {
+	pub fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return match self {
 			BlockEntity::Furnace(furnace) => furnace.get_contained_items_owned(),
 			BlockEntity::Chest(chest) => chest.get_contained_items_owned(),

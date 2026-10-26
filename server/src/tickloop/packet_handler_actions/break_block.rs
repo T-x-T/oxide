@@ -40,7 +40,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 			dimension.summon_item(
 				player.get_position(),
-				Slot { count: 1, ..slot.clone() },
+				ProtocolSlot { count: 1, ..slot.clone() },
 				Some(player.get_common_entity_data().uuid),
 				players_clone,
 				&game.packet_sender,
@@ -72,7 +72,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 		let items_to_drop = lib::loot_table::get_block_drops(
 			&game.loot_tables,
 			old_block_id,
-			player_clone.get_held_item(true).unwrap_or(&Slot::default()),
+			player_clone.get_held_item(true).unwrap_or(&ProtocolSlot::default()),
 			&game.block_state_data,
 			Some(&Entity::Player(player.clone())),
 		);

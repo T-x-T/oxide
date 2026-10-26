@@ -258,7 +258,7 @@ impl Dimension {
 	pub fn summon_item(
 		&mut self,
 		position: EntityPosition,
-		slot: Slot,
+		slot: ProtocolSlot,
 		player_uuid: Option<u128>,
 		players_clone: &[Player],
 		packet_sender: &PacketSender,

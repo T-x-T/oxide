@@ -21,7 +21,7 @@ pub fn interact(
 		if player.get_gamemode() == Gamemode::Survival || player.get_gamemode() == Gamemode::Adventure {
 			let held_item = player.get_held_item(true).unwrap();
 			if held_item.count > 1 {
-				let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
+				let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
 				player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
 			} else {
 				player.set_selected_inventory_slot(None, players_clone, packet_sender);

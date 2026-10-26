@@ -63,12 +63,12 @@ pub fn process(
 		if block_name == "minecraft:water" {
 			let held_item = player.get_held_item(true).unwrap();
 			if held_item.count > 1 {
-				let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
+				let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
 				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
 			} else {
 				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
 			}
-			let water_bucket_slot = Slot {
+			let water_bucket_slot = ProtocolSlot {
 				count: 1,
 				id: data::items::get_item_id_by_name("minecraft:water_bucket").unwrap(),
 				components_to_add: Vec::new(),
@@ -83,7 +83,7 @@ pub fn process(
 		.get_held_item(true)
 		.is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket").unwrap())
 	{
-		let bucket_slot = Slot {
+		let bucket_slot = ProtocolSlot {
 			count: 1,
 			id: data::items::get_item_id_by_name("minecraft:bucket").unwrap(),
 			components_to_add: Vec::new(),
@@ -99,7 +99,7 @@ pub fn process(
 	} else {
 		//Let's go - we can place a block
 		let used_item_id =
-			player.get_held_item(true).unwrap_or(&Slot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).id;
+			player.get_held_item(true).unwrap_or(&ProtocolSlot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).id;
 		let mut used_item_name = data::items::get_item_name_by_id(used_item_id).unwrap();
 
 		if block_type_at_location == Type::Farm {
@@ -151,7 +151,7 @@ pub fn process(
 			};
 
 			let hand_slot = hand_slot.clone();
-			let new_hand_slot = if hand_slot.count == 1 { None } else { Some(Slot { count: hand_slot.count - 1, ..hand_slot }) };
+			let new_hand_slot = if hand_slot.count == 1 { None } else { Some(ProtocolSlot { count: hand_slot.count - 1, ..hand_slot }) };
 
 			player.set_selected_inventory_slot(new_hand_slot, players_clone, &game.packet_sender);
 		}

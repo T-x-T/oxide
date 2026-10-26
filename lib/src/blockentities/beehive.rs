@@ -20,11 +20,11 @@ impl CommonBlockEntity for Beehive {
 		return Self { position, components: Vec::new(), bees: Vec::new(), flower_position: None };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return Vec::new();
 	}
 }

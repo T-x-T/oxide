@@ -84,7 +84,7 @@ impl CommonEntityTrait for Creeper {
 
 	fn interact(
 		&mut self,
-		held_item: &Slot,
+		held_item: &ProtocolSlot,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],

@@ -23,7 +23,7 @@ pub struct CommonMob {
 	pub death_loot_table_seed: Option<i64>,
 	pub death_time: i16,
 	pub drop_chances: NbtTag,
-	pub equipment: HashMap<String, Slot>,
+	pub equipment: HashMap<String, ProtocolSlot>,
 	pub fall_flying: u8,
 	pub health: f32,
 	pub home_location: (i32, i32, i32),
@@ -114,7 +114,7 @@ impl CommonMob {
 			output.drop_chances = value.clone();
 		}
 		if let Some(value) = data.get_child("equipment") {
-			let mut equipment: HashMap<String, Slot> = HashMap::new();
+			let mut equipment: HashMap<String, ProtocolSlot> = HashMap::new();
 			if let Some(x) = value.get_child("head") {
 				equipment.insert("head".to_string(), x.clone().into());
 			}

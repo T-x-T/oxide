@@ -19,7 +19,7 @@ impl CommonEntityTrait for Cow {
 
 	fn interact(
 		&mut self,
-		held_item: &Slot,
+		held_item: &ProtocolSlot,
 		_dimension: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
@@ -36,13 +36,13 @@ impl CommonEntityTrait for Cow {
 
 		let held_item = player.get_held_item(true).unwrap();
 		if held_item.count > 1 {
-			let slot = Slot { count: held_item.count - 1, ..held_item.clone() };
+			let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
 			player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
 		} else {
 			player.set_selected_inventory_slot(None, players_clone, packet_sender);
 		}
 
-		let milk_bucket_slot = Slot {
+		let milk_bucket_slot = ProtocolSlot {
 			count: 1,
 			id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
 			components_to_add: Vec::new(),
@@ -57,7 +57,7 @@ impl CommonEntityTrait for Cow {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 

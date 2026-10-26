@@ -4,7 +4,7 @@ use super::*;
 pub struct Lectern {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub book: Option<Slot>,
+	pub book: Option<ProtocolSlot>,
 	pub page: Option<i32>,
 }
 
@@ -13,11 +13,11 @@ impl CommonBlockEntity for Lectern {
 		return Self { position, components: Vec::new(), book: None, page: None };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return Vec::new();
 	}
 }
@@ -51,7 +51,7 @@ impl TryFrom<NbtListTag> for Lectern {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let book = value.get_child("Book").map(|x| Slot {
+		let book = value.get_child("Book").map(|x| ProtocolSlot {
 			id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
 			count: x.get_child("count").unwrap().as_int(),
 			components_to_add: Vec::new(),

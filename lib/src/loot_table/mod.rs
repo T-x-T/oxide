@@ -10,10 +10,10 @@ use std::collections::HashMap;
 pub fn get_block_drops(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_state_id: u16,
-	used_tool: &Slot,
+	used_tool: &ProtocolSlot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	source_entity: Option<&Entity>,
-) -> Vec<Slot> {
+) -> Vec<ProtocolSlot> {
 	let block = data::blocks::get_block_from_block_state_id(block_state_id, block_states);
 	let block_name = block.block_name;
 	let Some(loot_table) = loot_tables.get("blocks").unwrap().get(block_name) else {
@@ -68,10 +68,10 @@ pub fn get_block_drops(
 pub fn get_entity_drops(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	entity_type: &str,
-	used_tool: &Slot,
+	used_tool: &ProtocolSlot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	source_entity: Option<&Entity>,
-) -> Vec<Slot> {
+) -> Vec<ProtocolSlot> {
 	let Some(loot_table) = loot_tables.get("entities").unwrap().get(entity_type) else {
 		println!("didnt find loot table for {entity_type}");
 		return Vec::new();
@@ -83,14 +83,14 @@ pub fn get_entity_drops(
 fn evaluate_loot_table(
 	loot_table: &LootTable,
 	block_state_id: u16,
-	used_tool: &Slot,
+	used_tool: &ProtocolSlot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_name: &str,
 	entity: Option<&Entity>,
-) -> Vec<Slot> {
+) -> Vec<ProtocolSlot> {
 	let mut rng = rng();
-	let mut output: Vec<Slot> = Vec::new();
+	let mut output: Vec<ProtocolSlot> = Vec::new();
 	'pool: for pool in &loot_table.pools {
 		for condition in &pool.conditions {
 			if !evaluate_condition(condition, block_state_id, block_states, &Some(used_tool.clone()), entity) {
@@ -105,7 +105,7 @@ fn evaluate_loot_table(
 
 		match &chosen_entry.entry_type {
 			LootTablePoolEntrySingletonType::Item(item) => {
-				let item = Slot {
+				let item = ProtocolSlot {
 					id: data::items::get_item_id_by_name(item).unwrap(),
 					count: 1,
 					components_to_add: Vec::new(),
@@ -151,7 +151,7 @@ fn get_valid_entries_from_pool_entries(
 	entries: &Vec<LootTablePoolEntry>,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<Slot>,
+	used_tool: &Option<ProtocolSlot>,
 	entity: Option<&Entity>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -165,7 +165,7 @@ fn get_valid_entries_from_pool_entry(
 	entry: &LootTablePoolEntry,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<Slot>,
+	used_tool: &Option<ProtocolSlot>,
 	entity: Option<&Entity>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -251,7 +251,7 @@ fn evaluate_condition(
 	condition: &Predicate,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<Slot>,
+	used_tool: &Option<ProtocolSlot>,
 	_entity: Option<&Entity>,
 ) -> bool {
 	return match condition {
@@ -382,12 +382,12 @@ fn evaluate_condition(
 
 fn apply_function(
 	function: &ItemModifier,
-	mut items: Vec<Slot>,
+	mut items: Vec<ProtocolSlot>,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<Slot>,
+	used_tool: &Option<ProtocolSlot>,
 	entity: Option<&Entity>,
-) -> Vec<Slot> {
+) -> Vec<ProtocolSlot> {
 	let conditions = function.conditions.clone();
 	for condition in conditions {
 		if !evaluate_condition(&condition, block_state_id, block_states, used_tool, entity) {
@@ -471,7 +471,7 @@ fn evaluate_number_provider(number_provider: &NumberProvider) -> f32 {
 mod test {
 	use std::net::{Ipv4Addr, SocketAddrV4};
 
-	use crate::{BlockPosition, Entity, MockReadWriter, Player, Slot};
+	use crate::{BlockPosition, Entity, MockReadWriter, Player, ProtocolSlot};
 
 
 	#[test]
@@ -480,7 +480,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:diamond_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -500,7 +500,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -518,7 +518,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -538,7 +538,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -557,7 +557,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -570,7 +570,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -590,7 +590,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -611,7 +611,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -624,7 +624,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -654,7 +654,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -675,7 +675,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -690,7 +690,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
@@ -706,7 +706,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -721,7 +721,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -742,7 +742,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:basalt").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -755,7 +755,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
 			components_to_add: Vec::new(),
@@ -776,7 +776,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -790,7 +790,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
@@ -806,7 +806,7 @@ mod test {
 		let loot_tables = data::loot_tables::get_loot_tables();
 
 		let used_item =
-			Slot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -820,7 +820,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:diamond_sword").unwrap().id,
 			components_to_add: Vec::new(),
@@ -865,7 +865,7 @@ mod test {
 		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = Slot {
+		let used_item = ProtocolSlot {
 			count: 1,
 			id: all_items.get("minecraft:diamond_sword").unwrap().id,
 			components_to_add: Vec::new(),

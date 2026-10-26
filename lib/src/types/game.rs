@@ -44,7 +44,7 @@ pub enum PacketHandlerAction {
 	DisconnectPlayer(SocketAddr),
 	MovePlayer(SocketAddr, Option<(f64, f64, f64)>, Option<(f32, f32)>), //(x,y,z), (yaw,pitch)
 	ConfirmTeleportation(SocketAddr, i32),
-	SetCreativeModeSlot(SocketAddr, u8, Option<Slot>),
+	SetCreativeModeSlot(SocketAddr, u8, Option<ProtocolSlot>),
 	SetSelectedSlot(SocketAddr, u8),
 	PickItemFromBlock(SocketAddr, BlockPosition, bool), //bool = include_data
 	SwingArm(SocketAddr, u8),

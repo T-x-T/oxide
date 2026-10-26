@@ -3,15 +3,15 @@ use std::error::Error;
 use super::*;
 
 #[derive(Debug, Clone, PartialEq, Default)]
-pub struct Slot {
+pub struct ProtocolSlot {
 	pub count: i32,
 	pub id: i32,
 	pub components_to_add: Vec<SlotComponent>,
 	pub components_to_remove: Vec<i32>,
 }
 
-impl From<Vec<Slot>> for NbtTag {
-	fn from(value: Vec<Slot>) -> Self {
+impl From<Vec<ProtocolSlot>> for NbtTag {
+	fn from(value: Vec<ProtocolSlot>) -> Self {
 		return NbtTag::List(
 			"Items".to_string(),
 			value
@@ -31,8 +31,8 @@ impl From<Vec<Slot>> for NbtTag {
 	}
 }
 
-impl From<Slot> for NbtTag {
-	fn from(value: Slot) -> Self {
+impl From<ProtocolSlot> for NbtTag {
+	fn from(value: ProtocolSlot) -> Self {
 		return NbtTag::TagCompound(
 			"Item".to_string(),
 			vec![
@@ -45,8 +45,8 @@ impl From<Slot> for NbtTag {
 	}
 }
 
-impl From<Slot> for Vec<NbtTag> {
-	fn from(value: Slot) -> Self {
+impl From<ProtocolSlot> for Vec<NbtTag> {
+	fn from(value: ProtocolSlot) -> Self {
 		return vec![
 			NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.id).unwrap().to_string()),
 			NbtTag::Int("count".to_string(), value.count),
@@ -55,7 +55,7 @@ impl From<Slot> for Vec<NbtTag> {
 	}
 }
 
-impl From<NbtTag> for Slot {
+impl From<NbtTag> for ProtocolSlot {
 	fn from(value: NbtTag) -> Self {
 		return Self {
 			id: data::items::get_item_id_by_name(
@@ -156,7 +156,7 @@ pub enum SlotComponent {
 	IntangibleProjectile(NbtTag),
 	Food(i32, f32, bool),
 	Consumable(f32, i32, String, bool, Vec<ConsumeEffect>),
-	UseRemainder(Option<Slot>),
+	UseRemainder(Option<ProtocolSlot>),
 	UseCooldown(f32, Option<String>),
 	DamageResistant(String),
 	Tool(Vec<(IdSet, Option<f32>, Option<bool>)>, f32, i32, bool), //blocks, speed, correct_drop_for_blocks, default_mining_speed, can_destroy_blocks_in_creative
@@ -174,8 +174,8 @@ pub enum SlotComponent {
 	MapId(i32),
 	MapDecorations(NbtTag),
 	MapPostProcessing(u8),
-	ChargedProjectiles(Vec<Option<Slot>>),
-	BundleContents(Vec<Option<Slot>>),
+	ChargedProjectiles(Vec<Option<ProtocolSlot>>),
+	BundleContents(Vec<Option<ProtocolSlot>>),
 	PotionContents(Option<i32>, Option<i32>, Vec<PotionEffect>, String),
 	PotionDurationScale(f32),
 	SuspiciousStewEffects(Vec<(i32, i32)>),
@@ -1283,7 +1283,7 @@ impl From<SlotComponent> for Vec<u8> {
 }
 
 
-pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
+pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<ProtocolSlot>, Box<dyn Error>> {
 	let item_count = crate::deserialize::varint(data)?;
 
 	if item_count == 0 {
@@ -1303,10 +1303,10 @@ pub fn deserialize_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Erro
 		components_to_remove.push(crate::deserialize::varint(data)?);
 	}
 
-	return Ok(Some(Slot { count: item_count, id: item_id, components_to_add, components_to_remove }));
+	return Ok(Some(ProtocolSlot { count: item_count, id: item_id, components_to_add, components_to_remove }));
 }
 
-pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
+pub fn serialize_slot(input: Option<&ProtocolSlot>) -> Vec<u8> {
 	let mut output: Vec<u8> = Vec::new();
 
 	let Some(input) = input else {
@@ -1335,7 +1335,7 @@ pub fn serialize_slot(input: Option<&Slot>) -> Vec<u8> {
 }
 
 
-pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<dyn Error>> {
+pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<ProtocolSlot>, Box<dyn Error>> {
 	let has_item = crate::deserialize::boolean(data)?;
 
 	if !has_item {
@@ -1358,10 +1358,10 @@ pub fn deserialize_hashed_slot(data: &mut Vec<u8>) -> Result<Option<Slot>, Box<d
 	}
 
 	//might have to do something about the components_to_add but probably not(?)
-	return Ok(Some(Slot { count: item_count, id: item_id, components_to_add: Vec::new(), components_to_remove }));
+	return Ok(Some(ProtocolSlot { count: item_count, id: item_id, components_to_add: Vec::new(), components_to_remove }));
 }
 
-pub fn serialize_hashed_slot(input: Option<&Slot>) -> Vec<u8> {
+pub fn serialize_hashed_slot(input: Option<&ProtocolSlot>) -> Vec<u8> {
 	let mut output: Vec<u8> = Vec::new();
 
 	let Some(input) = input else {

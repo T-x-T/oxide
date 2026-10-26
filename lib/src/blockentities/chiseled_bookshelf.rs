@@ -4,20 +4,20 @@ use super::*;
 pub struct ChiseledBookshelf {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub items: Vec<Slot>,               //len 6
+	pub items: Vec<ProtocolSlot>,               //len 6
 	pub last_interacted_slot: i32,      //0-5 or -1 if none
 }
 
 impl CommonBlockEntity for ChiseledBookshelf {
 	fn new(position: BlockPosition) -> Self {
-		return Self { position, components: Vec::new(), items: vec![Slot::default(); 6], last_interacted_slot: -1 };
+		return Self { position, components: Vec::new(), items: vec![ProtocolSlot::default(); 6], last_interacted_slot: -1 };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
+	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
 		return &mut self.items;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<Slot> {
+	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
 		return self.items.clone();
 	}
 }
@@ -37,10 +37,10 @@ impl TryFrom<NbtListTag> for ChiseledBookshelf {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let mut items = vec![Slot::default(); 27];
+		let mut items = vec![ProtocolSlot::default(); 27];
 		if let Some(raw_items) = value.get_child("Items") {
 			for entry in raw_items.as_list() {
-				items[entry.get_child("Slot").unwrap().as_byte() as usize] = Slot {
+				items[entry.get_child("Slot").unwrap().as_byte() as usize] = ProtocolSlot {
 					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
 					count: entry.get_child("count").unwrap().as_int(),
 					components_to_add: Vec::new(),
