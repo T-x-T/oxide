@@ -2,12 +2,47 @@ use std::error::Error;
 
 use super::*;
 
+#[cfg(test)]
+mod test;
+
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ProtocolSlot {
 	pub count: i32,
 	pub id: i32,
 	pub components_to_add: Vec<SlotComponent>,
 	pub components_to_remove: Vec<i32>,
+}
+
+impl From<ProtocolSlot> for Slot {
+	fn from(value: ProtocolSlot) -> Slot {
+		return Slot::new(value.id as u16, value.count as u8);
+	}
+}
+
+impl From<Slot> for ProtocolSlot {
+	fn from(value: Slot) -> ProtocolSlot {
+		return ProtocolSlot {
+			count: value.get_count() as i32,
+			id: value.get_item_id() as i32,
+			components_to_add: Vec::new(),
+			components_to_remove: Vec::new(),
+		};
+	}
+}
+
+impl From<Option<ProtocolSlot>> for Slot {
+	fn from(value: Option<ProtocolSlot>) -> Slot {
+		return value.unwrap_or_default().into();
+	}
+}
+
+impl From<Slot> for Option<ProtocolSlot> {
+	fn from(value: Slot) -> Option<ProtocolSlot> {
+		if value.get_count() == 0 {
+			return None;
+		}
+		return Some(value.into());
+	}
 }
 
 impl From<Vec<ProtocolSlot>> for NbtTag {

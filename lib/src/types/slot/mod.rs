@@ -6,7 +6,7 @@ use std::{
 #[cfg(test)]
 mod test;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct Slot {
 	item_id: u16,
 	count: u8,

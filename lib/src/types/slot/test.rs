@@ -1,5 +1,14 @@
 use super::*;
 
+mod default {
+	use super::*;
+
+	#[test]
+	fn sets_contents_correctly() {
+		let res = Slot::default();
+		assert_eq!(res, Slot { item_id: 0, count: 0 });
+	}
+}
 mod new {
 	use super::*;
 
