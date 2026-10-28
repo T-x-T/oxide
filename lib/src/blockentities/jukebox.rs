@@ -4,20 +4,20 @@ use super::*;
 pub struct Jukebox {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub record_item: ProtocolSlot,
+	pub record_item: Slot,
 	pub ticks_since_song_started: Option<i64>,
 }
 
 impl CommonBlockEntity for Jukebox {
 	fn new(position: BlockPosition) -> Self {
-		return Self { position, components: Vec::new(), record_item: ProtocolSlot::default(), ticks_since_song_started: None };
+		return Self { position, components: Vec::new(), record_item: Slot::default(), ticks_since_song_started: None };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return vec![self.record_item.clone()];
 	}
 }
@@ -27,8 +27,8 @@ impl From<Jukebox> for Vec<NbtTag> {
 		let mut output = vec![NbtTag::TagCompound(
 			"RecordItem".to_string(),
 			vec![
-				NbtTag::String("id".to_string(), data::items::get_item_name_by_id(value.record_item.id).unwrap().to_string()),
-				NbtTag::Int("count".to_string(), value.record_item.count),
+				NbtTag::String("id".to_string(), value.record_item.get_item_name().to_string()),
+				NbtTag::Int("count".to_string(), value.record_item.get_count() as i32),
 				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
 			],
 		)];
@@ -51,12 +51,9 @@ impl TryFrom<NbtListTag> for Jukebox {
 		let position = BlockPosition { x, y, z };
 
 		let record_item_raw = value.get_child("RecordItem").unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new())).clone();
-		let record_item = ProtocolSlot {
-			id: data::items::get_item_id_by_name(record_item_raw.get_child("id").unwrap().as_string()).unwrap(),
-			count: record_item_raw.get_child("count").unwrap().as_int(),
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let record_item =
+			Slot::new_from_name(record_item_raw.get_child("id").unwrap().as_string(), record_item_raw.get_child("count").unwrap().as_int() as u8)
+				.unwrap();
 
 		let ticks_since_song_started = value.get_child("ticks_since_song_started").map(|x| x.as_long());
 

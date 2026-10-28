@@ -31,8 +31,7 @@ fn target_is_player(
 
 	if parsed_packet.interact_type == 1 {
 		//attack
-		let damage =
-			if let Some(held_item) = held_item { get_attack_damage(data::items::get_item_name_by_id(held_item.id).unwrap()) } else { 1 } as f32;
+		let damage = if !held_item.is_empty() { get_attack_damage(held_item.get_item_name()) } else { 1 } as f32;
 		target_player.damage(damage, &game.packet_sender, players_clone);
 	}
 }
@@ -69,8 +68,7 @@ fn target_is_entity(
 		//Attack
 
 		if entity.is_mob() {
-			let damage =
-				if let Some(held_item) = held_item { get_attack_damage(data::items::get_item_name_by_id(held_item.id).unwrap()) } else { 1 } as f32;
+			let damage = if !held_item.is_empty() { get_attack_damage(held_item.get_item_name()) } else { 1 } as f32;
 
 			let mob_data = entity.get_mob_data_mut();
 
@@ -95,24 +93,19 @@ fn target_is_entity(
 		}
 	} else if parsed_packet.interact_type == 0 {
 		//interact
-		if let Some(held_item) = player.get_held_item(true)
-			&& held_item.count > 0
-		{
+		let held_item = player.get_held_item(true);
+		if !held_item.is_empty() {
 			let success = entity.feed(held_item, &game.packet_sender, players_clone, &dimension.name);
 			if success {
 				let mut held_item = held_item.clone();
-				held_item.count -= 1;
+				held_item.subtract_count_mut(1).unwrap();
 				let player = players.iter_mut().find(|x| x.peer_socket_address == peer_addr).unwrap();
-				if held_item.count == 0 {
-					player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
-				} else {
-					player.set_selected_inventory_slot(Some(held_item), players_clone, &game.packet_sender);
-				}
+				player.set_selected_inventory_slot(held_item, players_clone, &game.packet_sender);
 			}
 		}
 
 		let res = entity.interact(
-			&held_item.cloned().unwrap_or_default(),
+			held_item,
 			dimension,
 			players_clone,
 			&mut players,

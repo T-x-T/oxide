@@ -23,7 +23,7 @@ pub struct CommonMob {
 	pub death_loot_table_seed: Option<i64>,
 	pub death_time: i16,
 	pub drop_chances: NbtTag,
-	pub equipment: HashMap<String, ProtocolSlot>,
+	pub equipment: HashMap<String, Slot>,
 	pub fall_flying: u8,
 	pub health: f32,
 	pub home_location: (i32, i32, i32),
@@ -230,7 +230,7 @@ impl CommonMob {
 		if !self.equipment.is_empty() {
 			let mut entries: Vec<NbtTag> = Vec::new();
 			for x in &self.equipment {
-				entries.push(NbtTag::TagCompound(x.0.clone(), x.1.clone().into()));
+				entries.push(NbtTag::TagCompound(x.0.clone(), ProtocolSlot::from(x.1.clone()).into()));
 			}
 		}
 		if let Some(value) = self.leashed_block {

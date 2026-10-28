@@ -62,7 +62,7 @@ pub enum EntityTickOutcome {
 	AddEntity(Box<Entity>),
 	DealDamage(i32, f32), //target entity id, damage to deal
 	UpdateDebugDataPathfinding(Option<DebugEntityPath>),
-	GetPickedUpByPlayer(ProtocolSlot, i32, u128), //slot, entity_id of picked up entity, player uuid
+	GetPickedUpByPlayer(Slot, i32, u128), //slot, entity_id of picked up entity, player uuid
 }
 
 impl Entity {
@@ -363,7 +363,7 @@ impl Entity {
 
 	pub fn interact(
 		&mut self,
-		held_item: &ProtocolSlot,
+		held_item: &Slot,
 		dim: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
@@ -563,7 +563,7 @@ impl Entity {
 		};
 	}
 
-	pub fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	pub fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return match self {
 			Entity::Armadillo(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),
 			Entity::Cat(x) => x.feed(held_item, packet_sender, players_clone, dimension_name),

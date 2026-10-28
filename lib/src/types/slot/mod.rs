@@ -15,12 +15,14 @@ pub struct Slot {
 #[derive(Debug, Clone)]
 pub enum SlotError {
 	MaxStackSizeExceeded,
+	ItemCountUnderflow,
 }
 
 impl Display for SlotError {
 	fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
 		return match self {
 			SlotError::MaxStackSizeExceeded => write!(f, "max stack size for slot got exceeded"),
+			SlotError::ItemCountUnderflow => write!(f, "subtracting count would lead to underflow"),
 		};
 	}
 }
@@ -67,6 +69,14 @@ impl Slot {
 		return Ok(());
 	}
 
+	pub fn empty(&mut self) {
+		self.count = 0;
+	}
+
+	pub fn is_empty(&self) -> bool {
+		return self.get_count() == 0;
+	}
+
 	pub fn add_count_mut(&mut self, count: u8) -> Result<(), Box<dyn Error>> {
 		let new_count = self.count + count;
 		if new_count > self.get_max_stack_size() {
@@ -89,5 +99,14 @@ impl Slot {
 			self.count = new_count;
 		}
 		return Ok(Slot::new(self.get_item_id(), overflow));
+	}
+
+	pub fn subtract_count_mut(&mut self, count: u8) -> Result<(), Box<dyn Error>> {
+		if self.count < count {
+			return Err(Box::new(SlotError::ItemCountUnderflow));
+		}
+		let new_count = self.count - count;
+		self.count = new_count;
+		return Ok(());
 	}
 }

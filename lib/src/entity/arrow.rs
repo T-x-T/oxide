@@ -97,12 +97,7 @@ impl CommonEntityTrait for Arrow {
 
 			if let Some((picking_up_player, _)) = picking_up_player {
 				output.push(EntityTickOutcome::GetPickedUpByPlayer(
-					ProtocolSlot {
-						count: 1,
-						id: data::items::get_item_id_by_name("minecraft:arrow").unwrap(),
-						components_to_add: Vec::new(),
-						components_to_remove: Vec::new(),
-					},
+					Slot::new_from_name("minecraft:arrow", 1).expect("minecraft:arrow isnt an item anymore for some reason"),
 					self.get_common_entity_data().entity_id,
 					picking_up_player.get_common_entity_data().uuid,
 				));

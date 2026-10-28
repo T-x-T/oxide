@@ -84,7 +84,7 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	);
 
 	new_player.send_health_and_food_to_client(&game.packet_sender);
-	new_player.send_container_content_data(&game.packet_sender, 0, new_player.get_inventory().clone(), None);
+	new_player.send_container_content_data(&game.packet_sender, 0, new_player.get_inventory().clone(), Slot::default());
 	new_player.send_armor_points(&game.packet_sender);
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
@@ -209,12 +209,12 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::SetEquipment {
 				entity_id: player.get_common_entity_data().entity_id,
 				equipment: vec![
-					(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
-					(1, player.get_inventory()[45].clone()),
-					(2, player.get_inventory()[8].clone()),
-					(3, player.get_inventory()[7].clone()),
-					(4, player.get_inventory()[6].clone()),
-					(5, player.get_inventory()[5].clone()),
+					(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone().into()),
+					(1, player.get_inventory()[45].clone().into()),
+					(2, player.get_inventory()[8].clone().into()),
+					(3, player.get_inventory()[7].clone().into()),
+					(4, player.get_inventory()[6].clone().into()),
+					(5, player.get_inventory()[5].clone().into()),
 				],
 			},
 		);
@@ -281,12 +281,12 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			lib::packets::clientbound::play::SetEquipment {
 				entity_id: new_player_entity_id,
 				equipment: vec![
-					(0, new_player_inventory[(new_player_selected_slot + 36) as usize].clone()),
-					(1, new_player_inventory[45].clone()),
-					(2, new_player_inventory[8].clone()),
-					(3, new_player_inventory[7].clone()),
-					(4, new_player_inventory[6].clone()),
-					(5, new_player_inventory[5].clone()),
+					(0, new_player_inventory[(new_player_selected_slot + 36) as usize].clone().into()),
+					(1, new_player_inventory[45].clone().into()),
+					(2, new_player_inventory[8].clone().into()),
+					(3, new_player_inventory[7].clone().into()),
+					(4, new_player_inventory[6].clone().into()),
+					(5, new_player_inventory[5].clone().into()),
 				],
 			},
 		);

@@ -10,10 +10,10 @@ use std::collections::HashMap;
 pub fn get_block_drops(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_state_id: u16,
-	used_tool: &ProtocolSlot,
+	used_tool: &Slot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	source_entity: Option<&Entity>,
-) -> Vec<ProtocolSlot> {
+) -> Vec<Slot> {
 	let block = data::blocks::get_block_from_block_state_id(block_state_id, block_states);
 	let block_name = block.block_name;
 	let Some(loot_table) = loot_tables.get("blocks").unwrap().get(block_name) else {
@@ -31,7 +31,7 @@ pub fn get_block_drops(
 			all_items.get("minecraft:netherite_pickaxe").unwrap().id,
 		];
 
-		if !iron_pickaxes.contains(&used_tool.id) {
+		if !iron_pickaxes.contains(&(used_tool.get_item_id() as i32)) {
 			return Vec::new();
 		}
 	} else if data::tags::get_block().get("needs_stone_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
@@ -44,20 +44,20 @@ pub fn get_block_drops(
 			all_items.get("minecraft:netherite_pickaxe").unwrap().id,
 		];
 
-		if !stone_pickaxes.contains(&used_tool.id) {
+		if !stone_pickaxes.contains(&(used_tool.get_item_id() as i32)) {
 			return Vec::new();
 		}
 	} else if data::tags::get_block().get("needs_diamond_tool").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
 		let diamond_pickaxes =
 			[all_items.get("minecraft:diamond_pickaxe").unwrap().id, all_items.get("minecraft:netherite_pickaxe").unwrap().id];
 
-		if !diamond_pickaxes.contains(&used_tool.id) {
+		if !diamond_pickaxes.contains(&(used_tool.get_item_id() as i32)) {
 			return Vec::new();
 		}
 	} else if data::tags::get_block().get("mineable/pickaxe").unwrap_or(&Vec::<&str>::new()).contains(&block.block_name) {
 		let pickaxes: Vec<i32> = data::tags::get_item().get("pickaxes").unwrap().iter().map(|x| all_items.get(x).unwrap().id).collect();
 
-		if !pickaxes.contains(&used_tool.id) {
+		if !pickaxes.contains(&(used_tool.get_item_id() as i32)) {
 			return Vec::new();
 		}
 	}
@@ -68,10 +68,10 @@ pub fn get_block_drops(
 pub fn get_entity_drops(
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	entity_type: &str,
-	used_tool: &ProtocolSlot,
+	used_tool: &Slot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	source_entity: Option<&Entity>,
-) -> Vec<ProtocolSlot> {
+) -> Vec<Slot> {
 	let Some(loot_table) = loot_tables.get("entities").unwrap().get(entity_type) else {
 		println!("didnt find loot table for {entity_type}");
 		return Vec::new();
@@ -83,14 +83,14 @@ pub fn get_entity_drops(
 fn evaluate_loot_table(
 	loot_table: &LootTable,
 	block_state_id: u16,
-	used_tool: &ProtocolSlot,
+	used_tool: &Slot,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
 	loot_tables: &HashMap<&'static str, HashMap<&'static str, loot_table::LootTable>>,
 	block_name: &str,
 	entity: Option<&Entity>,
-) -> Vec<ProtocolSlot> {
+) -> Vec<Slot> {
 	let mut rng = rng();
-	let mut output: Vec<ProtocolSlot> = Vec::new();
+	let mut output: Vec<Slot> = Vec::new();
 	'pool: for pool in &loot_table.pools {
 		for condition in &pool.conditions {
 			if !evaluate_condition(condition, block_state_id, block_states, &Some(used_tool.clone()), entity) {
@@ -105,12 +105,7 @@ fn evaluate_loot_table(
 
 		match &chosen_entry.entry_type {
 			LootTablePoolEntrySingletonType::Item(item) => {
-				let item = ProtocolSlot {
-					id: data::items::get_item_id_by_name(item).unwrap(),
-					count: 1,
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				};
+				let item = Slot::new_from_name(item, 1).unwrap();
 				if chosen_entry.functions.is_empty() {
 					output.push(item);
 				} else {
@@ -151,7 +146,7 @@ fn get_valid_entries_from_pool_entries(
 	entries: &Vec<LootTablePoolEntry>,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<ProtocolSlot>,
+	used_tool: &Option<Slot>,
 	entity: Option<&Entity>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -165,7 +160,7 @@ fn get_valid_entries_from_pool_entry(
 	entry: &LootTablePoolEntry,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<ProtocolSlot>,
+	used_tool: &Option<Slot>,
 	entity: Option<&Entity>,
 ) -> Vec<LootTablePoolEntrySingleton> {
 	let mut valid_entries: Vec<LootTablePoolEntrySingleton> = Vec::new();
@@ -251,7 +246,7 @@ fn evaluate_condition(
 	condition: &Predicate,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<ProtocolSlot>,
+	used_tool: &Option<Slot>,
 	_entity: Option<&Entity>,
 ) -> bool {
 	return match condition {
@@ -314,7 +309,7 @@ fn evaluate_condition(
 			let Some(used_tool) = used_tool else {
 				return false;
 			};
-			if used_tool.id == 0 || used_tool.count == 0 {
+			if used_tool.is_empty() {
 				return false;
 			}
 			let items: Vec<&'static str> = item_predicate
@@ -326,7 +321,7 @@ fn evaluate_condition(
 				})
 				.collect();
 
-			if !items.contains(&data::items::get_item_name_by_id(used_tool.id).unwrap()) {
+			if !items.contains(&used_tool.get_item_name()) {
 				return false;
 			}
 
@@ -335,11 +330,11 @@ fn evaluate_condition(
 			}
 
 			if let Some(count) = item_predicate.count {
-				return used_tool.count == count;
+				return used_tool.get_count() as i32 == count;
 			}
 
 			if let (Some(count_min), Some(count_max)) = (item_predicate.count_min, item_predicate.count_max) {
-				return used_tool.count >= count_min && used_tool.count <= count_max;
+				return used_tool.get_count() as i32 >= count_min && used_tool.get_count() as i32 <= count_max;
 			}
 
 			true
@@ -382,12 +377,12 @@ fn evaluate_condition(
 
 fn apply_function(
 	function: &ItemModifier,
-	mut items: Vec<ProtocolSlot>,
+	mut items: Vec<Slot>,
 	block_state_id: u16,
 	block_states: &HashMap<String, basic_types::blocks::Block>,
-	used_tool: &Option<ProtocolSlot>,
+	used_tool: &Option<Slot>,
 	entity: Option<&Entity>,
-) -> Vec<ProtocolSlot> {
+) -> Vec<Slot> {
 	let conditions = function.conditions.clone();
 	for condition in conditions {
 		if !evaluate_condition(&condition, block_state_id, block_states, used_tool, entity) {
@@ -424,9 +419,9 @@ fn apply_function(
 
 			for item in &mut items {
 				if add {
-					item.count += new_count.round() as i32;
+					item.add_count_mut(new_count as u8).unwrap();
 				} else {
-					item.count = new_count.round() as i32;
+					item.set_count_mut(new_count.round() as u8).unwrap();
 				}
 			}
 			items
@@ -471,41 +466,28 @@ fn evaluate_number_provider(number_provider: &NumberProvider) -> f32 {
 mod test {
 	use std::net::{Ipv4Addr, SocketAddrV4};
 
-	use crate::{BlockPosition, Entity, MockReadWriter, Player, ProtocolSlot};
-
+	use crate::{BlockPosition, Entity, MockReadWriter, Player, Slot};
 
 	#[test]
 	fn ancient_debris_drops_itself_with_diamond_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:diamond_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item = Slot::new_from_name("minecraft:diamond_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:ancient_debris").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
 
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:ancient_debris").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:ancient_debris");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn ancient_debris_drops_nothing_with_iron_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item = Slot::new_from_name("minecraft:iron_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:ancient_debris").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -515,35 +497,22 @@ mod test {
 	#[test]
 	fn diamond_ore_drops_diamond_with_iron_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:iron_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:diamond").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:diamond");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn diamond_ore_drops_nothing_with_stone_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item = Slot::new_from_name("minecraft:stone_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -553,11 +522,9 @@ mod test {
 	#[test]
 	fn diamond_ore_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:diamond_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -567,51 +534,35 @@ mod test {
 	#[test]
 	fn coal_ore_drops_coal_with_iron_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:iron_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:coal");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn coal_ore_drops_coal_ore_with_wooden_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:wooden_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:coal");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn coal_ore_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -621,23 +572,16 @@ mod test {
 	#[test]
 	fn copper_ore_drops_2_to_5_raw_copper_with_iron_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:iron_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:iron_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:copper_ore").unwrap().clone();
 
-		let mut counts: Vec<i32> = Vec::new();
+		let mut counts: Vec<u8> = Vec::new();
 		for _ in 0..100 {
 			let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:raw_copper").unwrap());
-			counts.push(res[0].count);
+			assert_eq!(res[0].get_item_name(), "minecraft:raw_copper");
+			counts.push(res[0].get_count());
 		}
 		counts.sort();
 		counts.dedup();
@@ -651,31 +595,22 @@ mod test {
 	#[test]
 	fn deepslate_coal_ore_drops_coal_ore_with_wooden_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:wooden_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:coal").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:coal");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn deepslate_coal_ore_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:deepslate_coal_ore").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -686,63 +621,49 @@ mod test {
 	#[test]
 	fn short_grass_drops_self_with_shears() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
-
+		let used_item = Slot::new_from_name("minecraft:shears", 1).unwrap();
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:short_grass").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:short_grass");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn short_grass_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:short_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
 		if !res.is_empty() {
-			assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:wheat_seeds").unwrap());
+			assert_eq!(res[0].get_item_name(), "minecraft:wheat_seeds");
 		}
 	}
 
 	#[test]
 	fn basalt_drops_basalt_with_wooden_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:wooden_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:wooden_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:basalt").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:basalt").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:basalt");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn basalt_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:basalt").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -752,31 +673,22 @@ mod test {
 	#[test]
 	fn copper_slab_drops_with_stone_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:stone_pickaxe").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
+		let used_item = Slot::new_from_name("minecraft:stone_pickaxe", 1).unwrap();
 		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:waxed_weathered_cut_copper_slab").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:waxed_weathered_cut_copper_slab");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn copper_slab_drops_nothing_with_wooden_pickaxe() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:waxed_weathered_cut_copper_slab").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -786,27 +698,22 @@ mod test {
 	#[test]
 	fn tall_dry_grass_drops_self_with_shears() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 1, id: all_items.get("minecraft:shears").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
-
+		let used_item = Slot::new_from_name("minecraft:shears", 1).unwrap();
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
-		assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:tall_dry_grass").unwrap());
-		assert_eq!(res[0].count, 1);
+		assert_eq!(res[0].get_item_name(), "minecraft:tall_dry_grass");
+		assert_eq!(res[0].get_count(), 1);
 	}
 
 	#[test]
 	fn tall_dry_grass_drops_nothing_with_no_tool() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item =
-			ProtocolSlot { count: 0, id: all_items.get("minecraft:air").unwrap().id, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+		let used_item = Slot::default();
 		let block = block_states.get("minecraft:tall_dry_grass").unwrap().clone();
 
 		let res = super::get_block_drops(&loot_tables, block.states[block.default_state].id, &used_item, &block_states, None);
@@ -817,17 +724,11 @@ mod test {
 	#[test]
 	fn blaze_drops_0_to_1_blaze_rod_when_killed_by_player() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:diamond_sword").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item = Slot::new_from_name("minecraft:diamond_sword", 1).unwrap();
 
-		let mut counts: Vec<i32> = Vec::new();
+		let mut counts: Vec<u8> = Vec::new();
 		for _ in 0..100 {
 			let res = super::get_entity_drops(
 				&loot_tables,
@@ -848,8 +749,8 @@ mod test {
 			if res.is_empty() {
 				counts.push(0);
 			} else {
-				assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:blaze_rod").unwrap());
-				counts.push(res[0].count);
+				assert_eq!(res[0].get_item_name(), "minecraft:blaze_rod");
+				counts.push(res[0].get_count());
 			}
 		}
 		counts.sort();
@@ -862,25 +763,19 @@ mod test {
 	#[test]
 	fn blaze_drops_0_blaze_rod_when_not_killed_by_player() {
 		let block_states = data::blocks::get_blocks();
-		let all_items = data::items::get_items();
 		let loot_tables = data::loot_tables::get_loot_tables();
 
-		let used_item = ProtocolSlot {
-			count: 1,
-			id: all_items.get("minecraft:diamond_sword").unwrap().id,
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let used_item = Slot::new_from_name("minecraft:diamond_sword", 1).unwrap();
 
-		let mut counts: Vec<i32> = Vec::new();
+		let mut counts: Vec<u8> = Vec::new();
 		for _ in 0..100 {
 			let res = super::get_entity_drops(&loot_tables, "minecraft:blaze", &used_item, &block_states, None);
 			println!("{res:?}");
 			if res.is_empty() {
 				counts.push(0);
 			} else {
-				assert_eq!(res[0].id, data::items::get_item_id_by_name("minecraft:blaze_rod").unwrap());
-				counts.push(res[0].count);
+				assert_eq!(res[0].get_item_name(), "minecraft:blaze_rod");
+				counts.push(res[0].get_count());
 			}
 		}
 		counts.sort();

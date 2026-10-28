@@ -19,7 +19,7 @@ impl CommonEntityTrait for Cow {
 
 	fn interact(
 		&mut self,
-		held_item: &ProtocolSlot,
+		held_item: &Slot,
 		_dimension: &mut Dimension,
 		players_clone: &[Player],
 		players: &mut [Player],
@@ -28,26 +28,21 @@ impl CommonEntityTrait for Cow {
 		_entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
-		if held_item.count <= 0 || held_item.id != data::items::get_item_id_by_name("minecraft:bucket").unwrap() {
+		if held_item.is_empty() || held_item.get_item_name() != "minecraft:bucket" {
 			return Vec::new();
 		}
 
 		let player = players.iter_mut().find(|x| x.get_common_entity_data().uuid == player_uuid).unwrap();
 
-		let held_item = player.get_held_item(true).unwrap();
-		if held_item.count > 1 {
-			let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
-			player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
+		let mut held_item = player.get_held_item(true).clone();
+		if !held_item.is_empty() {
+			held_item.subtract_count_mut(1).unwrap();
+			player.set_selected_inventory_slot(held_item, players_clone, packet_sender);
 		} else {
-			player.set_selected_inventory_slot(None, players_clone, packet_sender);
+			player.set_selected_inventory_slot(Slot::default(), players_clone, packet_sender);
 		}
 
-		let milk_bucket_slot = ProtocolSlot {
-			count: 1,
-			id: data::items::get_item_id_by_name("minecraft:milk_bucket").unwrap(),
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
+		let milk_bucket_slot = Slot::new_from_name("minecraft:milk_bucket", 1).expect("minecraft:milk_bucket isnt an item anymore (???)");
 		player.add_item_to_inventory(milk_bucket_slot, players_clone, packet_sender);
 
 		return Vec::new();
@@ -57,7 +52,7 @@ impl CommonEntityTrait for Cow {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 

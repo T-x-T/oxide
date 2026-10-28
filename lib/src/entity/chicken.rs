@@ -30,7 +30,7 @@ impl CommonEntityTrait for Chicken {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 
@@ -46,13 +46,6 @@ impl CommonEntityTrait for Chicken {
 		let mut rng = rng();
 
 		if rng.random_ratio(1, 10_000) {
-			let egg_slot = ProtocolSlot {
-				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:egg").unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			};
-
 			let item_entity = ItemEntity {
 				common: CommonEntity {
 					position: self.common.position,
@@ -63,7 +56,7 @@ impl CommonEntityTrait for Chicken {
 				},
 				age: 0,
 				health: 5,
-				item: egg_slot,
+				item: Slot::new_from_name("minecraft:egg", 1).expect("minecraft:egg isnt an item anymore????"),
 				owner: 0,
 				pickup_delay: 0,
 				thrower: 0,

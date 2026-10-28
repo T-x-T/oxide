@@ -55,7 +55,7 @@ pub struct CraftingShapedData {
 	pub pattern: Vec<&'static str>,
 	pub key: HashMap<&'static str, Vec<&'static str>>,
 	pub result_id: &'static str,
-	pub result_count: Option<i32>,
+	pub result_count: Option<u8>,
 	pub result_components: Option<DataComponent>,
 }
 
@@ -65,7 +65,7 @@ pub struct CraftingShapelessData {
 	pub group: Option<&'static str>,
 	pub ingredients: Vec<Vec<&'static str>>,
 	pub result_id: &'static str,
-	pub result_count: Option<i32>,
+	pub result_count: Option<u8>,
 	pub result_components: Option<DataComponent>,
 }
 
@@ -105,7 +105,7 @@ pub struct SmithingTransformData {
 	pub base: Vec<&'static str>,
 	pub addition: Vec<&'static str>,
 	pub result_id: &'static str,
-	pub result_count: Option<i32>,
+	pub result_count: Option<u8>,
 	pub result_components: Option<DataComponent>,
 }
 
@@ -120,13 +120,13 @@ pub struct SmithingTrimData {
 pub struct StoneCuttingData {
 	pub ingredient: Vec<&'static str>,
 	pub result_id: &'static str,
-	pub result_count: Option<i32>,
+	pub result_count: Option<u8>,
 	pub result_components: Option<DataComponent>,
 }
 
 
 impl Recipe {
-	pub fn get_result_count(&self) -> i32 {
+	pub fn get_result_count(&self) -> u8 {
 		return match self {
 			Recipe::Blasting(_) => 1,
 			Recipe::CampfireCooking(_) => 1,

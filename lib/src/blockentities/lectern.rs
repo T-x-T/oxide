@@ -4,7 +4,7 @@ use super::*;
 pub struct Lectern {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub book: Option<ProtocolSlot>,
+	pub book: Option<Slot>,
 	pub page: Option<i32>,
 }
 
@@ -13,11 +13,11 @@ impl CommonBlockEntity for Lectern {
 		return Self { position, components: Vec::new(), book: None, page: None };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return Vec::new();
 	}
 }
@@ -30,8 +30,8 @@ impl From<Lectern> for Vec<NbtTag> {
 			output.push(NbtTag::TagCompound(
 				"Book".to_string(),
 				vec![
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(book.id).unwrap().to_string()),
-					NbtTag::Int("count".to_string(), book.count),
+					NbtTag::String("id".to_string(), book.get_item_name().to_string()),
+					NbtTag::Int("count".to_string(), book.get_count() as i32),
 					NbtTag::TagCompound("components".to_string(), Vec::new()),
 				],
 			));
@@ -51,12 +51,9 @@ impl TryFrom<NbtListTag> for Lectern {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let book = value.get_child("Book").map(|x| ProtocolSlot {
-			id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
-			count: x.get_child("count").unwrap().as_int(),
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		});
+		let book = value
+			.get_child("Book")
+			.map(|x| Slot::new_from_name(x.get_child("id").unwrap().as_string(), x.get_child("count").unwrap().as_int() as u8).unwrap());
 
 		let page = value.get_child("Page").map(|x| x.as_int());
 

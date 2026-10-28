@@ -84,7 +84,7 @@ impl CommonEntityTrait for Creeper {
 
 	fn interact(
 		&mut self,
-		held_item: &ProtocolSlot,
+		held_item: &Slot,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],
@@ -96,7 +96,7 @@ impl CommonEntityTrait for Creeper {
 		if self.is_ignited {
 			return Vec::new();
 		}
-		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:flint_and_steel").unwrap() {
+		if !held_item.is_empty() && held_item.get_item_name() == "minecraft:flint_and_steel" {
 			self.fuse = STARTING_FUSE;
 			self.is_ignited = true;
 			self.is_manually_lit = true;

@@ -890,13 +890,13 @@ pub trait CommonEntityTrait {
 	}
 
 	//returns true if feeding was successfull, to signal to caller that players inventory needs updating
-	fn feed(&mut self, _held_item: &ProtocolSlot, _packet_sender: &PacketSender, _players_clone: &[Player], _dimension_name: &str) -> bool {
+	fn feed(&mut self, _held_item: &Slot, _packet_sender: &PacketSender, _players_clone: &[Player], _dimension_name: &str) -> bool {
 		return false;
 	}
 
 	fn interact(
 		&mut self,
-		_held_item: &ProtocolSlot,
+		_held_item: &Slot,
 		_dimension: &mut Dimension,
 		_players_clone: &[Player],
 		_players: &mut [Player],

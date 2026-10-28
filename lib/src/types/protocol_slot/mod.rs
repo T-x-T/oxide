@@ -45,6 +45,41 @@ impl From<Slot> for Option<ProtocolSlot> {
 	}
 }
 
+impl From<Vec<Slot>> for NbtTag {
+	fn from(value: Vec<Slot>) -> Self {
+		return NbtTag::List(
+			"Items".to_string(),
+			value
+				.iter()
+				.enumerate()
+				.filter(|(_, item)| !item.is_empty())
+				.map(|(i, item)| {
+					NbtListTag::TagCompound(vec![
+						NbtTag::Byte("Slot".to_string(), i as u8),
+						NbtTag::String("id".to_string(), item.get_item_name().to_string()),
+						NbtTag::Int("count".to_string(), item.get_count() as i32),
+						NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion
+					])
+				})
+				.collect(),
+		);
+	}
+}
+
+impl From<Slot> for NbtTag {
+	fn from(value: Slot) -> Self {
+		return NbtTag::TagCompound(
+			"Item".to_string(),
+			vec![
+				NbtTag::Byte("Slot".to_string(), 1),
+				NbtTag::String("id".to_string(), value.get_item_name().to_string()),
+				NbtTag::Int("count".to_string(), value.get_count() as i32),
+				NbtTag::TagCompound("components".to_string(), Vec::new()), //missing SlotComponent to nbt conversion]
+			],
+		);
+	}
+}
+
 impl From<Vec<ProtocolSlot>> for NbtTag {
 	fn from(value: Vec<ProtocolSlot>) -> Self {
 		return NbtTag::List(

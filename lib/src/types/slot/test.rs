@@ -112,6 +112,35 @@ mod set_count_mut {
 	}
 }
 
+mod empty {
+	use super::*;
+
+	#[test]
+	fn set_count_to_0() {
+		let mut slot = Slot::new(1, 12);
+		slot.empty();
+		assert_eq!(slot, Slot { item_id: 1, count: 0 });
+	}
+}
+
+mod is_empty {
+	use super::*;
+
+	#[test]
+	fn returns_true_when_count_0() {
+		let slot = Slot::new(1, 0);
+		let res = slot.is_empty();
+		assert!(res);
+	}
+
+	#[test]
+	fn returns_false_when_count_isnt_0() {
+		let slot = Slot::new(1, 12);
+		let res = slot.is_empty();
+		assert!(!res);
+	}
+}
+
 mod add_count_mut {
 	use super::*;
 
@@ -140,6 +169,14 @@ mod add_count_mut {
 	fn fails_if_count_exceeds_max_stack_size() {
 		let mut slot = Slot::new(1, 12);
 		let res = slot.add_count_mut(65);
+		assert!(res.is_err_and(|x| x.to_string() == SlotError::MaxStackSizeExceeded.to_string()));
+		assert_eq!(slot, Slot { item_id: 1, count: 12 });
+	}
+
+	#[test]
+	fn fails_if_result_exceeds_max_stack_size() {
+		let mut slot = Slot::new(1, 12);
+		let res = slot.add_count_mut(60);
 		assert!(res.is_err_and(|x| x.to_string() == SlotError::MaxStackSizeExceeded.to_string()));
 		assert_eq!(slot, Slot { item_id: 1, count: 12 });
 	}
@@ -186,5 +223,38 @@ mod add_count_mut_with_overflow {
 		let res = slot.add_count_mut_with_overflow(200);
 		assert_eq!(slot, Slot { item_id: 1, count: 12 });
 		assert!(res.is_err_and(|x| x.to_string() == SlotError::MaxStackSizeExceeded.to_string()));
+	}
+}
+
+mod subtract_count_mut {
+	use super::*;
+
+	#[test]
+	fn subtracting_0_does_nothing() {
+		let mut slot = Slot::new(1, 12);
+		slot.subtract_count_mut(0).unwrap();
+		assert_eq!(slot, Slot { item_id: 1, count: 12 });
+	}
+
+	#[test]
+	fn correctly_subtracts_10() {
+		let mut slot = Slot::new(1, 12);
+		slot.subtract_count_mut(10).unwrap();
+		assert_eq!(slot, Slot { item_id: 1, count: 2 });
+	}
+
+	#[test]
+	fn correctly_subtracts_to_zero() {
+		let mut slot = Slot::new(1, 12);
+		slot.subtract_count_mut(12).unwrap();
+		assert_eq!(slot, Slot { item_id: 1, count: 0 });
+	}
+
+	#[test]
+	fn fails_if_result_would_be_negative() {
+		let mut slot = Slot::new(1, 12);
+		let res = slot.subtract_count_mut(13);
+		assert!(res.is_err_and(|x| x.to_string() == SlotError::ItemCountUnderflow.to_string()));
+		assert_eq!(slot, Slot { item_id: 1, count: 12 });
 	}
 }

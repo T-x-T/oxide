@@ -65,10 +65,10 @@ pub struct Player {
 	pub connection_stream: Box<dyn ReadWrite>,
 	pub waiting_for_confirm_teleportation: bool,
 	pub current_teleport_id: i32,
-	inventory: Vec<Option<ProtocolSlot>>,
+	inventory: Vec<Slot>,
 	selected_slot: u8,
 	pub opened_inventory_at: Option<BlockPosition>,
-	pub cursor_item: Option<ProtocolSlot>,
+	pub cursor_item: Slot,
 	is_sneaking: bool,
 	pub chat_message_index: i32,
 	gamemode: Gamemode,
@@ -85,7 +85,7 @@ pub struct Player {
 	exhaustion_swimming_for_meters: f64,
 	exhaustion_sprinting_for_meters: f64,
 	is_sprinting: bool,
-	pub crafting_table_slots: [ProtocolSlot; 9],
+	pub crafting_table_slots: [Slot; 9],
 	dimension: String,
 	pub loaded_chunks: Vec<(i32, i32)>,
 	pub portal_cooldown: u8,
@@ -325,10 +325,10 @@ impl CommonEntityTrait for Player {
 				self.started_eating_ticks_ago += 1;
 			} else if self.started_eating_ticks_ago != 0 {
 				self.started_eating_ticks_ago = 0;
-
-				if let Some(hand_slot) = self.get_held_item(true) {
+				let hand_slot = self.get_held_item(true);
+				if !hand_slot.is_empty() {
 					let all_items = data::items::get_items();
-					let item_data = all_items.get(data::items::get_item_name_by_id(hand_slot.id).unwrap()).unwrap();
+					let item_data = all_items.get(hand_slot.get_item_name()).unwrap();
 
 					if let Some(nutrition) = item_data.nutrition {
 						self.add_nutrition(nutrition);
@@ -343,12 +343,9 @@ impl CommonEntityTrait for Player {
 						crate::packets::clientbound::play::EntityEvent { entity_id: self.common_entity_data.entity_id, entity_status: 9 },
 					);
 
-					let selected_slot = self.get_selected_inventory_slot().clone();
-					let selected_slot = selected_slot.map(|x| {
-						let new_item_count = x.count - 1;
-						if new_item_count == 0 { None } else { Some(ProtocolSlot { count: new_item_count, ..x }) }
-					});
-					self.set_selected_inventory_slot(selected_slot.flatten(), players, packet_sender);
+					let mut selected_slot = self.get_selected_inventory_slot().clone();
+					selected_slot.subtract_count_mut(1).unwrap();
+					self.set_selected_inventory_slot(selected_slot, players, packet_sender);
 				};
 			}
 		}
@@ -479,7 +476,7 @@ impl CommonEntityTrait for Player {
 			crate::packets::clientbound::play::GameEvent { event: 13, value: 0.0 },
 		);
 
-		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), None);
+		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), Slot::default());
 
 		let current_chunk_coords = BlockPosition::from(self.get_position()).convert_to_coordinates_of_chunk();
 
@@ -533,12 +530,12 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::SetEquipment {
 					entity_id: player.common_entity_data.entity_id,
 					equipment: vec![
-						(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone()),
-						(1, player.get_inventory()[45].clone()),
-						(2, player.get_inventory()[8].clone()),
-						(3, player.get_inventory()[7].clone()),
-						(4, player.get_inventory()[6].clone()),
-						(5, player.get_inventory()[5].clone()),
+						(0, player.get_inventory()[(player.get_selected_slot() + 36) as usize].clone().into()),
+						(1, player.get_inventory()[45].clone().into()),
+						(2, player.get_inventory()[8].clone().into()),
+						(3, player.get_inventory()[7].clone().into()),
+						(4, player.get_inventory()[6].clone().into()),
+						(5, player.get_inventory()[5].clone().into()),
 					],
 				},
 			);
@@ -608,12 +605,12 @@ impl CommonEntityTrait for Player {
 				crate::packets::clientbound::play::SetEquipment {
 					entity_id: self.common_entity_data.entity_id,
 					equipment: vec![
-						(0, self.inventory[(self.selected_slot + 36) as usize].clone()),
-						(1, self.inventory[45].clone()),
-						(2, self.inventory[8].clone()),
-						(3, self.inventory[7].clone()),
-						(4, self.inventory[6].clone()),
-						(5, self.inventory[5].clone()),
+						(0, self.inventory[(self.selected_slot + 36) as usize].clone().into()),
+						(1, self.inventory[45].clone().into()),
+						(2, self.inventory[8].clone().into()),
+						(3, self.inventory[7].clone().into()),
+						(4, self.inventory[6].clone().into()),
+						(5, self.inventory[5].clone().into()),
 					],
 				},
 			);
@@ -685,10 +682,10 @@ impl Player {
 				waiting_for_confirm_teleportation: false,
 				current_teleport_id: (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs()
 					/ (entity_id + 1 + 12345) as u64) as i32, //should probably use random number instead
-				inventory: vec![None; 46],
+				inventory: vec![Slot::default(); 46],
 				selected_slot: 0,
 				opened_inventory_at: None,
-				cursor_item: None,
+				cursor_item: Slot::default(),
 				is_sneaking: false,
 				chat_message_index: 0,
 				gamemode: *default_gamemode,
@@ -706,15 +703,15 @@ impl Player {
 				exhaustion_sprinting_for_meters: 0.0,
 				is_sprinting: false,
 				crafting_table_slots: [
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
-					ProtocolSlot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
+					Slot::default(),
 				],
 				dimension: "minecraft:overworld".to_string(),
 				loaded_chunks: Vec::new(),
@@ -751,60 +748,35 @@ impl Player {
 
 		let player_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
 
-		let mut inventory = vec![None; 46];
+		let mut inventory = vec![Slot::default(); 46];
 		player_data.get_child("Inventory").unwrap().as_list().iter().for_each(|x| {
 			let slot_index = x.get_child("Slot").unwrap().as_byte() as usize;
 			let count = x.get_child("count").unwrap().as_int();
 			if count > 0 {
-				inventory[slot_index] = Some(ProtocolSlot {
-					count,
-					id: data::items::get_item_id_by_name(x.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				});
+				inventory[slot_index] = Slot::new_from_name(x.get_child("id").unwrap().as_string(), count as u8).unwrap();
 			}
 		});
 
 		if let Some(equipment) = player_data.get_child("equipment") {
 			if let Some(head) = equipment.get_child("head") {
-				inventory[5] = Some(ProtocolSlot {
-					count: head.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(head.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})
+				inventory[5] =
+					Slot::new_from_name(head.get_child("id").unwrap().as_string(), head.get_child("count").unwrap().as_int() as u8).unwrap();
 			}
 			if let Some(chest) = equipment.get_child("chest") {
-				inventory[6] = Some(ProtocolSlot {
-					count: chest.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(chest.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})
+				inventory[6] =
+					Slot::new_from_name(chest.get_child("id").unwrap().as_string(), chest.get_child("count").unwrap().as_int() as u8).unwrap();
 			}
 			if let Some(legs) = equipment.get_child("legs") {
-				inventory[7] = Some(ProtocolSlot {
-					count: legs.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(legs.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})
+				inventory[7] =
+					Slot::new_from_name(legs.get_child("id").unwrap().as_string(), legs.get_child("count").unwrap().as_int() as u8).unwrap();
 			}
 			if let Some(feet) = equipment.get_child("feet") {
-				inventory[8] = Some(ProtocolSlot {
-					count: feet.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(feet.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})
+				inventory[8] =
+					Slot::new_from_name(feet.get_child("id").unwrap().as_string(), feet.get_child("count").unwrap().as_int() as u8).unwrap()
 			}
 			if let Some(offhand) = equipment.get_child("offhand") {
-				inventory[45] = Some(ProtocolSlot {
-					count: offhand.get_child("count").unwrap().as_int(),
-					id: data::items::get_item_id_by_name(offhand.get_child("id").unwrap().as_string()).unwrap(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				})
+				inventory[45] =
+					Slot::new_from_name(offhand.get_child("id").unwrap().as_string(), offhand.get_child("count").unwrap().as_int() as u8).unwrap();
 			}
 		}
 
@@ -846,7 +818,7 @@ impl Player {
 			inventory,
 			selected_slot: player_data.get_child("SelectedItemSlot").unwrap().as_int() as u8,
 			opened_inventory_at: None,
-			cursor_item: None,
+			cursor_item: Slot::default(),
 			is_sneaking: false,
 			chat_message_index: 0,
 			gamemode: parsed_gamemode,
@@ -866,15 +838,15 @@ impl Player {
 			is_sprinting: false,
 			container_click_state_id: 0,
 			crafting_table_slots: [
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
-				ProtocolSlot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
 			],
 			dimension: dimension.to_string(),
 			loaded_chunks: Vec::new(),
@@ -919,7 +891,6 @@ impl Player {
 			.open(Player::get_playerdata_path(self.common_entity_data.uuid))
 			.unwrap();
 
-		let empty_slot = ProtocolSlot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() };
 		let player_data = NbtTag::Root(vec![
 			NbtTag::List(
 				"Pos".to_string(),
@@ -949,13 +920,12 @@ impl Player {
 					.inventory
 					.iter()
 					.enumerate()
-					.filter(|x| x.0 >= 9)
-					.filter(|x| x.1.is_some())
-					.map(|x| {
+					.filter(|(slot_index, slot)| *slot_index >= 9 && !slot.is_empty())
+					.map(|(slot_index, slot)| {
 						NbtListTag::TagCompound(vec![
-							NbtTag::Byte("Slot".to_string(), x.0 as u8),
-							NbtTag::Int("count".to_string(), x.1.as_ref().unwrap().count),
-							NbtTag::String("id".to_string(), data::items::get_item_name_by_id(x.1.as_ref().unwrap().id).unwrap().to_string()),
+							NbtTag::Byte("Slot".to_string(), slot_index as u8),
+							NbtTag::Int("count".to_string(), slot.get_count() as i32),
+							NbtTag::String("id".to_string(), slot.get_item_name().to_string()),
 						])
 					})
 					.collect(),
@@ -966,51 +936,36 @@ impl Player {
 					NbtTag::TagCompound(
 						"head".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[5].as_ref().unwrap_or(&empty_slot).count),
-							NbtTag::String(
-								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[5].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
-							),
+							NbtTag::Int("count".to_string(), self.inventory[5].get_count() as i32),
+							NbtTag::String("id".to_string(), self.inventory[5].get_item_name().to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"chest".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[6].as_ref().unwrap_or(&empty_slot).count),
-							NbtTag::String(
-								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[6].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
-							),
+							NbtTag::Int("count".to_string(), self.inventory[6].get_count() as i32),
+							NbtTag::String("id".to_string(), self.inventory[6].get_item_name().to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"legs".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[7].as_ref().unwrap_or(&empty_slot).count),
-							NbtTag::String(
-								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[7].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
-							),
+							NbtTag::Int("count".to_string(), self.inventory[7].get_count() as i32),
+							NbtTag::String("id".to_string(), self.inventory[7].get_item_name().to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"feet".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[8].as_ref().unwrap_or(&empty_slot).count),
-							NbtTag::String(
-								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[8].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
-							),
+							NbtTag::Int("count".to_string(), self.inventory[8].get_count() as i32),
+							NbtTag::String("id".to_string(), self.inventory[8].get_item_name().to_string()),
 						],
 					),
 					NbtTag::TagCompound(
 						"offhand".to_string(),
 						vec![
-							NbtTag::Int("count".to_string(), self.inventory[45].as_ref().unwrap_or(&empty_slot).count),
-							NbtTag::String(
-								"id".to_string(),
-								data::items::get_item_name_by_id(self.inventory[45].as_ref().unwrap_or(&empty_slot).id).unwrap().to_string(),
-							),
+							NbtTag::Int("count".to_string(), self.inventory[45].get_count() as i32),
+							NbtTag::String("id".to_string(), self.inventory[45].get_item_name().to_string()),
 						],
 					),
 				],
@@ -1025,11 +980,11 @@ impl Player {
 		file.flush().unwrap();
 	}
 
-	pub fn get_held_item(&self, main_hand: bool) -> Option<&ProtocolSlot> {
+	pub fn get_held_item(&self, main_hand: bool) -> &Slot {
 		if main_hand {
-			return self.inventory.get(36 + self.selected_slot as usize).unwrap().as_ref();
+			return self.inventory.get(36 + self.selected_slot as usize).unwrap();
 		} else {
-			return self.inventory.get(45).unwrap().as_ref();
+			return self.inventory.get(45).unwrap();
 		}
 	}
 
@@ -1287,32 +1242,32 @@ impl Player {
 					crate::packets::clientbound::play::SetEquipment::PACKET_ID,
 					crate::packets::clientbound::play::SetEquipment {
 						entity_id: self.common_entity_data.entity_id,
-						equipment: vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())],
+						equipment: vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone().into())],
 					},
 				);
 			});
 	}
 
-	pub fn get_inventory(&self) -> &Vec<Option<ProtocolSlot>> {
+	pub fn get_inventory(&self) -> &Vec<Slot> {
 		return &self.inventory;
 	}
 
-	pub fn set_selected_inventory_slot(&mut self, item: Option<ProtocolSlot>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_selected_inventory_slot(&mut self, item: Slot, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_slot(self.get_selected_slot() + 36, item, players, packet_sender);
 	}
 
-	pub fn get_selected_inventory_slot(&self) -> &Option<ProtocolSlot> {
+	pub fn get_selected_inventory_slot(&self) -> &Slot {
 		return &self.get_inventory()[(self.get_selected_slot() + 36) as usize];
 	}
 
-	pub fn set_inventory_slot(&mut self, slot: u8, item: Option<ProtocolSlot>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_inventory_slot(&mut self, slot: u8, item: Slot, players: &[Player], packet_sender: &PacketSender) {
 		self.inventory[slot as usize] = item.clone();
 
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetPlayerInventorySlot::PACKET_ID,
 			crate::packets::clientbound::play::SetPlayerInventorySlot {
-				slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone(),
+				slot_data: self.get_inventory()[(self.get_selected_slot() + 36) as usize].clone().into(),
 				slot: (self.get_selected_slot()) as i32,
 			},
 		);
@@ -1326,15 +1281,16 @@ impl Player {
 		}
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
-			let mut equipment: Vec<(u8, Option<ProtocolSlot>)> = vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone())];
+			let mut equipment: Vec<(u8, Option<ProtocolSlot>)> =
+				vec![(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone().into())];
 
 			if [5, 6, 7, 8, 45].contains(&slot) {
 				equipment.push(match slot {
-					5 => (5, item.clone()),
-					6 => (4, item.clone()),
-					7 => (3, item.clone()),
-					8 => (2, item.clone()),
-					45 => (1, item.clone()),
+					5 => (5, item.clone().into()),
+					6 => (4, item.clone().into()),
+					7 => (3, item.clone().into()),
+					8 => (2, item.clone().into()),
+					45 => (1, item.clone().into()),
 					_ => panic!(""),
 				});
 			};
@@ -1347,19 +1303,19 @@ impl Player {
 		});
 	}
 
-	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Option<ProtocolSlot>>, players: &[Player], packet_sender: &PacketSender) {
+	pub fn set_inventory_and_inform_client(&mut self, items: Vec<Slot>, players: &[Player], packet_sender: &PacketSender) {
 		self.set_inventory_and_dont_inform_client(items);
 		self.send_container_content_data(packet_sender, 0, self.inventory.clone(), self.cursor_item.clone());
 		self.send_armor_points(packet_sender);
 
 		players.iter().filter(|x| x.common_entity_data.uuid != self.common_entity_data.uuid).for_each(|x| {
 			let equipment: Vec<(u8, Option<ProtocolSlot>)> = vec![
-				(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone()),
-				(1, self.inventory[45].clone()),
-				(2, self.inventory[8].clone()),
-				(3, self.inventory[7].clone()),
-				(4, self.inventory[6].clone()),
-				(5, self.inventory[5].clone()),
+				(0, self.inventory[(self.get_selected_slot() + 36) as usize].clone().into()),
+				(1, self.inventory[45].clone().into()),
+				(2, self.inventory[8].clone().into()),
+				(3, self.inventory[7].clone().into()),
+				(4, self.inventory[6].clone().into()),
+				(5, self.inventory[5].clone().into()),
 			];
 
 			packet_sender.send_packet_to_player(
@@ -1370,7 +1326,7 @@ impl Player {
 		});
 	}
 
-	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Option<ProtocolSlot>>) {
+	pub fn set_inventory_and_dont_inform_client(&mut self, items: Vec<Slot>) {
 		self.inventory = items.clone();
 	}
 
@@ -1393,12 +1349,7 @@ impl Player {
 
 		self.opened_inventory_at = Some(location);
 		if let Some(block_entity) = dimension.get_chunk_from_position(location).unwrap().try_get_block_entity(location) {
-			self.send_container_content_data(
-				packet_sender,
-				1,
-				block_entity.get_contained_items_owned().into_iter().map(Into::into).collect(),
-				None,
-			);
+			self.send_container_content_data(packet_sender, 1, block_entity.get_contained_items_owned(), Slot::default());
 		};
 	}
 
@@ -1526,7 +1477,7 @@ impl Player {
 		return self.is_mining;
 	}
 
-	pub fn add_item_to_inventory(&mut self, slot: ProtocolSlot, players: &[Player], packet_sender: &PacketSender) -> bool {
+	pub fn add_item_to_inventory(&mut self, slot: Slot, players: &[Player], packet_sender: &PacketSender) -> bool {
 		let slot_indecies = [
 			36, 37, 38, 39, 40, 41, 42, 43, 44, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
 			33, 34, 35,
@@ -1537,25 +1488,31 @@ impl Player {
 
 		//first check if we can stack up an existing slot
 		for slot_index in slot_indecies {
-			#[allow(clippy::collapsible_if)]
-			if let Some(inventory_slot) = &mut inventory[slot_index] {
-				if inventory_slot.id == slot.id
-					&& inventory_slot.count
-						< data::items::get_items().get(data::items::get_item_name_by_id(inventory_slot.id).unwrap()).unwrap().max_stack_size as i32
-				{
-					inventory_slot.count += slot.count; //TODO: can overflow
-					inventory_updated = true;
+			if !inventory[slot_index].is_empty()
+				&& inventory[slot_index].get_item_id() == slot.get_item_id()
+				&& inventory[slot_index].get_count() < inventory[slot_index].get_max_stack_size()
+			{
+				let Ok(overflow) = inventory[slot_index].add_count_mut_with_overflow(slot.get_count()) else {
+					println!(
+						"Player::add_item_to_inventory got an error trying to inventory[slot_index].add_count_mut_with_overflow. slot was {slot:?}"
+					);
+					return false;
+				};
+				inventory_updated = true;
 
-					break;
+				if !overflow.is_empty() {
+					self.add_item_to_inventory(overflow, players, packet_sender);
 				}
+
+				break;
 			}
 		}
 
 		//if the player doesnt have the item in its inventory, put it in the first free slot
 		if !inventory_updated {
 			for slot_index in slot_indecies {
-				if inventory[slot_index].as_ref().is_some_and(|x| x.count == 0) || inventory[slot_index].is_none() {
-					inventory[slot_index] = Some(slot.clone());
+				if inventory[slot_index].is_empty() {
+					inventory[slot_index] = slot;
 					inventory_updated = true;
 					break;
 				}
@@ -1570,18 +1527,20 @@ impl Player {
 	}
 
 	//returns true when item pickup was succesfull and false when not
-	pub fn pickup_item(&mut self, item: ProtocolSlot, item_entity_id: i32, players: &[Player], packet_sender: &PacketSender) -> bool {
+	pub fn pickup_item(&mut self, item: Slot, item_entity_id: i32, players: &[Player], packet_sender: &PacketSender) -> bool {
 		if self.is_dead {
 			return false;
 		}
 
-		let inventory_updated = self.add_item_to_inventory(item.clone(), players, packet_sender);
+		let pickup_item_count = item.get_count() as i32;
+
+		let inventory_updated = self.add_item_to_inventory(item, players, packet_sender);
 
 		if inventory_updated {
 			let pickup_item_packet = crate::packets::clientbound::play::PickupItem {
 				collected_entity_id: item_entity_id,
 				collector_entity_id: self.common_entity_data.entity_id,
-				pickup_item_count: item.count,
+				pickup_item_count,
 			};
 
 			packet_sender.send_packet_to_everyone_in_dimension(
@@ -1614,7 +1573,7 @@ impl Player {
 
 		if self.gamemode == Gamemode::Survival || self.gamemode == Gamemode::Adventure {
 			for slot in &self.inventory {
-				if slot.as_ref().is_some_and(|x| x.count > 0) {
+				if !slot.is_empty() {
 					let new_entity = crate::entity::ItemEntity {
 						common: CommonEntity {
 							position: self.get_position(),
@@ -1625,7 +1584,7 @@ impl Player {
 						},
 						age: 0,
 						health: 5,
-						item: slot.clone().unwrap(),
+						item: slot.clone(),
 						owner: self.common_entity_data.uuid,
 						pickup_delay: 0,
 						thrower: self.common_entity_data.uuid,
@@ -1643,7 +1602,7 @@ impl Player {
 				);
 			});
 
-			self.inventory = vec![None; 46];
+			self.inventory = vec![Slot::default(); 46];
 		}
 
 		return entities_to_summon;
@@ -1755,7 +1714,7 @@ impl Player {
 
 		self.is_dead = false;
 
-		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), None);
+		self.send_container_content_data(packet_sender, 0, self.get_inventory().clone(), Slot::default());
 	}
 
 	pub fn get_health(&self) -> f32 {
@@ -1914,8 +1873,8 @@ impl Player {
 		let legs = &self.inventory[7];
 		let feet = &self.inventory[8];
 
-		if let Some(head) = head {
-			match data::items::get_item_name_by_id(head.id).unwrap_or_default() {
+		if !head.is_empty() {
+			match head.get_item_name() {
 				"minecraft:leather_helmet" => armor_points += 1,
 				"minecraft:golden_helmet" => armor_points += 2,
 				"minecraft:copper_helmet" => armor_points += 2,
@@ -1928,8 +1887,8 @@ impl Player {
 			}
 		}
 
-		if let Some(chest) = chest {
-			match data::items::get_item_name_by_id(chest.id).unwrap_or_default() {
+		if !chest.is_empty() {
+			match chest.get_item_name() {
 				"minecraft:leather_chestplate" => armor_points += 3,
 				"minecraft:copper_chestplate" => armor_points += 4,
 				"minecraft:golden_chestplate" => armor_points += 5,
@@ -1941,8 +1900,8 @@ impl Player {
 			}
 		}
 
-		if let Some(legs) = legs {
-			match data::items::get_item_name_by_id(legs.id).unwrap_or_default() {
+		if !legs.is_empty() {
+			match legs.get_item_name() {
 				"minecraft:leather_leggings" => armor_points += 2,
 				"minecraft:golden_leggings" => armor_points += 3,
 				"minecraft:copper_leggings" => armor_points += 3,
@@ -1954,8 +1913,8 @@ impl Player {
 			}
 		}
 
-		if let Some(feet) = feet {
-			match data::items::get_item_name_by_id(feet.id).unwrap_or_default() {
+		if !feet.is_empty() {
+			match feet.get_item_name() {
 				"minecraft:leather_boots" => armor_points += 1,
 				"minecraft:golden_boots" => armor_points += 1,
 				"minecraft:copper_boots" => armor_points += 1,
@@ -1978,32 +1937,32 @@ impl Player {
 		let legs = &self.inventory[7];
 		let feet = &self.inventory[8];
 
-		if let Some(head) = head {
-			match data::items::get_item_name_by_id(head.id).unwrap_or_default() {
+		if !head.is_empty() {
+			match head.get_item_name() {
 				"minecraft:diamond_helmet" => armor_toughness += 2,
 				"minecraft:netherite_helmet" => armor_toughness += 3,
 				_ => (),
 			}
 		}
 
-		if let Some(chest) = chest {
-			match data::items::get_item_name_by_id(chest.id).unwrap_or_default() {
+		if !chest.is_empty() {
+			match chest.get_item_name() {
 				"minecraft:diamond_chestplate" => armor_toughness += 2,
 				"minecraft:netherite_chestplate" => armor_toughness += 3,
 				_ => (),
 			}
 		}
 
-		if let Some(legs) = legs {
-			match data::items::get_item_name_by_id(legs.id).unwrap_or_default() {
+		if !legs.is_empty() {
+			match legs.get_item_name() {
 				"minecraft:diamond_leggings" => armor_toughness += 2,
 				"minecraft:netherite_leggings" => armor_toughness += 3,
 				_ => (),
 			}
 		}
 
-		if let Some(feet) = feet {
-			match data::items::get_item_name_by_id(feet.id).unwrap_or_default() {
+		if !feet.is_empty() {
+			match feet.get_item_name() {
 				"minecraft:diamond_boots" => armor_toughness += 2,
 				"minecraft:netherite_boots" => armor_toughness += 3,
 				_ => (),
@@ -2028,22 +1987,21 @@ impl Player {
 		);
 	}
 
-	pub fn send_container_slot_data(&mut self, packet_sender: &PacketSender, slot: i16, slot_data: Option<ProtocolSlot>) {
+	pub fn send_container_slot_data(&mut self, packet_sender: &PacketSender, slot: i16, slot_data: Slot) {
 		self.container_click_state_id += 1;
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
 			crate::packets::clientbound::play::SetContainerSlot::PACKET_ID,
-			crate::packets::clientbound::play::SetContainerSlot { window_id: 1, state_id: self.container_click_state_id, slot, slot_data },
+			crate::packets::clientbound::play::SetContainerSlot {
+				window_id: 1,
+				state_id: self.container_click_state_id,
+				slot,
+				slot_data: slot_data.into(),
+			},
 		);
 	}
 
-	pub fn send_container_content_data(
-		&mut self,
-		packet_sender: &PacketSender,
-		window_id: i32,
-		slot_data: Vec<Option<ProtocolSlot>>,
-		carried_item: Option<ProtocolSlot>,
-	) {
+	pub fn send_container_content_data(&mut self, packet_sender: &PacketSender, window_id: i32, slot_data: Vec<Slot>, carried_item: Slot) {
 		self.container_click_state_id += 1;
 		packet_sender.send_packet_to_player(
 			&self.peer_socket_address,
@@ -2051,8 +2009,8 @@ impl Player {
 			crate::packets::clientbound::play::SetContainerContent {
 				window_id,
 				state_id: self.container_click_state_id,
-				slot_data,
-				carried_item,
+				slot_data: slot_data.into_iter().map(|x| x.into()).collect(),
+				carried_item: carried_item.into(),
 			},
 		);
 	}

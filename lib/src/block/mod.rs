@@ -244,10 +244,10 @@ impl BlockUpdateOutcome {
 					block_entity.remove_self(players, dimension, packet_sender, entity_id_manager);
 				}
 
-				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &ProtocolSlot::default(), block_state_data, None);
+				let items_to_drop = crate::loot_table::get_block_drops(loot_tables, old_block_id, &Slot::default(), block_state_data, None);
 
 				for item_to_drop in items_to_drop {
-					if item_to_drop.id != 0 {
+					if !item_to_drop.is_empty() {
 						dimension.summon_item(position.into(), item_to_drop, None, players, packet_sender, entity_id_manager, 0);
 					}
 				}
@@ -379,10 +379,7 @@ pub fn interact_with_block_at(
 ) -> BlockInteractionResult {
 	let block_name_at_location = data::blocks::get_block_name_from_block_state_id(block_id_at_location);
 	if ("minecraft:grass_block" == block_name_at_location || "minecraft:dirt" == block_name_at_location)
-		&& data::tags::get_item()
-			.get("hoes")
-			.unwrap()
-			.contains(&data::items::get_item_name_by_id(player.get_held_item(true).cloned().unwrap_or_default().id).unwrap())
+		&& data::tags::get_item().get("hoes").unwrap().contains(&player.get_held_item(true).clone().get_item_name())
 	{
 		let block = data::blocks::get_block_from_name("minecraft:farmland", block_states);
 		let block_state_id = block.states.iter().find(|x| x.properties.contains(&Property::FarmMoisture(FarmMoisture::Num0))).unwrap().id;

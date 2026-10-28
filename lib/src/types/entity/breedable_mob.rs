@@ -59,12 +59,12 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 	fn get_breedable_data(&self) -> &BreedableMob;
 	fn get_breedable_data_mut(&mut self) -> &mut BreedableMob;
 	fn get_food(&self) -> &[&'static str];
-	fn feed_breedable_mob(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed_breedable_mob(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		if self.get_breedable_data().age != 0 {
 			return false;
 		}
 
-		if !self.get_food().contains(&data::items::get_item_name_by_id(held_item.id).unwrap()) {
+		if !self.get_food().contains(&held_item.get_item_name()) {
 			return false;
 		}
 
@@ -155,7 +155,7 @@ pub trait BreedableMobTrait: CommonEntityTrait {
 		let in_range_players_with_food: Vec<&Player> = players
 			.iter()
 			.filter(|x| x.get_position().distance_to(self.get_common_entity_data().position) <= crate::MOB_FOOD_ATTRACTION_RADIUS)
-			.filter(|x| x.get_held_item(true).is_some_and(|item| self.get_food().contains(&data::items::get_item_name_by_id(item.id).unwrap())))
+			.filter(|x| !x.get_held_item(true).is_empty() && self.get_food().contains(&x.get_held_item(true).get_item_name()))
 			.collect();
 
 

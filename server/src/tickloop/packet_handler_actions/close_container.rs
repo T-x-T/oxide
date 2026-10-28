@@ -9,24 +9,17 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 		//Drop items in crafting field
 		let mut inventory = player.get_inventory().clone();
 		let mut inventory_updated = false;
-		if inventory[0].is_some() {
-			inventory[0] = None;
+		if !inventory[0].is_empty() {
+			inventory[0] = Slot::default();
 			inventory_updated = true;
 		}
 		for i in 1..=4 {
 			let slot = &mut inventory[i];
-			if slot.as_mut().is_some_and(|x| x.count > 0) {
+			if !slot.is_empty() {
 				inventory_updated = true;
 				let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
-				dimension.summon_item(
-					player.get_position(),
-					slot.take().unwrap(),
-					None,
-					players_clone,
-					&game.packet_sender,
-					&game.entity_id_manager,
-					0,
-				);
+				dimension.summon_item(player.get_position(), slot.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager, 0);
+				slot.empty();
 			}
 		}
 
@@ -36,19 +29,19 @@ pub fn process(peer_addr: SocketAddr, window_id: i32, game: Arc<Game>, players_c
 	} else {
 		let player_position = player.get_position();
 		let dimension = world.dimensions.get_mut(player.get_dimension()).unwrap();
-		player.crafting_table_slots.iter_mut().filter(|x| x.count > 0).for_each(|x| {
+		player.crafting_table_slots.iter_mut().filter(|x| x.get_count() > 0).for_each(|x| {
 			dimension.summon_item(player_position, x.clone(), None, players_clone, &game.packet_sender, &game.entity_id_manager, 0);
 		});
 		player.crafting_table_slots = [
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
-			ProtocolSlot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
+			Slot::default(),
 		];
 
 		if let Some(position) = player.opened_inventory_at {

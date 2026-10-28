@@ -8,7 +8,7 @@ pub fn process(peer_addr: SocketAddr, _parsed_packet: lib::packets::serverbound:
 
 	let held_item = player.get_held_item(true);
 
-	if held_item.is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:egg").unwrap()) {
+	if !held_item.is_empty() && held_item.get_item_name() == "minecraft:egg" {
 		let mut rng = rng();
 		if rng.random_ratio(1, 8) {
 			let mut world = game.world.lock().unwrap();

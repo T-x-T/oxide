@@ -10,7 +10,8 @@ pub fn interact(
 	block_states: &HashMap<String, Block>,
 	dimension: &Dimension,
 ) -> BlockInteractionResult {
-	if !player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:ender_eye").unwrap()) {
+	let held_item = player.get_held_item(true);
+	if held_item.is_empty() || held_item.get_item_name() != "minecraft:ender_eye" {
 		return BlockInteractionResult::Nothing;
 	}
 
@@ -19,12 +20,12 @@ pub fn interact(
 		return BlockInteractionResult::Nothing;
 	} else {
 		if player.get_gamemode() == Gamemode::Survival || player.get_gamemode() == Gamemode::Adventure {
-			let held_item = player.get_held_item(true).unwrap();
-			if held_item.count > 1 {
-				let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
-				player.set_selected_inventory_slot(Some(slot), players_clone, packet_sender);
+			let mut held_item = player.get_held_item(true).clone();
+			if !held_item.is_empty() {
+				held_item.subtract_count_mut(1).unwrap();
+				player.set_selected_inventory_slot(held_item, players_clone, packet_sender);
 			} else {
-				player.set_selected_inventory_slot(None, players_clone, packet_sender);
+				player.set_selected_inventory_slot(Slot::default(), players_clone, packet_sender);
 			}
 		}
 

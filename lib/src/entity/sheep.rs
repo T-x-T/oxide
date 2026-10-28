@@ -29,7 +29,7 @@ impl CommonEntityTrait for Sheep {
 
 	fn interact(
 		&mut self,
-		held_item: &ProtocolSlot,
+		held_item: &Slot,
 		dimension: &mut Dimension,
 		players_clone: &[Player],
 		_players: &mut [Player],
@@ -38,17 +38,13 @@ impl CommonEntityTrait for Sheep {
 		entity_id_manager: &EntityIdManager,
 		_block_state_data: &HashMap<String, basic_types::blocks::Block>,
 	) -> Vec<EntityTickOutcome> {
-		if held_item.count > 0 && held_item.id == data::items::get_item_id_by_name("minecraft:shears").unwrap() && !self.sheared {
+		if !held_item.is_empty() && held_item.get_item_name() == "minecraft:shears" && !self.sheared {
 			self.sheared = true;
 
 			let mut rng = rng();
 			let wool_drops = rng.random_range(1..=3);
-			let wool_slot = ProtocolSlot {
-				count: wool_drops,
-				id: data::items::get_item_id_by_name("minecraft:white_wool").unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			};
+			let wool_slot =
+				Slot::new_from_name("minecraft:white_wool", wool_drops).expect("seems like minecraft:white_wool isnt an item anymore");
 
 			let item_entity = ItemEntity {
 				common: CommonEntity {
@@ -85,7 +81,7 @@ impl CommonEntityTrait for Sheep {
 		.collect();
 	}
 
-	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 

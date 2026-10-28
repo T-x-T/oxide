@@ -726,7 +726,7 @@ pub mod play {
 
 	pub fn set_creative_mode_slot(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {
 		let parsed_packet = lib::packets::serverbound::play::SetCreativeModeSlot::try_from(data.to_vec())?;
-		return Ok(Some(PacketHandlerAction::SetCreativeModeSlot(stream.peer_addr()?, parsed_packet.slot as u8, parsed_packet.item)));
+		return Ok(Some(PacketHandlerAction::SetCreativeModeSlot(stream.peer_addr()?, parsed_packet.slot as u8, parsed_packet.item.into())));
 	}
 
 	pub fn set_held_item(data: &mut [u8], stream: &mut TcpStream) -> Result<Option<PacketHandlerAction>, Box<dyn Error>> {

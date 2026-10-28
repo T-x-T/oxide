@@ -4,21 +4,21 @@ use super::*;
 pub struct BrewingStand {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub items: Vec<ProtocolSlot>,               //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
+	pub items: Vec<Slot>,               //0: left, 1: middle, 2: right, 3: ingredient, 4: fuel
 	pub brew_time: i16,
 	pub fuel: u8,
 }
 
 impl CommonBlockEntity for BrewingStand {
 	fn new(position: BlockPosition) -> Self {
-		return Self { position, components: Vec::new(), items: vec![ProtocolSlot::default(); 5], brew_time: 0, fuel: 0 };
+		return Self { position, components: Vec::new(), items: vec![Slot::default(); 5], brew_time: 0, fuel: 0 };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut self.items;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return self.items.clone();
 	}
 }
@@ -38,15 +38,11 @@ impl TryFrom<NbtListTag> for BrewingStand {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let mut inventory = vec![ProtocolSlot::default(); 5];
+		let mut inventory = vec![Slot::default(); 5];
 		if let Some(items) = value.get_child("Items") {
 			for entry in items.as_list() {
-				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] = ProtocolSlot {
-					id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
-					count: entry.get_child("count").unwrap().as_int(),
-					components_to_add: Vec::new(),
-					components_to_remove: Vec::new(),
-				};
+				inventory[entry.get_child("Slot").unwrap().as_byte() as usize] =
+					Slot::new_from_name(entry.get_child("id").unwrap().as_string(), entry.get_child("count").unwrap().as_int() as u8).unwrap();
 			}
 		}
 

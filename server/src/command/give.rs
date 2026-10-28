@@ -44,7 +44,7 @@ fn execute(command: String, socket_addr: Option<SocketAddr>, game: Arc<Game>) ->
 		return Ok(());
 	};
 
-	let slot = ProtocolSlot { id: item_id, count: 1, components_to_add: Vec::new(), components_to_remove: Vec::new() };
+	let slot = Slot::new(item_id as u16, 1);
 
 	game.world.lock().unwrap().dimensions.get_mut(player.get_dimension()).unwrap().summon_item(
 		position,

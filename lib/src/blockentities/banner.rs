@@ -12,11 +12,11 @@ impl CommonBlockEntity for Banner {
 		return Self { position, components: Vec::new(), patterns: Vec::new() };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return Vec::new();
 	}
 }

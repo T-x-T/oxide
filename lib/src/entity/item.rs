@@ -5,7 +5,7 @@ pub struct ItemEntity {
 	pub common: CommonEntity,
 	pub age: i16,
 	pub health: i16,
-	pub item: ProtocolSlot,
+	pub item: Slot,
 	pub owner: u128,
 	pub pickup_delay: i16,
 	pub thrower: u128,
@@ -17,25 +17,21 @@ impl CommonEntityTrait for ItemEntity {
 			common: data,
 			age: extra_nbt.get_child("Age").unwrap_or(&NbtTag::Short(String::new(), 0)).as_short(),
 			health: extra_nbt.get_child("Health").unwrap_or(&NbtTag::Short(String::new(), 5)).as_short(),
-			item: ProtocolSlot {
-				id: data::items::get_item_id_by_name(
-					extra_nbt
-						.get_child("Item")
-						.unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new()))
-						.get_child("id")
-						.unwrap_or(&NbtTag::String(String::new(), "minecraft:stone".to_string()))
-						.as_string(),
-				)
-				.unwrap(),
-				count: extra_nbt
+			item: Slot::new_from_name(
+				extra_nbt
+					.get_child("Item")
+					.unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new()))
+					.get_child("id")
+					.unwrap_or(&NbtTag::String(String::new(), "minecraft:stone".to_string()))
+					.as_string(),
+				extra_nbt
 					.get_child("Item")
 					.unwrap_or(&NbtTag::TagCompound(String::new(), Vec::new()))
 					.get_child("count")
 					.unwrap_or(&NbtTag::Int(String::new(), 1))
-					.as_int(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			},
+					.as_int() as u8,
+			)
+			.expect("couldnt construct item in ItemEntity::new"),
 			owner: extra_nbt
 				.get_child("Owner")
 				.unwrap_or(&NbtTag::IntArray(String::new(), vec![0; 4]))
@@ -65,8 +61,8 @@ impl CommonEntityTrait for ItemEntity {
 			NbtTag::TagCompound(
 				"Item".to_string(),
 				vec![
-					NbtTag::String("id".to_string(), data::items::get_item_name_by_id(self.item.id).unwrap().to_string()),
-					NbtTag::Int("count".to_string(), self.item.count),
+					NbtTag::String("id".to_string(), self.item.get_item_name().to_string()),
+					NbtTag::Int("count".to_string(), self.item.get_count() as i32),
 					NbtTag::TagCompound("components".to_string(), Vec::new()),
 				],
 			),
@@ -95,8 +91,8 @@ impl CommonEntityTrait for ItemEntity {
 		return vec![EntityMetadata {
 			index: 8,
 			value: EntityMetadataValue::Slot(ProtocolSlot {
-				count: self.item.count,
-				id: self.item.id,
+				count: self.item.get_count() as i32,
+				id: self.item.get_item_id() as i32,
 				components_to_add: Vec::new(),
 				components_to_remove: Vec::new(),
 			}),

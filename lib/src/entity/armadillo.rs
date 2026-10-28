@@ -21,7 +21,7 @@ impl CommonEntityTrait for Armadillo {
 		return vec![self.mob.to_nbt(), self.breedable_mob.to_nbt()].into_iter().flatten().collect();
 	}
 
-	fn feed(&mut self, held_item: &ProtocolSlot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
+	fn feed(&mut self, held_item: &Slot, packet_sender: &PacketSender, players_clone: &[Player], dimension_name: &str) -> bool {
 		return self.feed_breedable_mob(held_item, packet_sender, players_clone, dimension_name);
 	}
 

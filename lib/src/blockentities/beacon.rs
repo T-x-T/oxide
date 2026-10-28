@@ -13,11 +13,11 @@ impl CommonBlockEntity for Beacon {
 		return Self { position, components: Vec::new(), primary_potion_effect: None, secondary_potion_effect: None };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut [];
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return Vec::new();
 	}
 }

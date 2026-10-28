@@ -4,7 +4,7 @@ use super::*;
 pub struct SoulCampfire {
 	pub position: BlockPosition,        //global position, NOT within the chunk
 	pub components: Vec<SlotComponent>, //At least I think so?
-	pub items: Vec<ProtocolSlot>,               //up to 4
+	pub items: Vec<Slot>,               //up to 4
 	pub cooking_times: Vec<i32>,
 	pub cooking_total_times: Vec<i32>,
 }
@@ -14,11 +14,11 @@ impl CommonBlockEntity for SoulCampfire {
 		return Self { position, components: Vec::new(), items: Vec::new(), cooking_times: Vec::new(), cooking_total_times: Vec::new() };
 	}
 
-	fn get_contained_items_mut(&mut self) -> &mut [ProtocolSlot] {
+	fn get_contained_items_mut(&mut self) -> &mut [Slot] {
 		return &mut self.items;
 	}
 
-	fn get_contained_items_owned(&self) -> Vec<ProtocolSlot> {
+	fn get_contained_items_owned(&self) -> Vec<Slot> {
 		return self.items.clone();
 	}
 }
@@ -42,16 +42,13 @@ impl TryFrom<NbtListTag> for SoulCampfire {
 		let z = value.get_child("z").unwrap().as_int();
 		let position = BlockPosition { x, y, z };
 
-		let items: Vec<ProtocolSlot> = value
+		let items: Vec<Slot> = value
 			.get_child("Items")
 			.unwrap_or(&NbtTag::List(String::new(), Vec::new()))
 			.as_list()
 			.iter()
-			.map(|entry| ProtocolSlot {
-				id: data::items::get_item_id_by_name(entry.get_child("id").unwrap().as_string()).unwrap(),
-				count: entry.get_child("count").unwrap().as_int(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
+			.map(|entry| {
+				Slot::new_from_name(entry.get_child("id").unwrap().as_string(), entry.get_child("count").unwrap().as_int() as u8).unwrap()
 			})
 			.collect();
 

@@ -30,10 +30,7 @@ pub fn process(
 	let block_type_at_location = data::blocks::get_type_from_block_state_id(block_id_at_location);
 
 	let blocks_to_place: Vec<(u16, BlockPosition)> = if (block_type_at_location.has_right_click_behavior()
-		|| data::tags::get_item()
-			.get("hoes")
-			.unwrap()
-			.contains(&data::items::get_item_name_by_id(player.get_selected_inventory_slot().clone().unwrap_or_default().id).unwrap()))
+		|| data::tags::get_item().get("hoes").unwrap().contains(&player.get_selected_inventory_slot().get_item_name()))
 		&& !player.is_sneaking()
 	{
 		//Don't place block, because player right clicked something that does something when right clicked
@@ -56,41 +53,24 @@ pub fn process(
 				)
 			})
 			.unwrap_or_default()
-	} else if player.get_held_item(true).is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:bucket").unwrap())
-	{
+	} else if !player.get_held_item(true).is_empty() && player.get_held_item(true).get_item_name() == "minecraft:bucket" {
 		let blocks_state_id = dimension.get_block(new_block_location).unwrap();
 		let block_name = data::blocks::get_block_name_from_block_state_id(blocks_state_id);
 		if block_name == "minecraft:water" {
-			let held_item = player.get_held_item(true).unwrap();
-			if held_item.count > 1 {
-				let slot = ProtocolSlot { count: held_item.count - 1, ..held_item.clone() };
-				player.set_selected_inventory_slot(Some(slot), players_clone, &game.packet_sender);
-			} else {
-				player.set_selected_inventory_slot(None, players_clone, &game.packet_sender);
+			let mut held_item = player.get_held_item(true).clone();
+			if !held_item.is_empty() {
+				held_item.subtract_count_mut(1).unwrap();
 			}
-			let water_bucket_slot = ProtocolSlot {
-				count: 1,
-				id: data::items::get_item_id_by_name("minecraft:water_bucket").unwrap(),
-				components_to_add: Vec::new(),
-				components_to_remove: Vec::new(),
-			};
+			player.set_selected_inventory_slot(held_item.clone(), players_clone, &game.packet_sender);
+			let water_bucket_slot = Slot::new_from_name("minecraft:water_bucket", 1).expect("minecraft:water_bucket is not an item??");
 			player.add_item_to_inventory(water_bucket_slot, players_clone, &game.packet_sender);
 			vec![(0, new_block_location)]
 		} else {
 			vec![]
 		}
-	} else if player
-		.get_held_item(true)
-		.is_some_and(|x| x.count > 0 && x.id == data::items::get_item_id_by_name("minecraft:water_bucket").unwrap())
-	{
-		let bucket_slot = ProtocolSlot {
-			count: 1,
-			id: data::items::get_item_id_by_name("minecraft:bucket").unwrap(),
-			components_to_add: Vec::new(),
-			components_to_remove: Vec::new(),
-		};
-
-		player.set_selected_inventory_slot(Some(bucket_slot), players_clone, &game.packet_sender);
+	} else if !player.get_held_item(true).is_empty() && player.get_held_item(true).get_item_name() == "minecraft:water_bucket" {
+		let bucket_slot = Slot::new_from_name("minecraft:water", 1).expect("minecraft:water is not an item??");
+		player.set_selected_inventory_slot(bucket_slot, players_clone, &game.packet_sender);
 
 		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
 		let full_water_block_id = water_block.states[water_block.default_state].id;
@@ -98,9 +78,7 @@ pub fn process(
 		vec![(full_water_block_id, new_block_location)]
 	} else {
 		//Let's go - we can place a block
-		let used_item_id =
-			player.get_held_item(true).unwrap_or(&ProtocolSlot { count: 0, id: 0, components_to_add: Vec::new(), components_to_remove: Vec::new() }).id;
-		let mut used_item_name = data::items::get_item_name_by_id(used_item_id).unwrap();
+		let mut used_item_name = player.get_held_item(true).get_item_name();
 
 		if block_type_at_location == Type::Farm {
 			used_item_name = match used_item_name {
@@ -146,14 +124,17 @@ pub fn process(
 
 		//first part of the if tries to check if player just right clicked an item that doesnt place a block
 		if !block_state_ids.is_empty() && block_state_ids[0].0 != 0 && gamemode == Gamemode::Survival {
-			let Some(hand_slot) = player.get_held_item(true) else {
+			let hand_slot = player.get_held_item(true);
+			if hand_slot.is_empty() {
 				return;
-			};
+			}
 
-			let hand_slot = hand_slot.clone();
-			let new_hand_slot = if hand_slot.count == 1 { None } else { Some(ProtocolSlot { count: hand_slot.count - 1, ..hand_slot }) };
+			let mut hand_slot = hand_slot.clone();
+			if !hand_slot.is_empty() {
+				hand_slot.subtract_count_mut(1).unwrap();
+			}
 
-			player.set_selected_inventory_slot(new_hand_slot, players_clone, &game.packet_sender);
+			player.set_selected_inventory_slot(hand_slot, players_clone, &game.packet_sender);
 		}
 
 		block_state_ids
