@@ -411,11 +411,19 @@ impl super::WorldLoader for Loader {
 
 		let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
 
-		return BlockPosition {
-			x: level_data.get_child("Data").unwrap().get_child("SpawnX").unwrap().as_int(),
-			y: level_data.get_child("Data").unwrap().get_child("SpawnY").unwrap().as_int() as i16,
-			z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
-		};
+		if level_data.get_child("Data").unwrap().get_child("SpawnX").is_some() {
+			return BlockPosition {
+				x: level_data.get_child("Data").unwrap().get_child("SpawnX").unwrap().as_int(),
+				y: level_data.get_child("Data").unwrap().get_child("SpawnY").unwrap().as_int() as i16,
+				z: level_data.get_child("Data").unwrap().get_child("SpawnZ").unwrap().as_int(),
+			};
+		} else {
+			return BlockPosition {
+				x: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0],
+				y: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0] as i16,
+				z: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0],
+			};
+		}
 	}
 
 	fn get_world_age(&self) -> i64 {
@@ -440,7 +448,9 @@ impl super::WorldLoader for Loader {
 		let mut world_clocks_path = self.path.clone();
 		world_clocks_path.push(PathBuf::from_str("data/world_clocks.dat").unwrap());
 
-		let mut file = File::open(&world_clocks_path).unwrap();
+		let Ok(mut file) = File::open(&world_clocks_path) else {
+			return 0;
+		};
 
 		let mut compressed_file_content: Vec<u8> = Vec::new();
 		file.read_to_end(&mut compressed_file_content).unwrap();
