@@ -420,8 +420,8 @@ impl super::WorldLoader for Loader {
 		} else {
 			return BlockPosition {
 				x: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0],
-				y: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0] as i16,
-				z: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[0],
+				y: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[1] as i16,
+				z: level_data.get_child("Data").unwrap().get_child("spawn").unwrap().get_child("pos").unwrap().as_int_array()[2],
 			};
 		}
 	}

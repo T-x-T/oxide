@@ -6,3 +6,4 @@ flamegraph.svg
 /server/world
 ops.json
 profile.json.gz
+test_servers/
