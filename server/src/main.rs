@@ -80,6 +80,7 @@ fn initialize_server() {
 		std::thread::spawn(move || {
 			let game = game_clone.clone();
 			for (chunk_x, chunk_z) in receiver.iter() {
+				//TODO: we should be able to load data from disk without locking the world, but thats just my two cents
 				let mut world = game.world.lock().unwrap();
 				let chunk = world.loader.load_chunk(chunk_x, chunk_z, &game.block_state_data, &dimension_name_clone);
 				let mut entities = world.loader.load_entities_in_chunk(chunk_x, chunk_z, &game.entity_id_manager, &dimension_name_clone);

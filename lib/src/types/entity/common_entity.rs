@@ -166,7 +166,7 @@ pub trait CommonEntityTrait {
 	}
 	fn set_common_entity_data(&mut self, common_entity_data: CommonEntity);
 	fn get_type(&self) -> i32;
-	fn get_type_string(&self) -> String {
+	fn get_type_string(&self) -> &'static str {
 		return data::entities::get_name_from_id(self.get_type());
 	}
 	fn get_mob_type(&self) -> MobType {
@@ -223,7 +223,7 @@ pub trait CommonEntityTrait {
 		}
 
 		//Remove hostile spawnable mobs that are too far away from players
-		if crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.contains(&self.get_type_string().as_str()) {
+		if crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.contains(&self.get_type_string()) {
 			let distance_to_closest_player = players
 				.iter()
 				.filter(|x| x.get_dimension() == dimension.name)
@@ -874,7 +874,23 @@ pub trait CommonEntityTrait {
 		if self.is_in_liquid(dimension) {
 			return true;
 		}
-		let is_in_fall_damage_resetting = data::tags::get_block().get("fall_damage_resetting").unwrap().contains(&block_name_at_pos);
+		//this is too performance costly due to the data::tags::get_block() call
+		//let is_in_fall_damage_resetting = data::tags::get_block().get("fall_damage_resetting").unwrap().contains(&block_name_at_pos);
+		let is_in_fall_damage_resetting = [
+			"minecraft:cave_vines",
+			"minecraft:cave_vines_plant",
+			"minecraft:cobweb",
+			"minecraft:ladder",
+			"minecraft:scaffolding",
+			"minecraft:sweet_berry_bush",
+			"minecraft:twisting_vines",
+			"minecraft:twisting_vines_plant",
+			"minecraft:vine",
+			"minecraft:weeping_vines",
+			"minecraft:weeping_vines_plant",
+		]
+		.contains(&block_name_at_pos);
+
 		if is_in_fall_damage_resetting {
 			return true;
 		}

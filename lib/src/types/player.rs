@@ -1111,6 +1111,7 @@ impl Player {
 			chunk
 		} else {
 			dimension.chunks_loading_sender.send((chunk_x, chunk_z)).unwrap();
+			self.loaded_chunks.retain(|x| x.0 != chunk_x && x.1 != chunk_z);
 			return Ok(());
 		};
 		let all_chunk_sections = &chunk.sections;

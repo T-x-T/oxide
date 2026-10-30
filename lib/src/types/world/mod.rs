@@ -446,7 +446,7 @@ impl Chunk {
 			is_light_on: true,
 			modified: true,
 			block_entities: Vec::new(),
-			keep_loaded_for_ticks: 20 * 60,
+			keep_loaded_for_ticks: 20 * 240,
 			heightmap_motion_blocking: heightmap.to_vec(),
 			heightmap_motion_blocking_no_leaves: heightmap.to_vec(),
 			heightmap_ocean_floor: heightmap.to_vec(),

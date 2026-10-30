@@ -20,11 +20,11 @@ pub fn generate() {
 	output += "\t};\n";
 	output += "}\n";
 	output += "\n";
-	output += "pub fn get_name_from_id(id: i32) -> String {\n";
+	output += "pub fn get_name_from_id(id: i32) -> &'static str {\n";
 	output += "\treturn match id {\n";
 
 	for entry in registry.iter() {
-		output += format!("\t\t{} => \"{}\".to_string(),\n", entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap(), entry.0).as_str();
+		output += format!("\t\t{} => \"{}\",\n", entry.1.as_object().unwrap()["protocol_id"].as_i32().unwrap(), entry.0).as_str();
 	}
 
 	output += "\t\t_ => panic!(\"get_name_from_id encountered entity with id {id} that doesnt exist\"),\n";

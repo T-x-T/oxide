@@ -9,7 +9,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 	let dimension = world.dimensions.get_mut(player_clone.get_dimension()).unwrap();
 
-	let old_block_id = dimension.get_block(location).unwrap();
+	let old_block_id = dimension.get_block(location).unwrap_or_default();
 
 	if player_clone.get_gamemode() == Gamemode::Survival {
 		let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);

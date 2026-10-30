@@ -23,7 +23,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 				if entity_clone.is_mob() && entity_clone.get_mob_data().drop_items_upon_death {
 					let items_to_drop = loot_table::get_entity_drops(
 						&game.loot_tables,
-						&data::entities::get_name_from_id(entity_clone.get_type()),
+						data::entities::get_name_from_id(entity_clone.get_type()),
 						&Slot::default(),
 						&game.block_state_data,
 						None,
@@ -62,7 +62,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 
 				let items_to_drop = loot_table::get_entity_drops(
 					&game.loot_tables,
-					&data::entities::get_name_from_id(entity_clone.get_type()),
+					data::entities::get_name_from_id(entity_clone.get_type()),
 					&used_tool,
 					&game.block_state_data,
 					cloned_player.as_ref(),
@@ -109,7 +109,6 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					dimension
 						.entities
 						.iter()
-						.filter(|x| data::entities::get_name_from_id(x.get_type()) != "minecraft:player")
 						.find(|x| x.get_common_entity_data().entity_id == entity_id)
 						.map(|x| x.get_common_entity_data().position.into())
 						.unwrap_or_default(),
@@ -172,7 +171,7 @@ pub fn process(entity_tick_outcomes: Vec<(i32, EntityTickOutcome)>, game: Arc<Ga
 					}
 
 					let mut entity = entity::new(
-						&data::entities::get_name_from_id(entity_a.get_type()),
+						data::entities::get_name_from_id(entity_a.get_type()),
 						CommonEntity {
 							position: entity_a.get_common_entity_data().position,
 							velocity: EntityPosition::default(),

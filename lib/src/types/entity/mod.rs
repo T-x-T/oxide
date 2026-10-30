@@ -69,7 +69,7 @@ impl Entity {
 	pub fn to_nbt(&self) -> NbtListTag {
 		let common_data = self.get_common_entity_data();
 		let default_tags = vec![
-			NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type())),
+			NbtTag::String("id".to_string(), data::entities::get_name_from_id(self.get_type()).to_string()),
 			NbtTag::List(
 				"Pos".to_string(),
 				vec![
@@ -259,7 +259,7 @@ impl Entity {
 		};
 	}
 
-	pub fn get_type_string(&self) -> String {
+	pub fn get_type_string(&self) -> &'static str {
 		return match self {
 			Entity::Armadillo(x) => x.get_type_string(),
 			Entity::Cat(x) => x.get_type_string(),
