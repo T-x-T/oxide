@@ -1,5 +1,4 @@
 use super::*;
-use lib::blocks::Type;
 use rand::Rng;
 
 pub fn process(game: Arc<Game>, players_clone: &[Player]) {
@@ -26,11 +25,12 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						z: rng.random_range(0..16),
 					};
 
-					let block_to_check_for_grass = BlockPosition { y: chunk_coords_to_check.y - 1, ..chunk_coords_to_check };
+					let block_to_check_for_grass =
+						BlockPosition { y: chunk_coords_to_check.y - 1, ..chunk_coords_to_check }.convert_to_position_global(chunk.x, chunk.z);
 
 					let block = dimension.get_block(block_to_check_for_grass).unwrap_or_default();
-					let block_type = data::blocks::get_type_from_block_state_id(block);
-					if block_type != Type::Grass {
+
+					if data::blocks::get_block_name_from_block_state_id(block) != "minecraft:grass_block" {
 						continue;
 					}
 
@@ -41,7 +41,7 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						.min_by(|a, b| a.total_cmp(b))
 						.unwrap_or_default();
 
-					if distance_to_closest_player < 24.0 || distance_to_closest_player > 128.0 {
+					if distance_to_closest_player < 96.0 || distance_to_closest_player > 128.0 {
 						continue;
 					}
 
@@ -75,6 +75,10 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 						chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z).into(),
 						&game.block_state_data,
 					) {
+						continue;
+					}
+
+					if entity.is_in_liquid(dimension) {
 						continue;
 					}
 
@@ -175,6 +179,10 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 					chunk_coords_to_check.convert_to_position_global(chunk.x, chunk.z).into(),
 					&game.block_state_data,
 				) {
+					continue;
+				}
+
+				if entity.is_in_liquid(dimension) {
 					continue;
 				}
 

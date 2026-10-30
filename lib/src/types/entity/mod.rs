@@ -343,6 +343,34 @@ impl Entity {
 		};
 	}
 
+	pub fn is_in_liquid(&self, dimension: &Dimension) -> bool {
+		return match self {
+			Entity::Armadillo(x) => x.is_in_liquid(dimension),
+			Entity::Cat(x) => x.is_in_liquid(dimension),
+			Entity::ChestMinecart(x) => x.is_in_liquid(dimension),
+			Entity::Chicken(x) => x.is_in_liquid(dimension),
+			Entity::Cow(x) => x.is_in_liquid(dimension),
+			Entity::Creeper(x) => x.is_in_liquid(dimension),
+			Entity::Donkey(x) => x.is_in_liquid(dimension),
+			Entity::Horse(x) => x.is_in_liquid(dimension),
+			Entity::Item(x) => x.is_in_liquid(dimension),
+			Entity::Parrot(x) => x.is_in_liquid(dimension),
+			Entity::Pig(x) => x.is_in_liquid(dimension),
+			Entity::Rabbit(x) => x.is_in_liquid(dimension),
+			Entity::Sheep(x) => x.is_in_liquid(dimension),
+			Entity::Player(x) => x.is_in_liquid(dimension),
+			Entity::EnderDragon(x) => x.is_in_liquid(dimension),
+			Entity::EndCrystal(x) => x.is_in_liquid(dimension),
+			Entity::Zombie(x) => x.is_in_liquid(dimension),
+			Entity::Skeleton(x) => x.is_in_liquid(dimension),
+			Entity::Arrow(x) => x.is_in_liquid(dimension),
+			Entity::Blaze(x) => x.is_in_liquid(dimension),
+			Entity::Enderman(x) => x.is_in_liquid(dimension),
+			Entity::Spider(x) => x.is_in_liquid(dimension),
+			Entity::ZombifiedPiglin(x) => x.is_in_liquid(dimension),
+		};
+	}
+
 	pub fn to_spawn_entity_packet(&self) -> crate::packets::clientbound::play::SpawnEntity {
 		return crate::packets::clientbound::play::SpawnEntity {
 			entity_id: self.get_common_entity_data().entity_id,

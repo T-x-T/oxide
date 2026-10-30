@@ -223,10 +223,18 @@ pub trait CommonEntityTrait {
 		}
 
 		//Remove hostile spawnable mobs that are too far away from players
-		if crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.contains(&self.get_type_string()) {
+		let all_hostile_spawnable_mobs: Vec<&str> = vec![
+			crate::HOSTILE_END_SPAWNABLE_MOBS.to_vec(),
+			crate::HOSTILE_NETHER_SPAWNABLE_MOBS.to_vec(),
+			crate::HOSTILE_OVERWORLD_SPAWNABLE_MOBS.to_vec(),
+		]
+		.into_iter()
+		.flatten()
+		.collect();
+		if all_hostile_spawnable_mobs.contains(&self.get_type_string()) {
 			let distance_to_closest_player = players
 				.iter()
-				.filter(|x| x.get_dimension() == dimension.name)
+				.filter(|x| x.get_dimension() == dimension.name) //this means we dont despawn if there are no players in current dimension
 				.map(|x| x.get_position().distance_to(self.get_common_entity_data().position))
 				.min_by(|a, b| a.total_cmp(b))
 				.unwrap_or_default();
@@ -411,13 +419,12 @@ pub trait CommonEntityTrait {
 		block_states: &HashMap<String, basic_types::blocks::Block>,
 	) -> bool {
 		let block_positions_to_check = self.get_occupied_block_positions_at_entity_position(entity_position_to_check);
+		let mut entity_collision_shape = self.get_common_entity_data().collision_shape.clone();
+		entity_collision_shape.set_base_coordinates(entity_position_to_check);
 
 		for block_position_to_check in block_positions_to_check {
 			let block_at_location = dimension.get_block(block_position_to_check).unwrap_or(0);
 			let block_collision_shape = crate::block::get_collision_shape(block_at_location, block_position_to_check, block_states);
-
-			let mut entity_collision_shape = self.get_common_entity_data().collision_shape.clone();
-			entity_collision_shape.set_base_coordinates(entity_position_to_check);
 
 			if entity_collision_shape.collides_with(&block_collision_shape) {
 				return true;
@@ -473,39 +480,27 @@ pub trait CommonEntityTrait {
 
 		let (height, width) = self.get_hitbox();
 
-		let x_min = position_to_check.x + x_offset - (width / 2.0);
-		let x_max = position_to_check.x + x_offset + (width / 2.0);
-		let x_range: Vec<i32> = ((if x_min.is_sign_positive() { x_min.floor() } else { x_min.ceil() } as i32)..=(if x_max.is_sign_positive() {
-			x_max.floor()
-		} else {
-			x_max.ceil()
-		} as i32))
-			.collect();
+		let x_min_float = position_to_check.x + x_offset - (width / 2.0);
+		let x_max_float = position_to_check.x + x_offset + (width / 2.0);
+		let x_min = if x_min_float.is_sign_positive() { x_min_float.floor() } else { x_min_float.ceil() } as i32;
+		let x_max = if x_max_float.is_sign_positive() { x_max_float.floor() } else { x_max_float.ceil() } as i32;
 
-		let y_min = position_to_check.y;
-		let y_max = position_to_check.y + height - 0.01;
-		let y_range: Vec<i16> = ((if y_min.is_sign_positive() { y_min.floor() } else { y_min.ceil() } as i16)..=(if y_max.is_sign_positive() {
-			y_max.floor()
-		} else {
-			y_max.ceil()
-		} as i16))
-			.collect();
+		let y_min_float = position_to_check.y;
+		let y_max_float = position_to_check.y + height - 0.01;
+		let y_min = if y_min_float.is_sign_positive() { y_min_float.floor() } else { y_min_float.ceil() } as i16;
+		let y_max = if y_max_float.is_sign_positive() { y_max_float.floor() } else { y_max_float.ceil() } as i16;
 
-		let z_min = position_to_check.z + z_offset - (width / 2.0);
-		let z_max = position_to_check.z + z_offset + (width / 2.0);
-		let z_range: Vec<i32> = ((if z_min.is_sign_positive() { z_min.floor() } else { z_min.ceil() } as i32)..=(if z_max.is_sign_positive() {
-			z_max.floor()
-		} else {
-			z_max.ceil()
-		} as i32))
-			.collect();
+		let z_min_float = position_to_check.z + z_offset - (width / 2.0);
+		let z_max_float = position_to_check.z + z_offset + (width / 2.0);
+		let z_min = if z_min_float.is_sign_positive() { z_min_float.floor() } else { z_min_float.ceil() } as i32;
+		let z_max = if z_max_float.is_sign_positive() { z_max_float.floor() } else { z_max_float.ceil() } as i32;
 
-		let mut output: Vec<BlockPosition> = Vec::with_capacity(x_range.len() * y_range.len() * z_range.len());
+		let mut output: Vec<BlockPosition> = Vec::new();
 
-		for x in x_range {
-			for y in y_range.iter() {
-				for z in z_range.iter() {
-					output.push(BlockPosition { x, y: *y, z: *z });
+		for x in x_min..=x_max {
+			for y in y_min..=y_max {
+				for z in z_min..=z_max {
+					output.push(BlockPosition { x, y, z });
 				}
 			}
 		}
