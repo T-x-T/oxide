@@ -463,6 +463,13 @@ pub fn get_hardness(block_id: u16, block_states: &HashMap<String, Block>) -> f32
 		Type::Potato => 0.0,
 		Type::Beetroot => 0.0,
 		Type::Sapling => 0.0,
+		Type::Torch => 0.0,
+		Type::WallTorch => 0.0,
+		Type::RedstoneTorch => 0.0,
+		Type::RedstoneWallTorch => 0.0,
+		Type::Flower => 0.0,
+		Type::FlowerPot => 0.0,
+		Type::TallFlower => 0.0,
 		_ => 1.0,
 	};
 }
