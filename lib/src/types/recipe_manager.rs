@@ -704,7 +704,7 @@ fn is_recipe_a_match_3x3(slots: &[Slot; 9], recipe: &Recipe) -> bool {
 					};
 					for actual_ingredient_option in tag_resolved_ingredient_options {
 						for slot in &mut slots_vec {
-							if slot.get_item_name() == actual_ingredient_option {
+							if !slot.is_empty() && slot.get_item_name() == actual_ingredient_option {
 								slot.empty();
 								found_match = true;
 								break 'ingredient_loop;
@@ -875,6 +875,39 @@ mod tests {
 			let recipe = all_recipes.get("minecraft:oak_pressure_plate").unwrap();
 
 			assert!(!is_recipe_a_match_2x2(slots, recipe));
+		}
+
+		#[test]
+		fn doesnt_match_one_wheat_to_haybale() {
+			let slots: &[Slot; 4] = &[Slot::default(), Slot::default(), Slot::default(), Slot::new_from_name("minecraft:wheat", 1).unwrap()];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:hay_block").unwrap();
+
+			assert!(!is_recipe_a_match_2x2(slots, recipe));
+		}
+	}
+
+	mod is_recipe_a_match_3x3 {
+		use super::*;
+		#[test]
+		fn doesnt_match_one_wheat_to_haybale() {
+			let slots: &[Slot; 9] = &[
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::default(),
+				Slot::new_from_name("minecraft:wheat", 1).unwrap(),
+			];
+
+			let all_recipes = data::recipes::get_recipes();
+			let recipe = all_recipes.get("minecraft:hay_block").unwrap();
+
+			assert!(!is_recipe_a_match_3x3(slots, recipe));
 		}
 	}
 }
