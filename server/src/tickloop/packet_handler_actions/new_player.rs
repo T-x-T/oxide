@@ -88,6 +88,13 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 	new_player.send_armor_points(&game.packet_sender);
 
 	let current_chunk_coords = BlockPosition::from(new_player.get_position()).convert_to_coordinates_of_chunk();
+
+	game.packet_sender.send_packet_to_player(
+		&new_player.peer_socket_address,
+		lib::packets::clientbound::play::SetCenterChunk::PACKET_ID,
+		lib::packets::clientbound::play::SetCenterChunk { chunk_x: current_chunk_coords.x, chunk_z: current_chunk_coords.z },
+	);
+
 	let dimension = world.dimensions.get_mut(new_player.get_dimension()).unwrap();
 	for x in current_chunk_coords.x - lib::VIEW_DISTANCE as i32..=current_chunk_coords.x + lib::VIEW_DISTANCE as i32 {
 		for z in current_chunk_coords.z - lib::VIEW_DISTANCE as i32..=current_chunk_coords.z + lib::VIEW_DISTANCE as i32 {

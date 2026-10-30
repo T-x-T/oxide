@@ -33,8 +33,8 @@ pub const HOSTILE_OVERWORLD_SPAWNABLE_MOBS: [&str; 5] =
 	["minecraft:creeper", "minecraft:skeleton", "minecraft:zombie", "minecraft:spider", "minecraft:enderman"];
 pub const HOSTILE_NETHER_SPAWNABLE_MOBS: [&str; 2] = ["minecraft:zombified_piglin", "minecraft:blaze"];
 pub const HOSTILE_END_SPAWNABLE_MOBS: [&str; 1] = ["minecraft:enderman"];
-pub const MOB_SPAWN_LIMIT_PER_DIMENSION_CREATURE: u16 = 200;
-pub const MOB_SPAWN_LIMIT_PER_CHUNK_CREATURE: u16 = MOB_SPAWN_LIMIT_PER_DIMENSION_HOSTILE / 100;
+pub const MOB_SPAWN_LIMIT_PER_DIMENSION_CREATURE: u16 = 20;
+pub const MOB_SPAWN_LIMIT_PER_CHUNK_CREATURE: u16 = 2;
 pub const CREATURE_OVERWORLD_SPAWNABLE_MOBS: [&str; 5] =
 	["minecraft:cow", "minecraft:rabbit", "minecraft:sheep", "minecraft:chicken", "minecraft:pig"];
 pub const PATHFINDING_CACHE_TTL: u8 = 20;
