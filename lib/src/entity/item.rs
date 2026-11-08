@@ -136,7 +136,8 @@ impl CommonEntityTrait for ItemEntity {
 		if self.pickup_delay == 0 {
 			let picking_up_player = players
 				.iter()
-				.map(|x| (x, self.get_common_entity_data().position.distance_to(x.get_position())))
+				.map(|x| (x, EntityPosition { y: x.get_position().y + 0.5, ..x.get_position() }))
+				.map(|x| (x.0, self.get_common_entity_data().position.distance_to(x.1)))
 				.find(|x| x.1 < crate::ITEM_PICKUP_DISTANCE);
 
 			if let Some((picking_up_player, _)) = picking_up_player {
