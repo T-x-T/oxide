@@ -7,6 +7,9 @@ pub fn process(game: Arc<Game>, players_clone: &[Player]) {
 
 	if let Some(dimension) = world.dimensions.get_mut("minecraft:overworld") {
 		let dimension_creature_mob_count = dimension.entities.iter().filter(|x| x.is_mob() && x.get_mob_type() == MobType::Creature).count();
+		if dimension_creature_mob_count > 1000 {
+			println!("There are {dimension_creature_mob_count} creatures around, that is not normal!");
+		}
 		if dimension_creature_mob_count < lib::MOB_SPAWN_LIMIT_PER_DIMENSION_CREATURE as usize {
 			let mut entities_to_summon: Vec<Entity> = Vec::new();
 
