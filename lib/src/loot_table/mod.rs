@@ -356,9 +356,10 @@ fn evaluate_condition(
 			false
 		}
 		Predicate::SurvivesExplosion => true,
-		Predicate::TableBonus(_predicate_table_bonus) => {
-			println!("dont support TableBonus predicate yet");
-			false
+		Predicate::TableBonus(predicate_table_bonus) => {
+			let chance = *predicate_table_bonus.chances.first().unwrap_or(&0.0) as f64;
+			let mut rng = rng();
+			rng.random_bool(chance)
 		}
 		Predicate::TimeCheck(_predicate_time_check) => {
 			println!("dont support TimeCheck predicate yet");
