@@ -178,7 +178,7 @@ fn handle_shift_click(orig_chest_inventory: Vec<Slot>, orig_player_inventory: Ve
 	let mut new_chest_inventory = orig_chest_inventory.clone();
 	let mut new_player_inventory = orig_player_inventory.clone();
 
-	if clicked_slot > orig_chest_inventory.len() {
+	if clicked_slot > orig_chest_inventory.len() - 1 {
 		//player inventory clicked
 		if orig_player_inventory[player_inventory_index].is_empty() {
 			return (new_chest_inventory, new_player_inventory);
@@ -431,6 +431,18 @@ mod test {
 			let orig_chest_inventory: Vec<Slot> = vec![Slot::default(); 27];
 			let orig_player_inventory: Vec<Slot> = vec![Slot::default(); 46];
 			let clicked_slot = 54;
+
+			let (new_chest_inventory, new_player_inventory) = handle_shift_click(orig_chest_inventory, orig_player_inventory, clicked_slot);
+
+			assert_eq!(new_chest_inventory, vec![Slot::default(); 27]);
+			assert_eq!(new_player_inventory, vec![Slot::default(); 46]);
+		}
+
+		#[test]
+		fn shift_click_on_empty_player_slot_27() {
+			let orig_chest_inventory: Vec<Slot> = vec![Slot::default(); 27];
+			let orig_player_inventory: Vec<Slot> = vec![Slot::default(); 46];
+			let clicked_slot = 27;
 
 			let (new_chest_inventory, new_player_inventory) = handle_shift_click(orig_chest_inventory, orig_player_inventory, clicked_slot);
 
