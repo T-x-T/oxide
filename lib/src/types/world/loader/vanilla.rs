@@ -45,7 +45,7 @@ impl super::WorldLoader for Loader {
 		region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64 + 3)).unwrap();
 		let mut chunk_length_padded_bytes = vec![0];
 		region_file.read_exact(&mut chunk_length_padded_bytes).unwrap();
-		let chunk_length_padded = chunk_location_bytes[0] as i32 * 4096;
+		let chunk_length_padded = chunk_length_padded_bytes[0] as i32 * 4096;
 
 		if chunk_offset == 0 && chunk_length_padded == 0 {
 			return Chunk::new(x, z, chunk_sections);
@@ -290,7 +290,7 @@ impl super::WorldLoader for Loader {
 		region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64 + 3)).unwrap();
 		let mut chunk_length_padded_bytes = vec![0];
 		region_file.read_exact(&mut chunk_length_padded_bytes).unwrap();
-		let chunk_length_padded = chunk_location_bytes[0] as i32 * 4096;
+		let chunk_length_padded = chunk_length_padded_bytes[0] as i32 * 4096;
 
 		if chunk_offset == 0 && chunk_length_padded == 0 {
 			return output;
@@ -865,7 +865,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 					iteration += 1;
 				}
-				assert!(long != 0);
 				output.push(long as i64);
 			}
 			heightmap_tags.push(NbtTag::LongArray("MOTION_BLOCKING".to_string(), output));
@@ -892,7 +891,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 					iteration += 1;
 				}
-				assert!(long != 0);
 				output.push(long as i64);
 			}
 			heightmap_tags.push(NbtTag::LongArray("MOTION_BLOCKING_NO_LEAVES".to_string(), output));
@@ -919,7 +917,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 					iteration += 1;
 				}
-				assert!(long != 0);
 				output.push(long as i64);
 			}
 			heightmap_tags.push(NbtTag::LongArray("OCEAN_FLOOR".to_string(), output));
@@ -948,7 +945,6 @@ fn save_region_to_disk(region: (i32, i32), chunks: &[&Chunk], path: PathBuf, blo
 
 					iteration += 1;
 				}
-				assert!(long != 0);
 				output.push(long as i64);
 			}
 			heightmap_tags.push(NbtTag::LongArray("WORLD_SURFACE".to_string(), output));
