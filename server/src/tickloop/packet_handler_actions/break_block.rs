@@ -1,3 +1,5 @@
+use lib::blocks::Type;
+
 use super::*;
 
 pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, sequence_id: i32, game: Arc<Game>, players_clone: &[Player]) {
@@ -13,7 +15,20 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 
 	if player_clone.get_gamemode() == Gamemode::Survival {
 		let block_hardness = lib::block::get_hardness(old_block_id, &game.block_state_data);
-		if status == 0 && block_hardness != 0.0 {
+
+		let block_insta_mined = block_hardness == 0.0
+			|| (player.get_held_item(true).get_item_name() == "minecraft:shears"
+				&& [
+					Type::TintedParticleLeaves,
+					Type::UntintedParticleLeaves,
+					Type::CherryLeaves,
+					Type::TintedLeaves,
+					Type::PaleOakLeaves,
+					Type::MangroveLeaves,
+				]
+				.contains(&data::blocks::get_type_from_block_state_id(old_block_id)));
+
+		if status == 0 && !block_insta_mined {
 			player.start_mining();
 			game.packet_sender.send_packet_to_player(
 				&peer_addr,
@@ -29,7 +44,7 @@ pub fn process(peer_addr: SocketAddr, status: u8, location: BlockPosition, seque
 				lib::packets::clientbound::play::AcknowledgeBlockChange { sequence_id },
 			);
 			return;
-		} else if status == 2 || (status == 0 && block_hardness == 0.0) {
+		} else if status == 2 || (status == 0 && block_insta_mined) {
 			player.finish_mining();
 			player.apply_exhaustion_from_mining_block();
 		} else if status == 5 {
