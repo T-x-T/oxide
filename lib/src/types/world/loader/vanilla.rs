@@ -284,7 +284,9 @@ impl super::WorldLoader for Loader {
 		let chunk_pos_in_header = 4 * ((x & 31) + (z & 31) * 32);
 		region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64)).unwrap();
 		let mut chunk_location_bytes = vec![0; 3];
-		region_file.read_exact(&mut chunk_location_bytes).unwrap();
+		let Ok(_) = region_file.read_exact(&mut chunk_location_bytes) else {
+			return output;
+		};
 		let chunk_offset = i32::from_be_bytes([0, chunk_location_bytes[0], chunk_location_bytes[1], chunk_location_bytes[2]]) * 4096;
 
 		region_file.seek(SeekFrom::Start(chunk_pos_in_header as u64 + 3)).unwrap();
