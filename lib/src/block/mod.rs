@@ -170,7 +170,10 @@ pub fn get_block_state_id(
 			players.iter().filter(|x| x.get_common_entity_data().position.distance_to((*position_to_check).into()) < 2.0).collect();
 		for player in closeby_players {
 			let mut collision_shape = player.get_common_entity_data().collision_shape.clone();
-			collision_shape.set_base_coordinates(player.get_common_entity_data().position);
+			collision_shape.set_base_coordinates(EntityPosition {
+				y: player.get_common_entity_data().position.y + 0.1,
+				..player.get_common_entity_data().position
+			});
 			if collision_shape.collides_with(&blocks_collision_shape) {
 				return vec![(0, position)];
 			}
