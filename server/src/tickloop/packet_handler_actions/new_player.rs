@@ -357,4 +357,10 @@ pub fn process(peer_addr: SocketAddr, stream: TcpStream, game: Arc<Game>) {
 			]),
 		},
 	);
+
+	game.packet_sender.send_packet_to_everyone(
+		&players,
+		lib::packets::clientbound::play::UpdateTime::PACKET_ID,
+		lib::packets::clientbound::play::UpdateTime { world_age: world.world_age, time_of_day: world.time, time_of_day_increasing: true },
+	);
 }

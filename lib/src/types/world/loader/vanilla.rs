@@ -427,10 +427,12 @@ impl super::WorldLoader for Loader {
 	}
 
 	fn get_world_age(&self) -> i64 {
-		let mut level_dat_path = self.path.clone();
-		level_dat_path.push(PathBuf::from_str("level.dat").unwrap());
+		let mut world_clocks_path = self.path.clone();
+		world_clocks_path.push(PathBuf::from_str("data/world_clocks.dat").unwrap());
 
-		let mut file = File::open(&level_dat_path).unwrap();
+		let Ok(mut file) = File::open(&world_clocks_path) else {
+			return 0;
+		};
 
 		let mut compressed_file_content: Vec<u8> = Vec::new();
 		file.read_to_end(&mut compressed_file_content).unwrap();
@@ -441,7 +443,15 @@ impl super::WorldLoader for Loader {
 
 		let level_data = crate::deserialize::nbt_disk(&mut file_content).unwrap();
 
-		return level_data.get_child("Data").unwrap().get_child("Time").unwrap_or(&NbtTag::Long("Time".to_string(), 0)).as_long();
+		let default = NbtTag::default();
+		return level_data
+			.get_child("data")
+			.unwrap_or(&default)
+			.get_child("minecraft:overworld")
+			.unwrap_or(&default)
+			.get_child("total_ticks")
+			.unwrap_or(&NbtTag::Long("total_ticks".to_string(), 0))
+			.as_long();
 	}
 
 	fn get_time(&self) -> i64 {
@@ -467,7 +477,7 @@ impl super::WorldLoader for Loader {
 			.unwrap_or(&default)
 			.get_child("minecraft:overworld")
 			.unwrap_or(&default)
-			.get_child("total_ticks")
+			.get_child("Time")
 			.unwrap_or(&NbtTag::Long("Time".to_string(), 0))
 			.as_long();
 	}
@@ -488,7 +498,7 @@ impl super::WorldLoader for Loader {
 				NbtTag::Int("SpawnX".to_string(), default_spawn_location.x),
 				NbtTag::Int("SpawnY".to_string(), default_spawn_location.y as i32),
 				NbtTag::Int("SpawnZ".to_string(), default_spawn_location.z),
-				NbtTag::Long("Time".to_string(), world_age),
+				NbtTag::Long("Time".to_string(), time),
 			],
 		)]);
 
@@ -497,7 +507,11 @@ impl super::WorldLoader for Loader {
 				"data".to_string(),
 				vec![NbtTag::TagCompound(
 					"minecraft:overworld".to_string(),
-					vec![NbtTag::Byte("paused".to_string(), 0), NbtTag::Long("total_ticks".to_string(), time)],
+					vec![
+						NbtTag::Byte("paused".to_string(), 0),
+						NbtTag::Long("total_ticks".to_string(), world_age),
+						NbtTag::Long("Time".to_string(), time),
+					],
 				)],
 			),
 			NbtTag::Int("DataVersion".to_string(), 4772),

@@ -91,7 +91,7 @@ pub fn tick(game: Arc<Game>) -> TickTimings {
 
 	let sleeping_players: Vec<&mut Player> = players.iter_mut().filter(|x| x.get_sleeping_for_ticks() == 100).collect();
 
-	if sleeping_players.len() == players.len() {
+	if !sleeping_players.is_empty() && sleeping_players.len() == players.len() {
 		for player in players.iter_mut() {
 			player
 				.set_is_sleeping(&players_clone, &game.packet_sender, false, None, world.dimensions.get(player.get_dimension()).unwrap())
