@@ -69,7 +69,7 @@ pub fn process(
 			vec![]
 		}
 	} else if !player.get_held_item(true).is_empty() && player.get_held_item(true).get_item_name() == "minecraft:water_bucket" {
-		let bucket_slot = Slot::new_from_name("minecraft:water", 1).expect("minecraft:water is not an item??");
+		let bucket_slot = Slot::new_from_name("minecraft:water_bucket", 1).expect("minecraft:water is not an item??");
 		player.set_selected_inventory_slot(bucket_slot, players_clone, &game.packet_sender);
 
 		let water_block = data::blocks::get_block_from_name("minecraft:water", &game.block_state_data);
